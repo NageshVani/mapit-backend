@@ -20,6 +20,7 @@ if (!globalThis.WebSocket) {
 }
 
 require('dotenv').config();
+const path       = require('path');
 const express    = require('express');
 const cors       = require('cors');
 const helmet     = require('helmet');
@@ -38,7 +39,8 @@ const app  = express();
 const PORT = process.env.PORT || 3001;
 
 // ── Security & logging ───────────────────────────────────────
-app.use(helmet());
+// CSP disabled: frontend uses inline scripts + external CDNs (Leaflet, Font Awesome, Google Fonts)
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan('dev'));
 
 // ── CORS ─────────────────────────────────────────────────────
@@ -98,6 +100,10 @@ app.use('/api/pins',     pinRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users',    userRoutes);
 app.use('/api/uploads',  uploadRoutes);
+
+// ── Frontend static files ─────────────────────────────────────
+// Serves public/index.html at mapit.co.in (API routes above take priority)
+app.use(express.static(path.join(__dirname, '../public')));
 
 // ── 404 handler ──────────────────────────────────────────────
 app.use((req, res) => {
