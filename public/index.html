@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MapIt — Bangalore Prototype</title>
+<title>MapIt — Bangalore Beta</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
 <style>
@@ -47,6 +47,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .uav-menu{position:absolute;top:100%;right:0;margin-top:8px;background:var(--panel);border:1px solid var(--border2);border-radius:10px;padding:6px;min-width:160px;z-index:910;box-shadow:var(--shadow);display:none;}
 .uav-menu.open{display:block;}
 .uav-item{padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:8px;color:var(--text);}
+.uav-item.hide{display:none;}
 .uav-item:hover{background:var(--card);}
 .uav-item.danger{color:var(--muted);}
 .uav-item.danger:hover{background:rgba(239,68,68,.1);color:var(--red);}
@@ -152,7 +153,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .vtog{display:flex;background:rgba(255,255,255,.95);border:1px solid var(--border2);border-radius:24px;padding:4px;gap:3px;backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,.12);}
 .vbtn{padding:7px 22px;border-radius:20px;border:none;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;transition:all .18s;}
 .vbtn.on{background:var(--orange);color:#fff;}
-.cnt-mini{position:absolute;top:10px;right:10px;z-index:600;background:rgba(255,255,255,.92);border:1px solid var(--border2);backdrop-filter:blur(8px);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--muted);}
+.cnt-mini{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(255,255,255,.92);border:1px solid var(--border2);backdrop-filter:blur(8px);border-radius:20px;padding:5px 16px;font-size:11px;color:var(--muted);white-space:nowrap;}
 .cnt-mini b{color:var(--orange);}
 
 /* ── HOVER CARD ── */
@@ -360,6 +361,18 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .fbv-resolve-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.07);color:var(--green);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
 .fbv-resolve-btn:hover{background:rgba(34,197,94,.18);}
 
+/* ── INBOX MODAL ── */
+.inbox-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
+.inbox-modal.hide{display:none;}
+.inbox-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow);}
+.inbox-item{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;gap:11px;align-items:flex-start;cursor:default;}
+.inbox-item.unread{background:rgba(240,96,48,.05);}
+.inbox-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.inbox-meta{flex:1;min-width:0;}
+.inbox-name{font-size:12.5px;font-weight:600;margin-bottom:3px;}
+.inbox-preview{font-size:11.5px;color:var(--muted);line-height:1.5;}
+.inbox-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:6px;}
+
 /* ── ADMIN MODAL ── */
 .admin-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
 .admin-modal.hide{display:none;}
@@ -376,15 +389,12 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 </head>
 <body>
 
-<!-- ── WHO AM I (shared device) ── -->
+<!-- ── WHO AM I (shared device — multi-user picker) ── -->
 <div class="whoami hide" id="whoamiScreen">
-  <div class="whoami-av" id="whoamiAv">?</div>
-  <div class="whoami-tag">Last logged in as</div>
-  <div class="whoami-name" id="whoamiName">—</div>
-  <div class="whoami-btns">
-    <button class="whoami-yes" onclick="continueAsMe()">✅ Yes, that's me — continue</button>
-    <button class="whoami-no" onclick="signInAsSomeoneElse()">🔄 Not me — sign in as myself</button>
-  </div>
+  <div class="splash-logo" style="margin-bottom:4px;">Map<em>It</em></div>
+  <div class="whoami-tag">Who's using MapIt?</div>
+  <div id="whoamiUserList" style="display:flex;flex-direction:column;gap:10px;width:280px;margin-top:18px;max-height:55vh;overflow-y:auto;"></div>
+  <button class="whoami-no" onclick="signInAsSomeoneElse()" style="width:280px;margin-top:12px;">+ New person / first-time login</button>
 </div>
 
 <!-- ── SPLASH ── -->
@@ -568,7 +578,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <input id="srchIn" type="text" placeholder="Search listings in Bangalore…"/>
   </div>
   <div class="hsp"></div>
-  <div class="loc-badge" onclick="openPinsModal()" title="Manage your saved locations">
+  <div class="loc-badge" title="Your active location" style="cursor:default;">
     📍 <b id="activePinLabel">Koramangala</b>
   </div>
   <div class="modetog">
@@ -583,6 +593,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="uav-menu" id="uavMenu" onclick="event.stopPropagation()">
       <div class="uav-name" id="uavName">—</div>
       <div class="uav-item" onclick="openPinsModal()">📍 My Locations</div>
+      <div class="uav-item" id="inboxMenuItem" onclick="openInboxModal()" style="justify-content:space-between;">
+        <span>📥 Inbox</span>
+        <span id="inboxBadge" style="display:none;background:var(--orange);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;"></span>
+      </div>
       <div class="uav-item hide" id="adminMenuItem" onclick="openAdminModal()">🔐 Review Listings</div>
       <div class="uav-item hide" id="feedbackViewMenuItem" onclick="openFeedbackViewModal()">💬 View Feedbacks</div>
       <button class="uav-signout" onclick="logout()">⎋ Sign Out &amp; Switch User</button>
@@ -642,6 +656,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   </div>
 </div>
 
+<!-- ── INBOX MODAL ── -->
+<div class="inbox-modal hide" id="inboxModal">
+  <div class="inbox-box">
+    <div class="pins-header">
+      <div style="font-size:15px;font-weight:700;">📥 Inbox</div>
+      <div class="post-close" onclick="closeInboxModal()">✕</div>
+    </div>
+    <div id="inboxList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -649,6 +674,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 // ═══════════════════════════════════════════════
 // CONFIG — change API_URL when deployed to Vercel
 // ═══════════════════════════════════════════════
+// const API_URL = 'http://localhost:3001';   // ← local testing
 const API_URL = 'https://api.mapit.co.in';
 
 // ═══════════════════════════════════════════════
@@ -678,6 +704,40 @@ function getInitials(name){
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if(parts.length === 1) return parts[0][0].toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// ═══════════════════════════════════════════════
+// MULTI-SESSION (shared device — family switch)
+// ═══════════════════════════════════════════════
+function getMultiSessions(){
+  try { return JSON.parse(localStorage.getItem('mapit_sessions') || '{}'); } catch(_){ return {}; }
+}
+function saveToMultiSessions(userId, patch){
+  const all = getMultiSessions();
+  all[userId] = { ...(all[userId]||{}), ...patch, last_login: new Date().toISOString() };
+  localStorage.setItem('mapit_sessions', JSON.stringify(all));
+}
+function renderWhoamiScreen(){
+  const all = getMultiSessions();
+  const entries = Object.entries(all).sort((a,b)=>new Date(b[1].last_login||0)-new Date(a[1].last_login||0));
+  const list = document.getElementById('whoamiUserList');
+  list.innerHTML = entries.map(([uid, u])=>{
+    const displayName = u.created_for || u.name || 'Family Member';
+    const displayInit = displayName !== 'Family Member' ? getInitials(displayName) : (u.initials || '?');
+    return `
+    <button class="whoami-yes" onclick="continueAs('${uid}')"
+      style="display:flex;align-items:center;gap:14px;text-align:left;padding:11px 16px;border-radius:10px;">
+      <div style="width:42px;height:42px;border-radius:50%;background:var(--orange);display:flex;align-items:center;
+        justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.5px;">
+        ${displayInit}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName}</div>
+        <div style="font-size:11px;opacity:.55;">${u.invite_code||''}</div>
+      </div>
+      <span style="font-size:11px;opacity:.4;">→</span>
+    </button>`;
+  }).join('');
 }
 
 function listingRow(l){
@@ -820,7 +880,12 @@ async function verifyOtp(){
     ST.session = data.session;
     ST.user    = data.user;
     ST.profile = data.profile;
-    localStorage.setItem('mapit_session', JSON.stringify(data.session));
+    // Save to multi-session store for quick family switching
+    const uid = data.user?.id;
+    if(uid){
+      const name = data.created_for || data.profile?.full_name || ST.createdFor || '';
+      saveToMultiSessions(uid, { session: data.session, name, initials: getInitials(name), invite_code: ST.inviteCode, email: data.user?.email, created_for: data.created_for || name });
+    }
     if(data.isNewUser){
       goToStep('step-profile');
     } else {
@@ -843,6 +908,10 @@ async function saveProfile(){
       full_name, phone: phone||null, invite_code: ST.inviteCode
     });
     ST.profile = data.profile;
+    ST.createdFor = full_name;
+    // Save to multi-session store
+    const uid = ST.user?.id;
+    if(uid) saveToMultiSessions(uid, { session: ST.session, name: full_name, initials: getInitials(full_name), invite_code: ST.inviteCode, email: ST.user?.email });
     document.getElementById('authModal').classList.add('hide');
     await initApp();
   } catch(e){ toast('Could not save profile: ' + e.message); }
@@ -850,16 +919,21 @@ async function saveProfile(){
 
 async function logout(){
   const name = ST.createdFor || ST.profile?.full_name || 'User';
+  // Keep session in multi-store so family can switch back without OTP
+  const uid = ST.user?.id;
+  if(uid && ST.session) saveToMultiSessions(uid, { session: ST.session });
   try { await apiPost('/api/auth/logout', {}); } catch(_){}
-  localStorage.removeItem('mapit_session');
+  // Do NOT clear mapit_sessions — other family members need it for quick switch
   localStorage.removeItem('mapit_invite');
   localStorage.removeItem('mapit_created_for');
-  localStorage.removeItem('mapit_welcomed');
+  // Always hide admin items — they will be re-evaluated on next initApp()
+  document.getElementById('adminMenuItem').classList.add('hide');
+  document.getElementById('feedbackViewMenuItem').classList.add('hide');
   // Full state wipe so nothing from this session bleeds into the next user
   ST.session = null; ST.user = null; ST.profile = null;
   ST.inviteCode = ''; ST.createdFor = ''; ST.userPins = []; ST.activePin = null;
   ST.listings = []; ST.savedIds = new Set();
-  toast(`👋 ${name} signed out. Next person can now log in.`);
+  toast(`👋 ${name} signed out.`);
   setTimeout(()=>location.reload(), 1800);
 }
 
@@ -888,7 +962,7 @@ function initMap(){
     attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> © <a href="https://carto.com">CARTO</a>',
     subdomains:'abcd',maxZoom:20,
   }).addTo(map);
-  L.control.zoom({position:'topright'}).addTo(map);
+  L.control.zoom({position:'bottomright'}).addTo(map);
 
   // User location marker — stored so it can be moved when active pin changes
   _userMarker = L.marker([loc.lat,loc.lng],{
@@ -1209,10 +1283,13 @@ function renderSidebar(){
   const col = catCol(l.category||l.cat);
 
   el.innerHTML = `
-    ${(prev||next)?`<div class="ld-close-row"><div style="flex:1"></div><div class="ld-nav">
-      ${prev?`<div class="ld-nav-btn" title="Previous listing" onclick="selListing('${prev}')">‹</div>`:''}
-      ${next?`<div class="ld-nav-btn" title="Next listing" onclick="selListing('${next}')">›</div>`:''}
-    </div></div>`:'<div style="height:6px;"></div>'}
+    <div class="ld-close-row">
+      <div class="ld-back" onclick="closeDetail()">‹ Back</div>
+      <div class="ld-nav">
+        ${prev?`<div class="ld-nav-btn" title="Previous listing" onclick="selListing('${prev}')">‹</div>`:''}
+        ${next?`<div class="ld-nav-btn" title="Next listing" onclick="selListing('${next}')">›</div>`:''}
+      </div>
+    </div>
     <div class="ld-img" style="background:linear-gradient(135deg,var(--card),var(--card2))">
       ${l.photos&&l.photos[0]
         ? `<img src="${l.photos[0].public_url||l.cover_photo}" alt="${l.title}"/>`
@@ -1487,6 +1564,18 @@ async function loadAndRenderPins(){
   try {
     const data = await apiGet('/api/pins');
     ST.userPins = data.pins||[];
+    // Sync active pin, header badge, user marker and map when the default changes
+    const def = ST.userPins.find(p=>p.is_default) || ST.userPins[0];
+    if(def && (!ST.activePin || def.id !== ST.activePin?.id)){
+      ST.activePin = def;
+      document.getElementById('activePinLabel').textContent = def.label;
+      if(_userMarker){
+        _userMarker.setLatLng([def.lat, def.lng]);
+        _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${def.label}</b>`);
+      }
+      if(map) map.setView([def.lat, def.lng], 14, {animate:true});
+      updateCircle();
+    }
     renderPinsList();
     drawPinMarkers();
   } catch(e){ toast('Could not load pins: '+e.message); }
@@ -1513,23 +1602,15 @@ function renderPinsList(){
 }
 
 async function setDefaultPin(id){
+  const candidate = ST.userPins.find(p=>p.id===id);
+  if(!candidate) return;
+  if(!confirm(`Set "${candidate.label}" as your active location?`)) return;
   try {
     await apiPut(`/api/pins/${id}/default`,{});
-    await loadAndRenderPins();
-    const pin = ST.userPins.find(p=>p.id===id);
-    if(pin){
-      ST.activePin = pin;
-      document.getElementById('activePinLabel').textContent = pin.label;
-      // Move the user location marker to the new active pin
-      if(_userMarker){
-        _userMarker.setLatLng([pin.lat, pin.lng]);
-        _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${pin.label}</b>`);
-      }
-      updateCircle();
-      map.setView([pin.lat,pin.lng],14,{animate:true});
-      await loadListings();
-    }
-    toast('📍 Active location updated!');
+    await loadAndRenderPins(); // this now syncs ST.activePin, marker, map via the updated function
+    await loadListings();
+    closePinsModal();
+    toast(`📍 ${candidate.label} is now your active location.`);
   } catch(e){ toast(e.message); }
 }
 
@@ -1627,7 +1708,8 @@ function toast(msg){
 // INIT
 // ═══════════════════════════════════════════════
 function closeSplash(){
-  localStorage.setItem('mapit_welcomed','yes');
+  // Mark welcomed per-user so the onboarding splash doesn't repeat on future logins
+  if(ST.user?.id) localStorage.setItem(`mapit_welcomed_${ST.user.id}`, 'yes');
   document.getElementById('splashScreen').classList.add('hide');
   if(!ST.userPins.length) openPinsModal();
 }
@@ -1653,7 +1735,7 @@ async function initApp(){
   // Email check is the reliable fallback when invite_code isn't in the DB yet
   const ADMIN_CODES  = ['MAPIT-N-01', 'MAPIT-A-01'];
   const ADMIN_EMAILS = ['nagesh.aadi@gmail.com']; // add Arun's email here once known
-  const _code  = (ST.inviteCode  || '').toUpperCase().trim();
+  const _code  = (ST.inviteCode || localStorage.getItem('mapit_invite') || '').toUpperCase().trim();
   const _email = (ST.user?.email || '').toLowerCase().trim();
   const isAdmin = ADMIN_CODES.includes(_code) || ADMIN_EMAILS.includes(_email);
   document.getElementById('adminMenuItem').classList.toggle('hide', !isAdmin);
@@ -1679,9 +1761,15 @@ async function initApp(){
   await loadListings();
   await loadSaved();
   checkShareUrl();
+  // Load inbox unread badge count
+  apiGet('/api/messages/inbox').then(d=>{
+    const unread = (d.conversations||[]).reduce((n,c)=>n+(c.unread_count||0),0);
+    const badge = document.getElementById('inboxBadge');
+    if(badge && unread>0){ badge.textContent=unread; badge.style.display='inline'; }
+  }).catch(()=>{});
 
-  // Splash end logic
-  const isFirstLogin = !localStorage.getItem('mapit_welcomed');
+  // Splash end logic — per-user flag so onboarding shows only at first-time registration
+  const isFirstLogin = !localStorage.getItem(`mapit_welcomed_${ST.user?.id}`);
   if(isFirstLogin){
     // First ever login — show onboarding guide, wait for user to click Ok
     document.getElementById('splashMsg').innerHTML = `
@@ -1690,70 +1778,78 @@ async function initApp(){
         <li>📍 Start by setting your GPS location — tap <b>My Locations</b> in the profile menu</li>
         <li>🗺 Listings near you appear as pins on the map — tap any pin to view details</li>
         <li>🔍 Filter by category and distance using the left sidebar</li>
-        <li>➕ Post your own listing via the <b>My Ads</b> button in the header</li>
+        <li>➕ Post your own listing via the <b>Post a Listing</b> toggle in the header</li>
         <li>💬 Chat with sellers directly from any listing</li>
         <li>❤ Save favourite listings with the heart icon</li>
       </ul>`;
     document.getElementById('splashBtn').textContent = 'Got it, let\'s go! →';
     document.getElementById('splashBtn').classList.remove('hide');
-  } else if(!ST.userPins.length){
-    // Returning user but no GPS pins set yet
-    document.getElementById('splashMsg').textContent =
-      'Please set your GPS location to browse listings near you.';
-    document.getElementById('splashBtn').textContent = '📍 Set My Location →';
-    document.getElementById('splashBtn').classList.remove('hide');
   } else {
-    // Returning user with pins — brief flash, then dismiss
+    // Returning user — auto-dismiss; set location available from My Locations in the profile menu
     setTimeout(()=>splash.classList.add('hide'), 800);
   }
 }
 
 async function init(){
-  const saved = localStorage.getItem('mapit_session');
-  if(saved){
-    try {
-      JSON.parse(saved); // validate JSON
-      // Show "who is using this device?" screen before restoring
-      const storedName = localStorage.getItem('mapit_created_for') || 'the previous user';
-      document.getElementById('whoamiName').textContent = storedName;
-      document.getElementById('whoamiAv').textContent   = getInitials(storedName);
-      document.getElementById('whoamiScreen').classList.remove('hide');
-      return;
-    } catch(_){
-      localStorage.removeItem('mapit_session');
-    }
+  const sessions = getMultiSessions();
+  if(Object.keys(sessions).length > 0){
+    renderWhoamiScreen();
+    document.getElementById('whoamiScreen').classList.remove('hide');
+    return;
   }
   document.getElementById('authModal').classList.remove('hide');
 }
 
-async function continueAsMe(){
+async function continueAs(userId){
   document.getElementById('whoamiScreen').classList.add('hide');
-  const saved = localStorage.getItem('mapit_session');
+  // Immediately hide admin items so they never bleed from a previous user's session
+  document.getElementById('adminMenuItem').classList.add('hide');
+  document.getElementById('feedbackViewMenuItem').classList.add('hide');
+  const stored = getMultiSessions()[userId];
+  if(!stored?.session){ document.getElementById('authModal').classList.remove('hide'); return; }
   try {
-    const session = JSON.parse(saved);
-    ST.session = session;
-    const data = await apiGet('/api/auth/me');
+    ST.session = stored.session;
+    // Pass stored invite code so backend can resolve created_for even if used_by isn't set
+    const ic = encodeURIComponent(stored.invite_code || '');
+    const data = await apiGet(`/api/auth/me${ic ? '?invite_code=' + ic : ''}`);
     ST.user       = data.user;
     ST.profile    = data.profile;
-    ST.createdFor = data.created_for || localStorage.getItem('mapit_created_for') || '';
-    ST.inviteCode = data.invite_code || '';
-    if(data.created_for) localStorage.setItem('mapit_created_for', data.created_for);
-    if(data.invite_code) localStorage.setItem('mapit_invite', data.invite_code);
+    // Prefer created_for (invite-code name) over stored profile name
+    const resolvedName = data.created_for || stored.created_for || stored.name || '';
+    ST.createdFor = resolvedName;
+    ST.inviteCode = data.invite_code || stored.invite_code || '';
+    // Always write both so initApp admin-check picks them up reliably
+    if(resolvedName) localStorage.setItem('mapit_created_for', resolvedName);
+    if(ST.inviteCode) localStorage.setItem('mapit_invite', ST.inviteCode);
+    // Refresh stored session with better name/code so WhoAmI shows correctly next time
+    saveToMultiSessions(userId, {
+      created_for:  data.created_for  || stored.created_for,
+      name:         resolvedName      || stored.name,
+      initials:     resolvedName ? getInitials(resolvedName) : stored.initials,
+      invite_code:  ST.inviteCode     || stored.invite_code,
+    });
     document.getElementById('authModal').classList.add('hide');
     await initApp();
   } catch(_){
-    localStorage.removeItem('mapit_session');
+    toast(`Session for ${stored.name||'this user'} expired — please log in again.`);
+    // Pre-fill known invite code and email so user skips step-invite and only needs the OTP
+    const kCode  = stored.invite_code || '';
+    const kEmail = stored.email || '';
+    if(kCode){
+      ST.inviteCode = kCode;
+      localStorage.setItem('mapit_invite', kCode);
+      localStorage.setItem('mapit_created_for', stored.created_for || stored.name || '');
+      document.getElementById('inviteInput').value = kCode;
+    }
+    if(kEmail) document.getElementById('emailInput').value = kEmail;
     document.getElementById('authModal').classList.remove('hide');
+    goToStep(kCode ? 'step-email' : 'step-invite');
   }
 }
 
 function signInAsSomeoneElse(){
   document.getElementById('whoamiScreen').classList.add('hide');
-  // Wipe the previous user's session completely
-  localStorage.removeItem('mapit_session');
-  localStorage.removeItem('mapit_invite');
-  localStorage.removeItem('mapit_created_for');
-  localStorage.removeItem('mapit_welcomed');
+  // Leave mapit_sessions intact so other family members can still switch back
   ST.session = null; ST.user = null; ST.profile = null;
   ST.inviteCode = ''; ST.createdFor = '';
   ST.userPins = []; ST.activePin = null;
@@ -1776,11 +1872,11 @@ async function openAdminModal(){
     }
     document.getElementById('adminList').innerHTML = list.map(l=>`
       <div class="admin-item" id="admin-item-${l.id}">
-        <div class="admin-item-title">${l.title}</div>
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
         <div class="admin-item-meta">
-          <span>${CAT_EMOJI[l.category]||'📦'} ${l.subcategory||l.category}</span>
+          <span>${l.subcategory||l.category}</span>
           <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
-          <span>👤 ${l.profiles?.full_name||'Unknown'}</span>
+          <span>👤 ${l.seller?.full_name||l.profiles?.full_name||'Unknown'}</span>
           <span>📍 ${l.address||'No address'}</span>
           <span style="color:var(--muted);">${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
         </div>
@@ -1866,7 +1962,7 @@ function renderFeedbackView(){
   const el = document.getElementById('feedbackViewList');
   let list = _fbAll;
   if(_fbTypeFilter !== 'all') list = list.filter(f=>f.type===_fbTypeFilter);
-  if(!_fbShowResolved) list = list.filter(f=>!f.status==='resolved');
+  if(!_fbShowResolved) list = list.filter(f=>f.status !== 'resolved');
   if(!list.length){
     el.innerHTML = `<div style="padding:30px;text-align:center;color:var(--muted);">
       ${_fbAll.length ? 'No feedback matches this filter.' : 'No feedback submitted yet.'}</div>`;
@@ -1876,18 +1972,18 @@ function renderFeedbackView(){
     <div class="fbv-item ${f.status==='resolved'?'resolved':''}" id="fbv-card-${f.id}">
       <div class="fbv-meta">
         <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${f.type}</span>
-        <span class="fbv-name">👤 ${f.profile?.full_name||'Unknown'}</span>
+        <span class="fbv-name">👤 ${f.created_for||f.profile?.full_name||'Unknown'}</span>
         ${f.status==='resolved'?'<span class="fbv-resolved-badge">✅ Resolved</span>':''}
         <span class="fbv-time">${f.created_at?new Date(f.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span>
       </div>
       <div class="fbv-text">"${f.description}"</div>
       <div class="fbv-reply-row">
-        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.profile?.full_name||'this user'}…"></textarea>
-        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${(f.profile?.full_name||'Someone').replace(/'/g,"\\'")}')">💬 Send Reply</button>
+        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.created_for||f.profile?.full_name||'this user'}…"></textarea>
+        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${((f.created_for||f.profile?.full_name||'Someone').replace(/'/g,"\\'"))}')">💬 Send Reply</button>
       </div>
-      ${!f.status==='resolved'?`<div class="fbv-actions">
+      ${f.status !== 'resolved' ? `<div class="fbv-actions">
         <button class="fbv-resolve-btn" onclick="resolveFeedback('${f.id}')">✅ Mark as Resolved</button>
-      </div>`:''}
+      </div>` : ''}
     </div>`).join('');
 }
 
@@ -1950,13 +2046,67 @@ function updateFbChar(){
 async function submitFeedback(){
   const description = document.getElementById('fbText').value.trim();
   if(description.length < 10){ toast('Please write at least 10 characters.'); return; }
+  const btn = document.querySelector('#feedbackModal .modal-btn');
+  if(btn){ btn.disabled=true; btn.innerHTML='<div class="loading-spin" style="width:18px;height:18px;border-width:2px;"></div>'; }
   try {
     await apiPost('/api/users/feedback/submit', { type: _fbType, description });
     closeFeedbackModal();
     toast('✅ Thank you! Your feedback has been received.');
-  } catch(e){ toast('Could not send feedback: '+e.message); }
+  } catch(e){
+    toast('Could not send feedback: '+e.message);
+    if(btn){ btn.disabled=false; btn.textContent='Send Feedback'; }
+  }
 }
 
+// ═══════════════════════════════════════════════
+// INBOX
+// ═══════════════════════════════════════════════
+async function openInboxModal(){
+  document.getElementById('uavMenu').classList.remove('open');
+  document.getElementById('inboxModal').classList.remove('hide');
+  // Clear badge immediately — user is now reading the inbox
+  const badge = document.getElementById('inboxBadge');
+  if(badge){ badge.textContent=''; badge.style.display='none'; }
+  document.getElementById('inboxList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/messages/inbox');
+    const convs = data.conversations || [];
+    if(!convs.length){
+      document.getElementById('inboxList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No messages yet.<br><span style="font-size:11px;">Replies from Nagesh or Arun will appear here.</span></div>';
+      return;
+    }
+    document.getElementById('inboxList').innerHTML = convs.map(c=>{
+      const other = c.other_user || {};
+      const col = other.avatar_color || 'var(--orange)';
+      const initials = getInitials(other.full_name || '?');
+      const listing = c.listing || {};
+      const unread = (c.unread_count||0) > 0;
+      const timeStr = c.last_message?.sent_at
+        ? new Date(c.last_message.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+        : '';
+      const context = listing.title
+        ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${listing.title}</span>`
+        : `<span style="font-size:10px;color:var(--orange);font-weight:400;"> · admin reply</span>`;
+      return `<div class="inbox-item ${unread?'unread':''}">
+        <div class="inbox-av" style="background:${col}">${initials}</div>
+        <div class="inbox-meta">
+          <div class="inbox-name">${other.full_name||'Admin'}${context}</div>
+          <div class="inbox-preview">${c.last_message?.content||''}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
+        </div>
+        ${unread?'<div class="inbox-unread-dot"></div>':''}
+      </div>`;
+    }).join('');
+    // Mark all received messages as read in the background
+    apiPut('/api/messages/mark-all-read', {}).catch(()=>{});
+  } catch(e){
+    document.getElementById('inboxList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+function closeInboxModal(){ document.getElementById('inboxModal').classList.add('hide'); }
+
+// ═══════════════════════════════════════════════
 // Search
 document.getElementById('srchIn').addEventListener('input',e=>{
   ST.q=e.target.value.toLowerCase();
