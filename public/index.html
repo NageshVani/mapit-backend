@@ -1734,7 +1734,7 @@ async function initApp(){
   // Admin detection — dual check: invite code OR registered email
   // Email check is the reliable fallback when invite_code isn't in the DB yet
   const ADMIN_CODES  = ['MAPIT-N-01', 'MAPIT-A-01'];
-  const ADMIN_EMAILS = ['nagesh.aadi@gmail.com']; // add Arun's email here once known
+  const ADMIN_EMAILS = ['nagesh.aadi@gmail.com', 'arun.bn1@gmail.com'];
   const _code  = (ST.inviteCode || localStorage.getItem('mapit_invite') || '').toUpperCase().trim();
   const _email = (ST.user?.email || '').toLowerCase().trim();
   const isAdmin = ADMIN_CODES.includes(_code) || ADMIN_EMAILS.includes(_email);

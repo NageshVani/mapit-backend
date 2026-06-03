@@ -17,7 +17,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: parseInt(process.env.MAX_PHOTO_SIZE) || 5 * 1024 * 1024, // 5MB
-    files:    parseInt(process.env.MAX_PHOTOS_PER_LISTING) || 10,
+    files:    parseInt(process.env.MAX_PHOTOS_PER_LISTING) || 5,
   },
   fileFilter: (req, file, cb) => {
     const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic'];
@@ -32,7 +32,7 @@ const upload = multer({
 // ── Upload photos for a listing ───────────────────────────────
 // POST /api/uploads/listing/:listing_id
 // Form-data: photos[] (multiple files)
-router.post('/listing/:listing_id', requireAuth, upload.array('photos', 10), async (req, res, next) => {
+router.post('/listing/:listing_id', requireAuth, upload.array('photos', 5), async (req, res, next) => {
   try {
     const { listing_id } = req.params;
     const files = req.files;
@@ -59,7 +59,7 @@ router.post('/listing/:listing_id', requireAuth, upload.array('photos', 10), asy
       .select('*', { count: 'exact', head: true })
       .eq('listing_id', listing_id);
 
-    const maxPhotos = parseInt(process.env.MAX_PHOTOS_PER_LISTING) || 10;
+    const maxPhotos = parseInt(process.env.MAX_PHOTOS_PER_LISTING) || 5;
     if ((existingCount || 0) + files.length > maxPhotos) {
       return next(createError(`Maximum ${maxPhotos} photos per listing. You already have ${existingCount}.`));
     }
@@ -120,7 +120,7 @@ router.post('/listing/:listing_id', requireAuth, upload.array('photos', 10), asy
       return next(createError('File too large. Maximum size is 5MB per photo.'));
     }
     if (err.code === 'LIMIT_FILE_COUNT') {
-      return next(createError('Too many files. Maximum 10 photos per upload.'));
+      return next(createError('Too many files. Maximum 5 photos per upload.'));
     }
     next(err);
   }
