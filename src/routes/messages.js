@@ -167,6 +167,18 @@ router.post('/', requireAuth, async (req, res, next) => {
 });
 
 // ── Mark message as read ──────────────────────────────────────
+// PUT /api/messages/mark-all-read
+router.put('/mark-all-read', requireAuth, async (req, res, next) => {
+  try {
+    await supabaseAdmin
+      .from('messages')
+      .update({ is_read: true })
+      .eq('receiver_id', req.user.id)
+      .eq('is_read', false);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 // PUT /api/messages/:id/read
 router.put('/:id/read', requireAuth, async (req, res, next) => {
   try {

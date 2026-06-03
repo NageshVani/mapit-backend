@@ -137,18 +137,31 @@ router.post('/send-otp', async (req, res, next) => {
 });
 
 // ── Get current user (session restore / validation) ──────────
-// GET /api/auth/me
+// GET /api/auth/me?invite_code=MAPIT-X-01 (optional fallback)
 router.get('/me', requireAuth, async (req, res, next) => {
   try {
     const [{ data: profile }, { data: invite }] = await Promise.all([
       supabaseAdmin.from('profiles').select('*').eq('id', req.user.id).maybeSingle(),
       supabaseAdmin.from('invite_codes').select('code, created_for').eq('used_by', req.user.id).maybeSingle(),
     ]);
+
+    // Fallback: if used_by link missing (user registered before that field was set),
+    // look up by the invite code the client stored locally
+    let resolvedInvite = invite;
+    if (!resolvedInvite && req.query.invite_code) {
+      const { data: byCode } = await supabaseAdmin
+        .from('invite_codes')
+        .select('code, created_for')
+        .eq('code', req.query.invite_code.toUpperCase())
+        .maybeSingle();
+      resolvedInvite = byCode || null;
+    }
+
     res.json({
       user:        req.user,
       profile:     profile || null,
-      created_for: invite?.created_for || null,
-      invite_code: invite?.code || null,
+      created_for: resolvedInvite?.created_for || null,
+      invite_code: resolvedInvite?.code || null,
     });
   } catch (err) {
     next(err);

@@ -47,8 +47,8 @@ const allowedOrigins = [
   process.env.APP_URL || 'http://localhost:3000',
   'http://127.0.0.1:5500',
   'http://localhost:5500',
-  'https://maopit.co.in',
-  'https://www.maopit.co.in',
+  'https://mapit.co.in',
+  'https://www.mapit.co.in',
 ];
 app.use(cors({
   origin: (origin, cb) => {
@@ -107,11 +107,13 @@ app.use((req, res) => {
 // ── Error handler ────────────────────────────────────────────
 app.use(errorHandler);
 
-// ── Start server ─────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🗺  MapIt backend running on http://localhost:${PORT}`);
-  console.log(`📋  Health check: http://localhost:${PORT}/health`);
-  console.log(`🌍  Environment: ${process.env.NODE_ENV || 'development'}\n`);
-});
+// ── Start server (local dev only — Vercel uses module.exports) ─
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\nMapIt backend running on http://localhost:${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}\n`);
+  });
+}
 
 module.exports = app;

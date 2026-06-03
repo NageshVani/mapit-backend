@@ -38,20 +38,23 @@ router.get('/feedback/all', requireAuth, async (req, res, next) => {
 
     if (error) return next(createError(error.message));
 
-    // Fetch profiles for all unique submitters
+    // Fetch profiles and invite-code names for all unique submitters
     const userIds = [...new Set((feedbacks || []).map(f => f.user_id).filter(Boolean))];
     let profilesMap = {};
+    let inviteNameMap = {};
     if (userIds.length > 0) {
-      const { data: profiles } = await supabaseAdmin
-        .from('profiles')
-        .select('id, full_name, avatar_color')
-        .in('id', userIds);
+      const [{ data: profiles }, { data: inviteCodes }] = await Promise.all([
+        supabaseAdmin.from('profiles').select('id, full_name, avatar_color').in('id', userIds),
+        supabaseAdmin.from('invite_codes').select('used_by, created_for').in('used_by', userIds),
+      ]);
       (profiles || []).forEach(p => { profilesMap[p.id] = p; });
+      (inviteCodes || []).forEach(ic => { if (ic.used_by) inviteNameMap[ic.used_by] = ic.created_for; });
     }
 
     const enriched = (feedbacks || []).map(f => ({
       ...f,
       profile: profilesMap[f.user_id] || null,
+      created_for: inviteNameMap[f.user_id] || null,
     }));
 
     res.json({ feedbacks: enriched });
