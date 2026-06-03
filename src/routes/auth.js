@@ -114,14 +114,24 @@ router.post('/send-otp', async (req, res, next) => {
       return res.status(400).json({ error: 'Invite code has expired', valid: false });
     }
 
-    // emailRedirectTo: null strips the magic-link redirect URL so Supabase
-    // delivers a 6-digit code instead (requires "Enable OTP" in Supabase
-    // dashboard → Authentication → Providers → Email).
-    // There is no client-side `type` param to switch email→OTP vs magic link;
-    // that toggle lives solely in the Supabase project settings.
+    // For new email accounts, signInWithOtp with shouldCreateUser:true fires TWO
+    // emails — a "Confirm signup" email AND the OTP. To send only the OTP:
+    // 1. Pre-create the user via admin API with email_confirm:true (silent, no email).
+    // 2. Then signInWithOtp with shouldCreateUser:false → only the OTP email is sent.
+    // If the user already exists the admin createUser call returns an error we ignore.
+    if (email) {
+      const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+      });
+      if (createErr && !createErr.message.toLowerCase().includes('already')) {
+        console.warn('[auth.js] admin.createUser warning:', createErr.message);
+      }
+    }
+
     const otpPayload = phone
       ? { phone, options: { shouldCreateUser: true } }
-      : { email, options: { shouldCreateUser: true, emailRedirectTo: null } };
+      : { email, options: { shouldCreateUser: false, emailRedirectTo: null } };
 
     const { error } = await supabase.auth.signInWithOtp(otpPayload);
 
