@@ -672,10 +672,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 // ═══════════════════════════════════════════════
-// CONFIG — change API_URL when deployed to Vercel
+// API_URL auto-detects environment — no manual changes needed
 // ═══════════════════════════════════════════════
-// const API_URL = 'http://localhost:3001';   // ← local testing
-const API_URL = 'https://api.mapit.co.in';
+const API_URL = (() => {
+  const h = window.location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3001';
+  if (h === 'www.mapit.co.in' || h === 'mapit.co.in') return 'https://api.mapit.co.in';
+  return ''; // UAT / Vercel preview → same-origin API
+})();
 
 // ═══════════════════════════════════════════════
 // CATEGORY DEFINITIONS
