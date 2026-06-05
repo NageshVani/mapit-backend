@@ -19,6 +19,16 @@ const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
+// Haversine distance in metres between two lat/lng points
+function haversineM(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 // Valid categories and statuses
 const VALID_CATEGORIES = ['re', 'veh', 'hh', 'furn', 'electronics']; // furn kept for legacy data
 const VALID_STATUSES   = ['active', 'sold', 'expired'];
@@ -70,15 +80,22 @@ router.get('/', requireAuth, async (req, res, next) => {
     let listings;
 
     if (lat && lng) {
-      // Use PostGIS proximity search
-      const { data, error } = await supabaseAdmin.rpc('listings_within_radius', {
-        user_lat:  parseFloat(lat),
-        user_lng:  parseFloat(lng),
-        radius_m:  parseInt(radius) >= 999000 ? 999000 : parseInt(radius),
-      });
+      // Fetch all active listings and filter by radius in JS.
+      // (Avoids relying on the listings_within_radius RPC which may not return
+      // all columns like subcategory, causing wrong category icons on the frontend.)
+      const { data, error } = await supabaseAdmin
+        .from('listings')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
 
       if (error) return next(createError(error.message));
-      listings = data || [];
+      const rM = Math.min(parseInt(radius), 999000);
+      const uLat = parseFloat(lat), uLng = parseFloat(lng);
+      listings = (data || [])
+        .map(l => ({ ...l, distance_m: haversineM(uLat, uLng, l.lat, l.lng) }))
+        .filter(l => l.distance_m <= rM)
+        .sort((a, b) => a.distance_m - b.distance_m);
     } else {
       // No location — return all active listings
       const { data, error } = await supabaseAdmin

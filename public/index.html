@@ -105,7 +105,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-info-thumb{width:64px;height:64px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;overflow:hidden;border:1px solid var(--border2);}
 .ld-info-mid{flex:1;min-width:0;}
 .ld-info-ttl{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;margin-bottom:3px;}
-.ld-info-price{font-size:20px;font-weight:800;color:var(--orange);font-family:'Playfair Display',serif;line-height:1;letter-spacing:.3px;}
+.ld-info-price{font-size:20px;font-weight:700;color:var(--orange);font-family:'JetBrains Mono',monospace;line-height:1;letter-spacing:-.3px;}
 .ld-info-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .ld-photo-strip{display:flex;align-items:center;gap:6px;padding-top:8px;border-top:1px solid var(--border2);}
 .ld-photo-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;margin-right:2px;}
@@ -334,7 +334,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .lr-ico img{width:100%;height:100%;object-fit:cover;}
 .lr-info{flex:1;min-width:0;}
 .lr-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
-.lr-price{font-size:13px;font-weight:800;color:var(--orange);font-family:'Playfair Display',serif;letter-spacing:.2px;}
+.lr-price{font-size:13px;font-weight:700;color:var(--orange);font-family:'JetBrains Mono',monospace;letter-spacing:-.2px;}
 .lr-meta{font-size:10px;color:var(--muted);}
 
 /* ── FEEDBACK ── */
@@ -1538,7 +1538,7 @@ function renderSidebar(){
 // ═══════════════════════════════════════════════
 // LISTING SELECTION
 // ═══════════════════════════════════════════════
-function selListing(id){
+async function selListing(id){
   ST.selId=id; ST.chatOpen=false; ST.chatMsgs=[]; ST.chatIdx=0;
   ST.tab='browse';
   document.getElementById('tab-browse').classList.add('on');
@@ -1547,7 +1547,16 @@ function selListing(id){
   if(l) map.panTo([l.lat,l.lng],{animate:true,duration:.5});
   Object.keys(mMarkers).forEach(k=>mMarkers[k].setIcon(mkIcon(ST.listings.find(x=>x.id===k)||{id:k,category:'all',price:0,price_label:''},k===id)));
   renderSidebar();
-  // Increment view count
+  // Fetch full detail (includes photos[] array) then re-render
+  try {
+    const data = await apiGet(`/api/listings/${id}`);
+    if(data.listing){
+      const idx = ST.listings.findIndex(x=>x.id===id);
+      if(idx>=0) ST.listings[idx] = {...ST.listings[idx], ...data.listing};
+      else ST.listings.unshift(data.listing);
+      if(ST.selId===id) renderSidebar();
+    }
+  } catch(_){}
   apiPost(`/api/listings/${id}/view`,{}).catch(()=>{});
 }
 
