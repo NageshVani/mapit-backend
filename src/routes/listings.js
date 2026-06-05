@@ -20,7 +20,7 @@ const { createError } = require('../middleware/errorHandler');
 const router = express.Router();
 
 // Valid categories and statuses
-const VALID_CATEGORIES = ['re', 'veh', 'furn', 'electronics'];
+const VALID_CATEGORIES = ['re', 'veh', 'hh', 'furn', 'electronics']; // furn kept for legacy data
 const VALID_STATUSES   = ['active', 'sold', 'expired'];
 
 // ── GET pending listings (admin review) ──────────────────────
@@ -241,24 +241,24 @@ router.get('/:id', requireAuth, async (req, res, next) => {
 // ── POST create listing ───────────────────────────────────────
 // POST /api/listings
 // Body: { category, subcategory, title, description, price, price_label,
-//         condition, lat, lng, address, specs }
+//         lat, lng, address, specs, details }
 router.post('/', requireAuth, async (req, res, next) => {
   try {
     const {
       category, subcategory, title, description,
-      price, price_label, condition,
-      lat, lng, address, specs,
+      price, price_label,
+      lat, lng, address, specs, details,
     } = req.body;
 
     // Validation
-    if (!category || !subcategory || !title || !price || !lat || !lng) {
-      return next(createError('category, subcategory, title, price, lat and lng are required.'));
+    if (!category || !subcategory || !title || !lat || !lng) {
+      return next(createError('category, subcategory, title, lat and lng are required.'));
     }
     if (!VALID_CATEGORIES.includes(category)) {
       return next(createError(`Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`));
     }
     if (title.length > 80) return next(createError('Title must be 80 characters or less.'));
-    if (parseFloat(price) < 0) return next(createError('Price cannot be negative.'));
+    if (price && parseFloat(price) < 0) return next(createError('Price cannot be negative.'));
 
     const { data: listing, error } = await supabaseAdmin
       .from('listings')
@@ -268,13 +268,13 @@ router.post('/', requireAuth, async (req, res, next) => {
         subcategory,
         title:       title.trim(),
         description: description?.trim() || null,
-        price:       parseFloat(price),
+        price:       parseFloat(price) || 0,
         price_label: price_label?.trim() || null,
-        condition:   condition || 'Used',
         lat:         parseFloat(lat),
         lng:         parseFloat(lng),
         address:     address?.trim() || null,
         specs:       specs || [],
+        details:     details || {},
         status:      'pending', // goes to verification queue
       })
       .select()

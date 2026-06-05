@@ -17,10 +17,11 @@
   --sb-w:380px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background:var(--ink);color:var(--text);font-size:14px;}
-::-webkit-scrollbar{width:3px;height:3px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--card2);border-radius:3px;}
+html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background:var(--ink);color:var(--text);font-size:15px;}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-track{background:var(--card);}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.28);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.45);}
 
 /* ── HEADER ── */
 #hdr{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
@@ -95,10 +96,15 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ── LISTING DETAIL ── */
-.ld-img{height:90px;position:relative;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:40px;}
+.ld-img{height:110px;position:relative;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:40px;}
 .ld-img img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;}
-.ld-img-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);padding:10px 13px 9px;}
-.ld-dist{font-size:11px;font-weight:700;color:#fff;}
+.ld-img-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.75),transparent);padding:8px 13px 8px;}
+.ld-dist{font-size:14px;font-weight:800;color:#fff;letter-spacing:.2px;text-shadow:0 1px 4px rgba(0,0,0,.6);}
+.ld-dist-badge{display:flex;align-items:center;gap:6px;background:rgba(240,96,48,.15);color:var(--orange);border:1.5px solid rgba(240,96,48,.35);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:800;margin:10px 13px 0;align-self:flex-start;}
+.ld-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.ld-spec-item{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;}
+.ld-spec-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
+.ld-spec-val{font-size:13px;font-weight:700;color:var(--text);}
 .ld-loc{font-size:10px;color:rgba(255,255,255,.6);}
 .ld-body{padding:12px 13px;display:flex;flex-direction:column;gap:10px;}
 .ld-ttl{font-size:16px;font-weight:700;line-height:1.25;}
@@ -247,8 +253,13 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .post-close:hover{background:var(--card2);color:var(--text);}
 .post-body{padding:20px 24px;}
 .form-group{margin-bottom:16px;}
-.form-label{display:block;font-size:11px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
-.form-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
+.form-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
+.tx-radio-row{display:flex;gap:20px;padding:10px 13px;background:var(--card);border:1px solid var(--border2);border-radius:8px;}
+.tx-radio-lbl{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;}
+.tx-radio-lbl input[type=radio]{accent-color:var(--orange);width:16px;height:16px;cursor:pointer;}
+.dyn-section-hd{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:8px 0 4px;border-top:1px solid var(--border);margin:4px 0 12px;}
+.dist-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(240,96,48,.1);color:var(--orange);border:1.5px solid rgba(240,96,48,.3);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:700;margin:10px 13px 0;}
 .form-input:focus{border-color:var(--orange);}
 .form-input::placeholder{color:var(--muted);}
 .form-textarea{resize:vertical;min-height:80px;max-height:160px;}
@@ -260,6 +271,22 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .post-submit{width:100%;background:var(--orange);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;margin-top:4px;}
 .post-submit:hover{background:var(--orange2);}
 .post-submit:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── PHOTO GALLERY VIEWER ── */
+.pg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.pg-overlay.hide{display:none;}
+.pg-close{position:absolute;top:16px;right:20px;font-size:26px;color:#fff;cursor:pointer;opacity:.8;line-height:1;}
+.pg-close:hover{opacity:1;}
+.pg-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:48px 60px 16px;max-height:80vh;}
+.pg-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+.pg-nav{position:absolute;top:50%;transform:translateY(-50%);font-size:36px;color:#fff;cursor:pointer;opacity:.7;user-select:none;padding:10px 16px;}
+.pg-nav:hover{opacity:1;}
+.pg-prev{left:8px;}
+.pg-next{right:8px;}
+.pg-dots{display:flex;gap:8px;padding:10px 0 20px;}
+.pg-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;transition:background .15s;}
+.pg-dot.active{background:#fff;}
+.pg-counter{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:13px;color:rgba(255,255,255,.7);font-family:'Outfit',sans-serif;}
 
 /* ── PINS MODAL ── */
 .pins-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
@@ -401,7 +428,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="splash hide" id="splashScreen">
   <div class="splash-logo">Map<em>It</em></div>
   <div class="splash-msg" id="splashMsg">Loading your map…</div>
-  <button class="splash-btn hide" id="splashBtn" onclick="closeSplash()">📍 Set My Location →</button>
 </div>
 
 <!-- ── FEEDBACK VIEWER MODAL ── -->
@@ -431,7 +457,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="modal-overlay" id="authModal">
   <div class="modal-box">
     <div class="modal-logo">Map<em>It</em></div>
-    <div class="modal-sub">Family prototype · Bangalore</div>
+    <div class="modal-sub">Prototype · Bangalore</div>
 
     <!-- Step 1: Invite code -->
     <div class="modal-step active" id="step-invite">
@@ -491,56 +517,56 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="post-close" onclick="closePostModal()">✕</div>
     </div>
     <div class="post-body">
+      <!-- 1. Location (FIRST) -->
+      <div class="form-group">
+        <label class="form-label">📍 Listing Location</label>
+        <select class="form-input form-select" id="postLocation"></select>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+          Don't see your area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add a GPS location first →</span>
+        </div>
+      </div>
+      <!-- 2. Category + Subcategory -->
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:0">
           <label class="form-label">Category</label>
           <select class="form-input form-select" id="postCat" onchange="updatePostSubcats()">
             <option value="re">🏠 Real Estate</option>
             <option value="veh">🚗 Vehicles</option>
-            <option value="furn">🛋️ Furniture</option>
+            <option value="hh">🏡 Household Items</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:0">
           <label class="form-label">Subcategory</label>
-          <select class="form-input form-select" id="postSubcat"></select>
+          <select class="form-input form-select" id="postSubcat" onchange="renderDynamicFields()"></select>
         </div>
       </div>
+      <!-- 3. Sell/Rent (Real Estate only) -->
+      <div class="form-group" id="txTypeGroup" style="display:none;margin-top:14px;">
+        <label class="form-label">Transaction Type</label>
+        <div class="tx-radio-row">
+          <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell" checked> Sell</label>
+          <label class="tx-radio-lbl"><input type="radio" name="txType" value="Rent"> Rent</label>
+        </div>
+      </div>
+      <!-- 4. Dynamic category-specific fields -->
+      <div id="dynamicFields" style="margin-top:14px;"></div>
+      <!-- 5. Title -->
       <div class="form-group">
         <label class="form-label">Title <span style="color:var(--muted);font-weight:400;">(max 80 chars)</span></label>
         <input class="form-input" id="postTitle" placeholder="e.g. Honda City ZX 2021 – Single Owner" maxlength="80"/>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Price (₹)</label>
-          <input class="form-input" id="postPrice" type="number" placeholder="850000" min="0"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Condition</label>
-          <select class="form-input form-select" id="postCondition">
-            <option value="New">New</option>
-            <option value="Like New">Like New</option>
-            <option value="Good" selected>Good</option>
-            <option value="Fair">Fair</option>
-          </select>
-        </div>
-      </div>
+      <!-- 6. Description -->
       <div class="form-group">
         <label class="form-label">Description <span style="color:var(--muted);font-weight:400;">(max 1000 chars)</span></label>
-        <textarea class="form-input form-textarea" id="postDesc" placeholder="Describe your item — condition, age, reason for selling, what's included…" maxlength="1000"></textarea>
+        <textarea class="form-input form-textarea" id="postDesc" placeholder="Any additional details about your listing…" maxlength="1000"></textarea>
       </div>
-      <div class="form-group">
-        <label class="form-label">📍 Listing Location</label>
-        <select class="form-input form-select" id="postLocation"></select>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;">
-          Don't see your area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add a GPS location first →</span>
-        </div>
-      </div>
+      <!-- 7. Photos -->
       <div class="form-group">
         <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5)</span></label>
         <input type="file" class="form-input" id="postPhotos" accept="image/*" multiple style="padding:8px;cursor:pointer;"/>
       </div>
       <button class="post-submit" id="postSubmitBtn" onclick="submitListing()">Submit for Review 🚀</button>
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;">Your listing will be reviewed and go live within 4 hours.</div>
+      <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;">Your listing will be reviewed and go live within 4 hours.</div>
     </div>
   </div>
 </div>
@@ -554,19 +580,29 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </div>
     <div id="pinsList"></div>
     <div class="add-pin-form">
-      <div style="font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Add New Location</div>
-      <input class="form-input" id="newPinLabel" placeholder='Label, e.g. "Office" or "Sister\'s Home"' maxlength="40"/>
-      <div class="add-pin-row">
-        <button class="pin-action-btn primary" onclick="addCurrentLocationPin()" style="padding:9px 14px;font-size:12px;">📍 Use Current Location</button>
-        <button class="pin-action-btn" onclick="closePinsModal()" style="padding:9px 14px;font-size:12px;">Done</button>
+      <div style="font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Add New Location</div>
+      <input class="form-input" id="newPinLabel" placeholder='Label, e.g. "Office" or "Sister\'s Home"' maxlength="40" style="margin-bottom:12px;"/>
+      <label class="form-label">How to capture location</label>
+      <div class="tx-radio-row" style="margin-bottom:12px;">
+        <label class="tx-radio-lbl"><input type="radio" name="locMethod" value="current" checked onchange="toggleLocMethod()"> Use My Current Location</label>
+        <label class="tx-radio-lbl"><input type="radio" name="locMethod" value="manual" onchange="toggleLocMethod()"> Enter GPS Coordinates</label>
       </div>
-      <div class="add-pin-divider">— or paste GPS coordinates from Google Maps —</div>
-      <div class="add-pin-gps">
-        <input class="form-input" id="gpsCoords" placeholder='e.g. 12.9352, 77.6245' style="padding:8px 10px;font-size:12px;"/>
-        <button class="pin-action-btn primary" onclick="addGpsLocationPin()" style="padding:8px 14px;font-size:12px;white-space:nowrap;">📌 Add</button>
+      <div id="manualCoordsGroup" style="display:none;margin-bottom:12px;">
+        <input class="form-input" id="gpsCoords" placeholder='e.g. 12.9352, 77.6245'/>
       </div>
+      <button class="pin-action-btn primary" onclick="saveNewLocation()" style="width:100%;padding:11px;font-size:13px;font-weight:700;">📍 Save Location</button>
     </div>
   </div>
+</div>
+
+<!-- ── PHOTO GALLERY VIEWER ── -->
+<div class="pg-overlay hide" id="pgOverlay" onclick="pgBgClick(event)">
+  <div class="pg-counter" id="pgCounter"></div>
+  <div class="pg-close" onclick="closePhotoGallery()">✕</div>
+  <div class="pg-img-wrap"><img id="pgImg" src="" alt="Photo"/></div>
+  <div class="pg-nav pg-prev" onclick="pgNav(-1)">‹</div>
+  <div class="pg-nav pg-next" onclick="pgNav(1)">›</div>
+  <div class="pg-dots" id="pgDots"></div>
 </div>
 
 <!-- ── HEADER ── -->
@@ -685,21 +721,126 @@ const API_URL = (() => {
 // CATEGORY DEFINITIONS
 // ═══════════════════════════════════════════════
 const CATS = [
-  { id:'all',  lbl:'All',         ico:'🗺️', col:'#F06030', subs:[] },
-  { id:'re',   lbl:'Real Estate', ico:'🏠',  col:'#F06030', subs:['All Types','Buy','Rent','Site / Plot'] },
-  { id:'veh',  lbl:'Vehicles',    ico:'🚗',  col:'#3B82F6', subs:['All Types','Cars','2-Wheelers','Electric'] },
-  { id:'furn', lbl:'Furniture',   ico:'🛋️', col:'#22C55E', subs:['All Types','Sofas','Beds','Dining','Storage'] },
+  { id:'all', lbl:'All',             ico:'🗺️', col:'#F06030', subs:[] },
+  { id:'re',  lbl:'Real Estate',     ico:'🏠',  col:'#F06030', subs:['All Types','Plots','Individual House','Builder Flat','Apartment','Commercial Building'] },
+  { id:'veh', lbl:'Vehicles',        ico:'🚗',  col:'#3B82F6', subs:['All Types','Cars','2 Wheelers','Cycles','Trucks & Commercial'] },
+  { id:'hh',  lbl:'Household Items', ico:'🏡',  col:'#22C55E', subs:['All Types','Electronic Appliances','Furniture','Home Decor'] },
 ];
 const SUBCAT_MAP = {
-  re:   ['Buy','Rent','Site / Plot'],
-  veh:  ['Cars','2-Wheelers','Electric'],
-  furn: ['Sofas','Beds','Dining','Storage'],
+  re:  ['Plots','Individual House','Builder Flat','Apartment','Commercial Building'],
+  veh: ['Cars','2 Wheelers','Cycles','Trucks & Commercial'],
+  hh:  ['Electronic Appliances','Furniture','Home Decor'],
 };
-const CAT_EMOJI = { re:'🏠', veh:'🚗', furn:'🛋️' };
+const CAT_EMOJI = { re:'🏠', veh:'🚗', hh:'🏡' };
 const SUBCAT_EMOJI = {
-  'Buy':'🏠','Rent':'🏘','Site / Plot':'🏗',
-  'Cars':'🚗','2-Wheelers':'🛵','Electric':'⚡',
-  'Sofas':'🛋️','Beds':'🛏','Dining':'🍽️','Storage':'🗄️',
+  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬',
+  'Cars':'🚗','2 Wheelers':'🛵','Cycles':'🚲','Trucks & Commercial':'🚛',
+  'Electronic Appliances':'📺','Furniture':'🛋️','Home Decor':'🎨',
+};
+
+// ── CATEGORY-SPECIFIC LISTING FIELDS ──
+// starred:true fields appear in map hover card
+const LISTING_FIELDS = {
+  re: {
+    'Plots':               [
+      { id:'area',        label:'Area (sq ft)',              type:'number', starred:true  },
+      { id:'facing',      label:'Facing',                    type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'], starred:true },
+      { id:'plot_type',   label:'Intermediate or Corner',    type:'select', options:['Intermediate','Corner'] },
+      { id:'road_width',  label:'Road Width (ft)',            type:'number' },
+      { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
+    ],
+    'Individual House':    [
+      { id:'plot_area',   label:'Plot Area (sq ft)',          type:'number', starred:true  },
+      { id:'built_area',  label:'Constructed Area (sq ft)',   type:'number' },
+      { id:'facing',      label:'Facing',                    type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'], starred:true },
+      { id:'plot_type',   label:'Intermediate or Corner',    type:'select', options:['Intermediate','Corner'] },
+      { id:'road_width',  label:'Road Width (ft)',            type:'number' },
+      { id:'floors',      label:'No. of Floors',              type:'number' },
+      { id:'bhk',         label:'BHK',                       type:'select', options:['1 BHK','2 BHK','3 BHK','4 BHK','4+ BHK'], starred:true },
+      { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
+      { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
+    ],
+    'Builder Flat':        [
+      { id:'carpet_area', label:'Carpet Area (sq ft)',        type:'number', starred:true  },
+      { id:'facing',      label:'Facing',                    type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'], starred:true },
+      { id:'floor_no',    label:'Floor Number',               type:'number' },
+      { id:'total_floors',label:'Total No. of Floors',        type:'number' },
+      { id:'bhk',         label:'BHK',                       type:'select', options:['1 BHK','2 BHK','3 BHK','4 BHK','4+ BHK'], starred:true },
+      { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
+      { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
+    ],
+    'Apartment':           [
+      { id:'carpet_area', label:'Carpet Area (sq ft)',        type:'number', starred:true  },
+      { id:'facing',      label:'Facing',                    type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'], starred:true },
+      { id:'floor_no',    label:'Floor Number',               type:'number' },
+      { id:'total_floors',label:'Total No. of Floors',        type:'number' },
+      { id:'bhk',         label:'BHK',                       type:'select', options:['1 BHK','2 BHK','3 BHK','4 BHK','4+ BHK'], starred:true },
+      { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
+      { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
+    ],
+    'Commercial Building': [
+      { id:'plot_area',   label:'Plot Area (sq ft)',          type:'number', starred:true  },
+      { id:'built_area',  label:'Constructed Area (sq ft)',   type:'number', starred:true  },
+      { id:'facing',      label:'Facing',                    type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'], starred:true },
+      { id:'plot_type',   label:'Intermediate or Corner',    type:'select', options:['Intermediate','Corner'] },
+      { id:'road_width',  label:'Road Width (ft)',            type:'number' },
+      { id:'floors',      label:'No. of Floors',              type:'number' },
+      { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
+      { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
+    ],
+  },
+  veh: {
+    'Cars':               [
+      { id:'brand',       label:'Brand',                     type:'text',   starred:true  },
+      { id:'model',       label:'Model',                     type:'text',   starred:true  },
+      { id:'year',        label:'Year',                      type:'number', starred:true  },
+      { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
+      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true  },
+      { id:'fuel',        label:'Fuel Type / Electric?',     type:'select', options:['Petrol','Diesel','CNG','Electric','Hybrid'], starred:true },
+      { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
+    ],
+    '2 Wheelers':         [
+      { id:'brand',       label:'Brand',                     type:'text',   starred:true  },
+      { id:'model',       label:'Model',                     type:'text',   starred:true  },
+      { id:'year',        label:'Year',                      type:'number', starred:true  },
+      { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
+      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true  },
+      { id:'fuel',        label:'Fuel / Electric?',          type:'select', options:['Petrol','Electric'], starred:true },
+      { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
+    ],
+    'Cycles':             [
+      { id:'brand',       label:'Brand',                     type:'text',   starred:true  },
+      { id:'model',       label:'Model',                     type:'text',   starred:true  },
+      { id:'year',        label:'Year',                      type:'number' },
+      { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
+    ],
+    'Trucks & Commercial':[
+      { id:'brand',       label:'Brand',                     type:'text',   starred:true  },
+      { id:'model',       label:'Model',                     type:'text',   starred:true  },
+      { id:'year',        label:'Year',                      type:'number', starred:true  },
+      { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
+      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true  },
+      { id:'fuel',        label:'Fuel Type / Electric?',     type:'select', options:['Diesel','Petrol','CNG','Electric'], starred:true },
+      { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
+    ],
+  },
+  hh: {
+    'Electronic Appliances':[
+      { id:'item',        label:'Item',                      type:'text',   starred:true  },
+      { id:'age',         label:'Age (years)',                type:'number', starred:true  },
+      { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
+    ],
+    'Furniture':          [
+      { id:'item',        label:'Item',                      type:'text',   starred:true  },
+      { id:'age',         label:'Age (years)',                type:'number', starred:true  },
+      { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
+    ],
+    'Home Decor':         [
+      { id:'item',        label:'Item',                      type:'text',   starred:true  },
+      { id:'age',         label:'Age (years)',                type:'number', starred:true  },
+      { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
+    ],
+  },
 };
 function listingEmoji(l){ return SUBCAT_EMOJI[l.subcategory||l.sub] || CAT_EMOJI[l.category||l.cat] || '📦'; }
 
@@ -1056,13 +1197,18 @@ function showHoverCard(l){
   if(left+250>mw) left = pt.x-255;
   if(top<8) top = pt.y+18;
   hc.style.left = left+'px'; hc.style.top = top+'px';
+  const details = l.details || {};
+  const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
+  const starredHtml = subFields.filter(f=>f.starred && details[f.id] != null && details[f.id] !== '')
+    .map(f=>`<div class="hc-row"><span style="color:var(--muted2)">${f.label}</span><b>${details[f.id]}</b></div>`)
+    .join('');
   document.getElementById('hcInner').innerHTML = `
     <div class="hc-cat" style="color:${col}">${catLbl(l.category||l.cat)} · ${l.subcategory||l.sub}</div>
     <div class="hc-title">${l.title}</div>
     <div class="hc-price">${l.price_label || fmtPrice(l.price)}</div>
-    <div class="hc-row">
+    ${starredHtml}
+    <div class="hc-row" style="margin-top:4px">
       <span class="hc-dist">📍 ${fmtD(d)}</span>
-      <span>${l.address||l.loc||''}</span>
     </div>
     <div class="hc-tip">Click pin to view full details →</div>`;
   hc.classList.add('show');
@@ -1296,19 +1442,30 @@ function renderSidebar(){
     </div>
     <div class="ld-img" style="background:linear-gradient(135deg,var(--card),var(--card2))">
       ${l.photos&&l.photos[0]
-        ? `<img src="${l.photos[0].public_url||l.cover_photo}" alt="${l.title}"/>`
+        ? `<img src="${l.photos[0].public_url||l.cover_photo}" alt="${l.title}" style="cursor:pointer;" onclick="openPhotoGallery(${JSON.stringify((l.photos||[]).map(p=>p.public_url||p.url)).replace(/"/g,'&quot;')},0)"/>`
         : `<span>${listingEmoji(l)}</span>`}
       <div class="ld-img-overlay">
         <div class="ld-dist">📍 ${fmtD(d)} from your location</div>
         <div class="ld-loc">${l.address||''}</div>
       </div>
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 13px;">
+      <div class="ld-dist-badge">📍 <span style="font-size:15px;font-weight:800;">${fmtD(d)}</span> <span style="font-weight:500;font-size:12px;">from your location</span></div>
+      ${l.photos&&l.photos.length>1?`<span style="font-size:12px;color:var(--orange);font-weight:700;cursor:pointer;" onclick="openPhotoGallery(${JSON.stringify(l.photos.map(p=>p.public_url||p.url)).replace(/"/g,'&quot;')},0)">📷 ${l.photos.length} photos →</span>`:''}
+    </div>
     <div class="ld-body">
       <div>
         <div class="ld-ttl">${l.title}</div>
         <div class="ld-price">${l.price_label||fmtPrice(l.price)}</div>
       </div>
-      ${l.specs&&l.specs.length ? `<div class="ld-specs">${l.specs.map(s=>`<div class="ld-spec">${s.v||s}</div>`).join('')}</div>` : ''}
+      ${(()=>{
+        const det = l.details || {};
+        const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
+        const items = subFields.filter(f=>det[f.id]!=null && det[f.id]!=='');
+        if(!items.length) return '';
+        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${det[f.id]}</div></div>`).join('')}</div>`;
+      })()}
+      ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${l.details.transaction_type}</div></div>` : '')}
       ${l.description ? `<div class="ld-desc">${l.description}</div>` : ''}
       ${seller.id ? `
       <div class="seller-card">
@@ -1475,7 +1632,7 @@ let postPickerLng = activeLoc().lng;
 
 function openPostModal(){
   document.getElementById('postModal').classList.remove('hide');
-  updatePostSubcats();
+  updatePostSubcats(); // also triggers renderDynamicFields
   // Populate location dropdown from saved pins
   const sel = document.getElementById('postLocation');
   sel.innerHTML = '';
@@ -1502,32 +1659,75 @@ function updatePostSubcats(){
   const cat = document.getElementById('postCat').value;
   const subcats = SUBCAT_MAP[cat]||[];
   document.getElementById('postSubcat').innerHTML = subcats.map(s=>`<option value="${s}">${s}</option>`).join('');
+  renderDynamicFields();
+}
+
+function renderDynamicFields(){
+  const cat = document.getElementById('postCat').value;
+  const sub = document.getElementById('postSubcat').value;
+  const container = document.getElementById('dynamicFields');
+  // Show/hide Sell/Rent for Real Estate only
+  document.getElementById('txTypeGroup').style.display = cat === 're' ? '' : 'none';
+  const fields = (LISTING_FIELDS[cat]||{})[sub] || [];
+  if(!fields.length){ container.innerHTML = ''; return; }
+  container.innerHTML =
+    `<div class="dyn-section-hd">${sub} Details</div>` +
+    fields.map(f => {
+      const inp = f.type === 'select'
+        ? `<select class="form-input form-select" id="pf_${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
+        : `<input class="form-input" id="pf_${f.id}" type="${f.type === 'number' ? 'number' : 'text'}" min="${f.type==='number'?'0':''}"/>`;
+      return `<div class="form-group"><label class="form-label">${f.label}</label>${inp}</div>`;
+    }).join('');
+}
+
+function toggleLocMethod(){
+  const manual = document.querySelector('input[name="locMethod"]:checked')?.value === 'manual';
+  document.getElementById('manualCoordsGroup').style.display = manual ? '' : 'none';
+}
+
+function saveNewLocation(){
+  const method = document.querySelector('input[name="locMethod"]:checked')?.value || 'current';
+  if(method === 'manual') addGpsLocationPin();
+  else addCurrentLocationPin();
 }
 
 async function submitListing(){
   const btn = document.getElementById('postSubmitBtn');
   const title = document.getElementById('postTitle').value.trim();
-  const price = parseFloat(document.getElementById('postPrice').value);
   const category = document.getElementById('postCat').value;
   const subcategory = document.getElementById('postSubcat').value;
   const description = document.getElementById('postDesc').value.trim();
-  const condition = document.getElementById('postCondition').value;
-
   const locRaw = document.getElementById('postLocation').value;
+
+  // Collect dynamic category-specific fields
+  const fields = (LISTING_FIELDS[category]||{})[subcategory] || [];
+  const details = {};
+  for(const f of fields){
+    const el = document.getElementById(`pf_${f.id}`);
+    if(el) details[f.id] = el.value;
+  }
+  // Real Estate transaction type
+  if(category === 're'){
+    details.transaction_type = document.querySelector('input[name="txType"]:checked')?.value || 'Sell';
+  }
+  // Extract price from total_price field; fall back to 0 for categories without it
+  const price = parseFloat(details.total_price) || 0;
+
   if(!title){ toast('Please enter a title.'); return; }
-  if(!price||price<0){ toast('Please enter a valid price.'); return; }
   if(!locRaw){ toast('Please select a location, or add one via My Locations.'); return; }
+  if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
   const locObj = JSON.parse(locRaw);
 
   btn.disabled=true; btn.textContent='Submitting…';
   try {
     const data = await apiPost('/api/listings',{
-      category,subcategory,title,description,price,
-      price_label: fmtPrice(price),
-      condition,
-      lat:locObj.lat, lng:locObj.lng,
-      address:`${locObj.label} · Bangalore`,
-      specs:[],
+      category, subcategory, title, description,
+      price: price || 0,
+      price_label: price ? fmtPrice(price) : '',
+      lat: locObj.lat, lng: locObj.lng,
+      address: `${locObj.label} · Bangalore`,
+      details,
+      specs: [],
     });
 
     // Upload photos if any
@@ -1547,7 +1747,8 @@ async function submitListing(){
     closePostModal();
     toast('🚀 Listing submitted! It will be reviewed and go live within 4 hours.');
     // Reset form
-    ['postTitle','postPrice','postDesc'].forEach(id=>document.getElementById(id).value='');
+    ['postTitle','postDesc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('dynamicFields').innerHTML = '';
   } catch(e){
     toast('Error: ' + e.message);
   } finally {
@@ -1711,6 +1912,31 @@ function toast(msg){
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// PHOTO GALLERY VIEWER
+// ═══════════════════════════════════════════════
+let _pgPhotos = [], _pgIdx = 0;
+function openPhotoGallery(photos, idx){
+  _pgPhotos = photos.filter(Boolean);
+  if(!_pgPhotos.length) return;
+  _pgIdx = idx || 0;
+  document.getElementById('pgOverlay').classList.remove('hide');
+  pgRender();
+}
+function pgRender(){
+  document.getElementById('pgImg').src = _pgPhotos[_pgIdx];
+  document.getElementById('pgCounter').textContent = `${_pgIdx+1} / ${_pgPhotos.length}`;
+  document.getElementById('pgDots').innerHTML = _pgPhotos.map((_,i)=>
+    `<div class="pg-dot${i===_pgIdx?' active':''}" onclick="pgGoto(${i})"></div>`).join('');
+}
+function pgNav(dir){
+  _pgIdx = (_pgIdx + dir + _pgPhotos.length) % _pgPhotos.length;
+  pgRender();
+}
+function pgGoto(i){ _pgIdx=i; pgRender(); }
+function pgBgClick(e){ if(e.target===e.currentTarget) closePhotoGallery(); }
+function closePhotoGallery(){ document.getElementById('pgOverlay').classList.add('hide'); }
+
 function closeSplash(){
   // Mark welcomed per-user so the onboarding splash doesn't repeat on future logins
   if(ST.user?.id) localStorage.setItem(`mapit_welcomed_${ST.user.id}`, 'yes');
@@ -1723,7 +1949,6 @@ async function initApp(){
   const splash = document.getElementById('splashScreen');
   splash.classList.remove('hide');
   document.getElementById('splashMsg').textContent = 'Loading your map…';
-  document.getElementById('splashBtn').classList.add('hide');
 
   // Profile name + avatar initial — prefer created_for from invite code
   const createdFor  = ST.createdFor || localStorage.getItem('mapit_created_for') || '';
@@ -1775,21 +2000,22 @@ async function initApp(){
   // Splash end logic — per-user flag so onboarding shows only at first-time registration
   const isFirstLogin = !localStorage.getItem(`mapit_welcomed_${ST.user?.id}`);
   if(isFirstLogin){
-    // First ever login — show onboarding guide, wait for user to click Ok
+    // First ever login — show onboarding, auto-dismiss after 5s; tap to dismiss early
     document.getElementById('splashMsg').innerHTML = `
       <b style="color:var(--text);font-size:15px;">Welcome to MapIt!</b>
       <ul>
-        <li>📍 Start by setting your GPS location — tap <b>My Locations</b> in the profile menu</li>
+        <li>📍 Set your GPS location via <b>My Locations</b> in the profile menu</li>
         <li>🗺 Listings near you appear as pins on the map — tap any pin to view details</li>
         <li>🔍 Filter by category and distance using the left sidebar</li>
-        <li>➕ Post your own listing via the <b>Post a Listing</b> toggle in the header</li>
+        <li>➕ Post your own listing via <b>Post a Listing</b> in the header</li>
         <li>💬 Chat with sellers directly from any listing</li>
         <li>❤ Save favourite listings with the heart icon</li>
-      </ul>`;
-    document.getElementById('splashBtn').textContent = 'Got it, let\'s go! →';
-    document.getElementById('splashBtn').classList.remove('hide');
+      </ul>
+      <div style="font-size:12px;color:var(--muted);margin-top:12px;">Tap anywhere to continue →</div>`;
+    splash.onclick = ()=>{ localStorage.setItem(`mapit_welcomed_${ST.user?.id}`,'1'); splash.classList.add('hide'); splash.onclick=null; };
+    setTimeout(()=>{ localStorage.setItem(`mapit_welcomed_${ST.user?.id}`,'1'); splash.classList.add('hide'); splash.onclick=null; }, 6000);
   } else {
-    // Returning user — auto-dismiss; set location available from My Locations in the profile menu
+    // Returning user — auto-dismiss
     setTimeout(()=>splash.classList.add('hide'), 800);
   }
 }
@@ -1799,6 +2025,7 @@ async function init(){
   if(Object.keys(sessions).length > 0){
     renderWhoamiScreen();
     document.getElementById('whoamiScreen').classList.remove('hide');
+    document.getElementById('authModal').classList.add('hide'); // prevent brief flash when whoami dismisses
     return;
   }
   document.getElementById('authModal').classList.remove('hide');
