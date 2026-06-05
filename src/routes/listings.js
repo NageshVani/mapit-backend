@@ -323,7 +323,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
 
     const allowedFields = [
       'title', 'description', 'price', 'price_label',
-      'condition', 'address', 'specs',
+      'address', 'specs', 'details', 'category', 'subcategory', 'lat', 'lng',
     ];
     const updates = {};
     allowedFields.forEach(f => {
@@ -333,6 +333,8 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     if (Object.keys(updates).length === 0) {
       return next(createError('No valid fields to update.'));
     }
+    // Re-submit for review whenever the owner edits
+    updates.status = 'pending';
 
     const { data: listing, error } = await supabaseAdmin
       .from('listings')
@@ -343,7 +345,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
 
     if (error) return next(createError(error.message));
 
-    res.json({ listing });
+    res.json({ listing, message: 'Listing updated and re-submitted for review.' });
   } catch (err) { next(err); }
 });
 

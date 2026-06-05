@@ -357,6 +357,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 /* ── MY ADS — SOLD BUTTON ── */
 .sold-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:10.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
 .sold-btn:hover{border-color:var(--green);color:var(--green);}
+.edit-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.08);color:#60a5fa;font-size:10.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
+.edit-btn:hover{background:rgba(59,130,246,.18);color:#93c5fd;}
+.myads-hd{padding:8px 13px 6px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--deep);display:flex;align-items:center;gap:6px;}
+.ld-edit-btn{background:transparent;border:none;color:#60a5fa;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;text-align:center;line-height:1.3;padding:4px 2px;}
+.ld-edit-btn:hover{color:#93c5fd;}
 
 /* ── WHO AM I (shared device screen) ── */
 .whoami{position:fixed;inset:0;background:var(--panel);z-index:1300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
@@ -948,7 +953,7 @@ function listingRow(l){
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
   cat:'all', sub:null, rad:5, q:'',
-  selId:null, tab:'browse',
+  selId:null, tab:'browse', editingId:null,
   chatOpen:false, chatMsgs:[], chatIdx:0,
   listings:[],          // from API
   savedIds: new Set(),  // listing IDs saved by user
@@ -1389,9 +1394,9 @@ async function renderMyAds(el){
     }
     const STATUS_COLOR = { active:'var(--green)', pending:'var(--gold)', sold:'var(--muted)', expired:'var(--red)' };
     el.innerHTML =
-      `<div style="padding:9px 13px 5px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);">Your ${listings.length} listing${listings.length!==1?'s':''}</div>` +
+      `<div class="myads-hd">📋 Displaying only your ads &nbsp;·&nbsp; ${listings.length} listing${listings.length!==1?'s':''}</div>` +
       listings.map(l=>`
-        <div class="fav-card" onclick="selListing('${l.id}')">
+        <div class="fav-card" onclick="selListing('${l.id}',true)">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
             ${l.cover_photo?`<img src="${l.cover_photo}" alt=""/>`:`<span>${listingEmoji(l)}</span>`}
           </div>
@@ -1400,9 +1405,10 @@ async function renderMyAds(el){
             <div class="fav-price">${l.price_label||fmtPrice(l.price)}</div>
             <div class="fav-dist" style="color:${STATUS_COLOR[l.status]||'var(--muted)'};">● ${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
           </div>
-          ${(l.status==='active'||l.status==='pending')?`<div style="display:flex;align-items:center;flex-shrink:0;">
-            <button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}','${(l.title||'').replace(/'/g,"\\'")}')">✅ Mark Sold</button>
-          </div>`:''}
+          <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;">
+            <button class="edit-btn" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit</button>
+            ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}','${(l.title||'').replace(/'/g,"\\'")}')">✅ Sold</button>`:''}
+          </div>
         </div>`).join('');
   } catch(e){
     el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">📋</div><div class="sb-empty-ttl">Could not load listings</div><div class="sb-empty-sub">${e.message}</div></div>`;
@@ -1452,7 +1458,7 @@ function renderCats(){
 function renderSidebar(){
   const el = document.getElementById('sb-content');
   if(ST.tab==='fav'){  renderFavs(el);   return; }
-  if(ST.tab==='mine'){ renderMyAds(el);  return; }
+  if(ST.tab==='mine' && !ST.selId){ renderMyAds(el); return; }
   const fl = filtered();
   if(!ST.selId){
     if(ST.q && fl.length){
@@ -1497,8 +1503,10 @@ function renderSidebar(){
           <div class="ld-info-price">${l.price_label||fmtPrice(l.price)}</div>
         </div>
         <div class="ld-info-actions">
-          <button class="ld-chat-btn" onclick="openChat()">💬 Chat<br>with Seller</button>
-          <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>
+          ${ST.tab==='mine'
+            ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit<br>Listing</button>`
+            : `<button class="ld-chat-btn" onclick="openChat()">💬 Chat<br>with Seller</button>
+               <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
           <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Share this listing">⤴</div>
         </div>
       </div>
@@ -1535,21 +1543,26 @@ function renderSidebar(){
     if(ci) ci.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
   },50);
 
-  // Append other nearby listings below the detail card
-  const others = fl.filter(x=>x.id!==ST.selId);
-  if(others.length){
-    el.innerHTML += `<div class="nearby-hd">📍 Other nearby listings (${others.length})</div>`+others.map(listingRow).join('');
+  // Append other nearby listings below the detail card (not in My Ads context)
+  if(ST.tab !== 'mine'){
+    const others = fl.filter(x=>x.id!==ST.selId);
+    if(others.length){
+      el.innerHTML += `<div class="nearby-hd">📍 Other nearby listings (${others.length})</div>`+others.map(listingRow).join('');
+    }
   }
 }
 
 // ═══════════════════════════════════════════════
 // LISTING SELECTION
 // ═══════════════════════════════════════════════
-async function selListing(id){
+async function selListing(id, keepTab=false){
   ST.selId=id; ST.chatOpen=false; ST.chatMsgs=[]; ST.chatIdx=0;
-  ST.tab='browse';
-  document.getElementById('tab-browse').classList.add('on');
-  document.getElementById('tab-fav').classList.remove('on');
+  if(!keepTab){
+    ST.tab='browse';
+    document.getElementById('tab-browse').classList.add('on');
+    document.getElementById('tab-fav').classList.remove('on');
+    document.getElementById('tab-mine').classList.remove('on');
+  }
   const l = ST.listings.find(x=>x.id===id);
   if(l) map.panTo([l.lat,l.lng],{animate:true,duration:.5});
   Object.keys(mMarkers).forEach(k=>mMarkers[k].setIcon(mkIcon(ST.listings.find(x=>x.id===k)||{id:k,category:'all',price:0,price_label:''},k===id)));
@@ -1670,6 +1683,8 @@ let postPickerLat = activeLoc().lat;
 let postPickerLng = activeLoc().lng;
 
 function openPostModal(){
+  ST.editingId = null;
+  document.getElementById('postSubmitBtn').textContent = 'Submit for Review 🚀';
   document.getElementById('postModal').classList.remove('hide');
   updatePostSubcats(); // also triggers renderDynamicFields
   // Populate location dropdown from saved pins + manual option
@@ -1698,9 +1713,71 @@ function toggleManualListingLoc(){
 }
 
 function closePostModal(){
+  ST.editingId = null;
   document.getElementById('postModal').classList.add('hide');
   // Always return the header to Browse-active state
   document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on', b.dataset.m==='buy'));
+}
+
+async function editListing(id){
+  // Fetch full listing data if not already available with details
+  let l = ST.listings.find(x=>x.id===id);
+  if(!l || !l.details){
+    try { const d = await apiGet(`/api/listings/${id}`); l = d.listing; } catch(e){ toast('Could not load listing data.'); return; }
+  }
+  ST.editingId = id;
+
+  // Open modal and set heading/button
+  document.getElementById('postModal').classList.remove('hide');
+  document.getElementById('postSubmitBtn').textContent = 'Update & Re-submit 🔄';
+
+  // Populate category and subcategory
+  const catEl = document.getElementById('postCat');
+  catEl.value = l.category || l.cat || 're';
+  updatePostSubcats(); // populates subcategory options
+  document.getElementById('postSubcat').value = l.subcategory || l.sub || '';
+  renderDynamicFields(); // renders dynamic fields for this cat/sub
+
+  // Populate dynamic detail fields
+  const det = l.details || {};
+  const fields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
+  fields.forEach(f => {
+    const el = document.getElementById(`pf_${f.id}`);
+    if(el && det[f.id] != null) el.value = det[f.id];
+  });
+
+  // Populate title and description
+  document.getElementById('postTitle').value = l.title || '';
+  document.getElementById('postDesc').value = l.description || '';
+
+  // Transaction type (Real Estate only)
+  if((l.category||l.cat)==='re' && det.transaction_type){
+    const txEl = document.querySelector(`input[name="txType"][value="${det.transaction_type}"]`);
+    if(txEl) txEl.checked = true;
+  }
+
+  // Pre-populate location dropdown with listing's current location
+  const sel = document.getElementById('postLocation');
+  sel.innerHTML = '';
+  // Current location option (pre-selected)
+  const curOpt = document.createElement('option');
+  curOpt.value = JSON.stringify({lat:l.lat, lng:l.lng, label:l.address||'Current location'});
+  curOpt.textContent = `📍 ${l.address||'Current location'} (keep)`;
+  curOpt.selected = true;
+  sel.appendChild(curOpt);
+  // Saved pins
+  ST.userPins.forEach(p=>{
+    const opt = document.createElement('option');
+    opt.value = JSON.stringify({lat:p.lat, lng:p.lng, label:p.label});
+    opt.textContent = p.label + (p.is_default?' (Active)':'');
+    sel.appendChild(opt);
+  });
+  // Manual entry
+  const manualOpt = document.createElement('option');
+  manualOpt.value = '__manual__';
+  manualOpt.textContent = '📍 Enter GPS coordinates manually…';
+  sel.appendChild(manualOpt);
+  toggleManualListingLoc();
 }
 
 function updatePostSubcats(){
@@ -1786,9 +1863,9 @@ async function submitListing(){
     toast('Please select or enter a location.'); return;
   }
 
-  btn.disabled=true; btn.textContent='Submitting…';
+  btn.disabled=true; btn.textContent = ST.editingId ? 'Updating…' : 'Submitting…';
   try {
-    const data = await apiPost('/api/listings',{
+    const payload = {
       category, subcategory, title, description,
       price: price || 0,
       price_label: price ? fmtPrice(price) : '',
@@ -1796,11 +1873,21 @@ async function submitListing(){
       address: `${locObj.label} · Bangalore`,
       details,
       specs: [],
-    });
+    };
 
-    // Upload photos if any
+    let data;
+    if(ST.editingId){
+      data = await apiPut(`/api/listings/${ST.editingId}`, payload);
+      // Update cached listing in ST.listings
+      const idx = ST.listings.findIndex(x=>x.id===ST.editingId);
+      if(idx>=0 && data.listing) ST.listings[idx] = {...ST.listings[idx], ...data.listing};
+    } else {
+      data = await apiPost('/api/listings', payload);
+    }
+
+    // Upload photos if any (new listings only — editing doesn't replace photos)
     const photoFiles = document.getElementById('postPhotos').files;
-    if(photoFiles.length>0 && data.listing){
+    if(photoFiles.length>0 && data.listing && !ST.editingId){
       const fd = new FormData();
       Array.from(photoFiles).slice(0,5).forEach(f=>fd.append('photos',f));
       try {
@@ -1812,11 +1899,15 @@ async function submitListing(){
       } catch(_){}
     }
 
+    const msg = ST.editingId
+      ? '🔄 Listing updated and re-submitted for review.'
+      : '🚀 Listing submitted! It will be reviewed and go live within 4 hours.';
     closePostModal();
-    toast('🚀 Listing submitted! It will be reviewed and go live within 4 hours.');
+    toast(msg);
     // Reset form
     ['postTitle','postDesc'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('dynamicFields').innerHTML = '';
+    if(ST.tab==='mine') renderMyAds(document.getElementById('sb-content'));
   } catch(e){
     toast('Error: ' + e.message);
   } finally {
