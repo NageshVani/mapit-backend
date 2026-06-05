@@ -1699,7 +1699,9 @@ function closePostModal(){
 function updatePostSubcats(){
   const cat = document.getElementById('postCat').value;
   const subcats = SUBCAT_MAP[cat]||[];
-  document.getElementById('postSubcat').innerHTML = subcats.map(s=>`<option value="${s}">${s}</option>`).join('');
+  document.getElementById('postSubcat').innerHTML =
+    `<option value="" disabled selected>— Select type —</option>` +
+    subcats.map(s=>`<option value="${s}">${s}</option>`).join('');
   renderDynamicFields();
 }
 
@@ -1758,6 +1760,7 @@ async function submitListing(){
   const price = parseFloat(details.total_price) || 0;
 
   if(!title){ toast('Please enter a title.'); return; }
+  if(!subcategory){ toast('Please select a listing type (e.g. Cars, 2 Wheelers).'); return; }
   if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
 
   // Resolve location — saved pin or manual GPS entry
