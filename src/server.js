@@ -55,8 +55,10 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, cb) => {
     // allow server-to-server calls (no origin) and listed origins
-    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
-    else cb(new Error('Not allowed by CORS'));
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    // allow all Vercel preview deployments for this project (dev/uat branches)
+    if (/^https:\/\/mapit-backend(-[a-z0-9-]+)?\.vercel\.app$/.test(origin)) return cb(null, true);
+    cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
