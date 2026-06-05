@@ -655,6 +655,116 @@
     </div>
   </article>
 
+  <article class="log-entry" data-cat="other">
+    <div class="entry-dot" data-cat="other"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#10</span>
+        <span class="cat-badge cat-other">other</span>
+        <span class="entry-time">2026-06-03 ~session start</span>
+      </div>
+      <div class="user-msg" data-cat="other">/resume — Session 9 start: restore context after /clear</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Read <code>CONTEXT.md</code> and produced Session Resume Summary</li>
+        <li>Current goal: remove stale <code>MAX_PHOTOS_PER_LISTING</code> Vercel env var, wire <code>uat</code> branch to Vercel preview, delete old broken frontend Vercel project</li>
+        <li>Confirmed last completed work: <code>dev</code>/<code>uat</code>/<code>main</code> branch strategy, double-email fix, photo limit lowered to 5, Arun admin email added (Session 8)</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="config">
+    <div class="entry-dot" data-cat="config"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#11</span>
+        <span class="cat-badge cat-config">config</span>
+        <span class="entry-time">2026-06-03</span>
+      </div>
+      <div class="user-msg" data-cat="config">How to configure Dev, UAT and PROD?</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Explained 3-environment setup: Dev (<code>localhost:3001</code>), UAT (Vercel preview), Prod (<code>api.mapit.co.in</code>)</li>
+        <li>Replaced hardcoded <code>API_URL</code> with hostname-detection IIFE in both <code>MapIt_Demo 30052026.html</code> and <code>public/index.html</code> — no more manual comment/uncomment before commits</li>
+        <li>Committed as <code>06c6bd7</code>: "feat: auto-detect API_URL for dev/uat/prod environments"</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="config">
+    <div class="entry-dot" data-cat="config"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#12</span>
+        <span class="cat-badge cat-config">config</span>
+        <span class="entry-time">2026-06-03</span>
+      </div>
+      <div class="user-msg" data-cat="config">Remove MAX_PHOTOS_PER_LISTING env var + redeploy confirmed via /health smoke test</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Guided removal of <code>MAX_PHOTOS_PER_LISTING=10</code> from Vercel → Settings → Environment Variables</li>
+        <li>Redeploy confirmed live: <code>/health</code> returned <code>&#123;"status":"ok","app":"MapIt Backend",...&#125;</code></li>
+        <li>Backend now enforces 5-photo limit via hardcoded value in <code>src/routes/uploads.js</code></li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="feat">
+    <div class="entry-dot" data-cat="feat"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#13</span>
+        <span class="cat-badge cat-feat">feat</span>
+        <span class="entry-time">2026-06-03</span>
+      </div>
+      <div class="user-msg" data-cat="feat">Connect uat branch to Vercel preview</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Found <code>uat</code> had no Vercel build (pushed as exact copy of <code>main</code>, no new commit to trigger build)</li>
+        <li>Merged <code>main</code> into <code>uat</code> and pushed — triggered Vercel preview build</li>
+        <li>UAT URL confirmed: <code>mapit-backend-git-uat-nagesh-n-arun.vercel.app</code></li>
+        <li>Disabled Vercel Deployment Protection for preview deployments; MapIt UI confirmed loading on UAT URL</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="other">
+    <div class="entry-dot" data-cat="other"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#14</span>
+        <span class="cat-badge cat-other">other</span>
+        <span class="entry-time">2026-06-03</span>
+      </div>
+      <div class="user-msg" data-cat="other">All 12 family invite codes entered in Supabase; onboarding prep complete</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Confirmed all 12 <code>invite_codes</code> rows in Supabase: <code>MAPIT-N-01</code>, <code>MAPIT-A-01</code>, <code>MAPIT-F-01</code> through <code>MAPIT-F-10</code></li>
+        <li>Explained <code>used_by</code> UUID FK behaviour — Supabase shows dropdown of registered users; backfill optional once emails collected</li>
+        <li>Flagged potential typo: <code>Chirag 1</code>, <code>Kalpith 1</code>, <code>Srikanth 1</code>, <code>Vijay 1</code> — "1" suffix may be accidental; fix before those members log in</li>
+        <li>Generated invite code table for all 12 members to share with family</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="other">
+    <div class="entry-dot" data-cat="other"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#15</span>
+        <span class="cat-badge cat-other">other</span>
+        <span class="entry-time">2026-06-05</span>
+      </div>
+      <div class="user-msg" data-cat="other">/resume — restore session context after /clear</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Read <code>CONTEXT.md</code>; produced Session Resume Summary with current goal, last 5 completed items, next steps, and blockers</li>
+        <li>Current goal: UAT sign-off for Sessions 10+11 changes at <code>mapit-backend-git-uat-nagesh-n-arun.vercel.app</code> before promoting <code>uat → main</code></li>
+        <li>Confirmed open items: "1" suffix names in Supabase (<code>Chirag 1</code> etc.), <code>invite_codes.used_by</code> backfill, broken frontend Vercel project cleanup</li>
+      </ul>
+    </div>
+  </article>
+
   <!-- LOG_ENTRIES_END -->
 </div>
 
