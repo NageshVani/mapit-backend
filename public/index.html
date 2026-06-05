@@ -96,11 +96,19 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ── LISTING DETAIL ── */
-.ld-img{height:110px;position:relative;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:40px;}
+.ld-img{height:140px;position:relative;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:40px;}
 .ld-img img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;}
 .ld-img-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.75),transparent);padding:8px 13px 8px;}
 .ld-dist{font-size:14px;font-weight:800;color:#fff;letter-spacing:.2px;text-shadow:0 1px 4px rgba(0,0,0,.6);}
-.ld-dist-badge{display:flex;align-items:center;gap:6px;background:rgba(240,96,48,.15);color:var(--orange);border:1.5px solid rgba(240,96,48,.35);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:800;margin:10px 13px 0;align-self:flex-start;}
+.ld-info-bar{background:var(--card2);border-bottom:1px solid var(--border2);padding:10px 13px;display:flex;align-items:center;gap:10px;}
+.ld-info-thumb{width:48px;height:48px;border-radius:8px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden;border:1px solid var(--border2);}
+.ld-info-thumb img{width:100%;height:100%;object-fit:cover;}
+.ld-info-mid{flex:1;min-width:0;}
+.ld-info-ttl{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;margin-bottom:2px;}
+.ld-info-price{font-size:17px;font-weight:800;color:var(--orange);font-family:'Playfair Display',serif;line-height:1;}
+.ld-info-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ld-chat-btn{background:transparent;border:none;color:#16a34a;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;text-align:center;line-height:1.3;padding:4px 2px;}
+.ld-chat-btn:hover{color:#15803d;}
 .ld-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .ld-spec-item{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;}
 .ld-spec-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
@@ -520,9 +528,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <!-- 1. Location (FIRST) -->
       <div class="form-group">
         <label class="form-label">📍 Listing Location</label>
-        <select class="form-input form-select" id="postLocation"></select>
+        <select class="form-input form-select" id="postLocation" onchange="toggleManualListingLoc()"></select>
+        <div id="manualListingLocGroup" style="display:none;margin-top:10px;">
+          <input class="form-input" id="manualListingCoords" placeholder='GPS coordinates, e.g. 12.9352, 77.6245' style="margin-bottom:8px;"/>
+          <input class="form-input" id="manualListingLabel" placeholder='Area label, e.g. Koramangala'/>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">Tip: open Google Maps, long-press your location and copy the coordinates shown.</div>
+        </div>
         <div style="font-size:12px;color:var(--muted);margin-top:6px;">
-          Don't see your area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add a GPS location first →</span>
+          Want to save this area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add to My Locations →</span>
         </div>
       </div>
       <!-- 2. Category + Subcategory -->
@@ -736,6 +749,28 @@ const SUBCAT_EMOJI = {
   'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬',
   'Cars':'🚗','2 Wheelers':'🛵','Cycles':'🚲','Trucks & Commercial':'🚛',
   'Electronic Appliances':'📺','Furniture':'🛋️','Home Decor':'🎨',
+};
+
+// ── TITLE PLACEHOLDER PER SUBCATEGORY ──
+const TITLE_PLACEHOLDER = {
+  re: {
+    'Plots':               '30×40 North-facing Corner Plot, Ring Road Area',
+    'Individual House':    '3BHK Independent House with Garden, Near School',
+    'Builder Flat':        '2BHK Builder Flat, 3rd Floor, Park-Facing',
+    'Apartment':           '2BHK Apartment in Prestige Society, Koramangala',
+    'Commercial Building': '3-Storey Commercial Building on Main Road',
+  },
+  veh: {
+    'Cars':               'Maruti Swift 2019 – Single Owner, 28k Kms',
+    '2 Wheelers':         'Honda Activa 6G 2022 – Well Maintained, 8k Kms',
+    'Cycles':             'Trek Mountain Bike – Barely Used',
+    'Trucks & Commercial':'Tata 407 2018 – Good Condition, Ready to Transfer',
+  },
+  hh: {
+    'Electronic Appliances':'LG 32-inch Smart TV – 2 Years Old, Works Perfectly',
+    'Furniture':            'Solid Wood 3-Seater Sofa – Excellent Condition',
+    'Home Decor':           'Set of 4 Decorative Wall Frames – Barely Used',
+  },
 };
 
 // ── CATEGORY-SPECIFIC LISTING FIELDS ──
@@ -1432,6 +1467,7 @@ function renderSidebar(){
   const next = idx<fl.length-1 ? fl[idx+1].id : null;
   const col = catCol(l.category||l.cat);
 
+  const photoUrls = (l.photos||[]).map(p=>p.public_url||p.url).filter(Boolean);
   el.innerHTML = `
     <div class="ld-close-row">
       <div class="ld-back" onclick="closeDetail()">‹ Back</div>
@@ -1441,23 +1477,31 @@ function renderSidebar(){
       </div>
     </div>
     <div class="ld-img" style="background:linear-gradient(135deg,var(--card),var(--card2))">
-      ${l.photos&&l.photos[0]
-        ? `<img src="${l.photos[0].public_url||l.cover_photo}" alt="${l.title}" style="cursor:pointer;" onclick="openPhotoGallery(${JSON.stringify((l.photos||[]).map(p=>p.public_url||p.url)).replace(/"/g,'&quot;')},0)"/>`
+      ${photoUrls[0]
+        ? `<img src="${photoUrls[0]}" alt="${l.title}" style="cursor:pointer;" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},0)"/>`
         : `<span>${listingEmoji(l)}</span>`}
       <div class="ld-img-overlay">
         <div class="ld-dist">📍 ${fmtD(d)} from your location</div>
         <div class="ld-loc">${l.address||''}</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 13px;">
-      <div class="ld-dist-badge">📍 <span style="font-size:15px;font-weight:800;">${fmtD(d)}</span> <span style="font-weight:500;font-size:12px;">from your location</span></div>
-      ${l.photos&&l.photos.length>1?`<span style="font-size:12px;color:var(--orange);font-weight:700;cursor:pointer;" onclick="openPhotoGallery(${JSON.stringify(l.photos.map(p=>p.public_url||p.url)).replace(/"/g,'&quot;')},0)">📷 ${l.photos.length} photos →</span>`:''}
+    <!-- Compact info bar: thumb · title+price · photos · chat · save · share -->
+    <div class="ld-info-bar">
+      <div class="ld-info-thumb">
+        ${photoUrls[0]?`<img src="${photoUrls[0]}" style="cursor:pointer;" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},0)"/>`:`<span>${listingEmoji(l)}</span>`}
+      </div>
+      <div class="ld-info-mid">
+        <div class="ld-info-ttl">${l.title}</div>
+        <div class="ld-info-price">${l.price_label||fmtPrice(l.price)}</div>
+      </div>
+      <div class="ld-info-actions">
+        ${photoUrls.length>1?`<span style="font-size:11px;color:var(--orange);cursor:pointer;font-weight:700;text-align:center;line-height:1.3;" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},0)">📷<br>${photoUrls.length}</span>`:''}
+        <button class="ld-chat-btn" onclick="openChat()">💬 Chat<br>with Seller</button>
+        <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>
+        <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Share this listing">⤴</div>
+      </div>
     </div>
     <div class="ld-body">
-      <div>
-        <div class="ld-ttl">${l.title}</div>
-        <div class="ld-price">${l.price_label||fmtPrice(l.price)}</div>
-      </div>
       ${(()=>{
         const det = l.details || {};
         const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
@@ -1467,22 +1511,7 @@ function renderSidebar(){
       })()}
       ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${l.details.transaction_type}</div></div>` : '')}
       ${l.description ? `<div class="ld-desc">${l.description}</div>` : ''}
-      ${seller.id ? `
-      <div class="seller-card">
-        <div class="s-av" style="background:${seller.avatar_color||col}">${(seller.full_name||'S')[0]}</div>
-        <div style="flex:1">
-          <div class="s-name">${seller.full_name||'Seller'}</div>
-          <div class="s-meta">
-            <span class="tbadge" style="background:rgba(34,197,94,.15);color:#22C55E">● ${seller.trust_badge||'Verified'}</span>
-            <span class="s-rating">★ <b>${seller.avg_rating||'0.0'}</b> (${seller.review_count||0} reviews)</span>
-          </div>
-        </div>
-      </div>` : ''}
-      <div class="act-row">
-        <button class="btn-primary" onclick="openChat()">💬 Chat with Seller</button>
-        <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>
-        <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Share this listing">⤴</div>
-      </div>
+      ${seller.id ? `<div style="font-size:12px;color:var(--muted);padding:4px 0;display:flex;align-items:center;gap:6px;"><div class="s-av" style="width:24px;height:24px;font-size:10px;background:${seller.avatar_color||col}">${(seller.full_name||'S')[0]}</div>${seller.full_name||'Seller'}</div>` : ''}
     </div>
     <div id="chatBox" class="${ST.chatOpen?'':'hide'}">
       <div class="ch-hd">
@@ -1633,20 +1662,29 @@ let postPickerLng = activeLoc().lng;
 function openPostModal(){
   document.getElementById('postModal').classList.remove('hide');
   updatePostSubcats(); // also triggers renderDynamicFields
-  // Populate location dropdown from saved pins
+  // Populate location dropdown from saved pins + manual option
   const sel = document.getElementById('postLocation');
   sel.innerHTML = '';
-  if(!ST.userPins.length){
-    sel.innerHTML = '<option value="">⚠ No saved locations — add one via My Locations first</option>';
-  } else {
-    ST.userPins.forEach(p=>{
-      const opt = document.createElement('option');
-      opt.value = JSON.stringify({lat:p.lat, lng:p.lng, label:p.label});
-      opt.textContent = p.label + (p.is_default?' (Active)':'');
-      if(p.is_default) opt.selected = true;
-      sel.appendChild(opt);
-    });
-  }
+  ST.userPins.forEach(p=>{
+    const opt = document.createElement('option');
+    opt.value = JSON.stringify({lat:p.lat, lng:p.lng, label:p.label});
+    opt.textContent = p.label + (p.is_default?' (Active)':'');
+    if(p.is_default) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  // Always offer manual entry
+  const manualOpt = document.createElement('option');
+  manualOpt.value = '__manual__';
+  manualOpt.textContent = '📍 Enter GPS coordinates manually…';
+  sel.appendChild(manualOpt);
+  // If no saved pins, pre-select manual
+  if(!ST.userPins.length) sel.value = '__manual__';
+  toggleManualListingLoc();
+}
+
+function toggleManualListingLoc(){
+  const show = document.getElementById('postLocation').value === '__manual__';
+  document.getElementById('manualListingLocGroup').style.display = show ? '' : 'none';
 }
 
 function closePostModal(){
@@ -1666,6 +1704,9 @@ function renderDynamicFields(){
   const cat = document.getElementById('postCat').value;
   const sub = document.getElementById('postSubcat').value;
   const container = document.getElementById('dynamicFields');
+  // Update title placeholder to match category/subcategory
+  const ph = (TITLE_PLACEHOLDER[cat]||{})[sub] || 'Short, descriptive title for your listing';
+  document.getElementById('postTitle').placeholder = ph;
   // Show/hide Sell/Rent for Real Estate only
   document.getElementById('txTypeGroup').style.display = cat === 're' ? '' : 'none';
   const fields = (LISTING_FIELDS[cat]||{})[sub] || [];
@@ -1714,9 +1755,23 @@ async function submitListing(){
   const price = parseFloat(details.total_price) || 0;
 
   if(!title){ toast('Please enter a title.'); return; }
-  if(!locRaw){ toast('Please select a location, or add one via My Locations.'); return; }
   if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
-  const locObj = JSON.parse(locRaw);
+
+  // Resolve location — saved pin or manual GPS entry
+  let locObj;
+  if(locRaw === '__manual__'){
+    const raw = document.getElementById('manualListingCoords').value.trim();
+    const lbl = document.getElementById('manualListingLabel').value.trim() || 'Custom Location';
+    const parts = raw.split(',').map(s=>parseFloat(s.trim()));
+    if(parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])){
+      toast('Please enter valid GPS coordinates, e.g. 12.9352, 77.6245'); return;
+    }
+    locObj = { lat:parts[0], lng:parts[1], label:lbl };
+  } else if(locRaw){
+    locObj = JSON.parse(locRaw);
+  } else {
+    toast('Please select or enter a location.'); return;
+  }
 
   btn.disabled=true; btn.textContent='Submitting…';
   try {
