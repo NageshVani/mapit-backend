@@ -33,6 +33,19 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 12px 8px 32px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 #srchIn:focus{border-color:var(--orange);}
 #srchIn::placeholder{color:var(--muted);}
+.srch-dd{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--panel);border:1px solid var(--border2);border-radius:8px;box-shadow:var(--shadow);max-height:380px;overflow-y:auto;z-index:950;}
+.srch-dd.hide{display:none;}
+.srch-dd-hd{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--deep);position:sticky;top:0;}
+.srch-dd-count{font-weight:600;letter-spacing:.3px;text-transform:none;text-align:right;color:var(--muted);}
+.srch-dd-item{display:flex;gap:9px;padding:8px 12px;cursor:pointer;align-items:center;border-bottom:1px solid var(--border);}
+.srch-dd-item:last-child{border-bottom:none;}
+.srch-dd-item:hover{background:var(--card);}
+.srch-dd-ico{width:34px;height:34px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--card2);}
+.srch-dd-ico img{width:100%;height:100%;object-fit:cover;}
+.srch-dd-info{flex:1;min-width:0;}
+.srch-dd-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
+.srch-dd-meta{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.srch-dd-empty{padding:18px 12px;text-align:center;font-size:12px;color:var(--muted);}
 .hsp{flex:1;}
 .loc-badge{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:11.5px;color:var(--muted);flex-shrink:0;cursor:pointer;transition:border-color .18s;}
 .loc-badge:hover{border-color:var(--orange);}
@@ -637,7 +650,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <div class="demo-tag">Beta</div>
   <div class="srch">
     <span class="srch-ic">🔍</span>
-    <input id="srchIn" type="text" placeholder="Search listings in Bangalore…"/>
+    <input id="srchIn" type="text" placeholder="Search listings in Bangalore…" autocomplete="off"/>
+    <div id="srchDD" class="srch-dd hide"></div>
   </div>
   <div class="hsp"></div>
   <div class="loc-badge" title="Your active location" style="cursor:default;">
@@ -942,7 +956,7 @@ function listingRow(l){
     <div class="lr-info">
       <div class="lr-title">${l.title}</div>
       <div class="lr-price">${l.price_label||fmtPrice(l.price)}</div>
-      <div class="lr-meta">📍 ${fmtD(d)} · ${l.subcategory||''}</div>
+      <div class="lr-meta">📍 ${fmtD(d)} · ${l.subcategory||''} · ${timeAgo(l.created_at)}</div>
     </div>
   </div>`;
 }
@@ -955,7 +969,8 @@ let ST = {
   cat:'all', sub:null, rad:5, q:'',
   selId:null, tab:'browse', editingId:null,
   chatOpen:false, chatMsgs:[], chatIdx:0,
-  listings:[],          // from API
+  listings:[],          // from API (browse — excludes the current user's own listings)
+  myListings:[],        // from /api/listings/mine/all — only the current user's own listings
   savedIds: new Set(),  // listing IDs saved by user
   userPins: [],         // from API
   activePin: null,      // { lat, lng, label }
@@ -975,6 +990,15 @@ function dist(a,b,c,d){
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
 function fmtD(km){return km<1?`${Math.round(km*1000)} m`:`${km.toFixed(1)} km`;}
+function timeAgo(dateStr){
+  if(!dateStr) return '';
+  const mins = (Date.now() - new Date(dateStr).getTime())/60000;
+  if(mins < 1) return 'just now';
+  const round1 = n => { const r = Math.round(n*2)/2; return r%1===0 ? r.toFixed(0) : r.toFixed(1); };
+  if(mins < 60)  return `${Math.round(mins)}m ago`;
+  if(mins < 1440) return `${round1(mins/60)}hr ago`;
+  return `${round1(mins/1440)}d ago`;
+}
 function catCol(c){return (CATS.find(x=>x.id===c)||CATS[0]).col;}
 function catLbl(c){return (CATS.find(x=>x.id===c)||CATS[0]).lbl;}
 function nowStr(){return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}
@@ -1384,6 +1408,7 @@ async function renderMyAds(el){
   try {
     const data = await apiGet('/api/listings/mine/all');
     const listings = data.listings || [];
+    ST.myListings = listings;
     if(!listings.length){
       el.innerHTML = `<div class="sb-empty">
         <div class="sb-empty-ico">📋</div>
@@ -1459,7 +1484,9 @@ function renderSidebar(){
   const el = document.getElementById('sb-content');
   if(ST.tab==='fav'){  renderFavs(el);   return; }
   if(ST.tab==='mine' && !ST.selId){ renderMyAds(el); return; }
-  const fl = filtered();
+  // In My Ads, navigation must stay within the current user's own listings —
+  // never the browse set (which excludes them) — so other sellers' ads can't surface here.
+  const fl = ST.tab==='mine' ? ST.myListings : filtered();
   if(!ST.selId){
     if(ST.q && fl.length){
       el.innerHTML = `<div class="nearby-hd">🔍 ${fl.length} result${fl.length!==1?'s':''} for "${ST.q}"</div>`+fl.map(listingRow).join('');
@@ -1470,7 +1497,7 @@ function renderSidebar(){
     }
     return;
   }
-  const l = ST.listings.find(x=>x.id===ST.selId)||filtered().find(x=>x.id===ST.selId);
+  const l = ST.listings.find(x=>x.id===ST.selId)||fl.find(x=>x.id===ST.selId)||filtered().find(x=>x.id===ST.selId);
   if(!l) return;
   const loc = activeLoc();
   const d = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
@@ -1486,15 +1513,15 @@ function renderSidebar(){
     <div class="ld-close-row">
       <div class="ld-back" onclick="closeDetail()">‹ Back</div>
       <div class="ld-nav">
-        ${prev?`<div class="ld-nav-btn" title="Previous listing" onclick="selListing('${prev}')">‹</div>`:''}
-        ${next?`<div class="ld-nav-btn" title="Next listing" onclick="selListing('${next}')">›</div>`:''}
+        ${prev?`<div class="ld-nav-btn" title="Previous listing" onclick="selListing('${prev}'${ST.tab==='mine'?',true':''})">‹</div>`:''}
+        ${next?`<div class="ld-nav-btn" title="Next listing" onclick="selListing('${next}'${ST.tab==='mine'?',true':''})">›</div>`:''}
       </div>
     </div>
     <!-- Block A: distance bar + category icon + title/price + actions + photo strip -->
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
         <span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span>
-        ${l.address ? `<span class="ld-dist-sub">${l.address}</span>` : ''}
+        <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}</span>
       </div>
       <div class="ld-info-top">
         <div class="ld-info-thumb"><span>${listingEmoji(l)}</span></div>
@@ -1503,7 +1530,7 @@ function renderSidebar(){
           <div class="ld-info-price">${l.price_label||fmtPrice(l.price)}</div>
         </div>
         <div class="ld-info-actions">
-          ${ST.tab==='mine'
+          ${ST.tab==='mine' && l.seller_id===ST.user?.id
             ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit<br>Listing</button>`
             : `<button class="ld-chat-btn" onclick="openChat()">💬 Chat<br>with Seller</button>
                <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
@@ -1547,7 +1574,8 @@ function renderSidebar(){
   if(ST.tab !== 'mine'){
     const others = fl.filter(x=>x.id!==ST.selId);
     if(others.length){
-      el.innerHTML += `<div class="nearby-hd">📍 Other nearby listings (${others.length})</div>`+others.map(listingRow).join('');
+      const hd = ST.q ? `🔍 Other listings matching "${ST.q}" (${others.length})` : `📍 Other nearby listings (${others.length})`;
+      el.innerHTML += `<div class="nearby-hd">${hd}</div>`+others.map(listingRow).join('');
     }
   }
 }
@@ -1563,7 +1591,7 @@ async function selListing(id, keepTab=false){
     document.getElementById('tab-fav').classList.remove('on');
     document.getElementById('tab-mine').classList.remove('on');
   }
-  const l = ST.listings.find(x=>x.id===id);
+  const l = ST.listings.find(x=>x.id===id) || (ST.tab==='mine' ? ST.myListings.find(x=>x.id===id) : null);
   if(l) map.panTo([l.lat,l.lng],{animate:true,duration:.5});
   Object.keys(mMarkers).forEach(k=>mMarkers[k].setIcon(mkIcon(ST.listings.find(x=>x.id===k)||{id:k,category:'all',price:0,price_label:''},k===id)));
   renderSidebar();
@@ -1571,9 +1599,12 @@ async function selListing(id, keepTab=false){
   try {
     const data = await apiGet(`/api/listings/${id}`);
     if(data.listing){
-      const idx = ST.listings.findIndex(x=>x.id===id);
-      if(idx>=0) ST.listings[idx] = {...ST.listings[idx], ...data.listing};
-      else ST.listings.unshift(data.listing);
+      // Merge into the array matching the current context — keeps the user's
+      // own listings out of the browse array (and vice-versa) so neither leaks into the other.
+      const target = ST.tab==='mine' ? ST.myListings : ST.listings;
+      const idx = target.findIndex(x=>x.id===id);
+      if(idx>=0) target[idx] = {...target[idx], ...data.listing};
+      else target.unshift(data.listing);
       if(ST.selId===id) renderSidebar();
     }
   } catch(_){}
@@ -2058,6 +2089,7 @@ function setMode(btn){
 }
 function switchTab(tab){
   ST.tab=tab;
+  ST.selId=null; // clear stale selection so a previously-viewed listing can't leak into another tab's detail view
   document.getElementById('tab-browse').classList.toggle('on',tab==='browse');
   document.getElementById('tab-fav').classList.toggle('on',tab==='fav');
   document.getElementById('tab-mine').classList.toggle('on',tab==='mine');
@@ -2497,11 +2529,60 @@ async function openInboxModal(){
 function closeInboxModal(){ document.getElementById('inboxModal').classList.add('hide'); }
 
 // ═══════════════════════════════════════════════
-// Search
-document.getElementById('srchIn').addEventListener('input',e=>{
-  ST.q=e.target.value.toLowerCase();
-  drawMarkers(); renderSidebar();
+// Search — typing shows a clickable dropdown of matches; the left panel
+// only updates once the user picks a result from that dropdown.
+function searchMatches(q){
+  const ql = q.toLowerCase();
+  return ST.listings.filter(l=>
+    l.title?.toLowerCase().includes(ql)||
+    (l.address||'').toLowerCase().includes(ql)||
+    (l.subcategory||'').toLowerCase().includes(ql)
+  ).sort((a,b)=>(a.d||0)-(b.d||0));
+}
+function renderSearchDD(q){
+  const dd = document.getElementById('srchDD');
+  const matches = searchMatches(q);
+  if(!matches.length){
+    dd.innerHTML = `<div class="srch-dd-empty">No listings match "${q}"</div>`;
+  } else {
+    const loc = activeLoc();
+    const top = matches.slice(0,8);
+    dd.innerHTML = `<div class="srch-dd-hd"><span>Matching listings</span><span class="srch-dd-count">${matches.length} result${matches.length!==1?'s':''}</span></div>`
+      + top.map(l=>{
+          const d = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
+          return `<div class="srch-dd-item" onclick="pickSearchResult('${l.id}')">
+            <div class="srch-dd-ico">${l.cover_photo?`<img src="${l.cover_photo}" alt=""/>`:`<span>${listingEmoji(l)}</span>`}</div>
+            <div class="srch-dd-info">
+              <div class="srch-dd-title">${l.title}</div>
+              <div class="srch-dd-meta">${l.subcategory||''} · ${l.price_label||fmtPrice(l.price)} · ${fmtD(d)}</div>
+            </div>
+          </div>`;
+        }).join('');
+  }
+  dd.classList.remove('hide');
+}
+function hideSearchDD(){ document.getElementById('srchDD').classList.add('hide'); }
+function pickSearchResult(id){
+  ST.q = document.getElementById('srchIn').value.trim().toLowerCase();
+  hideSearchDD();
+  drawMarkers();
+  selListing(id);
+}
+const srchInEl = document.getElementById('srchIn');
+srchInEl.addEventListener('input',e=>{
+  const q = e.target.value.trim();
+  if(!q){
+    hideSearchDD();
+    if(ST.q){ ST.q=''; drawMarkers(); renderSidebar(); }
+    return;
+  }
+  renderSearchDD(q);
 });
+srchInEl.addEventListener('focus',e=>{
+  const q = e.target.value.trim();
+  if(q) renderSearchDD(q);
+});
+srchInEl.addEventListener('blur',()=>{ setTimeout(hideSearchDD, 180); });
 
 // Kick off
 init();
