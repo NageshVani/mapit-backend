@@ -80,8 +80,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .cat-ico{font-size:19px;}
 .cat-lbl{font-size:10px;font-weight:600;color:var(--muted);white-space:nowrap;}
 .cat-btn.on .cat-lbl{color:var(--orange);}
-.sub-row{display:flex;gap:5px;padding:0 10px 8px;overflow-x:auto;scrollbar-width:none;min-height:30px;flex-shrink:0;}
-.sub-row::-webkit-scrollbar{display:none;}
+.sub-row{display:flex;gap:5px;padding:0 10px 8px;flex-wrap:wrap;min-height:30px;flex-shrink:0;}
 .spill{padding:4px 11px;border-radius:20px;border:1px solid var(--border2);font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .18s;color:var(--muted);background:transparent;}
 .spill:hover{background:var(--card);color:var(--text);}
 .spill.on{background:var(--orange);border-color:var(--orange);color:#fff;}
@@ -688,7 +687,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="rad-box">
       <div class="rad-hd">Proximity Radius <span id="radLbl">5 km</span></div>
       <div class="rad-btns">
-        <button class="rbt" onclick="setRad(1)">1 km</button>
         <button class="rbt" onclick="setRad(3)">3 km</button>
         <button class="rbt on" onclick="setRad(5)">5 km</button>
         <button class="rbt" onclick="setRad(10)">10 km</button>
@@ -2076,7 +2074,7 @@ function setSub(s){
 function setRad(r){
   ST.rad=r;
   document.getElementById('radLbl').textContent = r>=999?'City-wide':r+' km';
-  document.querySelectorAll('.rbt').forEach((b,i)=>b.classList.toggle('on',[1,3,5,10,999][i]===r));
+  document.querySelectorAll('.rbt').forEach((b,i)=>b.classList.toggle('on',[3,5,10,999][i]===r));
   updateCircle();
   if(r<999&&radCircle) map.fitBounds(radCircle.getBounds(),{padding:[30,30],animate:true});
   else map.setView([activeLoc().lat,activeLoc().lng],12,{animate:true});
