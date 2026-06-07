@@ -691,6 +691,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <button class="rbt on" onclick="setRad(5)">5 km</button>
         <button class="rbt" onclick="setRad(10)">10 km</button>
         <button class="rbt" onclick="setRad(999)">City</button>
+        <button class="rbt" onclick="setRad(50)">Region</button>
       </div>
     </div>
     <div class="tab-bar">
@@ -2073,11 +2074,12 @@ function setSub(s){
 }
 function setRad(r){
   ST.rad=r;
-  document.getElementById('radLbl').textContent = r>=999?'City-wide':r+' km';
-  document.querySelectorAll('.rbt').forEach((b,i)=>b.classList.toggle('on',[3,5,10,999][i]===r));
+  document.getElementById('radLbl').textContent = r>=999?'City-wide':r===50?'Region':r+' km';
+  document.querySelectorAll('.rbt').forEach((b,i)=>b.classList.toggle('on',[3,5,10,999,50][i]===r));
   updateCircle();
+  const loc=activeLoc();
   if(r<999&&radCircle) map.fitBounds(radCircle.getBounds(),{padding:[30,30],animate:true});
-  else map.setView([activeLoc().lat,activeLoc().lng],12,{animate:true});
+  else{const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180);map.fitBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]],{padding:[20,20],animate:true});}
   loadListings();
 }
 function setMode(btn){
