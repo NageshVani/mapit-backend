@@ -12,7 +12,17 @@
       "Read(//tmp/**)",
       "Bash(curl -s http://localhost:3001/health)",
       "Bash(curl -s \"http://localhost:3001/api/auth/validate-invite?code=MAPIT-N-01\")",
-      "Bash(curl -s \"http://localhost:3001/api/listings?lat=12.9352&lng=77.6245&radius=5000\")"
+      "Bash(curl -s \"http://localhost:3001/api/listings?lat=12.9352&lng=77.6245&radius=5000\")",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Bash(cp \"c:/Users/Vanin/Documents/MapIt project/mapit-backend/MapIt_Demo 30052026.html\" \"c:/Users/Vanin/Documents/MapIt project/mapit-backend/public/index.html\")",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git merge *)",
+      "Bash(git add *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Vanin\\Documents\\MapIt project\\mapit-backend"
     ]
   }
 }
