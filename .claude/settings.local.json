@@ -1,28 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node src/server.js)",
-      "Bash(netstat -ano)",
-      "Bash(findstr :3001)",
-      "Bash(findstr LISTENING)",
-      "Bash(taskkill /PID 25320 /F)",
-      "PowerShell(Stop-Process -Id 25320 -Force)",
-      "PowerShell(node \"c:\\\\Users\\\\Vanin\\\\Documents\\\\MapIt project\\\\mapit-backend\\\\src\\\\server.js\" 2>&1)",
+      "Bash(node \"src/server.js\" 2>&1)",
+      "Bash(lsof -i :3001)",
+      "Bash(kill -9 *)",
       "Bash(sleep 2 && cat /tmp/server_out.txt)",
-      "Read(//tmp/**)",
+      "Read(/tmp/**)",
       "Bash(curl -s http://localhost:3001/health)",
       "Bash(curl -s \"http://localhost:3001/api/auth/validate-invite?code=MAPIT-N-01\")",
       "Bash(curl -s \"http://localhost:3001/api/listings?lat=12.9352&lng=77.6245&radius=5000\")",
+      "Bash(cp \"MapIt_Demo 30052026.html\" \"public/index.html\")",
       "Bash(git checkout *)",
       "Bash(git stash *)",
-      "Bash(cp \"c:/Users/Vanin/Documents/MapIt project/mapit-backend/MapIt_Demo 30052026.html\" \"c:/Users/Vanin/Documents/MapIt project/mapit-backend/public/index.html\")",
-      "Bash(git commit -m ' *)",
+      "Bash(git commit -m '*')",
       "Bash(git push *)",
       "Bash(git merge *)",
       "Bash(git add *)"
     ],
     "additionalDirectories": [
-      "c:\\Users\\Vanin\\Documents\\MapIt project\\mapit-backend"
+      "/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend"
     ]
   }
 }
