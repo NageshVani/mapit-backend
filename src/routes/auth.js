@@ -112,11 +112,22 @@ router.post('/signup', async (req, res, next) => {
 });
 
 // ── Google OAuth: get redirect URL ───────────────────────────
-// GET /api/auth/google?uat=1
+// GET /api/auth/google?redirectTo=<encoded-origin>
+const ALLOWED_OAUTH_ORIGINS = [
+  'https://www.mapit.co.in',
+  'https://mapit.co.in',
+  'https://uat.mapit.co.in',
+  'http://localhost:3001',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+];
+const isVercelPreview = (u) => /^https:\/\/mapit-backend-[a-z0-9-]+\.vercel\.app$/.test(u);
+
 router.get('/google', async (req, res, next) => {
   try {
-    const redirectTo = req.query.uat === '1'
-      ? 'https://uat.mapit.co.in'
+    const raw = req.query.redirectTo ? decodeURIComponent(req.query.redirectTo) : 'https://www.mapit.co.in';
+    const redirectTo = (ALLOWED_OAUTH_ORIGINS.includes(raw) || isVercelPreview(raw))
+      ? raw
       : 'https://www.mapit.co.in';
 
     const { data, error } = await supabase.auth.signInWithOAuth({

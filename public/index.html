@@ -1158,8 +1158,8 @@ async function signInWithGoogle(){
   const btn = document.getElementById('googleBtn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div> Connecting…';
   try {
-    const isUat = window.location.hostname.includes('uat') ? '?uat=1' : '';
-    const { url } = await apiGet('/api/auth/google' + isUat);
+    const redirectTo = encodeURIComponent(window.location.origin);
+    const { url } = await apiGet('/api/auth/google?redirectTo=' + redirectTo);
     window.location.href = url;
   } catch(e){
     toast('Google sign-in unavailable. Please try email.');
