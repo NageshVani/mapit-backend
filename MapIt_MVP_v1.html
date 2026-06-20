@@ -271,6 +271,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .modal-success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:14px;}
 .otp-hint{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px;}
 .otp-hint b{color:var(--text);}
+.auth-tabs{display:flex;gap:0;margin-bottom:20px;border:1.5px solid var(--border2);border-radius:8px;overflow:hidden;}
+.auth-tab{flex:1;padding:9px 0;background:none;border:none;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;}
+.auth-tab.active{background:var(--orange);color:#fff;}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:11.5px;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border2);}
+.google-btn{background:var(--card)!important;color:var(--text)!important;border:1.5px solid var(--border2)!important;margin-top:0!important;}
+.google-btn:hover{background:var(--border2)!important;}
+.tos-row{display:flex;align-items:flex-start;gap:8px;margin-top:6px;}
 
 /* ── POST LISTING MODAL ── */
 .post-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
@@ -491,22 +499,38 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="modal-overlay" id="authModal">
   <div class="modal-box">
     <div class="modal-logo">Map<em>It</em></div>
-    <div class="modal-sub">Prototype · Bangalore</div>
+    <div class="modal-sub">Bangalore's location-first marketplace</div>
 
-    <!-- Step 1: Invite code -->
-    <div class="modal-step active" id="step-invite">
-      <div id="inviteError" class="modal-error" style="display:none"></div>
-      <label class="modal-label">Invite Code</label>
-      <input class="modal-input" id="inviteInput" placeholder="e.g. MAPIT-F-01" maxlength="20"/>
-      <button class="modal-btn" onclick="checkInvite()">
-        <span>Continue</span> <span>→</span>
-      </button>
-      <div class="modal-link" style="margin-top:16px;font-size:11px;">
-        Codes are shared privately by Arun or Nagesh via WhatsApp.
+    <!-- Step 1: Email + Password (primary auth) -->
+    <div class="modal-step active" id="step-auth">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
       </div>
+      <div id="authError" class="modal-error" style="display:none"></div>
+      <label class="modal-label">Email</label>
+      <input class="modal-input" id="authEmail" type="email" placeholder="your@email.com" autocomplete="email"/>
+      <label class="modal-label">Password</label>
+      <div style="position:relative;margin-bottom:14px;">
+        <input class="modal-input" id="authPassword" type="password" placeholder="••••••••" style="margin-bottom:0;padding-right:44px;" autocomplete="current-password"/>
+        <span id="pwdToggleIcon" onclick="togglePwd()" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;opacity:.5;">👁</span>
+      </div>
+      <div id="confirmPwdGroup" style="display:none;">
+        <label class="modal-label">Confirm Password</label>
+        <input class="modal-input" id="authPasswordConfirm" type="password" placeholder="••••••••" autocomplete="new-password"/>
+      </div>
+      <button class="modal-btn" id="authSubmitBtn" onclick="submitAuth()">
+        <span id="authBtnLabel">Sign In</span> <span>→</span>
+      </button>
+      <div id="forgotPwdRow" class="modal-link" onclick="sendPasswordReset()">Forgot password? <span>Send reset link</span></div>
+      <div class="auth-divider"><span>or</span></div>
+      <button class="modal-btn google-btn" id="googleBtn" onclick="signInWithGoogle()">
+        <span style="font-size:17px;font-weight:700;line-height:1;font-family:Georgia,serif;">G</span> Continue with Google
+      </button>
+      <div class="modal-link" onclick="goToStep('step-email')" style="margin-top:12px;font-size:11.5px;">Prefer a one-time code? <span>Use email OTP →</span></div>
     </div>
 
-    <!-- Step 2: Email -->
+    <!-- Step: OTP email entry -->
     <div class="modal-step" id="step-email">
       <div id="emailError" class="modal-error" style="display:none"></div>
       <label class="modal-label">Email Address</label>
@@ -514,10 +538,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <button class="modal-btn" id="sendOtpBtn" onclick="sendOtp()">
         <span>Send Login Code</span> <span>→</span>
       </button>
-      <div class="modal-link" onclick="goToStep('step-invite')">← Back</div>
+      <div class="modal-link" onclick="goToStep('step-auth')">← Back</div>
     </div>
 
-    <!-- Step 3: OTP -->
+    <!-- Step: OTP verify -->
     <div class="modal-step" id="step-otp">
       <div id="otpError" class="modal-error" style="display:none"></div>
       <div class="otp-hint">We sent a 6-digit code to<br><b id="otpEmailLabel"></b></div>
@@ -529,16 +553,32 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="modal-link" onclick="sendOtp()">Didn't get a code? <span>Resend</span></div>
     </div>
 
-    <!-- Step 4: Profile setup (new users only) -->
+    <!-- Step: Profile setup (new users only) -->
     <div class="modal-step" id="step-profile">
-      <div class="modal-success">✅ You're in! Let's set up your profile.</div>
+      <div class="modal-success">Welcome to MapIt! Let's set up your profile.</div>
       <label class="modal-label">Your Name</label>
       <input class="modal-input" id="nameInput" placeholder="e.g. Priya Sharma" maxlength="60"/>
       <label class="modal-label">Phone (optional)</label>
       <input class="modal-input" id="phoneInput" placeholder="+91 98765 43210" type="tel"/>
-      <button class="modal-btn" onclick="saveProfile()">
-        <span>Enter MapIt →</span>
+      <div class="tos-row">
+        <input type="checkbox" id="tosCheck" style="margin-top:2px;accent-color:var(--orange);width:16px;height:16px;flex-shrink:0;cursor:pointer;"/>
+        <label for="tosCheck" style="font-size:12px;color:var(--muted);line-height:1.5;cursor:pointer;">I agree to the <span style="color:var(--orange);font-weight:600;">Terms of Service</span> and <span style="color:var(--orange);font-weight:600;">Privacy Policy</span></label>
+      </div>
+      <button class="modal-btn" onclick="saveProfile()" style="margin-top:14px;">
+        <span>Continue →</span>
       </button>
+    </div>
+
+    <!-- Step: Home location picker -->
+    <div class="modal-step" id="step-homeloc">
+      <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📍 Set your home area</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Tap the map to mark where you're based. We'll show nearby listings first.</div>
+      <div id="homeLocMap" style="height:200px;border-radius:10px;overflow:hidden;border:1px solid var(--border2);margin-bottom:12px;"></div>
+      <div id="homeLocAddr" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
+      <button class="modal-btn" id="saveHomeLocBtn" onclick="saveHomeLocation()" style="display:none;">
+        <span>Save Home Location →</span>
+      </button>
+      <div class="modal-link" onclick="skipHomeLocation()">Skip for now →</div>
     </div>
   </div>
 </div>
@@ -978,6 +1018,7 @@ let ST = {
   profile: null,        // profile row
   session: null,        // session object
   inviteCode: null,
+  authProvider: null,
   loadingListings: false,
 };
 
@@ -1052,21 +1093,125 @@ function goToStep(id){
 function showErr(id, msg){ const el=document.getElementById(id); el.textContent=msg; el.style.display='block'; }
 function hideErr(id){ document.getElementById(id).style.display='none'; }
 
-async function checkInvite(){
-  const code = document.getElementById('inviteInput').value.trim().toUpperCase();
-  hideErr('inviteError');
-  if(!code){ showErr('inviteError','Please enter your invite code.'); return; }
-  try {
-    const data = await apiGet(`/api/auth/validate-invite?code=${code}`);
-    if(!data.valid){ showErr('inviteError', data.reason || 'Invalid code.'); return; }
-    ST.inviteCode  = code;
-    ST.createdFor  = data.created_for || '';
-    localStorage.setItem('mapit_invite', code);
-    localStorage.setItem('mapit_created_for', data.created_for || '');
-    goToStep('step-email');
-  } catch(e){ showErr('inviteError', e.message); }
+// ── Email + Password auth ────────────────────────────────────────
+let AUTH_MODE = 'signin';
+
+function switchAuthTab(mode){
+  AUTH_MODE = mode;
+  document.getElementById('tab-signin').classList.toggle('active', mode==='signin');
+  document.getElementById('tab-register').classList.toggle('active', mode==='register');
+  document.getElementById('authBtnLabel').textContent = mode==='signin' ? 'Sign In' : 'Create Account';
+  document.getElementById('confirmPwdGroup').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('forgotPwdRow').style.display = mode==='signin' ? 'block' : 'none';
+  document.getElementById('authPassword').autocomplete = mode==='signin' ? 'current-password' : 'new-password';
+  hideErr('authError');
 }
 
+function togglePwd(){
+  const inp = document.getElementById('authPassword');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function submitAuth(){
+  const email    = document.getElementById('authEmail').value.trim().toLowerCase();
+  const password = document.getElementById('authPassword').value;
+  hideErr('authError');
+  if(!email || !email.includes('@')){ showErr('authError','Please enter a valid email address.'); return; }
+  if(!password || password.length < 8){ showErr('authError','Password must be at least 8 characters.'); return; }
+  if(AUTH_MODE === 'register'){
+    const confirm = document.getElementById('authPasswordConfirm').value;
+    if(password !== confirm){ showErr('authError','Passwords do not match.'); return; }
+  }
+  const btn = document.getElementById('authSubmitBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
+  try {
+    const endpoint = AUTH_MODE === 'signin' ? '/api/auth/signin' : '/api/auth/signup';
+    const data = await apiPost(endpoint, { email, password });
+    ST.session = data.session;
+    ST.user    = data.user;
+    ST.profile = data.profile;
+    ST.authProvider = 'email';
+    const uid = data.user?.id;
+    if(uid){
+      const name = data.profile?.full_name || '';
+      saveToMultiSessions(uid, { session: data.session, name, initials: getInitials(name), email: data.user?.email });
+    }
+    if(data.isNewUser){
+      goToStep('step-profile');
+    } else {
+      document.getElementById('authModal').classList.add('hide');
+      await initApp();
+    }
+  } catch(e){
+    let msg = e.message || 'Sign in failed. Please try again.';
+    if(AUTH_MODE==='register' && msg.toLowerCase().includes('credentials')){
+      msg = 'An account with this email already exists. Try signing in, or use email OTP.';
+    }
+    showErr('authError', msg);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span id="authBtnLabel">${AUTH_MODE==='signin' ? 'Sign In' : 'Create Account'}</span> <span>→</span>`;
+  }
+}
+
+async function signInWithGoogle(){
+  const btn = document.getElementById('googleBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div> Connecting…';
+  try {
+    const isUat = window.location.hostname.includes('uat') ? '?uat=1' : '';
+    const { url } = await apiGet('/api/auth/google' + isUat);
+    window.location.href = url;
+  } catch(e){
+    toast('Google sign-in unavailable. Please try email.');
+    btn.disabled = false;
+    btn.innerHTML = '<span style="font-size:17px;font-weight:700;line-height:1;font-family:Georgia,serif;">G</span> Continue with Google';
+  }
+}
+
+async function handleOAuthCallback(){
+  const hash = window.location.hash;
+  if(!hash.includes('access_token=')) return false;
+  const params = new URLSearchParams(hash.substring(1));
+  const access_token  = params.get('access_token');
+  const refresh_token = params.get('refresh_token');
+  const expires_in    = params.get('expires_in');
+  if(!access_token) return false;
+  history.replaceState(null, '', window.location.pathname);
+  ST.session = { access_token, refresh_token, expires_in: Number(expires_in) };
+  ST.authProvider = 'google';
+  try {
+    const data = await apiGet('/api/auth/me');
+    ST.user    = data.user;
+    ST.profile = data.profile;
+    const uid  = data.user?.id;
+    if(uid){
+      const name = data.profile?.full_name || '';
+      saveToMultiSessions(uid, { session: ST.session, name, initials: getInitials(name), email: data.user?.email });
+    }
+    if(!data.profile){
+      document.getElementById('authModal').classList.remove('hide');
+      goToStep('step-profile');
+      return true;
+    }
+    document.getElementById('authModal').classList.add('hide');
+    await initApp();
+    return true;
+  } catch(e){
+    toast('Sign-in failed. Please try again.');
+    return false;
+  }
+}
+
+async function sendPasswordReset(){
+  const email = document.getElementById('authEmail').value.trim().toLowerCase();
+  if(!email || !email.includes('@')){ showErr('authError','Enter your email above to receive a reset link.'); return; }
+  try {
+    await apiPost('/api/auth/reset-password', { email });
+    toast('Password reset link sent to ' + email);
+  } catch(e){ toast('Could not send reset link. Please try again.'); }
+}
+
+// ── OTP flow (kept as fallback) ──────────────────────────────────
 async function sendOtp(){
   const email = document.getElementById('emailInput').value.trim().toLowerCase();
   hideErr('emailError');
@@ -1074,7 +1219,7 @@ async function sendOtp(){
   const btn = document.getElementById('sendOtpBtn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
   try {
-    await apiPost('/api/auth/send-otp', { email, invite_code: ST.inviteCode });
+    await apiPost('/api/auth/send-otp', { email });
     document.getElementById('otpEmailLabel').textContent = email;
     goToStep('step-otp');
     document.getElementById('otpInput').focus();
@@ -1097,11 +1242,11 @@ async function verifyOtp(){
     ST.session = data.session;
     ST.user    = data.user;
     ST.profile = data.profile;
-    // Save to multi-session store for quick family switching
+    ST.authProvider = 'email';
     const uid = data.user?.id;
     if(uid){
-      const name = data.created_for || data.profile?.full_name || ST.createdFor || '';
-      saveToMultiSessions(uid, { session: data.session, name, initials: getInitials(name), invite_code: ST.inviteCode, email: data.user?.email, created_for: data.created_for || name });
+      const name = data.profile?.full_name || '';
+      saveToMultiSessions(uid, { session: data.session, name, initials: getInitials(name), email: data.user?.email });
     }
     if(data.isNewUser){
       goToStep('step-profile');
@@ -1116,39 +1261,101 @@ async function verifyOtp(){
   }
 }
 
+// ── Profile setup ────────────────────────────────────────────────
 async function saveProfile(){
   const full_name = document.getElementById('nameInput').value.trim();
   const phone     = document.getElementById('phoneInput').value.trim();
+  const tosOk     = document.getElementById('tosCheck').checked;
   if(!full_name){ toast('Please enter your name.'); return; }
+  if(!tosOk){ toast('Please agree to the Terms of Service to continue.'); return; }
   try {
     const data = await apiPost('/api/auth/register', {
-      full_name, phone: phone||null, invite_code: ST.inviteCode
+      full_name, phone: phone||null,
+      invite_code: ST.inviteCode||null,
+      auth_provider: ST.authProvider||'email',
     });
-    ST.profile = data.profile;
+    ST.profile    = data.profile;
     ST.createdFor = full_name;
-    // Save to multi-session store
     const uid = ST.user?.id;
-    if(uid) saveToMultiSessions(uid, { session: ST.session, name: full_name, initials: getInitials(full_name), invite_code: ST.inviteCode, email: ST.user?.email });
-    document.getElementById('authModal').classList.add('hide');
-    await initApp();
+    if(uid) saveToMultiSessions(uid, { session: ST.session, name: full_name, initials: getInitials(full_name), email: ST.user?.email });
+    goToStep('step-homeloc');
+    initHomeLocMap();
   } catch(e){ toast('Could not save profile: ' + e.message); }
 }
 
+// ── Home location picker ─────────────────────────────────────────
+let _homeLocMap = null, _homeLocMarker = null, _homeLocCoords = null;
+
+function initHomeLocMap(){
+  if(_homeLocMap){ _homeLocMap.remove(); _homeLocMap = null; _homeLocMarker = null; _homeLocCoords = null; }
+  document.getElementById('homeLocAddr').textContent = '';
+  document.getElementById('saveHomeLocBtn').style.display = 'none';
+  const center = ST.activePin ? [ST.activePin.lat, ST.activePin.lng] : [12.9716, 77.5946];
+  setTimeout(()=>{
+    _homeLocMap = L.map('homeLocMap', { zoomControl: true, attributionControl: false }).setView(center, 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_homeLocMap);
+    _homeLocMap.on('click', async e=>{
+      const { lat, lng } = e.latlng;
+      _homeLocCoords = { lat, lng };
+      if(_homeLocMarker) _homeLocMarker.setLatLng([lat, lng]);
+      else _homeLocMarker = L.marker([lat, lng]).addTo(_homeLocMap);
+      document.getElementById('homeLocAddr').textContent = 'Getting address…';
+      document.getElementById('saveHomeLocBtn').style.display = 'flex';
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+        const g = await r.json();
+        const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        _homeLocCoords.address = addr;
+        document.getElementById('homeLocAddr').textContent = '📍 ' + addr;
+      } catch(_){
+        _homeLocCoords.address = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        document.getElementById('homeLocAddr').textContent = '📍 ' + _homeLocCoords.address;
+      }
+    });
+    _homeLocMap.invalidateSize();
+  }, 120);
+}
+
+async function saveHomeLocation(){
+  if(!_homeLocCoords) return;
+  const btn = document.getElementById('saveHomeLocBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
+  try {
+    const data = await apiPut('/api/auth/home-location', {
+      home_lat: _homeLocCoords.lat,
+      home_lng: _homeLocCoords.lng,
+      home_address: _homeLocCoords.address||null,
+    });
+    ST.profile = data.profile;
+    toast('Home location saved!');
+    _closeAuthModal();
+  } catch(e){
+    toast('Could not save location. Continuing…');
+    _closeAuthModal();
+  }
+}
+
+function skipHomeLocation(){ _closeAuthModal(); }
+
+async function _closeAuthModal(){
+  document.getElementById('authModal').classList.add('hide');
+  if(_homeLocMap){ _homeLocMap.remove(); _homeLocMap = null; }
+  await initApp();
+}
+
+// ── Sign Out ──────────────────────────────────────────────────────
 async function logout(){
   const name = ST.createdFor || ST.profile?.full_name || 'User';
-  // Keep session in multi-store so family can switch back without OTP
-  const uid = ST.user?.id;
+  const uid  = ST.user?.id;
   if(uid && ST.session) saveToMultiSessions(uid, { session: ST.session });
   try { await apiPost('/api/auth/logout', {}); } catch(_){}
-  // Do NOT clear mapit_sessions — other family members need it for quick switch
   localStorage.removeItem('mapit_invite');
   localStorage.removeItem('mapit_created_for');
-  // Always hide admin items — they will be re-evaluated on next initApp()
   document.getElementById('adminMenuItem').classList.add('hide');
   document.getElementById('feedbackViewMenuItem').classList.add('hide');
-  // Full state wipe so nothing from this session bleeds into the next user
   ST.session = null; ST.user = null; ST.profile = null;
-  ST.inviteCode = ''; ST.createdFor = ''; ST.userPins = []; ST.activePin = null;
+  ST.inviteCode = ''; ST.createdFor = ''; ST.authProvider = null;
+  ST.userPins = []; ST.activePin = null;
   ST.listings = []; ST.savedIds = new Set();
   toast(`👋 ${name} signed out.`);
   setTimeout(()=>location.reload(), 1800);
@@ -2224,11 +2431,13 @@ async function initApp(){
 }
 
 async function init(){
+  // Handle Google OAuth redirect callback (hash contains access_token)
+  if(await handleOAuthCallback()) return;
   const sessions = getMultiSessions();
   if(Object.keys(sessions).length > 0){
     renderWhoamiScreen();
     document.getElementById('whoamiScreen').classList.remove('hide');
-    document.getElementById('authModal').classList.add('hide'); // prevent brief flash when whoami dismisses
+    document.getElementById('authModal').classList.add('hide');
     return;
   }
   document.getElementById('authModal').classList.remove('hide');
@@ -2266,28 +2475,24 @@ async function continueAs(userId){
     await initApp();
   } catch(_){
     toast(`Session for ${stored.name||'this user'} expired — please log in again.`);
-    // Pre-fill known invite code and email so user skips step-invite and only needs the OTP
-    const kCode  = stored.invite_code || '';
+    // Pre-fill email so the user can sign in immediately
     const kEmail = stored.email || '';
-    if(kCode){
-      ST.inviteCode = kCode;
-      localStorage.setItem('mapit_invite', kCode);
-      localStorage.setItem('mapit_created_for', stored.created_for || stored.name || '');
-      document.getElementById('inviteInput').value = kCode;
+    if(kEmail){
+      document.getElementById('authEmail').value = kEmail;
+      document.getElementById('emailInput').value = kEmail;
     }
-    if(kEmail) document.getElementById('emailInput').value = kEmail;
     document.getElementById('authModal').classList.remove('hide');
-    goToStep(kCode ? 'step-email' : 'step-invite');
+    goToStep('step-auth');
   }
 }
 
 function signInAsSomeoneElse(){
   document.getElementById('whoamiScreen').classList.add('hide');
-  // Leave mapit_sessions intact so other family members can still switch back
   ST.session = null; ST.user = null; ST.profile = null;
-  ST.inviteCode = ''; ST.createdFor = '';
+  ST.inviteCode = ''; ST.createdFor = ''; ST.authProvider = null;
   ST.userPins = []; ST.activePin = null;
   document.getElementById('authModal').classList.remove('hide');
+  goToStep('step-auth');
 }
 
 // ═══════════════════════════════════════════════

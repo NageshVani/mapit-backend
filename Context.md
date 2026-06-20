@@ -6,20 +6,68 @@
 ---
 
 ## 📌 Project Overview
-- **Project:** MapIt — Bangalore property/classifieds prototype (family beta)
+- **Project:** MapIt — location-first buy-and-sell marketplace for India (and USA)
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
-- **Root directory:** `c:\Users\Vanin\Documents\MapIt project\mapit-backend`
-- **Last updated:** 2026-06-07 (Session 14 checkpoint — update 3)
+- **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
+- **Last updated:** 2026-06-20 (MVP Session 2 in progress — auth modal fully rebuilt, ready for UAT testing)
 
 ---
 
 ## 🎯 Current Goal
 
-**UAT Phase 4 ongoing — "Express Interest" buyer→seller messaging live on production (commit `02eb030`).** Buyers can now tap "🤝 I'm Interested" on any listing to send a real in-app message to the seller's Inbox. Awaiting next round of family testing feedback.
+**MVP Session 2 IN PROGRESS — Registration, Authentication & Map Interactions.**
+Auth modal fully rebuilt (email+password, Google OAuth, OTP fallback, ToS, home location picker). Next: push to UAT branch, configure Google OAuth in Supabase Dashboard, and test the full new auth flow end-to-end.
 
 ---
 
 ## ✅ Completed This Session
+
+- ✅ **MVP Session 2 — Auth modal fully rebuilt (2026-06-20):**
+  - **New `step-auth`** replaces `step-invite` as the first screen: Sign In / Create Account tabs, email+password form, show/hide password toggle, Google OAuth button, "Use email OTP →" fallback
+  - **`step-profile`** updated: ToS checkbox added; `agreed_tos_at` now written to DB on submission; `auth_provider` sent from frontend
+  - **New `step-homeloc`**: inline Leaflet map picker after profile setup; tap to drop marker, reverse-geocodes via Nominatim; Save or Skip; writes `home_lat`/`home_lng`/`home_address` to profile
+  - **New JS functions**: `switchAuthTab()`, `togglePwd()`, `submitAuth()`, `signInWithGoogle()`, `handleOAuthCallback()`, `sendPasswordReset()`, `initHomeLocMap()`, `saveHomeLocation()`, `skipHomeLocation()`
+  - **`handleOAuthCallback()`** called at startup in `init()` — detects `#access_token=...` hash from Google redirect, restores session, routes to profile setup or app
+  - **`sendOtp()`** updated: invite code removed from payload (open access)
+  - **`continueAs()`** updated: session-expired path now pre-fills email in auth form, routes to `step-auth` (not `step-invite`)
+  - **`signInAsSomeoneElse()`** updated: resets `ST.authProvider`, calls `goToStep('step-auth')`
+  - **Backend — new routes in `src/routes/auth.js`**:
+    - `POST /api/auth/signin` — email+password sign in via `signInWithPassword`
+    - `POST /api/auth/signup` — admin.createUser (email_confirm:true) + signInWithPassword; returns `isNewUser`
+    - `GET /api/auth/google` — returns Supabase OAuth URL; `?uat=1` param for UAT redirect
+    - `POST /api/auth/reset-password` — sends Supabase password reset email
+    - `PUT /api/auth/home-location` — writes `home_lat`/`home_lng`/`home_address` to profile
+    - `POST /api/auth/logout` — no auth required (token may be expired)
+  - **Backend — updated routes**:
+    - `POST /api/auth/register`: now writes `agreed_tos_at: new Date().toISOString()` and `auth_provider` to profiles upsert
+    - `POST /api/auth/send-otp`: invite code validation block removed; pre-create logic preserved
+  - `public/index.html` synced from `MapIt_MVP_v1.html` — diff verified clean
+
+- ✅ **MVP Session 2 — Migration 001 applied to Supabase production (2026-06-20):**
+  - Reviewed `database/migrations/001-mvp-auth-schema.sql` — confirmed safe; all statements use `IF NOT EXISTS`
+  - `phone` column confirmed already existing (written by `/register` route since Session 8)
+  - `auth_provider TEXT DEFAULT 'email' CHECK (auth_provider IN ('email', 'google', 'phone'))` — added to `profiles`
+  - `default_view TEXT DEFAULT 'map' CHECK (default_view IN ('map', 'list'))` — added to `profiles`
+  - `invite_code` column renamed to `invite_code_legacy` in `profiles` (historical data preserved)
+  - `home_lat`, `home_lng`, `home_address`, `agreed_tos_at`, `nickname` confirmed added (from migration script)
+  - All existing rows auto-backfilled: `auth_provider='email'`, `default_view='map'` via DEFAULT — no manual backfill needed
+  - Confirmed `user_pins.lat` / `user_pins.lng` are `float8` (= `DOUBLE PRECISION`) — consistent with new `home_lat`/`home_lng` columns
+  - **Only one Supabase project exists** (`map it-backend`) — no separate UAT DB; decision made to keep single project for MVP family-beta phase
+  - `spatial_ref_sys` table flagged as "unrestricted" — confirmed PostGIS system table; no RLS needed or safe to add; no action taken
+
+- ✅ **MVP Session 1 — Foundation & Housekeeping (2026-06-19, commit `c7f86e8`, pushed to `uat`):**
+  - Fixed git global email — removed literal quote chars; now correctly `nagesh.aadi@gmail.com`
+  - Created `MapIt_MVP_v1.html` from `MapIt_Demo 30052026.html` (prototype → canonical MVP frontend, 2603 lines)
+  - Synced `MapIt_MVP_v1.html` → `public/index.html` — diff verified clean (byte-identical)
+  - Created `CLAUDE.md` v4.0 with all 12 collaboration rules (mentor role, scope discipline, two-file rule, branch strategy, security, DB safety, budget, screenshots, MVP boundary)
+  - Created `docs/architecture.md` — stack table, branch strategy, key architectural decisions, budget plan
+  - Created `docs/ux-audit.md` — 30-issue audit across typography, colour, spacing, forms, auth, and map interaction
+  - Created `docs/screenshots/session-01/` (empty folder for session captures)
+  - Created `database/migrations/001-mvp-auth-schema.sql` — profiles table additions for Session 2
+  - Created `database/migrations/002-mvp-listings-schema.sql` — listings additions for Session 3
+  - Created `database/migrations/003-chat-schema.sql` — conversations + chat_messages schema for Session 6
+  - Created `.env.example` — all current + upcoming MVP env vars documented with comments
+  - Committed and pushed all above to `uat` branch (`c7f86e8`)
 
 - ✅ **Session 14 — "Express Interest" buyer→seller messaging (2026-06-07, commit `02eb030`, live on `main`):**
   - **Problem**: `💬 Chat with Seller` button was a fully simulated local mock — no messages ever reached the seller; backend `/api/messages` was never called
@@ -46,6 +94,27 @@
   - **"Posted X ago" relative time**: new `timeAgo(dateStr)` util (`just now` / `Xm ago` / `X.Xhr ago` / `X.Xd ago`); wired into listing cards (`lr-meta`) and detail view (`ld-dist-sub`)
   - **Fixed My Ads cross-contamination bug**: other sellers' listings were appearing inside My Ads (with a working-looking "✏️ Edit Listing" button). Root causes: (1) `renderSidebar`/`selListing` computed prev/next nav and merges from `ST.listings` (the browse array, which explicitly excludes the user's own listings) instead of a dedicated My Ads array, and prev/next nav called `selListing()` without `keepTab=true`, silently flipping back to the browse tab; (2) `switchTab()` never cleared `ST.selId`, so a listing opened via map-pin click while on Browse stayed "selected" after switching to My Ads, skipping `renderMyAds()` and rendering that listing's detail under the `ST.tab==='mine'` context — which unconditionally showed the Edit button. Fixed by adding `ST.myListings` (populated in `renderMyAds`), making `renderSidebar`/`selListing` tab-aware end to end, clearing `ST.selId` in `switchTab`, and gating the Edit button on `l.seller_id===ST.user?.id`
   - `public/index.html` re-synced and verified byte-identical to `MapIt_Demo 30052026.html`
+
+- ✅ **Session 17 — Schema analysis: `profiles` ↔ `invite_codes` join (2026-06-16):**
+  - Join key confirmed: `invite_codes.used_by = profiles.id` (populated when a user registers with a code)
+  - **Blocker**: `invite_codes.used_by` is NULL for all rows — no family member has fully registered via code yet, or `used_by` was never backfilled
+  - SQL provided: `UPDATE profiles SET full_name = ic.created_for FROM invite_codes ic WHERE profiles.id = ic.used_by` (will work once `used_by` is populated)
+  - Alternative approaches identified: join via `auth.users.email` if `invite_codes` has email column; or manual row-by-row mapping using a helper SELECT with row numbers
+
+- ✅ **Session 16 — Invite code MAPIT-F-12 whitespace fix (2026-06-15, Supabase SQL Editor):**
+  - **Problem**: family member reported "Invalid or expired invite code" for `MAPIT-F-12`; other codes worked fine
+  - **Root cause**: NOT RLS — `validate-invite` endpoint uses `supabaseAdmin` (service role) which bypasses RLS entirely; error path `!invite` means row not found; leading/trailing space in `code` column from manual table-editor insert caused `.eq('code', 'MAPIT-F-12')` to miss the row
+  - **Fix**: `UPDATE invite_codes SET code = trim(code) WHERE code LIKE '%F-12%'` removed the whitespace; verified all rows now have exactly 10-char codes (`SELECT code, length(code), created_for FROM invite_codes ORDER BY created_at DESC`)
+  - **Preventive**: run `UPDATE invite_codes SET code = trim(code) WHERE code != trim(code)` after any future manual batch insert
+
+- ✅ **Session 15 — MacBook Air migration verified (2026-06-08):**
+  - Confirmed Node.js was not installed on Mac; Homebrew also missing
+  - User installed Homebrew → Node.js v26.0.0 (arm64) → npm 11.16.0
+  - Deleted Windows `node_modules` and ran `npm install` fresh for Mac arm64 binaries
+  - Verified: `~/.zprofile` has correct `eval "$(/opt/homebrew/bin/brew shellenv)"` line
+  - Verified: `.env` file present with all values set; git remote correct; production unaffected
+  - Identified CRLF line endings in source files (harmless, optional to fix)
+  - Identified git global email stored with extra literal quotes: `"nagesh.aadi@gmail.com"` — fix pending
 
 - ✅ **Session 1** — Vercel backend setup, Supabase DB/Auth/Storage, Resend SMTP configured, CORS wired
 - ✅ **Session 2** — `app.listen()` guarded with `require.main === module` for Vercel serverless; `API_URL` updated to `https://api.mapit.co.in` in both HTML files; DNS confirmed propagated (`api.mapit.co.in` CNAME → Vercel)
@@ -123,19 +192,39 @@
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| Continue UAT iteration cycle | 🟡 Pending | — | Awaiting next round of family testing feedback |
-| Run SQL cleanup for listings with empty/missing `details` | 🟡 Pending | Supabase SQL Editor | `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb` — needed for clean UAT testing |
-| Fix TVS SCOOTY subcategory in Supabase | 🟡 Pending | Supabase SQL Editor | `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`; existing bad-data listing from early test |
-| Fix "1" suffix names in Supabase | 🟡 Pending | Supabase table editor | `Chirag 1`, `Kalpith 1`, `Srikanth 1`, `Vijay 1` — confirm if intentional; fix before those members log in |
-| Onboard family members | 🟡 Pending | — | Share `https://mapit.co.in` + individual codes |
-| Delete broken frontend Vercel project | 🟡 Optional | Vercel dashboard | Separate project returning 500 — no longer needed |
-| Backfill `invite_codes.used_by` + `email` | 🟡 Optional | Supabase table editor | Fill once family emails collected; backend fallback handles null |
+| Migration 001 — apply to Supabase | ✅ Done | Supabase SQL Editor | All columns added/renamed; both CHECK constraints applied; backfilled via DEFAULT |
+| MVP Session 2 — Build auth modal | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html`, `src/routes/auth.js` | email+password, Google OAuth, OTP fallback, ToS, home location picker — all built |
+| MVP Session 2 — Home location map picker | ✅ Done | `MapIt_MVP_v1.html`, `src/routes/auth.js` | Inline Leaflet map (`step-homeloc`); `PUT /api/auth/home-location` route added |
+| MVP Session 2 — `agreed_tos_at` + `auth_provider` backend | ✅ Done | `src/routes/auth.js` | `POST /api/auth/register` now writes both fields on profile creation |
+| MVP Session 2 — Push to UAT + test | 🟡 Next | git | Push `uat` branch; test sign-up, sign-in, Google OAuth, home location |
+| MVP Session 2 — Google OAuth Supabase config | 🟡 Next | Supabase Dashboard | Enable Google provider; add redirect URIs `https://www.mapit.co.in` + `https://uat.mapit.co.in` |
+| Vercel: set up `uat.mapit.co.in` | ✅ Done | Vercel dashboard | Valid Configuration confirmed (2026-06-20) |
+| Vercel: delete broken frontend project | ✅ Done | Vercel dashboard | `mapit-frontend` project deleted (2026-06-20) |
+| Supabase SQL cleanup: trim invite_codes | ✅ Done | Supabase SQL Editor | Ran successfully (2026-06-20) |
+| Supabase SQL cleanup: drop condition_check constraint | ✅ Done | Supabase SQL Editor | Ran successfully (2026-06-20) |
+| Run SQL cleanup for empty-`details` listings | 🟡 Pending | Supabase SQL Editor | `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb` |
+| Fix TVS SCOOTY subcategory in Supabase | 🟡 Pending | Supabase SQL Editor | `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'` |
+| Backfill `invite_codes.used_by` | 🔴 Deferred | Supabase table editor | ALL rows have `used_by = NULL`; invite codes no longer used in MVP auth — archived |
 
 ---
 
 ## 📂 Key Files Modified
 
 ```
+MapIt_MVP_v1.html          — MVP Session 2: Auth modal rebuilt — new step-auth (email+password+Google), step-homeloc (map picker), ToS checkbox, new JS functions for all auth paths; sendOtp no longer sends invite code
+public/index.html          — MVP Session 2: Synced from MapIt_MVP_v1.html (diff clean)
+src/routes/auth.js         — MVP Session 2: Added POST /signin, POST /signup, GET /google, POST /reset-password, PUT /home-location, POST /logout; updated POST /register (agreed_tos_at + auth_provider); removed invite code check from POST /send-otp
+database/migrations/001-mvp-auth-schema.sql — MVP Session 2: Reviewed and applied; auth_provider + default_view added with CHECK; invite_code renamed to invite_code_legacy; all columns now live in Supabase
+CLAUDE.md                  — MVP Session 1: CREATED v4.0 — 12 collaboration rules, security rules, scope boundary, file paths quick ref
+.env.example               — MVP Session 1: CREATED — all current + upcoming env vars with comments; safe to commit
+MapIt_MVP_v1.html          — MVP Session 1: CREATED — canonical MVP frontend (copy of prototype; all future frontend edits go here)
+docs/architecture.md       — MVP Session 1: CREATED — stack table, branch strategy, architectural decisions, budget
+docs/ux-audit.md           — MVP Session 1: CREATED — 30-issue audit across typography, colour, spacing, forms, auth, map
+docs/screenshots/session-01/.gitkeep — MVP Session 1: CREATED — placeholder for session screenshots
+database/migrations/001-mvp-auth-schema.sql — MVP Session 1: CREATED — profiles table additions for Session 2 (nickname, phone, home_lat/lng, auth_provider, default_view)
+database/migrations/002-mvp-listings-schema.sql — MVP Session 1: CREATED — listings additions for Session 3 (reference_code, expires_at, show_phone, views_count, city_id)
+database/migrations/003-chat-schema.sql — MVP Session 1: CREATED — conversations + chat_messages tables for Session 6
+public/index.html          — MVP Session 1: Synced from MapIt_MVP_v1.html (diff clean)
 MapIt_Demo 30052026.html   — Session 14 update 3: expressInterest() replaces openChat(); button label → 🤝 I'm Interested; disabled CSS; onboarding copy updated
                            — Session 6: admin menu CSS fix; invite code skip; location splash removed; zoom bottomright; inbox badge fix
                            — Session 7: API_URL reverted to https://api.mapit.co.in — PRODUCTION READY
@@ -160,17 +249,27 @@ public/index.html          — Session 7: fully synced with MapIt_Demo (was 150 
 public/vercel.json         — Session 7: added (cleanUrls/trailingSlash static config)
 session-log.html           — Session 7: 6 historical session entries imported; 9 total entries
                            — Session 12: entry #15 added (session resume)
+                           — Session 16: entries #16–#22 added (invite code whitespace diagnosis and fix); 22 total entries
 ```
 
 ---
 
 ## 🐛 Open Issues / Blockers
 
+- **Google OAuth not yet configured in Supabase** — `GET /api/auth/google` route is live but will fail until Google provider is enabled in Supabase Dashboard → Auth → Providers → Google; also need to add Client ID + Secret from Google Cloud Console
+- **Google OAuth redirect URIs not yet set** — must add `https://www.mapit.co.in` and `https://uat.mapit.co.in` in both Google Cloud Console (Authorized redirect URIs) and Supabase Auth settings
+- **Only one Supabase project** — `map it-backend` is both UAT and production DB; no separate staging DB; accepted for family-beta MVP phase (see Decisions)
+- **`agreed_tos_at` write not yet in backend** — ✅ FIXED (2026-06-20): `POST /api/auth/register` now writes `agreed_tos_at: new Date().toISOString()`
+- **Git global email** — ✅ FIXED (2026-06-19): `git config --global user.email nagesh.aadi@gmail.com` — quotes removed
+- **CRLF line endings in source files** — carried over from Windows (e.g. `src/server.js`); harmless for Node/Vercel but not Mac-native; optional fix via `.gitattributes`
 - **Listings with empty/missing `details` not yet cleaned up** — criterion: `details IS NULL OR details = '{}'::jsonb`; SQL not yet run by user
 - **`listings` table `details` column** — added in Supabase (confirmed); backend writes it; existing listings have `details: {}`
 - **Some invite code names have "1" appended** — `Chirag 1`, `Kalpith 1`, `Srikanth 1`, `Vijay 1`; fix in Supabase table editor before those members log in if unintentional
-- **`invite_codes.used_by` + `email` null for all members** — backend fallback handles it; backfill once emails collected
-- **`uat.mapit.co.in` custom domain not yet set** — UAT at `mapit-backend-git-uat-nagesh-n-arun.vercel.app`; optional to add stable subdomain
+- **`invite_codes.used_by` NULL for ALL rows** — confirmed 2026-06-16; blocks automatic `profiles.full_name` update; need to either: (a) check if `invite_codes` has an email column to join via `auth.users`, or (b) manually map each profile UUID to its invite code row in Supabase table editor
+- **`invite_codes.email` column existence unknown** — if it exists, can auto-join: `UPDATE profiles SET full_name = ic.created_for FROM invite_codes ic JOIN auth.users u ON u.email = ic.email WHERE profiles.id = u.id`
+- **`uat.mapit.co.in` custom domain not yet set** — UAT at `mapit-backend-git-uat-nagesh-n-arun.vercel.app`; must be configured in Vercel dashboard before Session 2 UAT
+- **Broken frontend Vercel project still live** — separate Vercel project returning 500; delete in Vercel dashboard
+- **Supabase SQL cleanup pending (2 statements)** — `UPDATE invite_codes SET code = trim(code) WHERE code != trim(code);` and `ALTER TABLE listings DROP CONSTRAINT listings_condition_check;` — must be run manually
 - **TVS SCOOTY listing has `subcategory='Cars'` in DB** — needs manual SQL update: `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
 - **Edit listing does not replace photos** — intentional for now; photo management not implemented
 - **`listings_condition_check` constraint still exists** — checks `condition IN ('New', 'Like New', 'Good', ...)` but `condition` field was removed in Session 10; harmless (NULL satisfies the constraint) but can be cleaned up with `ALTER TABLE listings DROP CONSTRAINT listings_condition_check`
@@ -181,6 +280,23 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| email+password as primary auth (not OTP) | OTP was family-beta only; email+password is the standard UX for a public marketplace; OTP kept as fallback via "Use email OTP →" link |
+| Invite code screen removed entirely | `REQUIRE_INVITE_CODE=false`; invite codes are archived not deleted; family members restore via multi-session store (no re-OTP needed) |
+| ToS accepted at profile creation (not account creation) | Only shown once to new users after auth; `agreed_tos_at` timestamp written on `POST /api/auth/register`; existing users unaffected |
+| Home location as separate `step-homeloc` (not bundled in profile step) | Keeps profile step short; map needs visible DOM to init (requires its own step); "Skip for now" always available |
+| `auth_provider` written to profiles table on registration | Allows future analytics on sign-up method; CHECK constraint enforces `'email' | 'google' | 'phone'` |
+| MVP signup skips email verification (`email_confirm: true` in admin.createUser) | Avoids friction of a verification email for immediate marketplace access; acceptable for MVP; can add verification before public launch |
+| Google OAuth URL fetched from backend (`GET /api/auth/google`) | Keeps Supabase client secret server-side; frontend never sees it; backend returns only the redirect URL |
+| `handleOAuthCallback()` called at `init()` start | Google redirects back with `#access_token=` in URL hash; must intercept before the who-am-I / auth modal logic runs |
+| Single Supabase project for UAT + production | No separate staging DB for MVP family-beta; 12 family users, no paying customers — overhead of maintaining two schemas not justified yet; revisit before public launch |
+| `auth_provider` CHECK constraint added at column creation | Prevents silent bad values ('gmail' instead of 'google'); enforced at DB level; valid values: 'email', 'google', 'phone' |
+| `default_view` CHECK constraint added at column creation | Enforces 'map' or 'list' only; existing rows default to 'map' (matches current app behaviour) |
+| `invite_code` renamed to `invite_code_legacy` (not dropped) | Historical data preserved for debugging/auditing; column no longer written by any active code path |
+| `spatial_ref_sys` left unrestricted | PostGIS system table — read-only coordinate reference data; adding RLS can break spatial queries; no user PII present |
+| `float8` / `DOUBLE PRECISION` for `home_lat`/`home_lng` | Consistent with `user_pins.lat`/`user_pins.lng`; 15 sig-digit precision far exceeds GPS needs (~7 digits); simpler than PostGIS geography for a single saved location |
+| `agreed_tos_at` NULL by default (no DEFAULT value) | NULL = user has not yet agreed; gates feature access in future; must be explicitly set at registration time |
+| Homebrew for Node.js on Mac | Standard Mac package manager; installs to `/opt/homebrew` on Apple Silicon; PATH wired via `~/.zprofile` |
+| Fresh `npm install` after Mac migration | Windows `node_modules` contain x64 binaries that don't run on Mac arm64; must always reinstall on new platform |
 | Vercel serverless for backend | Zero-ops, free tier, works with `@vercel/node` |
 | Supabase for DB + Auth + Storage | Managed Postgres, built-in OTP auth, S3-compatible storage |
 | Resend as custom SMTP inside Supabase | Reliable transactional email, `mapit.co.in` domain, free tier sufficient |
@@ -214,25 +330,41 @@ session-log.html           — Session 7: 6 historical session entries imported;
 | New invite codes added via Supabase table editor | Only `code` and `created_for` columns needed; backend handles `used_by`/`email` via fallback on first login |
 | Pre-create user via admin API before signInWithOtp | `shouldCreateUser:true` fires both confirm-signup + OTP emails; pre-creating with `email_confirm:true` then `shouldCreateUser:false` sends only OTP |
 | `dev`/`uat`/`main` branch strategy | `dev` = local work; `uat` = Vercel preview for family sign-off; `main` = production auto-deploy |
+| Trim invite codes after manual Supabase insert | Table editor can silently introduce leading/trailing spaces; run `UPDATE invite_codes SET code = trim(code) WHERE code != trim(code)` after any batch insert to avoid "Invalid or expired invite code" errors |
+| MVP canonical frontend is now `MapIt_MVP_v1.html` | Prototype file (`MapIt_Demo 30052026.html`) kept as read-only reference; all MVP edits go to `MapIt_MVP_v1.html` → synced to `public/index.html` |
+| CLAUDE.md v4.0 adopted for MVP | 12 rules covering mentor role, scope discipline, two-file rule, security, DB safety, budget, MVP boundary; replaces older inline rules |
+| Migration SQL files pre-written in `database/migrations/` | Sessions 2, 3, 6 SQL staged as `.sql` files; run each in Supabase SQL Editor at the start of the relevant session |
+| `invite_codes` table archived, not deleted | No longer used for auth in MVP; `REQUIRE_INVITE_CODE=false`; historical data preserved |
 
 ---
 
 ## 💻 Migration Note
 
-**Migrating to MacBook Air** — development is moving from Windows 11 to a new MacBook Air. Push all local changes before switching machines. On the Mac, clone `github.com/NageshVani/mapit-backend` and set up Node.js + npm. Environment variables (Supabase, Resend, etc.) will need to be re-added to the local `.env` file — refer to Vercel project env vars as the source of truth.
+**Migration to MacBook Air COMPLETE (2026-06-08)** — development has moved from Windows 11 to MacBook Air (Apple Silicon, arm64, macOS 26.5.1). Homebrew installed, Node.js v26.0.0 + npm 11.16.0 confirmed working, `node_modules` reinstalled fresh for arm64. `.env` file present with all values. Git remote correct. One pending fix: git global email has literal quote chars — run `git config --global user.email nagesh.aadi@gmail.com`.
 
 ---
 
 ## 🔜 Next Steps (Queued)
 
-1. **Continue UAT iteration cycle** — implement/fix items from ongoing family-testing feedback rounds; production now at commit `02eb030`
-2. **Run SQL cleanup for empty-`details` listings** — `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb` in Supabase SQL Editor
-3. **Fix TVS SCOOTY subcategory in Supabase** — `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
-4. **Fix "1" suffix names in Supabase** — confirm if `Chirag 1`, `Kalpith 1`, `Srikanth 1`, `Vijay 1` are intentional; fix in table editor if not
-5. **Optional: drop `listings_condition_check`** — `ALTER TABLE listings DROP CONSTRAINT listings_condition_check` (harmless but stale since condition field was removed)
-6. **Onboard family members** — share `https://mapit.co.in` + individual codes (3 new codes now added)
-7. **Delete broken frontend Vercel project** (optional cleanup)
-8. **Optional: backfill `invite_codes.used_by` + `email`** — collect family emails; fill via Supabase table editor
+**Pre-Session 2 actions — ALL DONE ✅**
+1. ✅ **Vercel dashboard** — `uat.mapit.co.in` configured (2026-06-20)
+2. ✅ **Vercel dashboard** — `mapit-frontend` broken project deleted (2026-06-20)
+3. ✅ **Supabase SQL** — `trim(invite_codes.code)` ran (2026-06-20)
+4. ✅ **Supabase SQL** — `listings_condition_check` constraint dropped (2026-06-20)
+5. ✅ **Migration 001** — all columns added/renamed in Supabase (2026-06-20)
+6. ✅ **Auth modal rebuilt** — email+password, Google OAuth, OTP fallback, ToS, home location picker (2026-06-20)
+7. ✅ **Backend auth routes** — `/signin`, `/signup`, `/google`, `/reset-password`, `/home-location`, `/logout` added; `/register` updated; `/send-otp` invite code removed (2026-06-20)
+
+**MVP Session 2 — Remaining steps:**
+8. **Push to `uat` branch** and confirm Vercel preview deployment succeeds
+9. **Configure Google OAuth in Supabase Dashboard** → Auth → Providers → Google (Client ID + Secret from Google Cloud Console)
+10. **Add redirect URIs** in Google Cloud Console: `https://www.mapit.co.in` and `https://uat.mapit.co.in`
+11. **Test the full auth flow on UAT**: email+password sign-up → profile setup → home location → app; OTP fallback; session expiry re-auth
+12. **Nagesh/Arun UAT sign-off → merge to main**
+
+**Data cleanup (run any time in Supabase SQL Editor):**
+13. `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb`
+14. `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
 
 ---
 
@@ -242,11 +374,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **DNS:** `api.mapit.co.in` CNAME → Vercel (confirmed); `mapit.co.in` A → `76.76.21.21`, `www.mapit.co.in` CNAME → Vercel (both live as of 2026-06-03)
 - **Registrar:** Namecheap
 - **Admin detection:** dual check — invite codes `MAPIT-N-01` / `MAPIT-A-01` OR email `nagesh.aadi@gmail.com` / `arun.bn1@gmail.com`
-- **Auth flow:** invite code → email OTP → Bearer token in localStorage → `requireAuth` middleware validates JWT
+- **Auth flow (new MVP):** email+password OR Google OAuth OR email OTP → Bearer token in ST.session → `requireAuth` middleware validates JWT; profile setup + home location on first login
+- **Auth flow (family legacy):** existing family sessions restored from `mapit_sessions` localStorage; session expiry shows `step-auth` with email pre-filled
 - **CORS:** allows `mapit.co.in`, `www.mapit.co.in`, `localhost:3000`, `localhost:5500`, `127.0.0.1:5500`, `mapit-backend-*.vercel.app`
 - **OTP rate limit (Express):** `OTP_RATE_LIMIT=100` per hour per IP (Vercel env var)
 - **Resend free tier:** 100 emails/day — sufficient for family beta
-- **`MapIt_Demo 30052026.html`** is the canonical frontend (~2120 lines, single-file). `public/index.html` is the deployed copy — **always sync both when making frontend changes**.
+- **`MapIt_MVP_v1.html`** is the canonical MVP frontend (2603 lines, single-file). `public/index.html` is the deployed copy — **always sync both after any frontend change** with `cp MapIt_MVP_v1.html public/index.html && diff MapIt_MVP_v1.html public/index.html`. `MapIt_Demo 30052026.html` is the prototype reference — do NOT edit it.
+- **Two-file rule:** `MapIt_MVP_v1.html` ↔ `public/index.html` must always be byte-identical. Diff must show NOTHING before any commit.
 - **Vercel `vercel.json` behaviour:** Root `vercel.json` is always read regardless of "Root Directory" project setting. Frontend served via `express.static` in `src/server.js`.
 - **Helmet CSP:** Disabled globally (`contentSecurityPolicy: false`) — required for inline scripts and CDN resources.
 - **Multi-session storage key:** `localStorage['mapit_sessions']` — JSON object keyed by Supabase user ID
