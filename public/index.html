@@ -2583,7 +2583,8 @@ async function continueAs(userId){
     saveToMultiSessions(userId, {
       created_for:  data.created_for  || stored.created_for,
       name:         resolvedName      || stored.name,
-      nickname:     data.profile?.nickname || stored.nickname || '',
+      // Fall back to full_name so existing accounts without a nickname set still display a real name
+      nickname:     data.profile?.nickname || data.profile?.full_name || stored.nickname || '',
       initials:     resolvedName ? getInitials(resolvedName) : stored.initials,
       invite_code:  ST.inviteCode     || stored.invite_code,
     });

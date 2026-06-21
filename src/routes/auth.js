@@ -4,12 +4,21 @@
 // ============================================================
 console.log('[auth.js] Auth router loaded');
 
-const express = require('express');
+const express   = require('express');
+const rateLimit  = require('express-rate-limit');
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { requireAuth } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
+
+// Strict limiter for OTP-only routes — prevents SMS/email OTP abuse.
+// All other auth routes (signin, signup, register, me) use only the global limiter.
+const otpLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: parseInt(process.env.OTP_RATE_LIMIT) || 10,
+  message: { error: 'Too many OTP requests. Please wait 1 hour.' },
+});
 
 // ── Auth Status ───────────────────────────────────────────────
 router.get('/status', (req, res) => {
@@ -185,7 +194,7 @@ router.put('/password', requireAuth, async (req, res, next) => {
 // ── Send OTP ──────────────────────────────────────────────────
 // POST /api/auth/send-otp
 // Body: { email } — invite code no longer required
-router.post('/send-otp', async (req, res, next) => {
+router.post('/send-otp', otpLimiter, async (req, res, next) => {
   console.log('[auth.js] POST /send-otp hit');
   try {
     const { phone, email } = req.body;
@@ -252,7 +261,7 @@ router.get('/me', requireAuth, async (req, res, next) => {
 // ── Verify OTP ────────────────────────────────────────────────
 // POST /api/auth/verify-otp
 // Body: { email, token }
-router.post('/verify-otp', async (req, res, next) => {
+router.post('/verify-otp', otpLimiter, async (req, res, next) => {
   console.log('[auth.js] POST /verify-otp hit');
   try {
     const { email, token } = req.body;
