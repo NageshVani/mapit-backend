@@ -1178,8 +1178,15 @@ async function submitAuth(){
       const name = data.profile?.nickname || data.profile?.full_name || '';
       saveToMultiSessions(uid, { session: data.session, name, nickname: data.profile?.nickname||'', initials: getInitials(name), email: data.user?.email });
     }
-    if(data.isNewUser){
+    const needsProfile = data.isNewUser
+      || !data.profile?.nickname
+      || data.profile.nickname === 'MapIt User'
+      || !data.profile?.full_name
+      || data.profile.full_name === 'MapIt User';
+    if(needsProfile){
       if(ST._pendingFullName) document.getElementById('nameInput').value = ST._pendingFullName;
+      else if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')
+        document.getElementById('nameInput').value = data.profile.full_name;
       if(ST._pendingNickname) document.getElementById('profileNicknameInput').value = ST._pendingNickname;
       goToStep('step-profile');
     } else {
