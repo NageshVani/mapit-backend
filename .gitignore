@@ -25,3 +25,6 @@ build/
 
 # Uploaded files (handled by Supabase Storage)
 uploads/
+
+# Google OAuth client secret files — NEVER commit
+client_secret_*.json
