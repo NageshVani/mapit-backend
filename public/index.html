@@ -2552,9 +2552,38 @@ async function init(){
     renderWhoamiScreen();
     document.getElementById('whoamiScreen').classList.remove('hide');
     document.getElementById('authModal').classList.add('hide');
+    // Background-refresh any sessions that have stale/empty nicknames so the
+    // display corrects itself without requiring the user to click through first.
+    _refreshStaleSessionNames(sessions);
     return;
   }
   document.getElementById('authModal').classList.remove('hide');
+}
+
+// Fetches /api/auth/me for every stored session that lacks a proper display name,
+// updates the local cache, and re-renders the Who's using MapIt? list.
+// Uses each session's own access_token directly so ST.session is never mutated.
+async function _refreshStaleSessionNames(sessions){
+  const stale = Object.entries(sessions).filter(([, u]) =>
+    u.session?.access_token && !u.nickname
+  );
+  if(!stale.length) return;
+  let anyUpdated = false;
+  await Promise.allSettled(stale.map(async ([uid, stored]) => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${stored.session.access_token}`, 'Content-Type': 'application/json' }
+      });
+      if(!res.ok) return;
+      const data = await res.json();
+      const nickname = data.profile?.nickname || data.profile?.full_name || '';
+      if(nickname){
+        saveToMultiSessions(uid, { nickname, initials: getInitials(nickname) });
+        anyUpdated = true;
+      }
+    } catch(_){}
+  }));
+  if(anyUpdated) renderWhoamiScreen();
 }
 
 async function continueAs(userId){
