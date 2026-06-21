@@ -143,17 +143,39 @@ router.get('/google', async (req, res, next) => {
 
 // ── Password Reset ────────────────────────────────────────────
 // POST /api/auth/reset-password
-// Body: { email }
+// Body: { email, redirectTo? }
 router.post('/reset-password', async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const { email, redirectTo: rawRedirect } = req.body;
     if (!email) return res.status(400).json({ error: 'email is required' });
+
+    // Use caller's origin if it's a trusted domain, else default to production
+    const redirectTo = (ALLOWED_OAUTH_ORIGINS.includes(rawRedirect) || isVercelPreview(rawRedirect))
+      ? rawRedirect
+      : 'https://www.mapit.co.in';
 
     const { error } = await supabase.auth.resetPasswordForEmail(
       email.trim().toLowerCase(),
-      { redirectTo: 'https://www.mapit.co.in' }
+      { redirectTo }
     );
     if (error) return res.status(400).json({ error: error.message });
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── Set New Password (after reset link) ───────────────────────
+// PUT /api/auth/password
+// Body: { password }
+router.put('/password', requireAuth, async (req, res, next) => {
+  try {
+    const { password } = req.body;
+    if (!password || password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(req.user.id, { password });
+    if (error) return next(createError(error.message));
     res.json({ success: true });
   } catch (err) {
     next(err);
@@ -254,13 +276,16 @@ router.post('/verify-otp', async (req, res, next) => {
 
 // ── Register — new user profile setup ────────────────────────
 // POST /api/auth/register
-// Body: { full_name, phone?, invite_code?, auth_provider? }
+// Body: { full_name, nickname, phone?, invite_code?, auth_provider? }
 // Sets agreed_tos_at at registration time (user has accepted ToS in the UI)
 router.post('/register', requireAuth, async (req, res, next) => {
   try {
-    const { full_name, phone, invite_code, auth_provider } = req.body;
+    const { full_name, nickname, phone, invite_code, auth_provider } = req.body;
     if (!full_name || full_name.trim().length < 2) {
       return next(createError('full_name must be at least 2 characters'));
+    }
+    if (!nickname || nickname.trim().length < 1) {
+      return next(createError('nickname is required'));
     }
 
     const AVATAR_COLORS = ['#F06030', '#3B82F6', '#22C55E', '#F59E0B', '#8B5CF6', '#EC4899'];
@@ -272,6 +297,7 @@ router.post('/register', requireAuth, async (req, res, next) => {
         {
           id:            req.user.id,
           full_name:     full_name.trim(),
+          nickname:      nickname.trim(),
           phone:         phone || null,
           avatar_color,
           auth_provider: auth_provider || 'email',
@@ -315,6 +341,28 @@ router.put('/home-location', requireAuth, async (req, res, next) => {
       .select()
       .single();
 
+    if (error) return next(createError(error.message));
+    res.json({ profile });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── Update Nickname ───────────────────────────────────────────
+// PUT /api/auth/nickname
+// Body: { nickname }
+router.put('/nickname', requireAuth, async (req, res, next) => {
+  try {
+    const { nickname } = req.body;
+    if (!nickname || nickname.trim().length < 1) {
+      return res.status(400).json({ error: 'nickname is required' });
+    }
+    const { data: profile, error } = await supabaseAdmin
+      .from('profiles')
+      .update({ nickname: nickname.trim() })
+      .eq('id', req.user.id)
+      .select()
+      .single();
     if (error) return next(createError(error.message));
     res.json({ profile });
   } catch (err) {

@@ -401,8 +401,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .splash.hide{display:none;}
 .splash-logo{font-family:'Playfair Display',serif;font-size:52px;color:var(--text);}
 .splash-logo em{font-style:normal;color:var(--orange);}
-.splash-msg{font-size:13px;color:var(--muted);text-align:center;max-width:420px;line-height:1.8;}
-.splash-msg ul{text-align:left;padding-left:20px;margin-top:10px;line-height:2.2;}
+.splash-msg{font-size:16px;color:var(--muted);text-align:center;max-width:420px;line-height:1.9;}
+.splash-msg ul{text-align:left;padding-left:20px;margin-top:12px;line-height:2.4;}
 .splash-btn{background:var(--orange);color:#fff;border:none;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:6px;}
 
 /* ── FEEDBACK VIEWER ── */
@@ -519,6 +519,12 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <label class="modal-label">Confirm Password</label>
         <input class="modal-input" id="authPasswordConfirm" type="password" placeholder="••••••••" autocomplete="new-password"/>
       </div>
+      <div id="registerNameFields" style="display:none;">
+        <label class="modal-label">Full Name</label>
+        <input class="modal-input" id="authFullName" placeholder="e.g. Priya Sharma" maxlength="60" autocomplete="name"/>
+        <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(shown as your display name) *</span></label>
+        <input class="modal-input" id="authNickname" placeholder="e.g. Priya" maxlength="30"/>
+      </div>
       <button class="modal-btn" id="authSubmitBtn" onclick="submitAuth()">
         <span id="authBtnLabel">Sign In</span> <span>→</span>
       </button>
@@ -558,6 +564,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="modal-success">Welcome to MapIt! Let's set up your profile.</div>
       <label class="modal-label">Your Name</label>
       <input class="modal-input" id="nameInput" placeholder="e.g. Priya Sharma" maxlength="60"/>
+      <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(your display name) *</span></label>
+      <input class="modal-input" id="profileNicknameInput" placeholder="e.g. Priya" maxlength="30"/>
       <label class="modal-label">Phone (optional)</label>
       <input class="modal-input" id="phoneInput" placeholder="+91 98765 43210" type="tel"/>
       <div class="tos-row">
@@ -579,6 +587,32 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <span>Save Home Location →</span>
       </button>
       <div class="modal-link" onclick="skipHomeLocation()">Skip for now →</div>
+    </div>
+
+    <!-- Step: Reset link sent confirmation -->
+    <div class="modal-step" id="step-reset-sent">
+      <div style="text-align:center;padding:8px 0 4px;">
+        <div style="font-size:46px;margin-bottom:14px;">📧</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;">Check your inbox</div>
+        <div id="resetSentMsg" style="font-size:13.5px;color:var(--muted);line-height:1.75;margin-bottom:24px;"></div>
+        <button class="modal-btn" onclick="goToStep('step-auth')" style="max-width:180px;margin:0 auto;">OK</button>
+      </div>
+    </div>
+
+    <!-- Step: Set new password (after clicking reset link in email) -->
+    <div class="modal-step" id="step-new-password">
+      <div class="modal-success">Set your new password</div>
+      <div id="newPwdError" class="modal-error" style="display:none"></div>
+      <label class="modal-label">New Password</label>
+      <div style="position:relative;margin-bottom:14px;">
+        <input class="modal-input" id="newPwdInput" type="password" placeholder="••••••••" style="margin-bottom:0;padding-right:44px;" autocomplete="new-password"/>
+        <span onclick="toggleNewPwd()" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;opacity:.5;">👁</span>
+      </div>
+      <label class="modal-label">Confirm New Password</label>
+      <input class="modal-input" id="newPwdConfirm" type="password" placeholder="••••••••" autocomplete="new-password"/>
+      <button class="modal-btn" id="newPwdBtn" onclick="setNewPassword()">
+        <span>Update Password →</span>
+      </button>
     </div>
   </div>
 </div>
@@ -708,6 +742,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </div>
     <div class="uav-menu" id="uavMenu" onclick="event.stopPropagation()">
       <div class="uav-name" id="uavName">—</div>
+      <div class="uav-item" onclick="changeNickname()">✏️ Change Nickname</div>
       <div class="uav-item" onclick="openPinsModal()">📍 My Locations</div>
       <div class="uav-item" id="inboxMenuItem" onclick="openInboxModal()" style="justify-content:space-between;">
         <span>📥 Inbox</span>
@@ -969,7 +1004,7 @@ function renderWhoamiScreen(){
   const entries = Object.entries(all).sort((a,b)=>new Date(b[1].last_login||0)-new Date(a[1].last_login||0));
   const list = document.getElementById('whoamiUserList');
   list.innerHTML = entries.map(([uid, u])=>{
-    const displayName = u.created_for || u.name || 'Family Member';
+    const displayName = u.nickname || u.created_for || u.name || 'Family Member';
     const displayInit = displayName !== 'Family Member' ? getInitials(displayName) : (u.initials || '?');
     return `
     <button class="whoami-yes" onclick="continueAs('${uid}')"
@@ -1101,7 +1136,8 @@ function switchAuthTab(mode){
   document.getElementById('tab-signin').classList.toggle('active', mode==='signin');
   document.getElementById('tab-register').classList.toggle('active', mode==='register');
   document.getElementById('authBtnLabel').textContent = mode==='signin' ? 'Sign In' : 'Create Account';
-  document.getElementById('confirmPwdGroup').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('confirmPwdGroup').style.display   = mode==='register' ? 'block' : 'none';
+  document.getElementById('registerNameFields').style.display = mode==='register' ? 'block' : 'none';
   document.getElementById('forgotPwdRow').style.display = mode==='signin' ? 'block' : 'none';
   document.getElementById('authPassword').autocomplete = mode==='signin' ? 'current-password' : 'new-password';
   hideErr('authError');
@@ -1119,8 +1155,14 @@ async function submitAuth(){
   if(!email || !email.includes('@')){ showErr('authError','Please enter a valid email address.'); return; }
   if(!password || password.length < 8){ showErr('authError','Password must be at least 8 characters.'); return; }
   if(AUTH_MODE === 'register'){
-    const confirm = document.getElementById('authPasswordConfirm').value;
+    const confirm   = document.getElementById('authPasswordConfirm').value;
+    const fullName  = document.getElementById('authFullName').value.trim();
+    const nickname  = document.getElementById('authNickname').value.trim();
     if(password !== confirm){ showErr('authError','Passwords do not match.'); return; }
+    if(!fullName){ showErr('authError','Please enter your full name.'); return; }
+    if(!nickname){ showErr('authError','Please enter a nickname — it will be your display name.'); return; }
+    ST._pendingFullName = fullName;
+    ST._pendingNickname = nickname;
   }
   const btn = document.getElementById('authSubmitBtn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
@@ -1133,12 +1175,15 @@ async function submitAuth(){
     ST.authProvider = 'email';
     const uid = data.user?.id;
     if(uid){
-      const name = data.profile?.full_name || '';
-      saveToMultiSessions(uid, { session: data.session, name, initials: getInitials(name), email: data.user?.email });
+      const name = data.profile?.nickname || data.profile?.full_name || '';
+      saveToMultiSessions(uid, { session: data.session, name, nickname: data.profile?.nickname||'', initials: getInitials(name), email: data.user?.email });
     }
     if(data.isNewUser){
+      if(ST._pendingFullName) document.getElementById('nameInput').value = ST._pendingFullName;
+      if(ST._pendingNickname) document.getElementById('profileNicknameInput').value = ST._pendingNickname;
       goToStep('step-profile');
     } else {
+      showLoadingSplash();
       document.getElementById('authModal').classList.add('hide');
       await initApp();
     }
@@ -1175,9 +1220,18 @@ async function handleOAuthCallback(){
   const access_token  = params.get('access_token');
   const refresh_token = params.get('refresh_token');
   const expires_in    = params.get('expires_in');
+  const type          = params.get('type');
   if(!access_token) return false;
   history.replaceState(null, '', window.location.pathname);
   ST.session = { access_token, refresh_token, expires_in: Number(expires_in) };
+
+  // Password reset link — show "set new password" form instead of signing in
+  if(type === 'recovery'){
+    document.getElementById('authModal').classList.remove('hide');
+    goToStep('step-new-password');
+    return true;
+  }
+
   ST.authProvider = 'google';
   try {
     const data = await apiGet('/api/auth/me');
@@ -1185,14 +1239,15 @@ async function handleOAuthCallback(){
     ST.profile = data.profile;
     const uid  = data.user?.id;
     if(uid){
-      const name = data.profile?.full_name || '';
-      saveToMultiSessions(uid, { session: ST.session, name, initials: getInitials(name), email: data.user?.email });
+      const name = data.profile?.nickname || data.profile?.full_name || '';
+      saveToMultiSessions(uid, { session: ST.session, name, nickname: data.profile?.nickname||'', initials: getInitials(name), email: data.user?.email });
     }
     if(!data.profile){
       document.getElementById('authModal').classList.remove('hide');
       goToStep('step-profile');
       return true;
     }
+    showLoadingSplash();
     document.getElementById('authModal').classList.add('hide');
     await initApp();
     return true;
@@ -1206,9 +1261,36 @@ async function sendPasswordReset(){
   const email = document.getElementById('authEmail').value.trim().toLowerCase();
   if(!email || !email.includes('@')){ showErr('authError','Enter your email above to receive a reset link.'); return; }
   try {
-    await apiPost('/api/auth/reset-password', { email });
-    toast('Password reset link sent to ' + email);
-  } catch(e){ toast('Could not send reset link. Please try again.'); }
+    await apiPost('/api/auth/reset-password', { email, redirectTo: window.location.origin });
+    document.getElementById('resetSentMsg').innerHTML =
+      `A password reset link has been sent to<br><b>${email}</b><br><br>Click the link in the email to set a new password. The link expires in 1 hour.`;
+    goToStep('step-reset-sent');
+  } catch(e){ showErr('authError', 'Could not send reset link. Please try again.'); }
+}
+
+function toggleNewPwd(){
+  const inp = document.getElementById('newPwdInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function setNewPassword(){
+  const pwd     = document.getElementById('newPwdInput').value;
+  const confirm = document.getElementById('newPwdConfirm').value;
+  hideErr('newPwdError');
+  if(!pwd || pwd.length < 8){ showErr('newPwdError','Password must be at least 8 characters.'); return; }
+  if(pwd !== confirm){ showErr('newPwdError','Passwords do not match.'); return; }
+  const btn = document.getElementById('newPwdBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
+  try {
+    await apiPut('/api/auth/password', { password: pwd });
+    toast('✅ Password updated! Please sign in with your new password.');
+    ST.session = null;
+    goToStep('step-auth');
+  } catch(e){
+    showErr('newPwdError', e.message || 'Could not update password. The link may have expired.');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<span>Update Password →</span>';
+  }
 }
 
 // ── OTP flow (kept as fallback) ──────────────────────────────────
@@ -1245,12 +1327,13 @@ async function verifyOtp(){
     ST.authProvider = 'email';
     const uid = data.user?.id;
     if(uid){
-      const name = data.profile?.full_name || '';
-      saveToMultiSessions(uid, { session: data.session, name, initials: getInitials(name), email: data.user?.email });
+      const name = data.profile?.nickname || data.profile?.full_name || '';
+      saveToMultiSessions(uid, { session: data.session, name, nickname: data.profile?.nickname||'', initials: getInitials(name), email: data.user?.email });
     }
     if(data.isNewUser){
       goToStep('step-profile');
     } else {
+      showLoadingSplash();
       document.getElementById('authModal').classList.add('hide');
       await initApp();
     }
@@ -1264,20 +1347,23 @@ async function verifyOtp(){
 // ── Profile setup ────────────────────────────────────────────────
 async function saveProfile(){
   const full_name = document.getElementById('nameInput').value.trim();
+  const nickname  = document.getElementById('profileNicknameInput').value.trim();
   const phone     = document.getElementById('phoneInput').value.trim();
   const tosOk     = document.getElementById('tosCheck').checked;
   if(!full_name){ toast('Please enter your name.'); return; }
+  if(!nickname){ toast('Please enter a nickname — it will appear as your display name.'); return; }
   if(!tosOk){ toast('Please agree to the Terms of Service to continue.'); return; }
   try {
     const data = await apiPost('/api/auth/register', {
-      full_name, phone: phone||null,
+      full_name, nickname, phone: phone||null,
       invite_code: ST.inviteCode||null,
       auth_provider: ST.authProvider||'email',
     });
     ST.profile    = data.profile;
-    ST.createdFor = full_name;
+    ST.createdFor = nickname;
+    ST._pendingFullName = null; ST._pendingNickname = null;
     const uid = ST.user?.id;
-    if(uid) saveToMultiSessions(uid, { session: ST.session, name: full_name, initials: getInitials(full_name), email: ST.user?.email });
+    if(uid) saveToMultiSessions(uid, { session: ST.session, name: full_name, nickname, initials: getInitials(nickname), email: ST.user?.email });
     goToStep('step-homeloc');
     initHomeLocMap();
   } catch(e){ toast('Could not save profile: ' + e.message); }
@@ -1338,6 +1424,7 @@ async function saveHomeLocation(){
 function skipHomeLocation(){ _closeAuthModal(); }
 
 async function _closeAuthModal(){
+  showLoadingSplash();
   document.getElementById('authModal').classList.add('hide');
   if(_homeLocMap){ _homeLocMap.remove(); _homeLocMap = null; }
   await initApp();
@@ -1361,9 +1448,37 @@ async function logout(){
   setTimeout(()=>location.reload(), 1800);
 }
 
+function showLoadingSplash(){
+  const s = document.getElementById('splashScreen');
+  s.classList.remove('hide');
+  document.getElementById('splashMsg').textContent = 'Loading your map…';
+}
+
 function toggleAvatarMenu(){
   document.getElementById('uavMenu').classList.toggle('open');
 }
+
+async function changeNickname(){
+  const current = ST.profile?.nickname || '';
+  const newNick = prompt('Change your display name (nickname):', current);
+  if(newNick === null) return;
+  const trimmed = newNick.trim();
+  if(!trimmed){ toast('Nickname cannot be empty.'); return; }
+  if(trimmed === current) return;
+  try {
+    const data = await apiPut('/api/auth/nickname', { nickname: trimmed });
+    ST.profile = { ...ST.profile, nickname: trimmed };
+    const uid = ST.user?.id;
+    if(uid) saveToMultiSessions(uid, { nickname: trimmed });
+    const displayName = trimmed;
+    document.getElementById('uavName').textContent = displayName;
+    document.getElementById('uavChipName').textContent = displayName.split(' ')[0];
+    document.getElementById('uavInitial').textContent = getInitials(displayName);
+    document.getElementById('uavMenu').classList.remove('open');
+    toast('Nickname updated to "' + trimmed + '"');
+  } catch(e){ toast('Could not update nickname. Please try again.'); }
+}
+
 document.addEventListener('click', e => {
   if(!document.getElementById('uavBtn').contains(e.target)){
     document.getElementById('uavMenu').classList.remove('open');
@@ -2360,9 +2475,9 @@ async function initApp(){
   splash.classList.remove('hide');
   document.getElementById('splashMsg').textContent = 'Loading your map…';
 
-  // Profile name + avatar initial — prefer created_for from invite code
+  // Profile name + avatar initial — prefer nickname, then invite-code name, then full_name
   const createdFor  = ST.createdFor || localStorage.getItem('mapit_created_for') || '';
-  const displayName = createdFor || ST.profile?.full_name || ST.user?.email || '—';
+  const displayName = ST.profile?.nickname || createdFor || ST.profile?.full_name || ST.user?.email || '—';
   const initial     = getInitials(displayName);
   document.getElementById('uavInitial').textContent  = initial;
   document.getElementById('uavName').textContent     = displayName;
@@ -2412,16 +2527,15 @@ async function initApp(){
   if(isFirstLogin){
     // First ever login — show onboarding, auto-dismiss after 5s; tap to dismiss early
     document.getElementById('splashMsg').innerHTML = `
-      <b style="color:var(--text);font-size:15px;">Welcome to MapIt!</b>
+      <b style="color:var(--text);font-size:18px;">Welcome to MapIt!</b>
       <ul>
         <li>📍 Set your GPS location via <b>My Locations</b> in the profile menu</li>
         <li>🗺 Listings near you appear as pins on the map — tap any pin to view details</li>
         <li>🔍 Filter by category and distance using the left sidebar</li>
         <li>➕ Post your own listing via <b>Post a Listing</b> in the header</li>
-        <li>🤝 Tap "I'm Interested" on any listing to message the seller</li>
         <li>❤ Save favourite listings with the heart icon</li>
       </ul>
-      <div style="font-size:12px;color:var(--muted);margin-top:12px;">Tap anywhere to continue →</div>`;
+      <div style="font-size:13px;color:var(--muted);margin-top:14px;">Tap anywhere to continue →</div>`;
     splash.onclick = ()=>{ localStorage.setItem(`mapit_welcomed_${ST.user?.id}`,'1'); splash.classList.add('hide'); splash.onclick=null; };
     setTimeout(()=>{ localStorage.setItem(`mapit_welcomed_${ST.user?.id}`,'1'); splash.classList.add('hide'); splash.onclick=null; }, 6000);
   } else {
@@ -2444,6 +2558,7 @@ async function init(){
 }
 
 async function continueAs(userId){
+  showLoadingSplash();
   document.getElementById('whoamiScreen').classList.add('hide');
   // Immediately hide admin items so they never bleed from a previous user's session
   document.getElementById('adminMenuItem').classList.add('hide');
@@ -2468,6 +2583,7 @@ async function continueAs(userId){
     saveToMultiSessions(userId, {
       created_for:  data.created_for  || stored.created_for,
       name:         resolvedName      || stored.name,
+      nickname:     data.profile?.nickname || stored.nickname || '',
       initials:     resolvedName ? getInitials(resolvedName) : stored.initials,
       invite_code:  ST.inviteCode     || stored.invite_code,
     });

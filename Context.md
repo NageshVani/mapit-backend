@@ -9,14 +9,14 @@
 - **Project:** MapIt — location-first buy-and-sell marketplace for India (and USA)
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
-- **Last updated:** 2026-06-20 (MVP Session 2 in progress — auth modal fully rebuilt, ready for UAT testing)
+- **Last updated:** 2026-06-21 (MVP Session 2 — CORS fix deployed `50dd9dd`; signup flow confirmed partially working; full auth test in progress)
 
 ---
 
 ## 🎯 Current Goal
 
-**MVP Session 2 IN PROGRESS — Registration, Authentication & Map Interactions.**
-Auth modal fully rebuilt (email+password, Google OAuth, OTP fallback, ToS, home location picker). Next: push to UAT branch, configure Google OAuth in Supabase Dashboard, and test the full new auth flow end-to-end.
+**MVP Session 2 IN PROGRESS — Auth flow end-to-end testing on UAT.**
+CORS fix deployed (`50dd9dd`). Signup flow confirmed partially working (email-already-exists error correctly returned). User needs to delete test account in Supabase and re-test full signup → profile → home location flow, then OTP fallback and session expiry paths.
 
 ---
 
@@ -34,7 +34,7 @@ Auth modal fully rebuilt (email+password, Google OAuth, OTP fallback, ToS, home 
   - **Backend — new routes in `src/routes/auth.js`**:
     - `POST /api/auth/signin` — email+password sign in via `signInWithPassword`
     - `POST /api/auth/signup` — admin.createUser (email_confirm:true) + signInWithPassword; returns `isNewUser`
-    - `GET /api/auth/google` — returns Supabase OAuth URL; `?uat=1` param for UAT redirect
+    - `GET /api/auth/google` — returns Supabase OAuth URL; `?redirectTo=<encoded-origin>` param (was `?uat=1`, changed in `cddfcb6`)
     - `POST /api/auth/reset-password` — sends Supabase password reset email
     - `PUT /api/auth/home-location` — writes `home_lat`/`home_lng`/`home_address` to profile
     - `POST /api/auth/logout` — no auth required (token may be expired)
@@ -42,6 +42,15 @@ Auth modal fully rebuilt (email+password, Google OAuth, OTP fallback, ToS, home 
     - `POST /api/auth/register`: now writes `agreed_tos_at: new Date().toISOString()` and `auth_provider` to profiles upsert
     - `POST /api/auth/send-otp`: invite code validation block removed; pre-create logic preserved
   - `public/index.html` synced from `MapIt_MVP_v1.html` — diff verified clean
+
+- ✅ **MVP Session 2 — Google OAuth `redirectTo` fix (2026-06-20, commits `99baa73` + `cddfcb6`, pushed to `uat`):**
+  - **Root cause 1**: `uat.mapit.co.in` points to Production branch in Vercel (free tier limitation — branch-specific custom domains require Pro); new code only on Vercel preview URL
+  - **Root cause 2**: `signInWithGoogle()` used `hostname.includes('uat')` to decide `?uat=1`; Vercel preview URL hostname (`mapit-backend-git-uat-nagesh-n-arun.vercel.app`) doesn't contain "uat" → `?uat=1` never sent → backend hardcoded `redirectTo: https://www.mapit.co.in` → Google came back to production (old code) → invite code screen
+  - **Root cause 3**: Supabase Redirect URLs allowlist lacked `uat.mapit.co.in` and Vercel preview pattern → Supabase silently dropped any non-allowlisted `redirectTo` and fell back to Site URL (`www.mapit.co.in`)
+  - **Fix (frontend)**: `signInWithGoogle()` now sends `?redirectTo=<encoded window.location.origin>` — works for any hostname
+  - **Fix (backend)**: `GET /api/auth/google` validates `redirectTo` against `ALLOWED_OAUTH_ORIGINS` array + `/^https:\/\/mapit-backend-[a-z0-9-]+\.vercel\.app$/` regex; falls back to `www.mapit.co.in` if invalid
+  - **Fix (Supabase — pending)**: user must add `https://mapit-backend-*.vercel.app/**` to Supabase → Auth → URL Configuration → Redirect URLs (4 entries already present; adding 1 more)
+  - `public/index.html` synced from `MapIt_MVP_v1.html` — diff clean
 
 - ✅ **MVP Session 2 — Migration 001 applied to Supabase production (2026-06-20):**
   - Reviewed `database/migrations/001-mvp-auth-schema.sql` — confirmed safe; all statements use `IF NOT EXISTS`
@@ -196,8 +205,10 @@ Auth modal fully rebuilt (email+password, Google OAuth, OTP fallback, ToS, home 
 | MVP Session 2 — Build auth modal | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html`, `src/routes/auth.js` | email+password, Google OAuth, OTP fallback, ToS, home location picker — all built |
 | MVP Session 2 — Home location map picker | ✅ Done | `MapIt_MVP_v1.html`, `src/routes/auth.js` | Inline Leaflet map (`step-homeloc`); `PUT /api/auth/home-location` route added |
 | MVP Session 2 — `agreed_tos_at` + `auth_provider` backend | ✅ Done | `src/routes/auth.js` | `POST /api/auth/register` now writes both fields on profile creation |
-| MVP Session 2 — Push to UAT + test | 🟡 Next | git | Push `uat` branch; test sign-up, sign-in, Google OAuth, home location |
-| MVP Session 2 — Google OAuth Supabase config | 🟡 Next | Supabase Dashboard | Enable Google provider; add redirect URIs `https://www.mapit.co.in` + `https://uat.mapit.co.in` |
+| MVP Session 2 — Push to UAT + test | ✅ Done | git | CORS fix `50dd9dd` pushed; signup confirmed partially working (duplicate email error returned correctly) |
+| MVP Session 2 — Google OAuth Supabase config | ✅ Done | Supabase Dashboard | Google provider enabled; all redirect URLs set including `https://mapit-backend-*.vercel.app/**`; OAuth confirmed working |
+| MVP Session 2 — CORS fix | ✅ Done | `src/server.js`, `.gitignore` | Added `uat.mapit.co.in` + `localhost:3001` to allowedOrigins; case-insensitive Vercel regex; commit `50dd9dd` |
+| MVP Session 2 — Full auth flow test | 🟡 In progress | UAT (Vercel preview URL) | Signup partially tested; user to delete test account and re-test; OTP fallback + session expiry paths pending |
 | Vercel: set up `uat.mapit.co.in` | ✅ Done | Vercel dashboard | Valid Configuration confirmed (2026-06-20) |
 | Vercel: delete broken frontend project | ✅ Done | Vercel dashboard | `mapit-frontend` project deleted (2026-06-20) |
 | Supabase SQL cleanup: trim invite_codes | ✅ Done | Supabase SQL Editor | Ran successfully (2026-06-20) |
@@ -211,9 +222,14 @@ Auth modal fully rebuilt (email+password, Google OAuth, OTP fallback, ToS, home 
 ## 📂 Key Files Modified
 
 ```
+src/server.js              — Session 2 CORS fix (50dd9dd): added https://uat.mapit.co.in + http://localhost:3001 to allowedOrigins; Vercel regex made case-insensitive [a-z0-9-]→[a-zA-Z0-9-]
+.gitignore                 — Session 2 (50dd9dd): added client_secret_*.json rule to prevent accidental commit of Google OAuth credentials
 MapIt_MVP_v1.html          — MVP Session 2: Auth modal rebuilt — new step-auth (email+password+Google), step-homeloc (map picker), ToS checkbox, new JS functions for all auth paths; sendOtp no longer sends invite code
 public/index.html          — MVP Session 2: Synced from MapIt_MVP_v1.html (diff clean)
 src/routes/auth.js         — MVP Session 2: Added POST /signin, POST /signup, GET /google, POST /reset-password, PUT /home-location, POST /logout; updated POST /register (agreed_tos_at + auth_provider); removed invite code check from POST /send-otp
+                           — OAuth fix (cddfcb6): GET /google now reads ?redirectTo=<encoded-origin>; validates against ALLOWED_OAUTH_ORIGINS + Vercel preview regex before using; falls back to www.mapit.co.in
+MapIt_MVP_v1.html          — OAuth fix (cddfcb6): signInWithGoogle() now sends ?redirectTo=encodeURIComponent(window.location.origin) instead of ?uat=1 flag
+public/index.html          — OAuth fix (cddfcb6): synced from MapIt_MVP_v1.html (diff clean)
 database/migrations/001-mvp-auth-schema.sql — MVP Session 2: Reviewed and applied; auth_provider + default_view added with CHECK; invite_code renamed to invite_code_legacy; all columns now live in Supabase
 CLAUDE.md                  — MVP Session 1: CREATED v4.0 — 12 collaboration rules, security rules, scope boundary, file paths quick ref
 .env.example               — MVP Session 1: CREATED — all current + upcoming env vars with comments; safe to commit
@@ -256,8 +272,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 
-- **Google OAuth not yet configured in Supabase** — `GET /api/auth/google` route is live but will fail until Google provider is enabled in Supabase Dashboard → Auth → Providers → Google; also need to add Client ID + Secret from Google Cloud Console
-- **Google OAuth redirect URIs not yet set** — must add `https://www.mapit.co.in` and `https://uat.mapit.co.in` in both Google Cloud Console (Authorized redirect URIs) and Supabase Auth settings
+- **Google OAuth Supabase Redirect URL** — ✅ FIXED (2026-06-20): `https://mapit-backend-*.vercel.app/**` added; OAuth confirmed working end-to-end
 - **Only one Supabase project** — `map it-backend` is both UAT and production DB; no separate staging DB; accepted for family-beta MVP phase (see Decisions)
 - **`agreed_tos_at` write not yet in backend** — ✅ FIXED (2026-06-20): `POST /api/auth/register` now writes `agreed_tos_at: new Date().toISOString()`
 - **Git global email** — ✅ FIXED (2026-06-19): `git config --global user.email nagesh.aadi@gmail.com` — quotes removed
@@ -267,12 +282,17 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **Some invite code names have "1" appended** — `Chirag 1`, `Kalpith 1`, `Srikanth 1`, `Vijay 1`; fix in Supabase table editor before those members log in if unintentional
 - **`invite_codes.used_by` NULL for ALL rows** — confirmed 2026-06-16; blocks automatic `profiles.full_name` update; need to either: (a) check if `invite_codes` has an email column to join via `auth.users`, or (b) manually map each profile UUID to its invite code row in Supabase table editor
 - **`invite_codes.email` column existence unknown** — if it exists, can auto-join: `UPDATE profiles SET full_name = ic.created_for FROM invite_codes ic JOIN auth.users u ON u.email = ic.email WHERE profiles.id = u.id`
-- **`uat.mapit.co.in` custom domain not yet set** — UAT at `mapit-backend-git-uat-nagesh-n-arun.vercel.app`; must be configured in Vercel dashboard before Session 2 UAT
-- **Broken frontend Vercel project still live** — separate Vercel project returning 500; delete in Vercel dashboard
-- **Supabase SQL cleanup pending (2 statements)** — `UPDATE invite_codes SET code = trim(code) WHERE code != trim(code);` and `ALTER TABLE listings DROP CONSTRAINT listings_condition_check;` — must be run manually
+- **`uat.mapit.co.in` always points to Production (main) branch** — Vercel free tier limitation; branch-specific custom domains require Pro plan; UAT testing must use Vercel preview URL `https://mapit-backend-git-uat-nagesh-n-arun.vercel.app`
+- **CORS was blocking email auth on UAT** — ✅ FIXED (2026-06-21, commit `50dd9dd`): browsers send `Origin` header even for same-origin POST requests; Vercel regex `[a-z0-9-]` was case-sensitive (could miss uppercase in deployment hash); `uat.mapit.co.in` and `localhost:3001` were missing from allowedOrigins
+- **Google OAuth client_secret JSON file was untracked** — ✅ FIXED (2026-06-21): `client_secret_*.json` added to `.gitignore`
+- **`invite_codes` TABLE naming confusion** — TABLE is still `invite_codes` (correct, never renamed); only the COLUMN `profiles.invite_code` was renamed to `profiles.invite_code_legacy` in migration 001
+- **Test account re-use for signup testing** — delete from Supabase Auth Dashboard (Authentication → Users → ⋮ → Delete), then `DELETE FROM profiles WHERE id = '<uuid>'` in SQL Editor
+- **Broken frontend Vercel project** — ✅ FIXED (2026-06-20): `mapit-frontend` project deleted
+- **Supabase SQL cleanup** — ✅ FIXED (2026-06-20): both statements ran successfully
 - **TVS SCOOTY listing has `subcategory='Cars'` in DB** — needs manual SQL update: `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
 - **Edit listing does not replace photos** — intentional for now; photo management not implemented
 - **`listings_condition_check` constraint still exists** — checks `condition IN ('New', 'Like New', 'Good', ...)` but `condition` field was removed in Session 10; harmless (NULL satisfies the constraint) but can be cleaned up with `ALTER TABLE listings DROP CONSTRAINT listings_condition_check`
+- **⚠️ PRE-PUBLIC-LAUNCH: Email verification not implemented** — `POST /api/auth/signup` uses `email_confirm: true` (admin API) which skips all email verification; anyone can register with another person's email. Before public launch: change to `email_confirm: false` and add an email OTP verification step (`step-verify-email`) after account creation. Noted 2026-06-21.
 
 ---
 
@@ -335,6 +355,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 | CLAUDE.md v4.0 adopted for MVP | 12 rules covering mentor role, scope discipline, two-file rule, security, DB safety, budget, MVP boundary; replaces older inline rules |
 | Migration SQL files pre-written in `database/migrations/` | Sessions 2, 3, 6 SQL staged as `.sql` files; run each in Supabase SQL Editor at the start of the relevant session |
 | `invite_codes` table archived, not deleted | No longer used for auth in MVP; `REQUIRE_INVITE_CODE=false`; historical data preserved |
+| Pass `window.location.origin` as OAuth `redirectTo` (not `?uat=1` flag) | Works for any hostname — Vercel preview, UAT domain, production, localhost — without special-casing each environment |
+| Backend validates OAuth `redirectTo` against allowlist + Vercel regex | Security: prevents open-redirect attack; allowlist = known app domains; regex = `^https://mapit-backend-[a-z0-9-]+\.vercel\.app$` |
+| Vercel free tier: `uat.mapit.co.in` points to production only | Branch-specific custom domains require Vercel Pro; accepted for MVP; UAT testing uses the Vercel preview URL; revisit if Vercel Pro is upgraded |
 
 ---
 
@@ -356,15 +379,22 @@ session-log.html           — Session 7: 6 historical session entries imported;
 7. ✅ **Backend auth routes** — `/signin`, `/signup`, `/google`, `/reset-password`, `/home-location`, `/logout` added; `/register` updated; `/send-otp` invite code removed (2026-06-20)
 
 **MVP Session 2 — Remaining steps:**
-8. **Push to `uat` branch** and confirm Vercel preview deployment succeeds
-9. **Configure Google OAuth in Supabase Dashboard** → Auth → Providers → Google (Client ID + Secret from Google Cloud Console)
-10. **Add redirect URIs** in Google Cloud Console: `https://www.mapit.co.in` and `https://uat.mapit.co.in`
-11. **Test the full auth flow on UAT**: email+password sign-up → profile setup → home location → app; OTP fallback; session expiry re-auth
-12. **Nagesh/Arun UAT sign-off → merge to main**
+8. ✅ **Push to `uat` branch** — commits `99baa73` + `cddfcb6` pushed; Vercel auto-deployed (2026-06-20)
+9. ✅ **Configure Google OAuth in Supabase Dashboard** — Google provider enabled; Client ID + Secret added (2026-06-20)
+10. ✅ **Add Supabase callback URI in Google Cloud Console** — `https://jneoxwumccmjwaojfazh.supabase.co/auth/v1/callback` added as Authorized Redirect URI (2026-06-20)
+11. ✅ **Supabase Redirect URLs updated** — `https://mapit-backend-*.vercel.app/**` added; Google OAuth confirmed working end-to-end (2026-06-20)
+12. ✅ **CORS fix** — `50dd9dd` pushed to `uat`; email auth unblocked; signup flow confirmed partially working (duplicate-email error returned correctly) (2026-06-21)
+13. **⬅ NEXT: Delete test account + re-test full signup flow** — Supabase Auth Dashboard → Users → ⋮ → Delete; then `DELETE FROM profiles WHERE id='<uuid>'`; re-run: signup → step-profile → step-homeloc → app
+14. **Test OTP fallback** — click "Use email OTP →" in step-auth; verify 6-digit code email arrives; completes to profile setup
+15. **Test session expiry re-auth** — clear localStorage, reload; verify step-auth shown with email pre-filled
+16. **Nagesh/Arun UAT sign-off → merge `uat` → `main`**
 
 **Data cleanup (run any time in Supabase SQL Editor):**
-13. `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb`
-14. `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
+17. `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb`
+18. `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
+
+**⚠️ Pre-public-launch (do NOT skip):**
+19. **Email verification** — add `step-verify-email` OTP step after account creation; change `email_confirm: false` in `POST /api/auth/signup` backend; currently anyone can register with another person's email (intentionally skipped for family beta to reduce friction)
 
 ---
 
@@ -376,7 +406,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **Admin detection:** dual check — invite codes `MAPIT-N-01` / `MAPIT-A-01` OR email `nagesh.aadi@gmail.com` / `arun.bn1@gmail.com`
 - **Auth flow (new MVP):** email+password OR Google OAuth OR email OTP → Bearer token in ST.session → `requireAuth` middleware validates JWT; profile setup + home location on first login
 - **Auth flow (family legacy):** existing family sessions restored from `mapit_sessions` localStorage; session expiry shows `step-auth` with email pre-filled
-- **CORS:** allows `mapit.co.in`, `www.mapit.co.in`, `localhost:3000`, `localhost:5500`, `127.0.0.1:5500`, `mapit-backend-*.vercel.app`
+- **CORS:** allows `mapit.co.in`, `www.mapit.co.in`, `uat.mapit.co.in`, `localhost:3000`, `localhost:3001`, `localhost:5500`, `127.0.0.1:5500`, `mapit-backend-*.vercel.app` (case-insensitive regex)
 - **OTP rate limit (Express):** `OTP_RATE_LIMIT=100` per hour per IP (Vercel env var)
 - **Resend free tier:** 100 emails/day — sufficient for family beta
 - **`MapIt_MVP_v1.html`** is the canonical MVP frontend (2603 lines, single-file). `public/index.html` is the deployed copy — **always sync both after any frontend change** with `cp MapIt_MVP_v1.html public/index.html && diff MapIt_MVP_v1.html public/index.html`. `MapIt_Demo 30052026.html` is the prototype reference — do NOT edit it.
