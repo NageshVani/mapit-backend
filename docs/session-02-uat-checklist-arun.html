@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 2 UAT Checklist</title>
+<style>
+  :root {
+    --orange: #F06030;
+    --orange2: #FF7A50;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --green-border: #bbf7d0;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --yellow: #d97706;
+    --yellow-light: #fffbeb;
+    --yellow-border: #fde68a;
+    --blue: #1d4ed8;
+    --blue-light: #eff6ff;
+    --blue-border: #bfdbfe;
+    --bg: #F8FAFC;
+    --panel: #FFFFFF;
+    --card: #F1F5F9;
+    --border: #E2E8F0;
+    --border2: #CBD5E1;
+    --text: #0F172A;
+    --muted: #64748B;
+    --muted2: #475569;
+  }
+  @media print {
+    body { font-size: 11pt; background: #fff; }
+    .no-print { display: none !important; }
+    .check-block { break-inside: avoid; }
+    .page-break { page-break-before: always; }
+    a { color: inherit; text-decoration: none; }
+    .print-note { display: block !important; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .doc-header {
+    background: linear-gradient(135deg, #1A1D27 0%, #2D3250 100%);
+    padding: 36px 60px 32px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(240,96,48,0.2) 0%, transparent 70%);
+  }
+  .logo { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .logo em { font-style: normal; color: var(--orange2); }
+  .doc-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .doc-subtitle { font-size: 14px; opacity: 0.65; margin-bottom: 20px; }
+  .uat-url-box {
+    background: rgba(240,96,48,0.2);
+    border: 1.5px solid rgba(240,96,48,0.5);
+    border-radius: 10px;
+    padding: 14px 20px;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  .uat-url-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.7; margin-bottom: 4px; }
+  .uat-url { font-size: 15px; font-weight: 700; font-family: monospace; color: #FFA07A; }
+  .header-meta { display: flex; gap: 32px; flex-wrap: wrap; margin-top: 8px; }
+  .meta-item { }
+  .meta-label { font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.55; }
+  .meta-val { font-size: 13px; font-weight: 600; opacity: 0.9; }
+
+  /* ── INSTRUCTIONS ── */
+  .instructions {
+    background: var(--blue-light);
+    border: 1.5px solid var(--blue-border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 28px 60px;
+  }
+  .instructions-title { font-size: 14px; font-weight: 700; color: var(--blue); margin-bottom: 10px; }
+  .instructions ol { padding-left: 20px; }
+  .instructions li { font-size: 13px; color: #1e40af; margin-bottom: 6px; line-height: 1.6; }
+  .instructions li strong { color: var(--blue); }
+  .instructions code { background: rgba(29,78,216,0.1); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+  /* ── TESTER INFO ── */
+  .tester-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 0 60px 32px;
+  }
+  .tester-field { }
+  .tester-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+  .tester-input {
+    width: 100%; border: 2px solid var(--border2);
+    border-radius: 8px; padding: 10px 13px;
+    font-size: 13px; font-family: inherit; color: var(--text);
+    background: var(--panel); outline: none; transition: border-color 0.15s;
+  }
+  .tester-input:focus { border-color: var(--orange); }
+
+  /* ── MAIN CONTENT ── */
+  .content { padding: 0 60px 60px; }
+
+  /* ── BLOCK ── */
+  .check-block { margin-bottom: 36px; }
+  .block-header {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--text);
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    padding: 14px 20px;
+  }
+  .block-letter {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .block-title { font-size: 16px; font-weight: 700; }
+  .block-desc { font-size: 12px; opacity: 0.6; margin-top: 1px; }
+  .block-count {
+    margin-left: auto; font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.15); border-radius: 12px; padding: 3px 10px;
+  }
+  .block-prereq {
+    background: var(--yellow-light);
+    border: 1px solid var(--yellow-border);
+    border-top: none;
+    padding: 10px 20px;
+    font-size: 12px; color: var(--yellow);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ── CHECK ITEM ── */
+  .check-list {
+    border: 1px solid var(--border2);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: #F8FAFC; }
+  .check-item.passed { background: var(--green-light) !important; }
+  .check-item.failed { background: var(--red-light) !important; }
+  .check-item.skipped { background: #FAFAFA !important; opacity: 0.6; }
+
+  .check-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--card); border: 1.5px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: var(--muted);
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .check-item.passed .check-num { background: #DCFCE7; border-color: #86EFAC; color: var(--green); }
+  .check-item.failed .check-num { background: #FEE2E2; border-color: #FCA5A5; color: var(--red); }
+
+  .check-content { flex: 1; min-width: 0; }
+  .check-action { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .check-expect { font-size: 11.5px; color: var(--muted2); line-height: 1.5; }
+  .check-expect code { font-family: monospace; font-size: 11px; background: var(--card); padding: 1px 5px; border-radius: 3px; }
+  .check-note-field {
+    width: 100%; border: 1px solid var(--border2); border-radius: 5px;
+    padding: 5px 9px; font-size: 12px; font-family: inherit; color: var(--text);
+    background: #fff; resize: none; margin-top: 6px; display: none;
+  }
+  .check-item.failed .check-note-field { display: block; }
+
+  .check-actions { display: flex; gap: 6px; flex-shrink: 0; margin-top: 1px; }
+  .btn-pass {
+    padding: 5px 14px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
+    border: 1.5px solid var(--green-border); background: transparent;
+    color: var(--green); cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-pass:hover, .check-item.passed .btn-pass { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn-fail {
+    padding: 5px 14px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
+    border: 1.5px solid #FCA5A5; background: transparent;
+    color: var(--red); cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-fail:hover, .check-item.failed .btn-fail { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 60px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .progress-label { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .progress-bar { flex: 1; height: 8px; background: var(--card); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--orange); border-radius: 4px; transition: width 0.3s; }
+  .progress-stats { font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .stat-pass { color: var(--green); }
+  .stat-fail { color: var(--red); }
+
+  /* ── SIGN-OFF ── */
+  .signoff {
+    background: var(--panel);
+    border: 2px solid var(--border2);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-top: 40px;
+  }
+  .signoff-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .signoff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .signoff-field { }
+  .signoff-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .signoff-line { border-bottom: 2px solid var(--border2); height: 36px; }
+  .overall-result {
+    margin-top: 24px;
+    display: flex; gap: 16px;
+  }
+  .result-btn {
+    flex: 1; padding: 16px; border-radius: 10px;
+    border: 2.5px solid var(--border2); background: transparent;
+    font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: all 0.2s; text-align: center;
+  }
+  .result-btn.approve { color: var(--green); border-color: var(--green-border); }
+  .result-btn.approve:hover, .result-btn.approve.selected { background: var(--green); border-color: var(--green); color: #fff; }
+  .result-btn.reject { color: var(--red); border-color: #FCA5A5; }
+  .result-btn.reject:hover, .result-btn.reject.selected { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* ── PRINT NOTE ── */
+  .print-note { display: none; font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 800px) {
+    .doc-header, .instructions, .tester-form, .content { padding-left: 20px; padding-right: 20px; }
+    .progress-bar-wrap { padding-left: 20px; padding-right: 20px; }
+    .tester-form { grid-template-columns: 1fr; }
+    .signoff-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="logo">Map<em>It</em></div>
+  <div class="doc-title">Session 2 — Manual UAT Checklist</div>
+  <div class="doc-subtitle">For Arun — Bangalore · Auth, Nickname System, Password Reset, OTP Fallback</div>
+  <div class="uat-url-box">
+    <div class="uat-url-label">UAT Test URL</div>
+    <div class="uat-url">https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">Session</div>
+      <div class="meta-val">MVP Session 2</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Date</div>
+      <div class="meta-val">June 2026</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Total Tests</div>
+      <div class="meta-val">51 Manual Checks</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Prepared By</div>
+      <div class="meta-val">Nagesh (MapIt)</div>
+    </div>
+  </div>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="instructions no-print">
+  <div class="instructions-title">📋 How to Use This Checklist</div>
+  <ol>
+    <li>Open the UAT URL above in <strong>Google Chrome</strong> on your computer or phone.</li>
+    <li>Before starting each Test Block marked with ⚠ reset: open <strong>DevTools → Console</strong> and run <code>localStorage.clear()</code>, then reload the page.</li>
+    <li>For each test: click <strong>Pass</strong> if the behaviour matches the expectation, or <strong>Fail</strong> if something goes wrong.</li>
+    <li>For any <strong>Fail</strong>, a notes field will appear — describe what you saw (screenshot if possible).</li>
+    <li>At the end, use the <strong>Sign-Off</strong> section to approve or flag issues.</li>
+    <li>Use a <strong>+alias email</strong> for Create Account tests (e.g. <code>arun.bn1+test1@gmail.com</code>) — avoids database cleanup issues.</li>
+  </ol>
+</div>
+<div class="print-note" style="margin:16px 60px;">
+  Open this file in a browser to use the interactive Pass/Fail buttons. Print using Ctrl+P for a paper copy.
+</div>
+
+<!-- TESTER INFO -->
+<div class="tester-form">
+  <div class="tester-field">
+    <div class="tester-label">Tester Name</div>
+    <input class="tester-input" placeholder="Arun B.N." />
+  </div>
+  <div class="tester-field">
+    <div class="tester-label">Test Date</div>
+    <input class="tester-input" type="date" />
+  </div>
+  <div class="tester-field">
+    <div class="tester-label">Device / Browser</div>
+    <input class="tester-input" placeholder="e.g. MacBook · Chrome 126" />
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar-wrap no-print">
+  <span class="progress-label">Progress</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <span class="progress-stats" id="progressStats">0 / 51 · <span class="stat-pass">0 Pass</span> · <span class="stat-fail">0 Fail</span></span>
+</div>
+
+<div class="content">
+
+<!-- BLOCK A: CREATE ACCOUNT -->
+<div class="check-block" id="block-A">
+  <div class="block-header">
+    <div class="block-letter">A</div>
+    <div>
+      <div class="block-title">Create Account (Email + Password)</div>
+      <div class="block-desc">New user sign-up, form validation, profile setup, home location, onboarding</div>
+    </div>
+    <div class="block-count">10 tests</div>
+  </div>
+  <div class="block-prereq">
+    ⚠ Before this block: open DevTools Console → type <code style="font-family:monospace">localStorage.clear()</code> → press Enter → reload page
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="A1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">Open UAT URL → auth screen appears</div>
+        <div class="check-expect">Should see "MapIt" logo with Sign In / Create Account tabs. NOT the app map. If "Who's using MapIt?" appears, do the localStorage.clear() step above and reload.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Click "Create Account" tab</div>
+        <div class="check-expect">Two new fields appear: "Full Name" and "Nickname". A "Confirm Password" field appears. The "Forgot password?" link disappears.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Submit with empty form</div>
+        <div class="check-expect">An inline error message appears (e.g. "valid email address" or "min 8 characters"). The page does NOT crash or go blank.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Submit with mismatched passwords</div>
+        <div class="check-expect">Fill in all fields correctly but type different values for Password and Confirm Password. Error: "Passwords do not match."</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A5">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">Submit valid Create Account form with +alias email</div>
+        <div class="check-expect">Use email like <code>arun.bn1+test1@gmail.com</code>. After clicking Create Account, a spinning loader appears briefly, then the Profile Setup screen opens. Full Name and Nickname you entered are pre-filled.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A6">
+      <div class="check-num">6</div>
+      <div class="check-content">
+        <div class="check-action">On Profile Setup — try to submit without checking Terms of Service</div>
+        <div class="check-expect">A toast message appears: "Please agree to the Terms of Service to continue." The form does not submit.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A7">
+      <div class="check-num">7</div>
+      <div class="check-content">
+        <div class="check-action">Complete Profile Setup with ToS checked, click Continue</div>
+        <div class="check-expect">Moves to "Set your home area" screen with a map. Map tiles load (OpenStreetMap). A "Skip for now →" link is visible at the bottom.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A8">
+      <div class="check-num">8</div>
+      <div class="check-content">
+        <div class="check-action">Tap the map to drop a home location marker</div>
+        <div class="check-expect">A pin drops where you tapped. An address appears below the map (e.g. "📍 Koramangala, Bangalore…"). A "Save Home Location →" button appears.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A9">
+      <div class="check-num">9</div>
+      <div class="check-content">
+        <div class="check-action">Click "Save Home Location →"</div>
+        <div class="check-expect">Toast: "Home location saved!" Then the main map app loads. The loading splash ("Loading your map…") appears briefly. The app shows the onboarding welcome screen.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="A10">
+      <div class="check-num">10</div>
+      <div class="check-content">
+        <div class="check-action">Check header shows your Nickname (not full name or "MapIt User")</div>
+        <div class="check-expect">Top-right corner: a small chip shows your first name (from the nickname you entered). Clicking it opens a menu with your full nickname. NOT "MapIt User".</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK B: SIGN IN -->
+<div class="check-block" id="block-B">
+  <div class="block-header">
+    <div class="block-letter">B</div>
+    <div>
+      <div class="block-title">Sign In (Existing Account)</div>
+      <div class="block-desc">Sign in with email + password, wrong password rejection, display name verification</div>
+    </div>
+    <div class="block-count">4 tests</div>
+  </div>
+  <div class="block-prereq">
+    ⚠ Before this block: run <code>localStorage.clear()</code> in Console and reload. Use the account you created in Block A.
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="B1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">Sign In with correct email + wrong password</div>
+        <div class="check-expect">Error message appears: "Invalid login credentials". Does NOT let you into the app.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="B2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Sign In with correct credentials</div>
+        <div class="check-expect">Loading splash → map app loads. Your nickname appears in the header chip (top right).</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="B3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Sign out, reload → "Who's using MapIt?" button shows your nickname</div>
+        <div class="check-expect">The button in "Who's using MapIt?" displays your nickname (e.g. "Arun"), NOT "MapIt User" or "Family Member".</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="B4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Click your name in "Who's using MapIt?" — app loads correctly</div>
+        <div class="check-expect">Clicking your name/button takes you straight into the app without asking for OTP or password. Map loads with your data.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK C: PASSWORD RESET -->
+<div class="check-block" id="block-C">
+  <div class="block-header">
+    <div class="block-letter">C</div>
+    <div>
+      <div class="block-title">Password Reset Flow</div>
+      <div class="block-desc">Request reset email, confirm email arrives, click link, set new password, sign in with new password</div>
+    </div>
+    <div class="block-count">9 tests</div>
+  </div>
+  <div class="block-prereq">
+    ⚠ You need access to the email inbox of the test account you created. Use the account from Block A.
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="C1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">On Sign In tab: click "Forgot password? Send reset link" with an empty email field</div>
+        <div class="check-expect">Error: "Enter your email above to receive a reset link." The form does NOT submit.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="C2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Enter your test email and click "Forgot password?"</div>
+        <div class="check-expect">A confirmation screen appears with a 📧 email icon, your email address, and text about a 1-hour expiry. There's an "OK" button.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="C3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Check your email inbox — reset email arrived</div>
+        <div class="check-expect">An email from MapIt (noreply@mapit.co.in) arrives with a password reset link. May take up to 2 minutes. Check spam folder if needed.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="C4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Check the reset link goes to the UAT URL (not production)</div>
+        <div class="check-expect">Hover over or copy the link in the email. It should start with <code>https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code> NOT <code>www.mapit.co.in</code>.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="C5">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">Click the reset link in the email</div>
+        <div class="check-expect">Browser opens on the UAT URL. The "Set your new password" form appears with two password fields.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="C6">
+      <div class="check-num">6</div>
+      <div class="check-content">
+        <div class="check-action">Try submitting a short password (&lt; 8 characters)</div>
+        <div class="check-expect">Error: "Password must be at least 8 characters." Does not submit.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="C7">
+      <div class="check-num">7</div>
+      <div class="check-content">
+        <div class="check-action">Enter a valid new password in both fields and submit</div>
+        <div class="check-expect">Toast: "✅ Password updated! Please sign in with your new password." Then the Sign In screen appears.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="C8">
+      <div class="check-num">8</div>
+      <div class="check-content">
+        <div class="check-action">Sign in with the NEW password</div>
+        <div class="check-expect">Sign in succeeds. App loads with your map and correct nickname.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="C9">
+      <div class="check-num">9</div>
+      <div class="check-content">
+        <div class="check-action">Try signing in with the OLD password</div>
+        <div class="check-expect">Error: "Invalid login credentials." Old password no longer works.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK D: OTP FALLBACK -->
+<div class="check-block" id="block-D">
+  <div class="block-header">
+    <div class="block-letter">D</div>
+    <div>
+      <div class="block-title">OTP Fallback (Email One-Time Code)</div>
+      <div class="block-desc">Alternative login method for users who prefer not to use passwords</div>
+    </div>
+    <div class="block-count">6 tests</div>
+  </div>
+  <div class="block-prereq">
+    ⚠ Before this block: run <code>localStorage.clear()</code> in Console and reload.
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="D1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">On Sign In screen, click "Prefer a one-time code? Use email OTP →"</div>
+        <div class="check-expect">Screen changes to an email entry form with a "Send Login Code →" button. A "← Back" link is visible.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="D2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Enter your email and click "Send Login Code →"</div>
+        <div class="check-expect">Screen changes to a 6-digit code entry. Your email address is shown. An email with a 6-digit code arrives in your inbox (check spam too). May take up to 1 minute.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="D3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Enter a wrong 6-digit code (e.g. 000000)</div>
+        <div class="check-expect">Error: "Invalid or expired code. Please try again." Does not let you in.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="D4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Enter the correct 6-digit code from the email</div>
+        <div class="check-expect">App loads. Your nickname appears correctly in the header. (For a completely new email, Profile Setup screen appears first.)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="D5">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">Click "Didn't get a code? Resend" link</div>
+        <div class="check-expect">A new code is sent (or a "wait 60 seconds" message appears if too soon). The form stays on the code entry screen — does NOT go back to email entry.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="D6">
+      <div class="check-num">6</div>
+      <div class="check-content">
+        <div class="check-action">Click "← Back" from the OTP email entry screen</div>
+        <div class="check-expect">Returns to the Sign In / Create Account tabs screen.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK E: NICKNAME SYSTEM -->
+<div class="check-block" id="block-E">
+  <div class="block-header">
+    <div class="block-letter">E</div>
+    <div>
+      <div class="block-title">Nickname System</div>
+      <div class="block-desc">Display name in header, Change Nickname feature, live update without reload</div>
+    </div>
+    <div class="block-count">6 tests</div>
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="E1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">Sign in and check the header chip (top right, next to the orange circle avatar)</div>
+        <div class="check-expect">Shows your first name from the nickname (e.g. if nickname is "Arun Bangalore" the chip shows "Arun"). NOT "MapIt User" or "—".</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="E2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Click the avatar/name in the top right to open the profile menu</div>
+        <div class="check-expect">A dropdown menu opens. Your full nickname appears at the top of the menu in grey text. Options include "✏️ Change Nickname" among others.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="E3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Click "✏️ Change Nickname"</div>
+        <div class="check-expect">A browser prompt/dialog appears with your current nickname pre-filled. You can edit it.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="E4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Enter a new nickname and click OK</div>
+        <div class="check-expect">WITHOUT reloading the page: the header chip updates to show the new nickname. The avatar initial updates. Toast: "Nickname updated to '[name]'".</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="E5">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">Try to change nickname to a blank value</div>
+        <div class="check-expect">Toast: "Nickname cannot be empty." The old nickname is unchanged.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="E6">
+      <div class="check-num">6</div>
+      <div class="check-content">
+        <div class="check-action">Sign out and sign back in — new nickname still shown</div>
+        <div class="check-expect">After signing out and signing back in, the nickname you changed to in E4 is still shown (saved to DB, not just in memory).</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK F: WHO'S USING MAPIT -->
+<div class="check-block" id="block-F">
+  <div class="block-header">
+    <div class="block-letter">F</div>
+    <div>
+      <div class="block-title">"Who's using MapIt?" Screen</div>
+      <div class="block-desc">Multi-user session switching, display names, stale session handling</div>
+    </div>
+    <div class="block-count">5 tests</div>
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="F1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">After signing in at least once, reload the page (without clearing localStorage)</div>
+        <div class="check-expect">"Who's using MapIt?" screen appears (not the auth modal). At least one button with your name is shown.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="F2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Verify no button shows "MapIt User" or "Family Member" as the name</div>
+        <div class="check-expect">All buttons show real names (nicknames). "MapIt User" or "Family Member" would indicate a bug.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="F3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Click your name button — no password prompt appears</div>
+        <div class="check-expect">Clicking your name goes directly into the app (loading splash → map). You should NOT need to type a password again as a returning user.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="F4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Click "+ New person / first-time login" button</div>
+        <div class="check-expect">The "Who's using MapIt?" screen disappears and the Sign In / Create Account auth form appears.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="F5">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">Avatar circle shows correct initials based on nickname</div>
+        <div class="check-expect">The orange circle next to your name shows your initials (e.g. "AB" for "Arun Bangalore" or "A" for just "Arun"). NOT a "?" or "U".</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK G: SPLASH & ONBOARDING -->
+<div class="check-block" id="block-G">
+  <div class="block-header">
+    <div class="block-letter">G</div>
+    <div>
+      <div class="block-title">Loading Splash &amp; Onboarding</div>
+      <div class="block-desc">No flash of map content during login, first-time onboarding bullets, returning user behaviour</div>
+    </div>
+    <div class="block-count">6 tests</div>
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="G1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">During sign-in: observe the transition from auth modal to app</div>
+        <div class="check-expect">After clicking Sign In, you should see: (1) spinner on button → (2) loading splash "Loading your map…" → (3) app map. You should NOT briefly see the map listings panel behind the auth modal.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="G2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">On a fresh account's FIRST login — onboarding splash content</div>
+        <div class="check-expect">Welcome screen shows 5 bullet points: GPS location, map pins, filter by category/distance, post a listing, save favourites with heart icon. The text is readable (not tiny). Heading says "Welcome to MapIt!"</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="G3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Check that "Tap I'm Interested" is NOT one of the 5 bullets</div>
+        <div class="check-expect">The onboarding bullets should NOT mention "I'm Interested". There should be exactly 5 bullets, not 6.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="G4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Tap the splash screen or wait 5 seconds — it dismisses</div>
+        <div class="check-expect">Tapping the splash dismisses it immediately. If untouched, it auto-dismisses after about 5 seconds. The map is now visible.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="G5">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">Sign out and sign back in — onboarding splash does NOT appear again</div>
+        <div class="check-expect">On second login, the onboarding splash auto-dismisses very quickly (about 0.8 seconds). The 5-bullet welcome screen does NOT appear again for returning users.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="G6">
+      <div class="check-num">6</div>
+      <div class="check-content">
+        <div class="check-action">Clicking a user in "Who's using MapIt?" → no flash of map before splash</div>
+        <div class="check-expect">When clicking a user button in the Who's using MapIt? screen, the loading splash should appear immediately — you should NOT see the map/sidebar content flash behind the old screen.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK H: HOME LOCATION PICKER -->
+<div class="check-block" id="block-H">
+  <div class="block-header">
+    <div class="block-letter">H</div>
+    <div>
+      <div class="block-title">Home Location Picker</div>
+      <div class="block-desc">Map appears after profile setup, tap to pin, address reverse-geocodes, save or skip</div>
+    </div>
+    <div class="block-count">5 tests</div>
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="H1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">After Profile Setup, the home location map screen renders correctly</div>
+        <div class="check-expect">A map appears (OpenStreetMap tiles — streets, labels visible). The map is inside a rounded box. "Skip for now →" is visible below.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="H2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Tap anywhere on the map</div>
+        <div class="check-expect">A pin marker drops at the tapped location. "Getting address…" text appears briefly, then an address like "📍 Koramangala, Bengaluru, Karnataka" appears. A "Save Home Location →" button appears.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="H3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Tap the map again in a different location</div>
+        <div class="check-expect">The SAME marker moves to the new location (not a second marker added). The address updates.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="H4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Click "Save Home Location →"</div>
+        <div class="check-expect">Toast: "Home location saved!" Then the app loads. The saved location should later appear in "My Locations" (in the profile menu).</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="H5">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">For a new account: click "Skip for now →" instead of saving</div>
+        <div class="check-expect">App loads without saving any home location. No error, no crash. User can add location later via "My Locations" in the profile menu.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK I: GOOGLE OAUTH -->
+<div class="check-block" id="block-I">
+  <div class="block-header">
+    <div class="block-letter">I</div>
+    <div>
+      <div class="block-title">Google OAuth Sign-In</div>
+      <div class="block-desc">Continue with Google flow, redirect stays on UAT, profile setup for new Google users</div>
+    </div>
+    <div class="block-count">4 tests</div>
+  </div>
+  <div class="block-prereq">
+    ⚠ Before this block: run <code>localStorage.clear()</code> in Console and reload.
+  </div>
+  <div class="check-list">
+    <div class="check-item" data-id="I1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">Click "Continue with Google" button</div>
+        <div class="check-expect">A Google account picker page opens (Google's login/selection screen). The button shows a spinner and "Connecting…" before the redirect.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="I2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Select a Google account and authorise MapIt</div>
+        <div class="check-expect">Browser redirects BACK to the UAT URL (not www.mapit.co.in). The URL bar should show <code>mapit-backend-git-uat-...</code></div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="I3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">New Google user → Profile Setup screen appears</div>
+        <div class="check-expect">If this Google account has never used MapIt before, the Profile Setup screen (Full Name, Nickname, ToS checkbox) appears. Name may be pre-filled from Google.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+    <div class="check-item" data-id="I4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Existing Google user → app loads directly</div>
+        <div class="check-expect">If you've used MapIt with this Google account before (and have a complete profile), the app loads directly — no Profile Setup screen needed.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw..."></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(this,'passed')">Pass</button>
+        <button class="btn-fail" onclick="mark(this,'failed')">Fail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGN-OFF -->
+<div class="signoff">
+  <div class="signoff-title">✍️ UAT Sign-Off</div>
+  <div class="signoff-grid">
+    <div class="signoff-field">
+      <div class="signoff-label">Overall Result</div>
+      <div class="overall-result">
+        <button class="result-btn approve" id="btnApprove" onclick="setOverallResult('approve')">✅ Approved — Ready to Merge</button>
+        <button class="result-btn reject" id="btnReject" onclick="setOverallResult('reject')">❌ Hold — Issues Found</button>
+      </div>
+    </div>
+    <div class="signoff-field">
+      <div class="signoff-label">Issues / Notes for Nagesh</div>
+      <textarea class="tester-input" rows="4" placeholder="List any issues, failed tests, or additional observations here…" style="height:auto;resize:vertical;"></textarea>
+    </div>
+    <div class="signoff-field">
+      <div class="signoff-label">Tester Signature</div>
+      <div class="signoff-line"></div>
+    </div>
+    <div class="signoff-field">
+      <div class="signoff-label">Date Signed</div>
+      <div class="signoff-line"></div>
+    </div>
+  </div>
+  <div style="margin-top:20px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:14px;">
+    When approved: Nagesh will merge the <code>uat</code> branch into <code>main</code> to deploy to production at <strong>mapit.co.in</strong>.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="border-top:1px solid var(--border);padding:24px 0 0;margin-top:32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+  <div style="font-size:12px;color:var(--muted);">MapIt MVP · Session 2 UAT Checklist · 51 Tests · June 2026</div>
+  <div style="font-size:12px;color:var(--muted);">UAT: <code style="font-family:monospace;font-size:11px;">mapit-backend-git-uat-nagesh-n-arun.vercel.app</code></div>
+</div>
+
+</div><!-- end content -->
+
+<script>
+  const TOTAL = 51;
+  let counts = { passed: 0, failed: 0, total: 0 };
+
+  function mark(btn, state) {
+    const item = btn.closest('.check-item');
+    const currentState = item.dataset.state;
+
+    // Toggle off if clicking the same state
+    if (currentState === state) {
+      item.classList.remove(state);
+      item.dataset.state = '';
+      counts[state]--;
+      counts.total--;
+    } else {
+      // Remove previous state
+      if (currentState) {
+        item.classList.remove(currentState);
+        counts[currentState]--;
+        counts.total--;
+      }
+      // Apply new state
+      item.classList.add(state);
+      item.dataset.state = state;
+      counts[state]++;
+      counts.total++;
+    }
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const pct = Math.round((counts.total / TOTAL) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressStats').innerHTML =
+      counts.total + ' / ' + TOTAL + ' · ' +
+      '<span class="stat-pass">' + counts.passed + ' Pass</span> · ' +
+      '<span class="stat-fail">' + counts.failed + ' Fail</span>';
+
+    // Colour the progress bar
+    const fill = document.getElementById('progressFill');
+    if (counts.failed > 0) fill.style.background = '#dc2626';
+    else if (counts.passed === TOTAL) fill.style.background = '#16a34a';
+    else fill.style.background = '#F06030';
+  }
+
+  function setOverallResult(result) {
+    document.getElementById('btnApprove').classList.toggle('selected', result === 'approve');
+    document.getElementById('btnReject').classList.toggle('selected', result === 'reject');
+  }
+</script>
+
+</body>
+</html>
