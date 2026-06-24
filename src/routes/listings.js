@@ -33,6 +33,14 @@ function haversineM(lat1, lng1, lat2, lng2) {
 const VALID_CATEGORIES = ['re', 'veh', 'hh', 'furn', 'electronics']; // furn kept for legacy data
 const VALID_STATUSES   = ['active', 'sold', 'expired'];
 
+// Reference code: MP-BLR-XXXXXX (6 alphanumeric, no 0/O/1/I to avoid confusion)
+function generateRefCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'MP-BLR-';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
 // ── GET pending listings (admin review) ──────────────────────
 // GET /api/listings/pending/all
 router.get('/pending/all', requireAuth, async (req, res, next) => {
@@ -258,13 +266,13 @@ router.get('/:id', requireAuth, async (req, res, next) => {
 // ── POST create listing ───────────────────────────────────────
 // POST /api/listings
 // Body: { category, subcategory, title, description, price, price_label,
-//         lat, lng, address, specs, details }
+//         lat, lng, address, specs, details, show_phone }
 router.post('/', requireAuth, async (req, res, next) => {
   try {
     const {
       category, subcategory, title, description,
       price, price_label,
-      lat, lng, address, specs, details,
+      lat, lng, address, specs, details, show_phone,
     } = req.body;
 
     // Validation
@@ -277,22 +285,29 @@ router.post('/', requireAuth, async (req, res, next) => {
     if (title.length > 80) return next(createError('Title must be 80 characters or less.'));
     if (price && parseFloat(price) < 0) return next(createError('Price cannot be negative.'));
 
+    const validShowPhone = ['always', 'on_agreement', 'never'];
+    const phoneVisibility = validShowPhone.includes(show_phone) ? show_phone : 'always';
+    const now = new Date();
+
     const { data: listing, error } = await supabaseAdmin
       .from('listings')
       .insert({
-        seller_id:   req.user.id,
+        seller_id:      req.user.id,
         category,
         subcategory,
-        title:       title.trim(),
-        description: description?.trim() || null,
-        price:       parseFloat(price) || 0,
-        price_label: price_label?.trim() || null,
-        lat:         parseFloat(lat),
-        lng:         parseFloat(lng),
-        address:     address?.trim() || null,
-        specs:       specs || [],
-        details:     details || {},
-        status:      'pending', // goes to verification queue
+        title:          title.trim(),
+        description:    description?.trim() || null,
+        price:          parseFloat(price) || 0,
+        price_label:    price_label?.trim() || null,
+        lat:            parseFloat(lat),
+        lng:            parseFloat(lng),
+        address:        address?.trim() || null,
+        specs:          specs || [],
+        details:        details || {},
+        status:         'pending',
+        reference_code: generateRefCode(),
+        expires_at:     new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        show_phone:     phoneVisibility,
       })
       .select()
       .single();
@@ -323,7 +338,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
 
     const allowedFields = [
       'title', 'description', 'price', 'price_label',
-      'address', 'specs', 'details', 'category', 'subcategory', 'lat', 'lng',
+      'address', 'specs', 'details', 'category', 'subcategory', 'lat', 'lng', 'show_phone',
     ];
     const updates = {};
     allowedFields.forEach(f => {
@@ -457,22 +472,17 @@ router.post('/:id/save', requireAuth, async (req, res, next) => {
 router.post('/:id/view', requireAuth, async (req, res, next) => {
   try {
     const { id } = req.params;
-    await supabaseAdmin.rpc('increment_view_count', { listing_id: id }).catch(() => {
-      // Fallback if RPC not available
-      supabaseAdmin
+    const { data } = await supabaseAdmin
+      .from('listings')
+      .select('views_count')
+      .eq('id', id)
+      .single();
+    if (data) {
+      await supabaseAdmin
         .from('listings')
-        .select('view_count')
-        .eq('id', id)
-        .single()
-        .then(({ data }) => {
-          if (data) {
-            supabaseAdmin
-              .from('listings')
-              .update({ view_count: (data.view_count || 0) + 1 })
-              .eq('id', id);
-          }
-        });
-    });
+        .update({ views_count: (data.views_count || 0) + 1 })
+        .eq('id', id);
+    }
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

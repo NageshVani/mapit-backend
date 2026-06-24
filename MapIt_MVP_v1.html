@@ -378,6 +378,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 /* ── MY ADS — SOLD BUTTON ── */
 .sold-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:10.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
 .sold-btn:hover{border-color:var(--green);color:var(--green);}
+.del-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(239,68,68,.35);background:transparent;color:rgba(239,68,68,.7);font-size:10.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
+.del-btn:hover{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.08);}
 .edit-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.08);color:#60a5fa;font-size:10.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
 .edit-btn:hover{background:rgba(59,130,246,.18);color:#93c5fd;}
 .myads-hd{padding:8px 13px 6px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--deep);display:flex;align-items:center;gap:6px;}
@@ -677,6 +679,15 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="form-group">
         <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5)</span></label>
         <input type="file" class="form-input" id="postPhotos" accept="image/*" multiple style="padding:8px;cursor:pointer;"/>
+      </div>
+      <!-- 8. Phone visibility -->
+      <div class="form-group">
+        <label class="form-label">📞 Show My Phone Number to Buyers</label>
+        <div class="tx-radio-row">
+          <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="always" checked> Always</label>
+          <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement"> On Agreement</label>
+          <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
+        </div>
       </div>
       <button class="post-submit" id="postSubmitBtn" onclick="submitListing()">Submit for Review 🚀</button>
       <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;">Your listing will be reviewed and go live within 4 hours.</div>
@@ -1188,6 +1199,8 @@ async function submitAuth(){
       else if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')
         document.getElementById('nameInput').value = data.profile.full_name;
       if(ST._pendingNickname) document.getElementById('profileNicknameInput').value = ST._pendingNickname;
+      else if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
+        document.getElementById('profileNicknameInput').value = data.profile.nickname;
       goToStep('step-profile');
     } else {
       showLoadingSplash();
@@ -1249,7 +1262,16 @@ async function handleOAuthCallback(){
       const name = data.profile?.nickname || data.profile?.full_name || '';
       saveToMultiSessions(uid, { session: ST.session, name, nickname: data.profile?.nickname||'', initials: getInitials(name), email: data.user?.email });
     }
-    if(!data.profile){
+    const needsProfile = !data.profile
+      || !data.profile?.nickname
+      || data.profile.nickname === 'MapIt User'
+      || !data.profile?.full_name
+      || data.profile.full_name === 'MapIt User';
+    if(needsProfile){
+      if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')
+        document.getElementById('nameInput').value = data.profile.full_name;
+      if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
+        document.getElementById('profileNicknameInput').value = data.profile.nickname;
       document.getElementById('authModal').classList.remove('hide');
       goToStep('step-profile');
       return true;
@@ -1337,7 +1359,16 @@ async function verifyOtp(){
       const name = data.profile?.nickname || data.profile?.full_name || '';
       saveToMultiSessions(uid, { session: data.session, name, nickname: data.profile?.nickname||'', initials: getInitials(name), email: data.user?.email });
     }
-    if(data.isNewUser){
+    const needsProfile = data.isNewUser
+      || !data.profile?.nickname
+      || data.profile.nickname === 'MapIt User'
+      || !data.profile?.full_name
+      || data.profile.full_name === 'MapIt User';
+    if(needsProfile){
+      if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')
+        document.getElementById('nameInput').value = data.profile.full_name;
+      if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
+        document.getElementById('profileNicknameInput').value = data.profile.nickname;
       goToStep('step-profile');
     } else {
       showLoadingSplash();
@@ -1749,7 +1780,16 @@ async function renderMyAds(el){
     const STATUS_COLOR = { active:'var(--green)', pending:'var(--gold)', sold:'var(--muted)', expired:'var(--red)' };
     el.innerHTML =
       `<div class="myads-hd">📋 Displaying only your ads &nbsp;·&nbsp; ${listings.length} listing${listings.length!==1?'s':''}</div>` +
-      listings.map(l=>`
+      listings.map(l=>{
+        const expiryHtml = (()=>{
+          if(!l.expires_at) return '';
+          const days = Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000);
+          if(days <= 0) return `<div class="fav-dist" style="color:var(--red);">⚠️ Expired</div>`;
+          if(days <= 5) return `<div class="fav-dist" style="color:var(--orange);">⚠️ Expires in ${days}d</div>`;
+          return `<div class="fav-dist" style="color:var(--muted);">Expires in ${days}d</div>`;
+        })();
+        const safeTtl = (l.title||'').replace(/'/g,"\\'");
+        return `
         <div class="fav-card" onclick="selListing('${l.id}',true)">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
             ${l.cover_photo?`<img src="${l.cover_photo}" alt=""/>`:`<span>${listingEmoji(l)}</span>`}
@@ -1758,12 +1798,15 @@ async function renderMyAds(el){
             <div class="fav-ttl">${l.title}</div>
             <div class="fav-price">${l.price_label||fmtPrice(l.price)}</div>
             <div class="fav-dist" style="color:${STATUS_COLOR[l.status]||'var(--muted)'};">● ${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
+            ${expiryHtml}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;">
             <button class="edit-btn" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit</button>
-            ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}','${(l.title||'').replace(/'/g,"\\'")}')">✅ Sold</button>`:''}
+            ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}','${safeTtl}')">✅ Sold</button>`:''}
+            <button class="del-btn" onclick="event.stopPropagation();deleteListing('${l.id}','${safeTtl}')">🗑️ Del</button>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
   } catch(e){
     el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">📋</div><div class="sb-empty-ttl">Could not load listings</div><div class="sb-empty-sub">${e.message}</div></div>`;
   }
@@ -1850,7 +1893,7 @@ function renderSidebar(){
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
         <span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span>
-        <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}</span>
+        <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${l.reference_code}</span>` : ''}</span>
       </div>
       <div class="ld-info-top">
         <div class="ld-info-thumb"><span>${listingEmoji(l)}</span></div>
@@ -2234,6 +2277,7 @@ async function submitListing(){
     toast('Please select or enter a location.'); return;
   }
 
+  const show_phone = document.querySelector('input[name="showPhone"]:checked')?.value || 'always';
   btn.disabled=true; btn.textContent = ST.editingId ? 'Updating…' : 'Submitting…';
   try {
     const payload = {
@@ -2244,6 +2288,7 @@ async function submitListing(){
       address: `${locObj.label} · Bangalore`,
       details,
       specs: [],
+      show_phone,
     };
 
     let data;
@@ -2572,7 +2617,7 @@ async function init(){
 // Uses each session's own access_token directly so ST.session is never mutated.
 async function _refreshStaleSessionNames(sessions){
   const stale = Object.entries(sessions).filter(([, u]) =>
-    u.session?.access_token && !u.nickname
+    u.session?.access_token && (!u.nickname || u.nickname === 'MapIt User')
   );
   if(!stale.length) return;
   let anyUpdated = false;
@@ -2809,6 +2854,17 @@ async function markAsSold(id, title){
   try {
     await apiPut(`/api/listings/${id}/sold`, {});
     toast('✅ Listing marked as sold and removed from the map.');
+    renderMyAds(document.getElementById('sb-content'));
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function deleteListing(id, title){
+  if(!confirm(`Delete "${title}"?\n\nThis cannot be undone.`)) return;
+  try {
+    await apiDelete(`/api/listings/${id}`);
+    toast('🗑️ Listing deleted.');
+    ST.myListings = ST.myListings.filter(l=>l.id!==id);
+    if(ST.selId===id) ST.selId=null;
     renderMyAds(document.getElementById('sb-content'));
   } catch(e){ toast('Error: '+e.message); }
 }
