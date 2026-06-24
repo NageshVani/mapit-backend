@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MapIt — Session 3 UAT Checklist (Nagesh)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root{--bg:#0f1117;--card:#1a1d27;--card2:#21253a;--border:#2a2e3e;--green:#22c55e;--red:#ef4444;--orange:#f97316;--gold:#eab308;--blue:#3b82f6;--muted:#6b7280;--muted2:#9ca3af;--text:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',system-ui,sans-serif;font-size:14px;line-height:1.6;padding:0 0 80px;}
+  header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;position:sticky;top:0;z-index:100;}
+  .hd-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .logo{font-size:20px;font-weight:700;}.logo span{color:var(--orange);}
+  .hd-meta{font-size:12px;color:var(--muted);}
+  .progress-bar{height:6px;background:var(--card2);border-radius:3px;margin-top:12px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s;}
+  .progress-label{font-size:12px;color:var(--muted2);margin-top:6px;} .progress-label span{color:var(--green);font-weight:700;}
+  main{max-width:800px;margin:0 auto;padding:32px 24px;}
+  .intro-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:28px;}
+  .intro-card h2{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .intro-card p{font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .intro-card .url{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card2);padding:6px 12px;border-radius:6px;color:#93c5fd;display:block;margin-top:10px;word-break:break-all;}
+  h2.section{font-size:14px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.7px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  /* Test card */
+  .test-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;transition:border-color .2s;}
+  .test-card.passed{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.04);}
+  .test-card.failed{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.04);}
+  .test-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .test-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;margin-top:2px;min-width:36px;}
+  .test-title{font-size:13px;font-weight:600;flex:1;}
+  .btn-row{display:flex;gap:8px;flex-shrink:0;}
+  button.pass-btn,button.fail-btn{padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
+  button.pass-btn{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  button.pass-btn:hover{background:rgba(34,197,94,.28);}
+  button.fail-btn{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+  button.fail-btn:hover{background:rgba(239,68,68,.22);}
+  button.pass-btn.active{background:var(--green);color:#000;}
+  button.fail-btn.active{background:var(--red);color:#fff;}
+  .test-steps{font-size:12px;color:var(--muted2);margin-top:10px;line-height:1.8;}
+  .test-steps ol{padding-left:18px;}
+  .test-steps li{margin-bottom:3px;}
+  .test-steps code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--card2);padding:1px 5px;border-radius:3px;color:#93c5fd;}
+  .test-steps .expected{color:var(--green);font-weight:600;}
+  .test-steps .sql{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#fcd34d;margin:6px 0;display:block;}
+  .note-area{margin-top:10px;display:none;}
+  .note-area textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;resize:vertical;min-height:56px;}
+  .note-area textarea::placeholder{color:var(--muted);}
+  .auto-badge{display:inline-block;background:rgba(59,130,246,.15);color:var(--blue);border-radius:4px;font-size:10px;font-weight:700;padding:1px 7px;margin-left:8px;vertical-align:middle;}
+  /* Signoff */
+  .signoff{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:32px;}
+  .signoff h3{font-size:15px;font-weight:700;margin-bottom:14px;}
+  .signoff label{display:block;font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .signoff input,.signoff select,.signoff textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;margin-bottom:14px;}
+  .signoff .verdict-row{display:flex;gap:10px;margin-bottom:14px;}
+  .verdict-btn{flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;}
+  .verdict-btn.approve{border-color:rgba(34,197,94,.5);color:var(--green);}
+  .verdict-btn.approve.sel{background:var(--green);color:#000;border-color:var(--green);}
+  .verdict-btn.reject{border-color:rgba(239,68,68,.5);color:var(--red);}
+  .verdict-btn.reject.sel{background:var(--red);color:#fff;border-color:var(--red);}
+  .verdict-btn.hold{border-color:rgba(249,115,22,.5);color:var(--orange);}
+  .verdict-btn.hold.sel{background:var(--orange);color:#000;border-color:var(--orange);}
+  .submit-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+  .submit-btn:hover{background:#2563eb;}
+  .result-box{display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;margin-top:14px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-row">
+    <div>
+      <div class="logo">Map<span>It</span> &nbsp;·&nbsp; Session 3 UAT Checklist</div>
+      <div class="hd-meta">Tester: Nagesh Nagaraja Rao &nbsp;·&nbsp; Date: 2026-06-24 &nbsp;·&nbsp; Commit: 634e1f7</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="progress-label">Progress: <span id="pct">0%</span> &nbsp;(<span id="doneCount">0</span> / <span id="totalCount">0</span>)</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</header>
+
+<main>
+  <div class="intro-card">
+    <h2>📋 Session 3 Manual UAT — Listing Lifecycle</h2>
+    <p>This checklist covers the 3 end-to-end browser flows introduced in Session 3. The automated tests (27 code + API checks) have already passed. Your job is to verify the actual user experience in the app.</p>
+    <p><strong>UAT URL (uat branch preview):</strong></p>
+    <code class="url">https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code>
+    <p style="margin-top:10px;"><strong>Or test locally:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card2);padding:2px 6px;border-radius:3px;color:#93c5fd;">npm start</code> then open <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card2);padding:2px 6px;border-radius:3px;color:#93c5fd;">http://localhost:3001</code></p>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted);">Sign in with your account (nagesh.aadi@gmail.com) before starting. Make sure you have at least one saved location / GPS pin set up.</p>
+  </div>
+
+  <!-- BLOCK A: PRE-CONDITIONS -->
+  <h2 class="section">Block A — Pre-conditions (DB Schema)</h2>
+
+  <div class="test-card" id="card-A1">
+    <div class="test-hd">
+      <div class="test-id">A1</div>
+      <div class="test-title">Migration 002 confirmed — 4 columns present in listings table <span class="auto-badge">AUTO ✓</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">User confirmed all 4 columns present after running migration 002 SQL on 2026-06-24:
+      <code>reference_code</code>, <code>expires_at</code>, <code>show_phone DEFAULT 'always'</code>, <code>views_count DEFAULT 0</code>. Pre-marked Pass.</div>
+  </div>
+
+  <!-- BLOCK B: POST A LISTING -->
+  <h2 class="section">Block B — Post a New Listing</h2>
+
+  <div class="test-card" id="card-B1">
+    <div class="test-hd">
+      <div class="test-id">B1</div>
+      <div class="test-title">Post form shows "📞 Show My Phone Number to Buyers" radio group</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Sign in as nagesh.aadi@gmail.com</li>
+        <li>Tap <strong>➕ Post a Listing</strong> in the header</li>
+        <li>Scroll to the bottom of the form (below the Photos field)</li>
+        <li class="expected">Verify: "📞 Show My Phone Number to Buyers" label is visible with 3 radio options: <strong>Always · On Agreement · Never</strong></li>
+        <li>Verify "Always" is pre-selected by default</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B2">
+    <div class="test-hd">
+      <div class="test-id">B2</div>
+      <div class="test-title">Post a listing — reference_code appears in detail view</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Fill in the post form: choose any category + subcategory, enter a title, select your saved location</li>
+        <li>Leave "Show Phone" as <strong>Always</strong></li>
+        <li>Tap <strong>Submit for Review 🚀</strong></li>
+        <li>Go to <strong>My Ads</strong> tab (📋 in the sidebar)</li>
+        <li>Tap the listing you just posted to open its detail view</li>
+        <li class="expected">Verify: the distance bar shows <strong>Ref: MP-BLR-XXXXXX</strong> (6 alphanumeric chars after the hyphen) alongside the address and time</li>
+        <li class="expected">Verify: the ref code format is <code>MP-BLR-</code> followed by uppercase letters/digits (no 0, O, 1, I)</li>
+      </ol>
+      <strong>If admin approval is required:</strong> sign in as admin, approve the listing, then re-check the detail view.
+    </div>
+    <div class="note-area" id="note-B2"><textarea placeholder="Note the actual ref code seen, e.g. MP-BLR-A3K9X2…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B3">
+    <div class="test-hd">
+      <div class="test-id">B3</div>
+      <div class="test-title">Post a listing — expiry countdown appears in My Ads</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open <strong>My Ads</strong> tab after posting (same listing from B2)</li>
+        <li class="expected">Verify: the listing card shows <strong>"Expires in 30d"</strong> (or 29d if just past midnight) in grey/muted colour below the status dot</li>
+        <li>Verify it is NOT orange or red (a brand-new listing should have ~30 days remaining)</li>
+      </ol>
+      <strong>To verify the warning colours (optional):</strong> open Supabase SQL Editor and run:
+      <span class="sql">UPDATE listings SET expires_at = NOW() + INTERVAL '4 days' WHERE title = 'your test listing title';</span>
+      Reload My Ads — the countdown should turn <strong style="color:var(--orange);">orange</strong> and show "⚠️ Expires in 4d".
+      <br/><br/>Then run:
+      <span class="sql">UPDATE listings SET expires_at = NOW() - INTERVAL '1 day' WHERE title = 'your test listing title';</span>
+      Reload — should show <strong style="color:var(--red);">⚠️ Expired</strong> in red. Restore with:
+      <span class="sql">UPDATE listings SET expires_at = created_at + INTERVAL '30 days' WHERE title = 'your test listing title';</span>
+    </div>
+    <div class="note-area" id="note-B3"><textarea placeholder="Note what countdown text appeared, e.g. 'Expires in 30d'…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B4">
+    <div class="test-hd">
+      <div class="test-id">B4</div>
+      <div class="test-title">Post a listing with "On Agreement" phone setting — saved correctly</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Post a second test listing</li>
+        <li>Before submitting, select <strong>On Agreement</strong> for the phone radio</li>
+        <li>Submit the listing</li>
+        <li>Open Supabase Table Editor → listings table → find your new listing row</li>
+        <li class="expected">Verify: <code>show_phone</code> column value is <code>on_agreement</code></li>
+        <li class="expected">Verify: <code>reference_code</code> column has a value like <code>MP-BLR-XXXXXX</code></li>
+        <li class="expected">Verify: <code>expires_at</code> column has a timestamp ~30 days from <code>created_at</code></li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B4"><textarea placeholder="Note the exact show_phone, reference_code, expires_at values seen in Supabase…"></textarea></div>
+  </div>
+
+  <!-- BLOCK C: DELETE LISTING -->
+  <h2 class="section">Block C — Delete a Listing</h2>
+
+  <div class="test-card" id="card-C1">
+    <div class="test-hd">
+      <div class="test-id">C1</div>
+      <div class="test-title">Delete button visible on My Ads cards</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('C1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('C1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open <strong>My Ads</strong> tab</li>
+        <li class="expected">Verify: each listing card now has a <strong>🗑️ Del</strong> button in the action column (below ✏️ Edit and ✅ Sold)</li>
+        <li>Verify the button has a reddish tint (different from the grey Sold button)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-C1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-C2">
+    <div class="test-hd">
+      <div class="test-id">C2</div>
+      <div class="test-title">Delete shows confirmation dialog before deleting</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('C2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('C2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Tap <strong>🗑️ Del</strong> on one of your test listings (the "On Agreement" one from B4 is a good candidate)</li>
+        <li class="expected">Verify: a browser confirm dialog appears with text like <strong>"Delete '[title]'? This cannot be undone."</strong></li>
+        <li>Click <strong>Cancel</strong></li>
+        <li class="expected">Verify: the listing is still there — Cancel aborted the delete</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-C2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-C3">
+    <div class="test-hd">
+      <div class="test-id">C3</div>
+      <div class="test-title">Confirm delete — listing removed from My Ads and from map</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('C3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('C3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Tap <strong>🗑️ Del</strong> on the same test listing</li>
+        <li>This time click <strong>OK</strong> in the confirm dialog</li>
+        <li class="expected">Verify: a toast appears — "🗑️ Listing deleted."</li>
+        <li class="expected">Verify: the listing card disappears from My Ads immediately (no page reload needed)</li>
+        <li>Switch to Browse tab and look at the map</li>
+        <li class="expected">Verify: the deleted listing's pin is no longer on the map (may need to refresh if listing was active)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-C3"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-C4">
+    <div class="test-hd">
+      <div class="test-id">C4</div>
+      <div class="test-title">Deleted listing no longer exists in Supabase</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('C4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('C4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open Supabase Table Editor → listings table</li>
+        <li>Search/filter for the title of the listing you deleted</li>
+        <li class="expected">Verify: no row found — the listing was permanently deleted from the database</li>
+      </ol>
+      <strong>Optional SQL check:</strong>
+      <span class="sql">SELECT id, title, status FROM listings WHERE title = 'your deleted listing title';</span>
+      Should return 0 rows.
+    </div>
+    <div class="note-area" id="note-C4"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- BLOCK D: EDIT LISTING WITH SHOW_PHONE -->
+  <h2 class="section">Block D — Edit Listing (show_phone update)</h2>
+
+  <div class="test-card" id="card-D1">
+    <div class="test-hd">
+      <div class="test-id">D1</div>
+      <div class="test-title">Edit listing — show_phone radio reflects existing value</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('D1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('D1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>In My Ads, tap <strong>✏️ Edit</strong> on a listing that was posted with <strong>On Agreement</strong></li>
+        <li>The post form opens in edit mode</li>
+        <li>Scroll to the phone visibility radio</li>
+        <li class="expected">Verify: the radio defaults to <strong>Always</strong> (the form resets on open — this is acceptable for MVP; the stored value is preserved in DB)</li>
+        <li>Change it to <strong>Never</strong> and tap <strong>Submit for Review</strong></li>
+        <li>Check Supabase listings table — <code>show_phone</code> should now be <code>never</code></li>
+      </ol>
+      <strong>Note:</strong> The post form does not pre-fill the radio to the stored <code>show_phone</code> value — it always defaults to Always. This is an OBS-07 observation (not a blocker for MVP).
+    </div>
+    <div class="note-area" id="note-D1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- BLOCK E: VIEWS COUNT -->
+  <h2 class="section">Block E — View Count</h2>
+
+  <div class="test-card" id="card-E1">
+    <div class="test-hd">
+      <div class="test-id">E1</div>
+      <div class="test-title">Tapping a listing increments views_count in the database</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('E1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('E1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Note the <code>views_count</code> of any active listing in Supabase (e.g. via Table Editor)</li>
+        <li>Open the app, tap that listing to open its detail view</li>
+        <li>Wait 2–3 seconds</li>
+        <li>Refresh the Supabase Table Editor</li>
+        <li class="expected">Verify: <code>views_count</code> has incremented by 1</li>
+      </ol>
+      <strong>Note:</strong> The view count API call is fire-and-forget — the frontend calls <code>POST /api/listings/:id/view</code> asynchronously. There may be a 1–2 second delay before the DB updates.
+    </div>
+    <div class="note-area" id="note-E1"><textarea placeholder="Note the before/after views_count value…"></textarea></div>
+  </div>
+
+  <!-- BLOCK F: REFERENCE CODE DISPLAY -->
+  <h2 class="section">Block F — Reference Code in Detail View</h2>
+
+  <div class="test-card" id="card-F1">
+    <div class="test-hd">
+      <div class="test-id">F1</div>
+      <div class="test-title">Reference code shown in listing detail for new listings</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('F1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('F1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Tap any listing that was posted <strong>after</strong> Session 3 was deployed (to ensure it has a reference code)</li>
+        <li>Open the listing detail view</li>
+        <li class="expected">Verify: the teal/green distance bar shows something like <strong>"📍 0.3 km from your location · Koramangala · 5m ago · Ref: MP-BLR-A3K9X2"</strong></li>
+        <li>Verify the ref code is in monospace font and follows the <code>MP-BLR-</code> pattern</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-F1"><textarea placeholder="Note the exact ref code text shown, e.g. 'Ref: MP-BLR-A3K9X2'…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-F2">
+    <div class="test-hd">
+      <div class="test-id">F2</div>
+      <div class="test-title">Old listings (pre-Session 3) show no ref code — no UI breakage</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('F2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('F2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Tap an existing listing that was posted <strong>before</strong> Session 3 (these have <code>reference_code = NULL</code>)</li>
+        <li>Open its detail view</li>
+        <li class="expected">Verify: the distance bar shows normally — address + time — but <strong>no "Ref:"</strong> text (the conditional rendering hides it when null)</li>
+        <li>Verify there is no "Ref: null" or blank space where the ref code would appear</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-F2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- SIGN-OFF -->
+  <div class="signoff" id="signoff">
+    <h3>✍️ UAT Sign-off — Nagesh Nagaraja Rao</h3>
+    <label>Tester Name</label>
+    <input type="text" id="so-name" placeholder="Nagesh Nagaraja Rao" value="Nagesh Nagaraja Rao"/>
+    <label>Date of Testing</label>
+    <input type="date" id="so-date" value="2026-06-24"/>
+    <label>UAT URL Used</label>
+    <input type="text" id="so-url" placeholder="https://mapit-backend-git-uat-... or localhost:3001"/>
+    <label>Overall Verdict</label>
+    <div class="verdict-row">
+      <button class="verdict-btn approve" id="v-approve" onclick="setVerdict('approve')">✅ Approve</button>
+      <button class="verdict-btn hold" id="v-hold" onclick="setVerdict('hold')">⏸ Hold (minor issues)</button>
+      <button class="verdict-btn reject" id="v-reject" onclick="setVerdict('reject')">❌ Reject</button>
+    </div>
+    <label>Notes / Observations</label>
+    <textarea id="so-notes" style="min-height:80px;" placeholder="Any observations or issues found during testing…"></textarea>
+    <button class="submit-btn" onclick="submitSignoff()">📋 Generate Sign-off Summary</button>
+    <div class="result-box" id="result-box"></div>
+  </div>
+</main>
+
+<script>
+const total = document.querySelectorAll('.test-card').length;
+document.getElementById('totalCount').textContent = total;
+let _verdict = '';
+
+function mark(id, result){
+  const card = document.getElementById('card-'+id);
+  const noteArea = document.getElementById('note-'+id);
+  card.classList.remove('passed','failed');
+  card.classList.add(result==='pass'?'passed':'failed');
+  card.querySelector('.pass-btn').classList.toggle('active', result==='pass');
+  card.querySelector('.fail-btn').classList.toggle('active', result==='fail');
+  if(noteArea) noteArea.style.display = result==='fail' ? 'block' : 'none';
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = document.querySelectorAll('.test-card.passed, .test-card.failed').length;
+  const pct = Math.round(done/total*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('pct').textContent = pct+'%';
+  document.getElementById('doneCount').textContent = done;
+}
+
+function setVerdict(v){
+  _verdict = v;
+  ['approve','hold','reject'].forEach(x=>{
+    document.getElementById('v-'+x).classList.toggle('sel', x===v);
+  });
+}
+
+function submitSignoff(){
+  const name = document.getElementById('so-name').value.trim() || 'Nagesh';
+  const date = document.getElementById('so-date').value || new Date().toISOString().slice(0,10);
+  const url  = document.getElementById('so-url').value.trim() || 'Not specified';
+  const notes = document.getElementById('so-notes').value.trim();
+  const passed = document.querySelectorAll('.test-card.passed').length;
+  const failed = document.querySelectorAll('.test-card.failed').length;
+  const pending = total - passed - failed;
+  const vLabel = {approve:'✅ APPROVED',hold:'⏸ HOLD — MINOR ISSUES',reject:'❌ REJECTED'}[_verdict] || '— not set —';
+  const vColor = {approve:'#22c55e',hold:'#f97316',reject:'#ef4444'}[_verdict]||'#9ca3af';
+
+  const box = document.getElementById('result-box');
+  box.style.display='block';
+  box.style.borderColor = vColor;
+  box.style.background = `rgba(${_verdict==='approve'?'34,197,94':_verdict==='hold'?'249,115,22':'239,68,68'},.06)`;
+  box.innerHTML = `
+    <div style="font-weight:700;font-size:15px;color:${vColor};margin-bottom:10px;">${vLabel}</div>
+    <div style="font-size:12px;color:#9ca3af;line-height:2;">
+      <strong>Tester:</strong> ${name}<br/>
+      <strong>Date:</strong> ${date}<br/>
+      <strong>URL:</strong> ${url}<br/>
+      <strong>Results:</strong> ${passed} passed · ${failed} failed · ${pending} not tested<br/>
+      <strong>Pass rate:</strong> ${passed+failed>0?Math.round(passed/(passed+failed)*100):0}%<br/>
+      ${notes?`<strong>Notes:</strong> ${notes}`:''}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:#6b7280;">
+      Session 3 — MVP Listing Lifecycle · Commit 634e1f7 · MapIt UAT
+    </div>`;
+}
+
+// Pre-mark A1 as auto-passed
+mark('A1','pass');
+updateProgress();
+</script>
+</body>
+</html>
