@@ -91,6 +91,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .rbt{flex:1;padding:5px 0;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;}
 .rbt:hover{background:var(--card);color:var(--text);}
 .rbt.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+.rad-box.disabled{opacity:.4;pointer-events:none;}
 .tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
 .tab-btn{flex:1;padding:9px 10px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Outfit',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;}
 .tab-btn:hover{color:var(--text);}
@@ -1094,6 +1095,7 @@ let ST = {
   chatOpen:false, chatMsgs:[], chatIdx:0,
   listings:[],          // from API (browse — excludes the current user's own listings)
   myListings:[],        // from /api/listings/mine/all — only the current user's own listings
+  favListings:[],       // from /api/listings/saved/all — saved listings with lat/lng for map display
   savedIds: new Set(),  // listing IDs saved by user
   userPins: [],         // from API
   activePin: null,      // { lat, lng, label }
@@ -1606,19 +1608,26 @@ function drawMarkers(){
   Object.values(mMarkers).forEach(m=>m.remove());
   for(const k in mMarkers) delete mMarkers[k];
 
-  const fl = filtered();
+  const isFav = ST.tab === 'fav';
+  const fl = isFav ? ST.favListings : filtered();
   document.getElementById('mapCnt').textContent = fl.length;
-  document.getElementById('cnt-badge').textContent = fl.length;
+  if(!isFav) document.getElementById('cnt-badge').textContent = fl.length;
 
   fl.forEach(l=>{
     const sel = l.id === ST.selId;
     const m = L.marker([l.lat,l.lng],{icon:mkIcon(l,sel),zIndexOffset:sel?500:0})
       .addTo(map)
-      .on('click',()=>selListing(l.id))
+      .on('click',()=>selListing(l.id, isFav))
       .on('mouseover',()=>showHoverCard(l))
       .on('mouseout',()=>hideHoverCard());
     mMarkers[l.id] = m;
   });
+
+  // Auto-fit map to show all saved listings when none is selected
+  if(isFav && fl.length > 0 && !ST.selId){
+    const bounds = L.latLngBounds(fl.map(l=>[l.lat,l.lng]));
+    map.fitBounds(bounds, {padding:[50,50], animate:true, maxZoom:14});
+  }
 
   // Draw user pin markers
   drawPinMarkers();
@@ -1765,13 +1774,14 @@ async function renderFavs(el){
   try {
     const data = await apiGet('/api/listings/saved/all');
     const loc = activeLoc();
-    const favListings = (data.listings||[]).map(l=>({...l, d:dist(loc.lat,loc.lng,l.lat,l.lng)}));
-    if(!favListings.length){
+    ST.favListings = (data.listings||[]).map(l=>({...l, d:dist(loc.lat,loc.lng,l.lat,l.lng)}));
+    if(!ST.favListings.length){
       el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">❤</div><div class="sb-empty-ttl">No saved listings yet</div><div class="sb-empty-sub">Click ♡ on any listing to save it here.</div></div>`;
+      drawMarkers();
       return;
     }
-    el.innerHTML = `<div style="padding:9px 13px 5px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);">${favListings.length} saved listing${favListings.length!==1?'s':''}</div>`+
-      favListings.map(l=>`
+    el.innerHTML = `<div style="padding:9px 13px 5px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);">${ST.favListings.length} saved listing${ST.favListings.length!==1?'s':''}</div>`+
+      ST.favListings.map(l=>`
         <div class="fav-card" onclick="viewFav('${l.id}')">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
             ${l.cover_photo ? `<img src="${l.cover_photo}" alt=""/>` : (CAT_EMOJI[l.category]||'📦')}
@@ -1783,7 +1793,9 @@ async function renderFavs(el){
           </div>
           <div class="fav-rm" onclick="event.stopPropagation();removeFav('${l.id}')" title="Remove">✕</div>
         </div>`).join('');
+    drawMarkers(); // draw pins for all saved listings and fit bounds
   } catch(_){
+    ST.favListings = [];
     el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">❤</div><div class="sb-empty-ttl">No saved listings yet</div></div>`;
   }
 }
@@ -1793,11 +1805,7 @@ async function renderFavs(el){
 // ═══════════════════════════════════════════════
 function openMyAds(){
   document.getElementById('uavMenu').classList.remove('open');
-  ST.tab = 'mine';
-  ST.selId = null;
-  document.getElementById('tab-browse').classList.remove('on');
-  document.getElementById('tab-fav').classList.remove('on');
-  renderSidebar();
+  switchTab('mine');
 }
 
 async function renderMyAds(el){
@@ -1850,16 +1858,15 @@ async function renderMyAds(el){
 }
 
 async function viewFav(id){
-  switchTab('browse');
-  const l = ST.listings.find(x=>x.id===id);
+  // Stay on fav tab — don't switch to browse
+  const l = ST.favListings.find(x=>x.id===id);
   if(!l){
-    // Listing not in current filtered set — fetch it
     try {
       const data = await apiGet(`/api/listings/${id}`);
-      ST.listings = [data.listing, ...ST.listings];
+      if(data.listing) ST.favListings = [{...data.listing, d:dist(activeLoc().lat,activeLoc().lng,data.listing.lat,data.listing.lng)}, ...ST.favListings];
     } catch(_){}
   }
-  selListing(id);
+  selListing(id, true); // keepTab=true — remain on fav tab
 }
 
 async function removeFav(id){
@@ -1891,11 +1898,11 @@ function renderCats(){
 // ═══════════════════════════════════════════════
 function renderSidebar(){
   const el = document.getElementById('sb-content');
-  if(ST.tab==='fav'){  renderFavs(el);   return; }
+  if(ST.tab==='fav' && !ST.selId){ renderFavs(el); return; }
   if(ST.tab==='mine' && !ST.selId){ renderMyAds(el); return; }
   // In My Ads, navigation must stay within the current user's own listings —
   // never the browse set (which excludes them) — so other sellers' ads can't surface here.
-  const fl = ST.tab==='mine' ? ST.myListings : filtered();
+  const fl = ST.tab==='mine' ? ST.myListings : ST.tab==='fav' ? ST.favListings : filtered();
   if(!ST.selId){
     if(ST.q && fl.length){
       el.innerHTML = `<div class="nearby-hd">🔍 ${fl.length} result${fl.length!==1?'s':''} for "${ST.q}"</div>`+fl.map(listingRow).join('');
@@ -1906,7 +1913,7 @@ function renderSidebar(){
     }
     return;
   }
-  const l = ST.listings.find(x=>x.id===ST.selId)||fl.find(x=>x.id===ST.selId)||filtered().find(x=>x.id===ST.selId);
+  const l = ST.listings.find(x=>x.id===ST.selId)||ST.favListings.find(x=>x.id===ST.selId)||fl.find(x=>x.id===ST.selId)||filtered().find(x=>x.id===ST.selId);
   if(!l) return;
   const loc = activeLoc();
   const d = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
@@ -1922,8 +1929,8 @@ function renderSidebar(){
     <div class="ld-close-row">
       <div class="ld-back" onclick="closeDetail()">‹ Back</div>
       <div class="ld-nav">
-        ${prev?`<div class="ld-nav-btn" title="Previous listing" onclick="selListing('${prev}'${ST.tab==='mine'?',true':''})">‹</div>`:''}
-        ${next?`<div class="ld-nav-btn" title="Next listing" onclick="selListing('${next}'${ST.tab==='mine'?',true':''})">›</div>`:''}
+        ${prev?`<div class="ld-nav-btn" title="Previous listing" onclick="selListing('${prev}'${(ST.tab==='mine'||ST.tab==='fav')?',true':''})">‹</div>`:''}
+        ${next?`<div class="ld-nav-btn" title="Next listing" onclick="selListing('${next}'${(ST.tab==='mine'||ST.tab==='fav')?',true':''})">›</div>`:''}
       </div>
     </div>
     <!-- Block A: distance bar + category icon + title/price + actions + photo strip -->
@@ -1979,11 +1986,13 @@ function renderSidebar(){
     if(ci) ci.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
   },50);
 
-  // Append other nearby listings below the detail card (not in My Ads context)
+  // Append other listings below the detail card (not in My Ads context)
   if(ST.tab !== 'mine'){
     const others = fl.filter(x=>x.id!==ST.selId);
     if(others.length){
-      const hd = ST.q ? `🔍 Other listings matching "${ST.q}" (${others.length})` : `📍 Other nearby listings (${others.length})`;
+      const hd = ST.tab==='fav'
+        ? `❤ Other saved listings (${others.length})`
+        : ST.q ? `🔍 Other listings matching "${ST.q}" (${others.length})` : `📍 Other nearby listings (${others.length})`;
       el.innerHTML += `<div class="nearby-hd">${hd}</div>`+others.map(listingRow).join('');
     }
   }
@@ -1999,10 +2008,14 @@ async function selListing(id, keepTab=false){
     document.getElementById('tab-browse').classList.add('on');
     document.getElementById('tab-fav').classList.remove('on');
     document.getElementById('tab-mine').classList.remove('on');
+    document.querySelector('.rad-box').classList.remove('disabled');
   }
-  const l = ST.listings.find(x=>x.id===id) || (ST.tab==='mine' ? ST.myListings.find(x=>x.id===id) : null);
+  const l = ST.listings.find(x=>x.id===id) || ST.favListings.find(x=>x.id===id) || (ST.tab==='mine' ? ST.myListings.find(x=>x.id===id) : null);
   if(l) map.panTo([l.lat,l.lng],{animate:true,duration:.5});
-  Object.keys(mMarkers).forEach(k=>mMarkers[k].setIcon(mkIcon(ST.listings.find(x=>x.id===k)||{id:k,category:'all',price:0,price_label:''},k===id)));
+  Object.keys(mMarkers).forEach(k=>{
+    const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
+    mMarkers[k].setIcon(mkIcon(ml, k===id));
+  });
   renderSidebar();
   // Fetch full detail (includes photos[] array) then re-render
   try {
@@ -2010,7 +2023,7 @@ async function selListing(id, keepTab=false){
     if(data.listing){
       // Merge into the array matching the current context — keeps the user's
       // own listings out of the browse array (and vice-versa) so neither leaks into the other.
-      const target = ST.tab==='mine' ? ST.myListings : ST.listings;
+      const target = ST.tab==='mine' ? ST.myListings : ST.tab==='fav' ? ST.favListings : ST.listings;
       const idx = target.findIndex(x=>x.id===id);
       if(idx>=0) target[idx] = {...target[idx], ...data.listing};
       else target.unshift(data.listing);
@@ -2516,6 +2529,10 @@ function switchTab(tab){
   document.getElementById('tab-browse').classList.toggle('on',tab==='browse');
   document.getElementById('tab-fav').classList.toggle('on',tab==='fav');
   document.getElementById('tab-mine').classList.toggle('on',tab==='mine');
+  // Proximity radius only applies to the Listings browse tab
+  document.querySelector('.rad-box').classList.toggle('disabled', tab !== 'browse');
+  // Redraw markers for the new tab (fav shows saved pins, browse shows radius listings, mine keeps browse pins)
+  drawMarkers();
   renderSidebar();
 }
 function toast(msg){
