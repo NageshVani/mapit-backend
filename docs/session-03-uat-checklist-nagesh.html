@@ -71,7 +71,7 @@
   <div class="hd-row">
     <div>
       <div class="logo">Map<span>It</span> &nbsp;·&nbsp; Session 3 UAT Checklist</div>
-      <div class="hd-meta">Tester: Nagesh Nagaraja Rao &nbsp;·&nbsp; Date: 2026-06-24 &nbsp;·&nbsp; Commit: 634e1f7</div>
+      <div class="hd-meta">Tester: Nagesh Nagaraja Rao &nbsp;·&nbsp; Date: 2026-06-27 &nbsp;·&nbsp; Commits: 634e1f7 + be19c4e + d4226b4</div>
     </div>
     <div style="text-align:right;">
       <div class="progress-label">Progress: <span id="pct">0%</span> &nbsp;(<span id="doneCount">0</span> / <span id="totalCount">0</span>)</div>
@@ -383,6 +383,221 @@
     <div class="note-area" id="note-F2"><textarea placeholder="Notes on failure…"></textarea></div>
   </div>
 
+  <!-- BLOCK G: TAB UX (2026-06-27) -->
+  <h2 class="section">Block G — Tab Visual Styling &amp; View Count <span class="auto-badge" style="background:rgba(249,115,22,.15);color:var(--orange);">2026-06-27</span></h2>
+
+  <div class="test-card" id="card-G1">
+    <div class="test-hd">
+      <div class="test-id">G1</div>
+      <div class="test-title">Inactive tabs are visually dimmed (ghosted)</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('G1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('G1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open the app on the Listings tab (default)</li>
+        <li>Look at the tab bar — "❤ Saved" and "📋 My Ads" should appear noticeably lighter / muted compared to the active "📍 Listings" tab</li>
+        <li class="expected">Verify: inactive tabs are at roughly 45% opacity — clearly different from the active tab but still readable</li>
+        <li>Click "❤ Saved" — now verify "📍 Listings" and "📋 My Ads" are dimmed</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-G1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-G2">
+    <div class="test-hd">
+      <div class="test-id">G2</div>
+      <div class="test-title">Active tab has orange border, tint background, and slightly larger font</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('G2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('G2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Click each tab in turn and observe the active tab styling</li>
+        <li class="expected">Verify: the active tab has a thin orange border (1.5px, top + sides), a light orange tinted background, rounded top corners, and slightly larger font than the inactive tabs</li>
+        <li class="expected">Verify: switching tabs does not cause the tab bar to change height (no layout jump)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-G2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-G3">
+    <div class="test-hd">
+      <div class="test-id">G3</div>
+      <div class="test-title">Listing detail shows view count in the distance bar</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('G3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('G3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open any active listing's detail view</li>
+        <li>Wait 2–3 seconds for the full listing fetch to complete</li>
+        <li class="expected">Verify: the teal distance bar shows <strong>"👁 N views"</strong> (e.g. "👁 3 views") at the end of the subtitle line, after the address and relative time</li>
+        <li>Tap the listing again (or a different listing) — the count should have incremented by 1</li>
+      </ol>
+      <strong>Note:</strong> View count only appears after the async <code>GET /api/listings/:id</code> resolves (~1 second). On first tap it may briefly not show until the fetch completes.
+    </div>
+    <div class="note-area" id="note-G3"><textarea placeholder="Note the view count value seen, e.g. '👁 3 views'…"></textarea></div>
+  </div>
+
+  <!-- BLOCK H: POST FORM (2026-06-27) -->
+  <h2 class="section">Block H — Post Form: Vehicle Placeholders &amp; Default Owners <span class="auto-badge" style="background:rgba(249,115,22,.15);color:var(--orange);">2026-06-27</span></h2>
+
+  <div class="test-card" id="card-H1">
+    <div class="test-hd">
+      <div class="test-id">H1</div>
+      <div class="test-title">Cars subcategory — Brand and Model fields show helpful placeholder text</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('H1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('H1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open <strong>➕ Post a Listing</strong></li>
+        <li>Select <strong>Vehicles → Cars</strong></li>
+        <li class="expected">Verify: the <strong>Brand</strong> field shows placeholder text like <em>"e.g. Maruti, Hyundai, Honda…"</em></li>
+        <li class="expected">Verify: the <strong>Model</strong> field shows a placeholder with specific model examples</li>
+        <li>Also check <strong>2 Wheelers</strong> — should show Honda/TVS/Hero examples</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-H1"><textarea placeholder="Note what placeholder text appears, e.g. 'e.g. Maruti, Hyundai, Honda'…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-H2">
+    <div class="test-hd">
+      <div class="test-id">H2</div>
+      <div class="test-title">Cars / 2-Wheelers — "No. of previous owners" field defaults to 1</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('H2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('H2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open the post form, select <strong>Vehicles → Cars</strong></li>
+        <li>Look for the <strong>"No. of previous owners"</strong> (or similar) field</li>
+        <li class="expected">Verify: the field is pre-filled with <strong>1</strong> (not blank, not 0)</li>
+        <li>Repeat for <strong>2 Wheelers</strong> — same default of 1 expected</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-H2"><textarea placeholder="Note what default value appears in the owners field…"></textarea></div>
+  </div>
+
+  <!-- BLOCK I: SAVED TAB MAP (2026-06-27) -->
+  <h2 class="section">Block I — Saved Tab: Map Pins, Auto-fit &amp; Tab Retention <span class="auto-badge" style="background:rgba(249,115,22,.15);color:var(--orange);">2026-06-27</span></h2>
+
+  <div class="test-card" id="card-I1">
+    <div class="test-hd">
+      <div class="test-id">I1</div>
+      <div class="test-title">Proximity radius section is disabled (greyed out) on Saved and My Ads tabs</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('I1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('I1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Click the <strong>❤ Saved</strong> tab</li>
+        <li class="expected">Verify: the "Proximity Radius" section above the tabs is visibly greyed out (dimmed) — the radius buttons (3 km, 5 km, 10 km, City, Region) are not clickable</li>
+        <li>Try clicking a radius button — it should have no effect</li>
+        <li>Click <strong>📋 My Ads</strong> — same greyed-out radius expected</li>
+        <li>Click <strong>📍 Listings</strong> — radius section should return to full opacity and be clickable again</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-I1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-I2">
+    <div class="test-hd">
+      <div class="test-id">I2</div>
+      <div class="test-title">Saved tab shows all saved listing pins on the map (regardless of radius)</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('I2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('I2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Save at least 2–3 listings from different areas of the map (use ♡ heart icon)</li>
+        <li>Set the Listings radius to <strong>3 km</strong> (so some saved listings are outside the radius)</li>
+        <li>Click the <strong>❤ Saved</strong> tab</li>
+        <li class="expected">Verify: <strong>all saved listing pins appear on the map</strong>, even those outside the 3 km radius</li>
+        <li class="expected">Verify: the radius circle disappears from the map (proximity does not apply)</li>
+        <li class="expected">Verify: the map automatically zooms and repositions to show all saved pins at once (auto-fit bounds)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-I2"><textarea placeholder="Note how many saved pins appeared and whether auto-fit worked…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-I3">
+    <div class="test-hd">
+      <div class="test-id">I3</div>
+      <div class="test-title">Clicking a saved listing pin — map zooms and centres; detail stays on Saved tab</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('I3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('I3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>While on the <strong>❤ Saved</strong> tab, click any saved listing pin on the map</li>
+        <li class="expected">Verify: the map pans/centres on the selected pin (same behaviour as Listings tab)</li>
+        <li class="expected">Verify: the left panel shows the listing <strong>detail view</strong> — title, price, distance bar, photos</li>
+        <li class="expected">Verify: the <strong>❤ Saved</strong> tab remains active — you have NOT been switched to the Listings tab</li>
+        <li>Tap <strong>‹ Back</strong> — should return to the saved listings list (not Listings tab)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-I3"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-I4">
+    <div class="test-hd">
+      <div class="test-id">I4</div>
+      <div class="test-title">Clicking a saved listing from the left panel — stays on Saved tab</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('I4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('I4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>On the <strong>❤ Saved</strong> tab, click any saved listing card in the left panel</li>
+        <li class="expected">Verify: the detail view opens; map pans to that listing's pin</li>
+        <li class="expected">Verify: <strong>❤ Saved</strong> tab remains active throughout</li>
+        <li>If more than one saved listing is visible below the detail (as "Other saved listings"), click one of them</li>
+        <li class="expected">Verify: it also stays on the Saved tab — does NOT switch to the Listings tab</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-I4"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-I5">
+    <div class="test-hd">
+      <div class="test-id">I5</div>
+      <div class="test-title">Returning to Listings tab restores browse markers and re-enables radius</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('I5','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('I5','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>After exploring the Saved tab, click back to <strong>📍 Listings</strong></li>
+        <li class="expected">Verify: the proximity radius section is enabled again (full opacity, buttons clickable)</li>
+        <li class="expected">Verify: the map shows the browse listing pins (within the active radius) — not just the saved pins</li>
+        <li>Change the radius (e.g. from 3 km to 5 km) — map should update with new listings</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-I5"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
   <!-- SIGN-OFF -->
   <div class="signoff" id="signoff">
     <h3>✍️ UAT Sign-off — Nagesh Nagaraja Rao</h3>
@@ -462,7 +677,7 @@ function submitSignoff(){
       ${notes?`<strong>Notes:</strong> ${notes}`:''}
     </div>
     <div style="margin-top:12px;font-size:11px;color:#6b7280;">
-      Session 3 — MVP Listing Lifecycle · Commit 634e1f7 · MapIt UAT
+      Session 3 — MVP Listing Lifecycle + 2026-06-27 additions · Commits 634e1f7 + be19c4e + d4226b4 · MapIt UAT
     </div>`;
 }
 

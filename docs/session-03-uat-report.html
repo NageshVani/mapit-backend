@@ -87,6 +87,8 @@
   <a href="#blockD">D — Auth Enforcement</a>
   <a href="#blockE">E — Input Validation</a>
   <a href="#blockF">F — Security</a>
+  <a href="#blockG">G — Tab UX &amp; Post Form</a>
+  <a href="#blockH">H — Saved Tab &amp; Radius</a>
   <div class="nav-section">Analysis</div>
   <a href="#observations">Observations</a>
   <a href="#changes">Files Changed</a>
@@ -106,15 +108,15 @@
   <!-- SUMMARY -->
   <div id="summary">
     <div class="summary-row">
-      <div class="sum-card green"><div class="sum-num">27</div><div class="sum-lbl">Tests Passed</div></div>
+      <div class="sum-card green"><div class="sum-num">47</div><div class="sum-lbl">Tests Passed</div></div>
       <div class="sum-card red"><div class="sum-num">0</div><div class="sum-lbl">Tests Failed</div></div>
       <div class="sum-card orange"><div class="sum-num">1</div><div class="sum-lbl">False Positive (B7)</div></div>
-      <div class="sum-card blue"><div class="sum-num">3</div><div class="sum-lbl">Manual Tests (Nagesh)</div></div>
+      <div class="sum-card blue"><div class="sum-num">+20</div><div class="sum-lbl">New checks 2026-06-27</div></div>
     </div>
     <p style="color:var(--muted2);font-size:13px;">
-      All 27 automated checks passed. One test (B7) initially flagged stale <code>view_count</code> references but was a false positive —
+      All 47 automated checks passed (27 original + 20 added 2026-06-27). One test (B7) initially flagged stale <code>view_count</code> references but was a false positive —
       the grep matched <code>review_count</code> (a <code>profiles</code> table column) as a substring.
-      3 end-to-end flows require browser verification in the manual checklist.
+      New Blocks G and H cover tab UX, post-form improvements, the Saved tab map redesign, and the proximity-radius disable feature (commits <code>be19c4e</code> + <code>d4226b4</code>).
     </p>
   </div>
 
@@ -133,6 +135,14 @@
     <tr><td>Delete Listing</td><td>Frontend</td><td>🗑️ Del button in My Ads; <code>deleteListing()</code> with confirm dialog; calls <code>DELETE /api/listings/:id</code></td></tr>
     <tr><td>Expiry Countdown</td><td>Frontend</td><td>My Ads cards show "Expires in Xd"; orange at ≤5 days; red "⚠️ Expired"</td></tr>
     <tr><td>Ref Code in Detail</td><td>Frontend</td><td><code>Ref: MP-BLR-XXXXXX</code> shown in <code>ld-dist-bar</code> alongside address + time</td></tr>
+    <tr><td colspan="3" style="background:rgba(249,115,22,.06);color:var(--orange);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">2026-06-27 additions — commits be19c4e &amp; d4226b4</td></tr>
+    <tr><td>Tab ghosting + active tab styling</td><td>Frontend CSS</td><td>Inactive tabs dimmed to 45% opacity; active tab gets orange border + tint bg + 15px font; <code>white-space:nowrap</code> prevents height jump</td></tr>
+    <tr><td>Views count display</td><td>Frontend</td><td><code>👁 N views</code> shown in listing detail <code>ld-dist-bar</code> after full listing fetch</td></tr>
+    <tr><td>Vehicle form placeholders</td><td>Frontend</td><td>Brand/Model placeholder text added for Cars (Maruti/Hyundai/Honda), 2-Wheelers (Honda/TVS/Hero), Cycles, Trucks in <code>LISTING_FIELDS</code></td></tr>
+    <tr><td>Default previous owners = 1</td><td>Frontend</td><td><code>default:1</code> added to <code>owners</code> field in Cars, 2-Wheelers, Trucks; <code>renderDynamicFields()</code> emits <code>value="${f.default}"</code></td></tr>
+    <tr><td>Proximity radius disable</td><td>Frontend</td><td><code>.rad-box.disabled</code> CSS; <code>switchTab()</code> toggles it; only active on Listings browse tab</td></tr>
+    <tr><td>Saved tab map pins</td><td>Frontend</td><td><code>ST.favListings[]</code> state; <code>drawMarkers()</code> draws saved pins; <code>fitBounds</code> auto-fits all saved pins; <code>viewFav()</code> stays on fav tab with <code>keepTab=true</code></td></tr>
+    <tr><td>Listing row tab retention</td><td>Frontend</td><td><code>listingRow()</code> passes <code>ST.tab==='fav'||ST.tab==='mine'</code> as <code>keepTab</code> at click time — no unwanted tab switch</td></tr>
   </table>
 
   <!-- BLOCK A -->
@@ -216,6 +226,40 @@
     <tr><td><code>F3</code></td><td><code>expires_at</code> NOT in PUT <code>allowedFields</code> (immutable)</td><td><span class="pass">PASS</span></td><td>Sellers cannot extend their own listing expiry to avoid the 30-day limit</td></tr>
   </table>
 
+  <!-- BLOCK G -->
+  <h2 id="blockG">Block G — Tab UX &amp; Post Form Verification <span class="badge orange">2026-06-27</span></h2>
+  <p style="color:var(--muted2);font-size:13px;margin-bottom:10px;">10 code-level checks for tab ghosting, active-tab visual, views count display, vehicle form placeholders, default owners, share icon and landing screen. All verified against <code>MapIt_MVP_v1.html</code> commit <code>d4226b4</code>.</p>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    <tr><td><code>G1</code></td><td><code>.tab-btn:not(.on){ opacity:.45; }</code> CSS rule present</td><td><span class="pass">PASS</span></td><td>Inactive tabs dimmed to 45% — visually distinct from active tab</td></tr>
+    <tr><td><code>G2</code></td><td>Active tab CSS: orange border + tint + 15px font</td><td><span class="pass">PASS</span></td><td><code>.tab-btn.on{ color:var(--orange); border:1.5px solid var(--orange); background:rgba(240,96,48,.1); border-radius:6px 6px 0 0; font-size:15px; }</code></td></tr>
+    <tr><td><code>G3</code></td><td><code>white-space:nowrap</code> on <code>.tab-btn</code> base prevents tab bar height jump</td><td><span class="pass">PASS</span></td><td>Without this, "📍 Listings [N]" wraps to two lines when active font grows to 15px, pushing tab bar taller</td></tr>
+    <tr><td><code>G4</code></td><td><code>views_count</code> displayed in listing detail <code>ld-dist-bar</code></td><td><span class="pass">PASS</span></td><td>Rendered as <code>👁 N views</code>; appears after async full-listing fetch resolves; conditionally shown when not null</td></tr>
+    <tr><td><code>G5</code></td><td>Car brand/model <code>placeholder</code> text in <code>LISTING_FIELDS</code></td><td><span class="pass">PASS</span></td><td>Maruti/Hyundai/Honda for Brand; specific model examples per brand</td></tr>
+    <tr><td><code>G6</code></td><td>2-Wheeler brand/model <code>placeholder</code> text in <code>LISTING_FIELDS</code></td><td><span class="pass">PASS</span></td><td>Honda/TVS/Hero for Brand; model examples per subcategory</td></tr>
+    <tr><td><code>G7</code></td><td><code>default:1</code> in <code>owners</code> field for Cars, 2-Wheelers, Trucks</td><td><span class="pass">PASS</span></td><td>3 occurrences — one per vehicle subcategory with previous-owners field</td></tr>
+    <tr><td><code>G8</code></td><td><code>renderDynamicFields()</code> emits <code>value="${f.default}"</code> when field has a default</td><td><span class="pass">PASS</span></td><td>Owners input pre-filled to 1 on form open; prevents blank submission</td></tr>
+    <tr><td><code>G9</code></td><td>Share icon changed from ⤴ to 🔗; old ⤴ icon absent</td><td><span class="pass">PASS</span></td><td>3 🔗 occurrences (action bar icon + tooltip + <code>shareListingUrl()</code> toast); 0 ⤴ occurrences</td></tr>
+    <tr><td><code>G10</code></td><td><code>step-landing</code>, <code>mapit_seen_landing</code>, <code>startOnboarding()</code> all present</td><td><span class="pass">PASS</span></td><td>6 occurrences total — value proposition landing step with 3 bullets shown only to first-time visitors</td></tr>
+  </table>
+
+  <!-- BLOCK H -->
+  <h2 id="blockH">Block H — Saved Tab Map &amp; Proximity Radius <span class="badge orange">2026-06-27</span></h2>
+  <p style="color:var(--muted2);font-size:13px;margin-bottom:10px;">10 code-level checks for the proximity-radius disable feature and the Saved tab map redesign. Commits <code>be19c4e</code> + <code>d4226b4</code>.</p>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    <tr><td><code>H1</code></td><td><code>.rad-box.disabled{ opacity:.4; pointer-events:none; }</code> CSS rule present</td><td><span class="pass">PASS</span></td><td>Entire proximity radius section greyed out and unclickable on non-browse tabs</td></tr>
+    <tr><td><code>H2</code></td><td><code>switchTab()</code> toggles <code>disabled</code> class on <code>.rad-box</code> when <code>tab !== 'browse'</code></td><td><span class="pass">PASS</span></td><td>Single <code>classList.toggle('disabled', tab !== 'browse')</code> — all three tab buttons covered</td></tr>
+    <tr><td><code>H3</code></td><td><code>selListing(!keepTab)</code> removes <code>disabled</code> class (browse-context safety)</td><td><span class="pass">PASS</span></td><td>Handles edge case where <code>selListing</code> forces browse tab without calling <code>switchTab()</code></td></tr>
+    <tr><td><code>H4</code></td><td><code>openMyAds()</code> routes through <code>switchTab('mine')</code></td><td><span class="pass">PASS</span></td><td>Previously set <code>ST.tab</code> directly and skipped disabled toggle; also fixes "My Ads" tab button not showing as active when opened from profile menu</td></tr>
+    <tr><td><code>H5</code></td><td><code>favListings:[]</code> in <code>ST</code> state object</td><td><span class="pass">PASS</span></td><td>Separate from <code>ST.listings</code> (browse) and <code>ST.myListings</code> — keeps saved pins independent of radius</td></tr>
+    <tr><td><code>H6</code></td><td><code>renderFavs()</code> stores fetched listings into <code>ST.favListings</code> and calls <code>drawMarkers()</code></td><td><span class="pass">PASS</span></td><td><code>drawMarkers()</code> called after both successful fetch and empty-state path to clear stale pins</td></tr>
+    <tr><td><code>H7</code></td><td><code>drawMarkers()</code> uses <code>ST.favListings</code> when <code>ST.tab === 'fav'</code></td><td><span class="pass">PASS</span></td><td><code>const isFav = ST.tab === 'fav'; const fl = isFav ? ST.favListings : filtered();</code> — browse markers cleared, fav pins drawn</td></tr>
+    <tr><td><code>H8</code></td><td><code>fitBounds(padding:[50,50], maxZoom:14)</code> called when on fav tab and no selection</td><td><span class="pass">PASS</span></td><td>Map auto-adjusts to show all saved listings at maximum appropriate zoom on every Saved tab open</td></tr>
+    <tr><td><code>H9</code></td><td><code>viewFav()</code> calls <code>selListing(id, true)</code> — stays on fav tab</td><td><span class="pass">PASS</span></td><td>No longer switches to browse; listing detail renders inline in Saved tab context</td></tr>
+    <tr><td><code>H10</code></td><td><code>listingRow()</code> passes <code>ST.tab==='fav'||ST.tab==='mine'</code> as <code>keepTab</code> at runtime</td><td><span class="pass">PASS</span></td><td>Evaluated at click time (not render time) — "Other saved listings" section stays on Saved tab when a second listing is selected</td></tr>
+  </table>
+
   <!-- OBSERVATIONS -->
   <h2 id="observations">Observations</h2>
 
@@ -285,6 +329,39 @@
     </div>
   </div>
 
+  <div class="obs-card blue">
+    <div class="obs-id">OBS-07 · 2026-06-27</div>
+    <div class="obs-ttl">openMyAds() tab-active bug fixed as a side-effect</div>
+    <div class="obs-body">
+      The original <code>openMyAds()</code> removed 'on' from browse and fav tab buttons but never
+      added 'on' to the "My Ads" tab button — so opening My Ads from the profile menu left the
+      tab bar with no highlighted tab. Refactoring to <code>switchTab('mine')</code> fixed this
+      as a zero-cost side-effect of the proximity-radius work.
+    </div>
+  </div>
+
+  <div class="obs-card">
+    <div class="obs-id">OBS-08 · 2026-06-27</div>
+    <div class="obs-ttl">listingRow keepTab evaluated at click time — future-proof</div>
+    <div class="obs-body">
+      The <code>listingRow()</code> onclick attribute uses <code>ST.tab==='fav'||ST.tab==='mine'</code>
+      as a runtime expression, not a value captured at render time. This means if the tab ever
+      changes between render and click (unlikely but possible during async re-renders), the correct
+      behaviour is always applied. This pattern is preferable to passing a boolean at render time.
+    </div>
+  </div>
+
+  <div class="obs-card green">
+    <div class="obs-id">OBS-09 · 2026-06-27</div>
+    <div class="obs-ttl">Saved tab map is independent of proximity radius — correct design</div>
+    <div class="obs-body">
+      Saved listings are user-curated — they have personal relevance regardless of where the user
+      is looking on the map. Tying them to the proximity radius would hide saved listings in other
+      parts of the city. The separate <code>ST.favListings[]</code> array and disabled radius confirm
+      this architectural boundary. The map auto-fits to saved pins so the user always sees all of them.
+    </div>
+  </div>
+
   <!-- FILES CHANGED -->
   <h2 id="changes">Files Changed — Session 3</h2>
   <table>
@@ -295,6 +372,9 @@
     <tr><td><code>database/migrations/002-mvp-listings-schema.sql</code></td><td>Applied to Supabase 2026-06-24 — 4 columns added to listings table</td></tr>
     <tr><td><code>docs/session-03-uat-report.html</code></td><td>This document</td></tr>
     <tr><td><code>docs/session-03-uat-checklist-nagesh.html</code></td><td>Manual UAT checklist for Nagesh</td></tr>
+    <tr><td colspan="2" style="background:rgba(249,115,22,.06);color:var(--orange);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">2026-06-27 additional commits (be19c4e + d4226b4)</td></tr>
+    <tr><td><code>MapIt_MVP_v1.html</code> · <code>public/index.html</code></td><td>Tab ghosting CSS; active-tab orange border+tint+15px; <code>white-space:nowrap</code>; <code>👁 views_count</code> in detail; vehicle Brand/Model placeholders; default owners=1; 🔗 share icon; <code>step-landing</code> first-visit screen; <code>.rad-box.disabled</code> CSS; <code>ST.favListings[]</code>; <code>drawMarkers()</code> fav-tab branch + fitBounds; <code>renderFavs()</code> populates favListings; <code>viewFav()</code> keepTab; <code>listingRow()</code> runtime keepTab; <code>switchTab()</code> disabled toggle; <code>openMyAds()</code> → <code>switchTab()</code></td></tr>
+    <tr><td><code>src/routes/listings.js</code></td><td>Removed <code>requireAuth</code> from <code>POST /:id/view</code> — view counting now works for all visitors regardless of token expiry</td></tr>
   </table>
 
   <!-- NEXT STEPS -->
@@ -341,7 +421,7 @@
   </div>
 
   <p style="margin-top:32px;color:var(--muted);font-size:12px;text-align:center;">
-    MapIt UAT Report — Session 3 · Generated 2026-06-24 · Claude Code (Sonnet 4.6)
+    MapIt UAT Report — Session 3 · Originally generated 2026-06-24 · Updated 2026-06-27 · Claude Code (Sonnet 4.6)
   </p>
 </main>
 </body>
