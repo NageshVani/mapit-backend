@@ -268,6 +268,12 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .modal-link span:hover{text-decoration:underline;}
 .modal-step{display:none;}
 .modal-step.active{display:block;}
+.landing-hero{font-size:15px;font-weight:700;color:var(--text);line-height:1.45;text-align:center;margin-bottom:20px;}
+.landing-bullets{display:flex;flex-direction:column;gap:14px;margin-bottom:24px;}
+.landing-bullet{display:flex;align-items:flex-start;gap:12px;}
+.landing-ico{font-size:24px;flex-shrink:0;line-height:1.2;}
+.landing-bttl{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.landing-bsub{font-size:12px;color:var(--muted);line-height:1.45;}
 .modal-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:14px;}
 .modal-success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:14px;}
 .otp-hint{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px;}
@@ -503,6 +509,36 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <div class="modal-box">
     <div class="modal-logo">Map<em>It</em></div>
     <div class="modal-sub">Bangalore's location-first marketplace</div>
+
+    <!-- Step 0: Landing — value proposition for first-time visitors -->
+    <div class="modal-step" id="step-landing">
+      <div class="landing-hero">Find what's for sale <span style="color:var(--orange)">right near you</span> — on a live map.</div>
+      <div class="landing-bullets">
+        <div class="landing-bullet">
+          <span class="landing-ico">📍</span>
+          <div>
+            <div class="landing-bttl">Exact GPS pin on every listing</div>
+            <div class="landing-bsub">See precisely how far any item is — not just a vague neighbourhood name.</div>
+          </div>
+        </div>
+        <div class="landing-bullet">
+          <span class="landing-ico">🗺</span>
+          <div>
+            <div class="landing-bttl">Browse on a live map</div>
+            <div class="landing-bsub">Tap any pin to explore homes, vehicles, and furniture all around you.</div>
+          </div>
+        </div>
+        <div class="landing-bullet">
+          <span class="landing-ico">🤝</span>
+          <div>
+            <div class="landing-bttl">Free to post, free to browse</div>
+            <div class="landing-bsub">No listing fees. No subscriptions. Post in minutes, connect locally.</div>
+          </div>
+        </div>
+      </div>
+      <button class="modal-btn" onclick="startOnboarding()">Get Started →</button>
+      <div class="modal-link" style="margin-top:10px;" onclick="startOnboarding()">Already have an account? <span>Sign in →</span></div>
+    </div>
 
     <!-- Step 1: Email + Password (primary auth) -->
     <div class="modal-step active" id="step-auth">
@@ -1907,7 +1943,7 @@ function renderSidebar(){
             ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit<br>Listing</button>`
             : `<button class="ld-chat-btn" id="interestBtn" onclick="expressInterest()">🤝 I'm<br>Interested</button>
                <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
-          <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Share this listing">⤴</div>
+          <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Copy link to share">🔗</div>
         </div>
       </div>
       ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}"/></div>`).join('')}</div>`:''}</div>
@@ -2611,6 +2647,12 @@ async function init(){
     return;
   }
   document.getElementById('authModal').classList.remove('hide');
+  if(!localStorage.getItem('mapit_seen_landing')) goToStep('step-landing');
+}
+
+function startOnboarding(){
+  localStorage.setItem('mapit_seen_landing', '1');
+  goToStep('step-auth');
 }
 
 // Fetches /api/auth/me for every stored session that lacks a proper display name,
