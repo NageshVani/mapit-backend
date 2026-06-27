@@ -468,8 +468,8 @@ router.post('/:id/save', requireAuth, async (req, res, next) => {
 });
 
 // ── Increment view count ──────────────────────────────────────
-// POST /api/listings/:id/view
-router.post('/:id/view', requireAuth, async (req, res, next) => {
+// POST /api/listings/:id/view  (no auth required — views counted for all visitors)
+router.post('/:id/view', async (req, res, next) => {
   try {
     const { id } = req.params;
     const { data } = await supabaseAdmin

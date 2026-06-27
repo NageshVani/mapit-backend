@@ -95,6 +95,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .tab-btn{flex:1;padding:9px 10px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Outfit',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px;}
 .tab-btn:hover{color:var(--text);}
 .tab-btn.on{color:var(--orange);border-bottom-color:var(--orange);}
+.tab-btn:not(.on){opacity:.45;}
 .tab-count{background:var(--card2);color:var(--muted2);font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700;}
 .tab-btn.on .tab-count{background:rgba(240,96,48,.2);color:var(--orange);}
 #sb-content{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
@@ -939,35 +940,35 @@ const LISTING_FIELDS = {
   },
   veh: {
     'Cars':               [
-      { id:'brand',       label:'Brand',                     type:'text',   starred:true  },
-      { id:'model',       label:'Model',                     type:'text',   starred:true  },
+      { id:'brand',       label:'Brand',                     type:'text',   starred:true,  placeholder:'e.g. Maruti, Hyundai, Honda, Tata' },
+      { id:'model',       label:'Model',                     type:'text',   starred:true,  placeholder:'e.g. Swift, i20, City, Nexon' },
       { id:'year',        label:'Year',                      type:'number', starred:true  },
       { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
-      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true  },
+      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true,  default:1 },
       { id:'fuel',        label:'Fuel Type / Electric?',     type:'select', options:['Petrol','Diesel','CNG','Electric','Hybrid'], starred:true },
       { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
     ],
     '2 Wheelers':         [
-      { id:'brand',       label:'Brand',                     type:'text',   starred:true  },
-      { id:'model',       label:'Model',                     type:'text',   starred:true  },
+      { id:'brand',       label:'Brand',                     type:'text',   starred:true,  placeholder:'e.g. Honda, TVS, Hero, Royal Enfield, Bajaj' },
+      { id:'model',       label:'Model',                     type:'text',   starred:true,  placeholder:'e.g. Activa, Apache, Splendor, Bullet' },
       { id:'year',        label:'Year',                      type:'number', starred:true  },
       { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
-      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true  },
+      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true,  default:1 },
       { id:'fuel',        label:'Fuel / Electric?',          type:'select', options:['Petrol','Electric'], starred:true },
       { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
     ],
     'Cycles':             [
-      { id:'brand',       label:'Brand',                     type:'text',   starred:true  },
-      { id:'model',       label:'Model',                     type:'text',   starred:true  },
+      { id:'brand',       label:'Brand',                     type:'text',   starred:true,  placeholder:'e.g. Hero, BSA, Trek, Firefox' },
+      { id:'model',       label:'Model',                     type:'text',   starred:true,  placeholder:'e.g. Sprint, Merlin, Ranger' },
       { id:'year',        label:'Year',                      type:'number' },
       { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
     ],
     'Trucks & Commercial':[
-      { id:'brand',       label:'Brand',                     type:'text',   starred:true  },
-      { id:'model',       label:'Model',                     type:'text',   starred:true  },
+      { id:'brand',       label:'Brand',                     type:'text',   starred:true,  placeholder:'e.g. Tata, Mahindra, Ashok Leyland' },
+      { id:'model',       label:'Model',                     type:'text',   starred:true,  placeholder:'e.g. Ace, Bolero, Dost, Eicher' },
       { id:'year',        label:'Year',                      type:'number', starred:true  },
       { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
-      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true  },
+      { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true,  default:1 },
       { id:'fuel',        label:'Fuel Type / Electric?',     type:'select', options:['Diesel','Petrol','CNG','Electric'], starred:true },
       { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
     ],
@@ -1893,7 +1894,7 @@ function renderSidebar(){
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
         <span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span>
-        <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${l.reference_code}</span>` : ''}</span>
+        <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${l.reference_code}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
       </div>
       <div class="ld-info-top">
         <div class="ld-info-thumb"><span>${listingEmoji(l)}</span></div>
@@ -2219,7 +2220,7 @@ function renderDynamicFields(){
     fields.map(f => {
       const inp = f.type === 'select'
         ? `<select class="form-input form-select" id="pf_${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
-        : `<input class="form-input" id="pf_${f.id}" type="${f.type === 'number' ? 'number' : 'text'}" min="${f.type==='number'?'0':''}"/>`;
+        : `<input class="form-input" id="pf_${f.id}" type="${f.type === 'number' ? 'number' : 'text'}" min="${f.type==='number'?'0':''}"${f.placeholder?` placeholder="${f.placeholder}"`:''}${f.default!=null?` value="${f.default}"`:''}/>`;
       return `<div class="form-group"><label class="form-label">${f.label}</label>${inp}</div>`;
     }).join('');
 }
