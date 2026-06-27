@@ -9,18 +9,142 @@
 - **Project:** MapIt — location-first buy-and-sell marketplace for India (and USA)
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
-- **Last updated:** 2026-06-21 (MVP Session 2 — CORS fix deployed `50dd9dd`; signup flow confirmed partially working; full auth test in progress)
+- **Last updated:** 2026-06-27 (Saved tab map redesign + proximity radius disable + UAT docs updated — commits `be19c4e`, `d4226b4`, `83d4a34` on `uat`)
 
 ---
 
 ## 🎯 Current Goal
 
-**MVP Session 2 IN PROGRESS — Auth flow end-to-end testing on UAT.**
-CORS fix deployed (`50dd9dd`). Signup flow confirmed partially working (email-already-exists error correctly returned). User needs to delete test account in Supabase and re-test full signup → profile → home location flow, then OTP fallback and session expiry paths.
+**All 2026-06-27 feature work complete (commits `5cc2dfe`, `be19c4e`, `d4226b4`, `83d4a34` on `uat`). UAT docs updated with 20 new auto-checks + 10 new manual tests. Next: send Arun the Session 2 checklist for sign-off, then merge `uat → main`.**
 
 ---
 
 ## ✅ Completed This Session
+
+- ✅ **UAT docs updated — session-03 report + checklist (2026-06-27, commit `83d4a34`, pushed to `uat`):**
+  - **18 automated checks run** against `MapIt_MVP_v1.html` — all 18 PASS; results embedded in both docs
+  - **`docs/session-03-uat-report.html` UPDATED** — total auto-tests 27 → 47 (+20); Block G (10 tests: tab ghosting CSS, active-tab border/tint/font, `white-space:nowrap`, views_count display, vehicle placeholders, `default:1` owners, 🔗 icon, `step-landing`); Block H (10 tests: `.rad-box.disabled` CSS, `switchTab` toggle, `selListing` re-enable, `openMyAds→switchTab` refactor, `ST.favListings` state, `renderFavs→drawMarkers`, `drawMarkers` fav branch, `fitBounds` auto-fit, `viewFav keepTab`, `listingRow` runtime keepTab); OBS-07/08/09 added; files-changed updated
+  - **`docs/session-03-uat-checklist-nagesh.html` UPDATED** — 10 new manual tests: Block G (3: tab dimming, active-tab visual, view count), Block H (2: vehicle placeholders, default owners), Block I (5: radius greyed out on Saved/My Ads, all saved pins on map, pin click stays on Saved tab, panel card click stays on Saved tab, returning to Listings restores browse)
+  - Header commit reference updated to `634e1f7 + be19c4e + d4226b4`; sign-off footer updated
+
+- ✅ **listingRow keepTab fix (2026-06-27, commit `d4226b4`, pushed to `uat`):**
+  - **Root cause:** `listingRow()` hardcoded `onclick="selListing('${l.id}')"` with no `keepTab` — clicking any listing row (including "Other saved listings" section) switched to browse tab
+  - **Fix:** onclick now evaluates `ST.tab` at click time: `selListing('${l.id}', ST.tab==='fav'||ST.tab==='mine')` — browse tab unaffected (`keepTab=false`); Saved and My Ads stay on current tab
+
+- ✅ **Proximity radius disabled on Saved/My Ads tabs + Saved tab map redesign (2026-06-27, commit `be19c4e`, pushed to `uat`):**
+  - **`.rad-box.disabled` CSS** — `opacity:.4; pointer-events:none;` greyes out and blocks the entire radius section
+  - **`switchTab()` updated** — toggles `disabled` class on `.rad-box` when `tab !== 'browse'`; also calls `drawMarkers()` on every tab switch to immediately update map
+  - **`openMyAds()` refactored** — now calls `switchTab('mine')` instead of setting `ST.tab` directly; side-effect: fixes bug where "My Ads" tab button was never highlighted when opened from profile menu
+  - **`selListing(!keepTab)` re-enables radius** — safety guard for when `selListing` forces browse tab without going through `switchTab`
+  - **`ST.favListings[]` added to state** — separate array for saved listings with lat/lng; independent of `ST.listings` (browse) and `ST.myListings`
+  - **`renderFavs()` updated** — stores fetched listings into `ST.favListings`; calls `drawMarkers()` after both success and empty-state paths
+  - **`drawMarkers()` updated** — `const isFav = ST.tab === 'fav'`; uses `ST.favListings` on fav tab; calls `fitBounds(padding:[50,50], maxZoom:14)` when fav tab open and no listing selected; `cnt-badge` not updated when on fav tab
+  - **`viewFav()` updated** — no longer calls `switchTab('browse')`; looks up in `ST.favListings`; calls `selListing(id, true)` (keepTab=true)
+  - **`selListing()` updated** — looks up `ST.favListings` as additional fallback; icon update loop also looks up `ST.favListings`; full-detail fetch merges back into `ST.favListings` on fav tab
+  - **`renderSidebar()` updated** — `if(ST.tab==='fav' && !ST.selId)` (was `if(ST.tab==='fav')`); `fl` now includes `ST.favListings` branch; listing lookup also checks `ST.favListings`; nav arrows pass `keepTab=true` for fav tab; "other" section uses "❤ Other saved listings" header on fav tab
+
+- ✅ **Tester-6 family feedback — value proposition landing + share icon (2026-06-27, commit `5cc2dfe`, pushed to `uat`):**
+  - **`step-landing` added** — new first modal step shown only to visitors with no stored sessions AND `mapit_seen_landing` not set in localStorage; 3 value bullets (📍 exact GPS pin, 🗺 live map browse, 🤝 free to post/browse)
+  - **`startOnboarding()` added** — sets `mapit_seen_landing` flag and routes to `step-auth`; returning users skip landing entirely
+  - **Share icon changed** — `⤴` → `🔗` in listing detail action bar; tooltip updated to "Copy link to share"; `shareListingUrl()` toast already used 🔗 so this is now consistent
+  - **Deferred from Tester-6:** address search (forward geocoding via Nominatim — next session) and onboarding category prefs (pre-public-launch)
+
+- ✅ **Session 3 UAT manual-checklist fixes (2026-06-27, commits `94054d1`→`a15d396`, pushed to `uat`):**
+  - **E1 — view count bug FIXED (root cause: `requireAuth` on view endpoint):** JWT expiry caused the fire-and-forget `apiPost` to silently fail; removed `requireAuth` from `POST /api/listings/:id/view` — view counting now works for all authenticated and unauthenticated viewers
+  - **Views count display added:** `👁 N views` shown in listing detail `ld-dist-bar` subtitle line (appears after full `GET /api/listings/:id` fetch resolves)
+  - **Tab ghosting:** `.tab-btn:not(.on){ opacity:.45; }` — inactive tabs dimmed to 45% opacity; active tab gets light orange tint background `rgba(240,96,48,.1)`, `border-radius:6px 6px 0 0`, `1.5px solid orange` border, and `font-size:15px`
+  - **Tab height jump fixed:** Added `white-space:nowrap; overflow:hidden` to `.tab-btn` base — prevents "📍 Listings [badge]" from wrapping when active font grows, keeping tab bar height constant across all three tabs
+  - **Vehicle Brand/Model placeholders:** Added India-relevant `placeholder` examples to all 4 vehicle subcategories in `LISTING_FIELDS` (Cars: Maruti/Hyundai/Honda; 2 Wheelers: Honda/TVS/Hero; Cycles: Hero/BSA/Trek; Trucks: Tata/Mahindra)
+  - **Default previous owners = 1:** Added `default:1` to `owners` field in Cars, 2 Wheelers, Trucks & Commercial; `renderDynamicFields()` now emits `value="${f.default}"` when defined
+
+- ✅ **MVP Session 3 — Listing lifecycle (2026-06-24, commit `634e1f7`, pushed to `uat`):**
+  - **Migration 002 applied** to Supabase (2026-06-24): `reference_code TEXT UNIQUE`, `expires_at TIMESTAMPTZ`, `show_phone TEXT DEFAULT 'always'`, `views_count INTEGER DEFAULT 0` — all 4 columns confirmed present
+  - **`generateRefCode()`** added to `listings.js` — format `MP-BLR-XXXXXX` (6 chars from unambiguous alphabet: no 0/O/1/I)
+  - **`POST /api/listings`** now sets `reference_code`, `expires_at` (now + 30 days), `show_phone` (validated: always/on_agreement/never)
+  - **`PUT /api/listings/:id`** now accepts `show_phone` in allowed fields
+  - **`POST /api/listings/:id/view`** fixed: was referencing `view_count` (no 's') — now correctly uses `views_count` to match migration 002 column
+  - **Post form** — new "📞 Show My Phone Number to Buyers" radio group (Always / On Agreement / Never); `show_phone` sent in `submitListing()` payload
+  - **Listing detail** — `Ref: MP-BLR-XXXXXX` shown in `ld-dist-bar` alongside address + time; buyers can quote when calling seller
+  - **My Ads cards** — expiry countdown: `Expires in Xd` (muted) → orange warning at ≤5 days → red "⚠️ Expired"
+  - **Delete button** (`🗑️ Del`) added to My Ads cards — `deleteListing()` with confirm dialog → `DELETE /api/listings/:id` → removes card from list without reload
+  - **`.del-btn` CSS** added (red-tinted, matches `.sold-btn` style pattern)
+  - `MapIt_MVP_v1.html` → `public/index.html` synced (diff clean)
+
+- ✅ **Session 1 — Retrospective UAT report + checklist (2026-06-22, no commit yet):**
+  - **Ran 37 automated checks** via file-system grep, diff, curl, dig, and node require — all passed; results embedded in both docs
+  - **`docs/session-01-uat-report.html`** CREATED (82 KB, 1,426 lines) — dark-themed developer UAT report with sidebar nav; blocks A–G auto-verified (full result tables with exact values); blocks H–L manual check summaries; 6 observations (OBS-01 through OBS-06); 7 key architectural decisions; 10 files-created ledger; 9 next steps
+  - **`docs/session-01-uat-checklist-nagesh.html`** CREATED (86 KB, 1,610 lines) — interactive 66-test checklist (same format as Session 2 Arun checklist); tester = Nagesh Nagaraja Rao; 37 tests pre-marked green (auto-verified); 29 manual tests in Blocks H–L with Supabase SQL, Vercel dashboard, and browser instructions; live progress bar + sign-off section
+  - **Key observations documented:** uat.mapit.co.in → production (Vercel free tier limitation); migration 001 columns were missing until 2026-06-21 re-apply; single Supabase project (UAT + prod); OTP_RATE_LIMIT=100 locally (verify 10 in Vercel); invite_codes.used_by all NULL; 4 invite_codes with " 1" suffix on created_for names
+  - **Explained why Session 1 has no curl-tested API routes** — housekeeping session; Session 2 introduced first testable routes; appropriate verification = file + live infra checks + manual dashboards
+
+- ✅ **MVP Session 2 — UAT automated tests + 4 frontend bug fixes (2026-06-22, no new commit yet):**
+  - **41 backend endpoint tests** via curl against local server: all passed — input validation, auth enforcement (JWT rejection), OAuth redirect allowlist (open-redirect blocked), CORS (7 origins tested), password reset, OTP rate limiting, logout graceful, invite-code validation
+  - **BUG-01 (Critical) FIXED:** `verifyOtp()` lacked `needsProfile` check — OTP-fallback users with `nickname='MapIt User'` bypassed profile setup entirely; added same 5-condition check as `submitAuth()` with profile field pre-fill
+  - **BUG-02 (Medium) FIXED:** `_refreshStaleSessionNames()` filter `!u.nickname` was truthy for `'MapIt User'` — stale sessions with placeholder nickname were never background-refreshed; changed filter to `(!u.nickname || u.nickname === 'MapIt User')`
+  - **BUG-03 (Medium) FIXED:** `submitAuth()` Sign-In path didn't pre-fill `profileNicknameInput` from existing profile when routing to `step-profile`; added `else if` fallback from `data.profile?.nickname`
+  - **BUG-04 (Minor) FIXED:** `handleOAuthCallback()` only routed to `step-profile` when `!data.profile` — Google OAuth users with existing placeholder profiles slipped through; added full `needsProfile` check
+  - `MapIt_MVP_v1.html` → `public/index.html` synced after all fixes (diff clean)
+  - **Created `docs/session-02-uat-report.html`** (53 KB) — full developer handover document: dark-themed, sidebar nav, all 41 test results, 4 bug cards with code diffs, 5 observations, files changed, next steps
+  - **Created `docs/session-02-uat-checklist-arun.html`** (58 KB) — interactive 51-test checklist for Arun: Pass/Fail buttons, live progress bar, note fields on failures, tester info, sign-off section
+
+- ✅ **MVP Session 2 — Nickname system (2026-06-21, commit `71dfba7`):**
+  - **Create Account tab** now shows Full Name + Nickname fields (hidden on Sign In tab); both mandatory; validated before submit
+  - **Nickname** is the primary display name everywhere: Who's using MapIt? buttons, header chip, profile menu `uavName`
+  - `switchAuthTab()` shows/hides `registerNameFields` div; `submitAuth()` validates + stores `ST._pendingFullName`/`ST._pendingNickname`; pre-fills `step-profile` inputs automatically
+  - `step-profile` also has a `profileNicknameInput` field (for OTP-path users who skip Create Account form)
+  - `saveProfile()` sends `nickname` to backend; `ST.createdFor` now set to nickname (not full_name)
+  - **"✏️ Change Nickname"** added to profile dropdown; calls `PUT /api/auth/nickname`; updates header chip + uavName live without reload
+  - `showApp()` display name resolution: `profile.nickname → createdFor → full_name → email`
+  - All `saveToMultiSessions()` calls now store `nickname`; `renderWhoamiScreen()` prefers `u.nickname`
+  - Backend: `POST /api/auth/register` now accepts + validates + stores `nickname`; new `PUT /api/auth/nickname` route
+  - `profiles.nickname TEXT` column already existed from migration 001 — no DB change needed
+
+- ✅ **MVP Session 2 — Password reset flow (2026-06-21, commit `71dfba7`):**
+  - **`redirectTo` fix**: `sendPasswordReset()` passes `window.location.origin`; backend validates against `ALLOWED_OAUTH_ORIGINS` + Vercel regex — same pattern as OAuth; reset link now goes to correct environment (UAT → UAT, prod → prod)
+  - **Confirmation modal**: clicking "Send reset link" now shows `step-reset-sent` (📧 icon, email address, 1-hour expiry note, OK button) instead of a toast
+  - **`handleOAuthCallback()`** now reads `type` param from URL hash; if `type=recovery` → shows `step-new-password` form instead of signing user in
+  - **`step-new-password`**: new password + confirm field + show/hide toggle; calls `PUT /api/auth/password`
+  - **New `PUT /api/auth/password`** backend route: uses `supabaseAdmin.auth.admin.updateUserById()` to set new password; requires auth (recovery token in ST.session)
+  - Password reset flow is now end-to-end: request → email → click link → new password form → sign in
+
+- ✅ **MVP Session 2 — Splash flash fix (2026-06-21, commit `71dfba7`):**
+  - **Root cause**: main content (z-index 900) was briefly visible between modal dismissal and `initApp()` showing the splash (z-index 1200)
+  - **Fix**: `showLoadingSplash()` helper shows splash immediately BEFORE hiding any modal; called in 5 places: `continueAs()`, `submitAuth()` (existing user), `verifyOtp()` (existing user), `handleOAuthCallback()` (existing user), `_closeAuthModal()` (new user after home location)
+  - z-index stack: main ~900 → modals 1000 → splash 1200 → whoami 1300; splash correctly covers all main content
+
+- ✅ **MVP Session 2 — Onboarding splash UX (2026-06-21, commit `71dfba7`):**
+  - Font size: `.splash-msg` 13px → 16px; "Welcome to MapIt!" heading 15px → 18px; line-height increased
+  - Removed "🤝 Tap I'm Interested…" bullet (5 bullets remain: GPS, map pins, filter, post listing, heart save)
+
+- ✅ **MVP Session 2 — Rate limit fix (2026-06-21, commit `b1cdc56`, pushed to `uat`):**
+  - **Root cause 1 (global limiter)**: `app.set('trust proxy', 1)` was missing — Vercel edge IP was used for rate limiting so ALL users shared one 100-req bucket, exhausted quickly during testing; now uses real client IP from `X-Forwarded-For`
+  - **Root cause 2 (auth limiter)**: `authLimiter` (max 5/hr, named `OTP_RATE_LIMIT`) was applied to ALL `/api/auth` routes — signup + me + register = 3 calls per test cycle, 2 cycles → blocked; it should only guard OTP routes
+  - **Fix**: `app.set('trust proxy', 1)` added before rate limiter setup in `server.js`; global limit raised 100→200 (per real IP); `authLimiter` removed from `/api/auth` bulk route
+  - **Fix**: `otpLimiter` (10/hr, same `OTP_RATE_LIMIT` env var) added directly to `/send-otp` and `/verify-otp` in `auth.js` — only OTP endpoints are now rate-limited strictly
+
+- ✅ **MVP Session 2 — "MapIt User" root cause fixed in submitAuth() (2026-06-21, commit `3d100ab`):**
+  - **Root cause**: Old OTP-flow accounts already had a profile row (`full_name = nickname = 'MapIt User'`) so `isNewUser = false`; `step-profile` was skipped entirely on email+password sign-in → names never updated in DB
+  - **Fix**: Added `needsProfile` flag in `submitAuth()` that also routes to `step-profile` when `data.profile.nickname` is missing or equals `'MapIt User'`; pre-fills from `ST._pendingFullName`/`ST._pendingNickname` or falls back to existing (non-placeholder) profile value
+  - **DB join analysis**: `invite_code_legacy` was NULL for all profiles; `invite_codes` has no email column; joined via `auth.users` (SELECT p.id, u.email FROM profiles JOIN auth.users ON u.id=p.id) — Nagesh manually updated correct rows with real names, deleted remaining "MapIt User" rows
+  - **localStorage diagnosis**: Clearing Chrome cookies/cache does NOT clear localStorage; stale "MapIt User" buttons in "Who's using MapIt?" were from `mapit_sessions` localStorage; fix: run `localStorage.clear()` in DevTools console, reload
+
+- ✅ **MVP Session 2 — "Who's using MapIt?" nickname display fix (2026-06-21, commits `b1cdc56` + `55b9859`):**
+  - **Root cause**: Old `mapit_sessions` localStorage entries had `name: 'Mapit User'` and `nickname: ''` from pre-MVP code; `renderWhoamiScreen()` falls through nickname → created_for → name → shows 'Mapit User'
+  - **Fix 1 (`b1cdc56`)**: `continueAs()` now falls back to `data.profile?.full_name` when `data.profile?.nickname` is null — existing accounts without nickname set will get their full_name after first click-through
+  - **Fix 2 (`55b9859`)**: `_refreshStaleSessionNames()` added — on `init()`, background-fetches `/api/auth/me` in parallel for every stored session with no nickname, updates localStorage cache, re-renders list automatically within ~1 second (no click required)
+  - **Fix 3 (Supabase SQL, 2026-06-21)**: Migration 001 re-run; `nickname`, `home_lat`, `home_lng`, `home_address`, `agreed_tos_at` columns confirmed MISSING from profiles table and added; `UPDATE profiles SET nickname = full_name WHERE nickname IS NULL` backfilled all existing users
+
+- ✅ **MVP Session 2 — Migration 001 re-applied (2026-06-21):**
+  - Confirmed columns that existed: `auth_provider`, `default_view`, `phone`, `invite_code_legacy`
+  - Confirmed columns that were MISSING (not actually applied previously): `nickname`, `home_lat`, `home_lng`, `home_address`, `agreed_tos_at`
+  - All 5 missing columns added via single BEGIN/COMMIT block in Supabase SQL Editor
+  - Nickname backfilled: `UPDATE profiles SET nickname = full_name WHERE (nickname IS NULL OR nickname = '') AND full_name IS NOT NULL`
+
+- ✅ **MVP Session 2 — Supabase delete FK diagnosis (2026-06-21):**
+  - User could not delete test account from Supabase Authentication dashboard
+  - Root cause: FK constraint `feedback_user_id_fkey` on `feedback` table references `profiles.id`; `feedback → profiles` chain blocks profile delete, which blocks auth.users delete
+  - Workaround: use Gmail `+alias` pattern (e.g. `nagesh.aadi+test1@gmail.com`) for test accounts — avoids cleanup entirely
+  - User confirmed Create Account flow works with +alias email
 
 - ✅ **MVP Session 2 — Auth modal fully rebuilt (2026-06-20):**
   - **New `step-auth`** replaces `step-invite` as the first screen: Sign In / Create Account tabs, email+password form, show/hide password toggle, Google OAuth button, "Use email OTP →" fallback
@@ -201,14 +325,21 @@ CORS fix deployed (`50dd9dd`). Signup flow confirmed partially working (email-al
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| Migration 001 — apply to Supabase | ✅ Done | Supabase SQL Editor | All columns added/renamed; both CHECK constraints applied; backfilled via DEFAULT |
+| Migration 001 — apply to Supabase | ✅ Done | Supabase SQL Editor | Re-run 2026-06-21: nickname/home_lat/home_lng/home_address/agreed_tos_at were missing; added now. auth_provider/default_view already existed. Nickname backfilled from full_name for all existing rows. |
 | MVP Session 2 — Build auth modal | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html`, `src/routes/auth.js` | email+password, Google OAuth, OTP fallback, ToS, home location picker — all built |
 | MVP Session 2 — Home location map picker | ✅ Done | `MapIt_MVP_v1.html`, `src/routes/auth.js` | Inline Leaflet map (`step-homeloc`); `PUT /api/auth/home-location` route added |
 | MVP Session 2 — `agreed_tos_at` + `auth_provider` backend | ✅ Done | `src/routes/auth.js` | `POST /api/auth/register` now writes both fields on profile creation |
 | MVP Session 2 — Push to UAT + test | ✅ Done | git | CORS fix `50dd9dd` pushed; signup confirmed partially working (duplicate email error returned correctly) |
 | MVP Session 2 — Google OAuth Supabase config | ✅ Done | Supabase Dashboard | Google provider enabled; all redirect URLs set including `https://mapit-backend-*.vercel.app/**`; OAuth confirmed working |
 | MVP Session 2 — CORS fix | ✅ Done | `src/server.js`, `.gitignore` | Added `uat.mapit.co.in` + `localhost:3001` to allowedOrigins; case-insensitive Vercel regex; commit `50dd9dd` |
-| MVP Session 2 — Full auth flow test | 🟡 In progress | UAT (Vercel preview URL) | Signup partially tested; user to delete test account and re-test; OTP fallback + session expiry paths pending |
+| MVP Session 2 — Nickname system | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html`, `src/routes/auth.js` | Full name + nickname in Create Account; Change Nickname in menu; display name priority; commit `71dfba7` |
+| MVP Session 2 — Password reset flow | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html`, `src/routes/auth.js` | redirectTo fix; step-reset-sent modal; step-new-password; PUT /api/auth/password; commit `71dfba7` |
+| MVP Session 2 — Splash flash fix | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html` | showLoadingSplash() at 5 transition points; commit `71dfba7` |
+| MVP Session 2 — Onboarding UX | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html` | Font size increased; "I'm Interested" bullet removed; commit `71dfba7` |
+| MVP Session 2 — Who's using MapIt? nickname fix | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html`, `src/server.js`, `src/routes/auth.js` | Rate limit + trust proxy + nickname fallback (`b1cdc56`); background session refresh (`55b9859`); Supabase migration re-applied |
+| MVP Session 2 — Full auth flow test (automated) | ✅ Done | Local server (curl) | 41 backend tests passed 2026-06-22; 4 frontend bugs found + fixed in same session |
+| MVP Session 2 — Full auth flow test (manual/Arun) | 🟡 Pending | UAT Vercel preview | 51-test checklist created; send to Arun for browser-based sign-off |
+| MVP Session 2 — "MapIt User" root-cause fix | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html` | `needsProfile` check in `submitAuth()`; commit `3d100ab` pushed to `uat` |
 | Vercel: set up `uat.mapit.co.in` | ✅ Done | Vercel dashboard | Valid Configuration confirmed (2026-06-20) |
 | Vercel: delete broken frontend project | ✅ Done | Vercel dashboard | `mapit-frontend` project deleted (2026-06-20) |
 | Supabase SQL cleanup: trim invite_codes | ✅ Done | Supabase SQL Editor | Ran successfully (2026-06-20) |
@@ -222,7 +353,33 @@ CORS fix deployed (`50dd9dd`). Signup flow confirmed partially working (email-al
 ## 📂 Key Files Modified
 
 ```
+MapIt_MVP_v1.html          — Saved tab + radius (2026-06-27, be19c4e): .rad-box.disabled CSS; ST.favListings[] state; drawMarkers fav branch + fitBounds; renderFavs→favListings + drawMarkers; viewFav keepTab; selListing favListings lookup + icon update + merge-back; renderSidebar fav detail branch + fl + listing lookup + nav arrows + "other saved" header; switchTab disabled toggle + drawMarkers; openMyAds→switchTab; selListing !keepTab re-enables radius
+public/index.html          — Saved tab + radius (2026-06-27, be19c4e): synced from MapIt_MVP_v1.html (diff clean)
+MapIt_MVP_v1.html          — listingRow keepTab fix (2026-06-27, d4226b4): onclick now passes ST.tab==='fav'||ST.tab==='mine' as keepTab at click time
+public/index.html          — listingRow fix (2026-06-27, d4226b4): synced from MapIt_MVP_v1.html (diff clean)
+docs/session-03-uat-report.html   — Updated (2026-06-27, 83d4a34): total tests 27→47; Block G (10 tab/form checks); Block H (10 saved tab/radius checks); OBS-07/08/09; files-changed table; footer date
+docs/session-03-uat-checklist-nagesh.html — Updated (2026-06-27, 83d4a34): 10 new manual tests in Blocks G (tab UX), H (post form), I (saved tab map); header commit reference updated
+MapIt_MVP_v1.html          — Tester-6 (2026-06-27, 5cc2dfe): step-landing added (CSS + HTML + JS startOnboarding()); init() updated to show landing for first-time visitors; share icon ⤴→🔗
+public/index.html          — Tester-6 (2026-06-27, 5cc2dfe): synced from MapIt_MVP_v1.html (diff clean)
+src/routes/listings.js     — Session 3 UAT (2026-06-27, 94054d1): removed requireAuth from POST /:id/view so view count increments regardless of token expiry
+MapIt_MVP_v1.html          — Session 3 UAT (2026-06-27, 94054d1→a15d396): views count in ld-dist-bar; tab ghosting + active tab bg/border/font (15px); white-space:nowrap on .tab-btn; Brand/Model placeholders + owners default:1 in LISTING_FIELDS; renderDynamicFields wired for placeholder+default
+public/index.html          — Session 3 UAT (2026-06-27): synced from MapIt_MVP_v1.html (diff clean)
+docs/session-01-uat-report.html     — CREATED 2026-06-22: developer UAT report for Session 1 (dark-themed, 82 KB): blocks A–G auto-verified results; blocks H–L manual summaries; 6 observations; 7 architectural decisions; 10 files-created ledger; 9 next steps
+docs/session-01-uat-checklist-nagesh.html — CREATED 2026-06-22: Nagesh's interactive 66-test Session 1 UAT checklist (86 KB): 37 auto-pre-marked green; 29 manual Blocks H–L; live progress bar; sign-off section; same format as session-02-uat-checklist-arun.html
+MapIt_MVP_v1.html          — Session 2 UAT (2026-06-22): BUG-01 verifyOtp() needsProfile check added; BUG-03 submitAuth() nickname pre-fill from existing profile; BUG-04 handleOAuthCallback() needsProfile check added; BUG-02 _refreshStaleSessionNames() filter extended to catch 'MapIt User' placeholder
+public/index.html          — Session 2 UAT (2026-06-22): synced from MapIt_MVP_v1.html (diff clean)
+docs/session-02-uat-report.html    — CREATED 2026-06-22: developer handover UAT report (dark-themed, 53 KB): 41 test results, 4 bug cards with code diffs, observations, next steps
+docs/session-02-uat-checklist-arun.html — CREATED 2026-06-22: Arun's interactive 51-test manual UAT checklist (58 KB): Pass/Fail buttons, live progress bar, sign-off section
+MapIt_MVP_v1.html          — Session 2 (3d100ab): submitAuth() now checks needsProfile (isNewUser OR nickname missing/placeholder); routes 'MapIt User' accounts to step-profile on first email+password login
+public/index.html          — Session 2 (3d100ab): synced from MapIt_MVP_v1.html (diff clean)
+MapIt_MVP_v1.html          — Session 2 (71dfba7): nickname system (registerNameFields, profileNicknameInput, changeNickname()); password reset modal (step-reset-sent, step-new-password, setNewPassword()); showLoadingSplash() at 5 transition points; splash font/bullet UX; display name priority updated to prefer nickname
+public/index.html          — Session 2 (71dfba7): synced from MapIt_MVP_v1.html (diff clean)
+src/routes/auth.js         — Session 2 (71dfba7): POST /register now accepts nickname; new PUT /api/auth/nickname; new PUT /api/auth/password; POST /reset-password now uses dynamic redirectTo validated against allowlist
+                           — Session 2 (b1cdc56): authLimiter removed from all /api/auth routes; otpLimiter (10/hr) added to /send-otp and /verify-otp only; rateLimit require added at top of file
 src/server.js              — Session 2 CORS fix (50dd9dd): added https://uat.mapit.co.in + http://localhost:3001 to allowedOrigins; Vercel regex made case-insensitive [a-z0-9-]→[a-zA-Z0-9-]
+                           — Session 2 (b1cdc56): app.set('trust proxy', 1) added before rate limiter; global limit raised 100→200; authLimiter definition and /api/auth usage removed
+MapIt_MVP_v1.html          — Session 2 (b1cdc56): continueAs() nickname fallback now uses data.profile?.full_name when nickname is null in DB
+                           — Session 2 (55b9859): _refreshStaleSessionNames() added; init() calls it after renderWhoamiScreen() to auto-correct stale 'Mapit User' entries in background
 .gitignore                 — Session 2 (50dd9dd): added client_secret_*.json rule to prevent accidental commit of Google OAuth credentials
 MapIt_MVP_v1.html          — MVP Session 2: Auth modal rebuilt — new step-auth (email+password+Google), step-homeloc (map picker), ToS checkbox, new JS functions for all auth paths; sendOtp no longer sends invite code
 public/index.html          — MVP Session 2: Synced from MapIt_MVP_v1.html (diff clean)
@@ -272,6 +429,16 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 
+- **Session 1 UAT docs created but not yet committed** — `docs/session-01-uat-report.html` + `docs/session-01-uat-checklist-nagesh.html` are local only; commit to uat branch (see Next Steps 18)
+- **Session 1 UAT manual checks pending (Nagesh)** — 29 checks in Blocks H–L of the checklist require Vercel Dashboard, Supabase SQL Editor, and browser; OTP_RATE_LIMIT=10 in Vercel must be verified (local .env has 100); 4 invite_codes.created_for names have " 1" suffix (Chirag 1, Kalpith 1, Srikanth 1, Vijay 1) — fix before those members log in
+- **"Who's using MapIt?" showed "Mapit User"** — ✅ FULLY FIXED (2026-06-22): (1) `submitAuth()` needsProfile check (`3d100ab`); (2) `verifyOtp()` needsProfile check added (BUG-01, UAT 2026-06-22); (3) `_refreshStaleSessionNames()` now also refreshes sessions where `nickname === 'MapIt User'` (BUG-02, UAT 2026-06-22); (4) DB rows manually corrected; localStorage.clear() guidance documented for testers. All 3 auth paths now protected.
+- **BUG-01 `verifyOtp()` missing needsProfile** — ✅ FIXED (2026-06-22): OTP-fallback users with placeholder nickname now correctly routed to step-profile; same 5-condition check as submitAuth()
+- **BUG-02 `_refreshStaleSessionNames()` missed 'MapIt User'** — ✅ FIXED (2026-06-22): filter changed from `!u.nickname` to `(!u.nickname || u.nickname === 'MapIt User')`
+- **BUG-03 `submitAuth()` Sign-In path nickname pre-fill missing** — ✅ FIXED (2026-06-22): `profileNicknameInput` now pre-filled from `data.profile?.nickname` when `_pendingNickname` is null
+- **BUG-04 `handleOAuthCallback()` missing needsProfile** — ✅ FIXED (2026-06-22): Google OAuth users with existing placeholder profiles now caught and routed to step-profile
+- **OTP_RATE_LIMIT=100 in local .env** — ⚠ Observation: local env has 100/hr; verify Vercel env var is set to 10 in production; Supabase 60s cooldown provides adequate local protection
+- **Rate limit "Too many requests" after few test cycles** — ✅ FIXED (2026-06-21, commit `b1cdc56`): trust proxy added (real client IPs now used); authLimiter moved off all /api/auth routes; only OTP routes have strict limit now; pending UAT retest
+- **Migration 001 columns were MISSING from Supabase** — ✅ FIXED (2026-06-21): `nickname`, `home_lat`, `home_lng`, `home_address`, `agreed_tos_at` were never actually added despite CONTEXT.md saying they were; re-applied via SQL Editor; CONTEXT.md updated
 - **Google OAuth Supabase Redirect URL** — ✅ FIXED (2026-06-20): `https://mapit-backend-*.vercel.app/**` added; OAuth confirmed working end-to-end
 - **Only one Supabase project** — `map it-backend` is both UAT and production DB; no separate staging DB; accepted for family-beta MVP phase (see Decisions)
 - **`agreed_tos_at` write not yet in backend** — ✅ FIXED (2026-06-20): `POST /api/auth/register` now writes `agreed_tos_at: new Date().toISOString()`
@@ -293,6 +460,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **Edit listing does not replace photos** — intentional for now; photo management not implemented
 - **`listings_condition_check` constraint still exists** — checks `condition IN ('New', 'Like New', 'Good', ...)` but `condition` field was removed in Session 10; harmless (NULL satisfies the constraint) but can be cleaned up with `ALTER TABLE listings DROP CONSTRAINT listings_condition_check`
 - **⚠️ PRE-PUBLIC-LAUNCH: Email verification not implemented** — `POST /api/auth/signup` uses `email_confirm: true` (admin API) which skips all email verification; anyone can register with another person's email. Before public launch: change to `email_confirm: false` and add an email OTP verification step (`step-verify-email`) after account creation. Noted 2026-06-21.
+- **Supabase test account cleanup** — cannot delete `nagesh.aadi@gmail.com` auth user because `feedback.user_id` FK blocks `profiles` delete; use `+alias` emails for all future test signups to avoid this entirely
+- **Password reset `redirectTo` in Supabase email template** — Supabase's built-in password reset email template uses `{{ .SiteURL }}` (set to `www.mapit.co.in`) for the link; our backend `POST /api/auth/reset-password` overrides this correctly via `redirectTo` param — but only if Supabase is configured to allow the dynamic redirectTo; confirm in Supabase → Auth → URL Configuration → Redirect URLs that `https://mapit-backend-*.vercel.app/**` is listed (already done for OAuth — same list covers reset links)
 
 ---
 
@@ -300,6 +469,25 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| `listingRow()` keepTab evaluated at runtime (not render time) | `onclick="selListing(id, ST.tab==='fav'||ST.tab==='mine')"` — `ST.tab` is read at click time; ensures "Other saved listings" rows always stay on the Saved tab regardless of when they were rendered |
+| `openMyAds()` refactored to call `switchTab('mine')` | Was setting `ST.tab` directly and missing the disabled-class toggle; routing through `switchTab` also fixed the pre-existing bug where "My Ads" tab button was never highlighted when opened from the profile menu |
+| `ST.favListings[]` separate from `ST.listings` | Saved listings are user-curated and must be visible regardless of proximity radius; separate array keeps fav map state independent of browse state |
+| `drawMarkers()` checks `ST.tab` at call time | Single function handles all three tab contexts; `isFav` flag switches between `ST.favListings` and `filtered()` — no separate `drawFavMarkers()` needed |
+| `fitBounds(padding:[50,50], maxZoom:14)` for Saved tab | Ensures all saved pins visible at highest appropriate zoom; `maxZoom:14` prevents over-zoom when only one pin; fires only when no listing is selected (not on zoom-to-pin after selection) |
+| Saved tab detail view stays on Saved tab context | `viewFav` → `selListing(keepTab=true)`; `renderSidebar` condition changed to `tab==='fav' && !ST.selId`; "other listings" labelled "❤ Other saved listings" not "📍 Other nearby listings" |
+| UAT docs updated on session-03 report (not new file) | Today's changes are extensions of Session 3 scope; adding Blocks G and H to the existing report keeps all listing/sidebar UAT in one place; session-02 report left unchanged (covers auth flow only) |
+| `step-landing` gated on `mapit_seen_landing` localStorage flag | Only first-time visitors (no stored sessions + flag absent) see the value proposition; returning users go directly to `step-auth`; `startOnboarding()` sets flag on CTA click so they never see it twice |
+| Address entry (Tester-6 item 2) deferred to next session | Forward geocoding via Nominatim is straightforward (same API already used for reverse geocoding) but deserves its own session slot; tagged for Session 4 scope |
+| Onboarding category prefs (Tester-6 item 4) deferred to pre-launch | Low value at MVP/family-beta scale (~20 listings); requires DB migration + new auth step; revisit before public launch |
+| `POST /api/listings/:id/view` has no `requireAuth` | View counting is semantically public — every visitor should count; requiring auth meant expired JWTs silently blocked increments with no visible error (fire-and-forget `.catch(()=>{})`); supabaseAdmin (service role) handles the update safely without needing user identity |
+| Tab active state uses opacity+background+border (not just underline) | UAT feedback requested clear visual distinction; opacity .45 ghosts inactive tabs; orange tint + border + 15px font makes active tab unmistakable; `white-space:nowrap` on base keeps tab bar height constant as font scales |
+| Session 1 UAT uses file/curl/dig checks (not curl API tests) | Session 1 was housekeeping — no new Express routes; appropriate verification = file-system diffs, live curl/dig infra checks, and manual dashboard walkthroughs. Session 2 onwards uses curl for API routes. |
+| Session 1 UAT checklist tester = Nagesh (not Arun) | Session 1 covers git config, Vercel dashboard, Supabase schema, Namecheap DNS — all developer-facing infra; not a user-facing feature test appropriate for Arun |
+| `needsProfile` check applied to ALL 3 auth paths (submitAuth, verifyOtp, handleOAuthCallback) | UAT 2026-06-22 found that only submitAuth() had it; verifyOtp() (OTP fallback) and handleOAuthCallback() (Google OAuth) both missed it — all 3 now consistent |
+| `needsProfile` replaces bare `isNewUser` check in `submitAuth()` | Old OTP accounts have profile rows with placeholder names; `isNewUser` alone misses them; `needsProfile = isNewUser OR !nickname OR nickname==='MapIt User'` catches all stale cases and re-routes to step-profile |
+| UAT documentation created as standalone HTML files | Developer handover report + Arun checklist as self-contained HTML with embedded CSS/JS; no server needed; can be opened directly from file system or hosted |
+| DB cleanup: deleted "MapIt User" profile rows, manually set real names | No automatic join path (invite_code_legacy NULL, invite_codes has no email column); joined via `auth.users` to identify UUIDs; going forward `needsProfile` prevents placeholder names persisting |
+| Chrome localStorage ≠ cookies/cache/history | Clearing Chrome browsing data does NOT clear localStorage; `mapit_sessions` persists; must use DevTools console `localStorage.clear()` for UAT test resets — instruct testers accordingly |
 | email+password as primary auth (not OTP) | OTP was family-beta only; email+password is the standard UX for a public marketplace; OTP kept as fallback via "Use email OTP →" link |
 | Invite code screen removed entirely | `REQUIRE_INVITE_CODE=false`; invite codes are archived not deleted; family members restore via multi-session store (no re-OTP needed) |
 | ToS accepted at profile creation (not account creation) | Only shown once to new users after auth; `agreed_tos_at` timestamp written on `POST /api/auth/register`; existing users unaffected |
@@ -355,9 +543,20 @@ session-log.html           — Session 7: 6 historical session entries imported;
 | CLAUDE.md v4.0 adopted for MVP | 12 rules covering mentor role, scope discipline, two-file rule, security, DB safety, budget, MVP boundary; replaces older inline rules |
 | Migration SQL files pre-written in `database/migrations/` | Sessions 2, 3, 6 SQL staged as `.sql` files; run each in Supabase SQL Editor at the start of the relevant session |
 | `invite_codes` table archived, not deleted | No longer used for auth in MVP; `REQUIRE_INVITE_CODE=false`; historical data preserved |
+| `app.set('trust proxy', 1)` added to Express | Without it, Vercel edge IP used for rate limiting → all users share one bucket; with it, `X-Forwarded-For` gives real client IP per person |
+| `authLimiter` scoped to OTP routes only (not all /api/auth) | Variable name `OTP_RATE_LIMIT` was always intended for OTP; applying 5/hr to signup+me+register blocked testing after 2 cycles |
+| `_refreshStaleSessionNames()` background refresh on init() | Avoids requiring click-through to fix stale 'Mapit User' localStorage sessions; uses each session's own stored access_token; re-renders list after parallel fetches complete |
+| `continueAs()` falls back to `profile.full_name` for nickname display | Existing accounts without nickname column set (pre-migration) now show their full name instead of stale 'Mapit User' from old localStorage |
+| Migration 001 re-run was safe (IF NOT EXISTS) | All ALTER TABLE statements used IF NOT EXISTS so re-running skipped already-present columns (auth_provider, default_view) and only added the 5 missing ones |
 | Pass `window.location.origin` as OAuth `redirectTo` (not `?uat=1` flag) | Works for any hostname — Vercel preview, UAT domain, production, localhost — without special-casing each environment |
 | Backend validates OAuth `redirectTo` against allowlist + Vercel regex | Security: prevents open-redirect attack; allowlist = known app domains; regex = `^https://mapit-backend-[a-z0-9-]+\.vercel\.app$` |
 | Vercel free tier: `uat.mapit.co.in` points to production only | Branch-specific custom domains require Vercel Pro; accepted for MVP; UAT testing uses the Vercel preview URL; revisit if Vercel Pro is upgraded |
+| Nickname as primary display name (not full_name) | Full name is stored for legal/contact purposes; nickname is what the user wants to be called; prevents "Nagesh Nagaraja Rao" showing where "Nagesh" is cleaner |
+| Nickname mandatory at account creation | Display name without nickname falls back to full_name (ugly); better to enforce it upfront than patch it later |
+| `showLoadingSplash()` called before modal dismiss (not after) | Calling it inside `initApp()` had a race — modal dismissal exposed main content for ~100–500ms before `initApp()` ran; calling before dismiss closes the gap entirely |
+| Gmail `+alias` pattern for test accounts | Avoids FK cascade issues from FK `feedback_user_id_fkey`; disposable but deliverable to real inbox; no Supabase cleanup needed between test runs |
+| `PUT /api/auth/password` uses admin API | Recovery token in `ST.session` is set at `handleOAuthCallback()` when `type=recovery`; `requireAuth` validates it; admin API updates the password without needing the old password |
+| Password reset `redirectTo` validated same as OAuth | Reuses `ALLOWED_OAUTH_ORIGINS` + `isVercelPreview()` already defined in auth.js; consistent security model; prevents open-redirect |
 
 ---
 
@@ -378,23 +577,28 @@ session-log.html           — Session 7: 6 historical session entries imported;
 6. ✅ **Auth modal rebuilt** — email+password, Google OAuth, OTP fallback, ToS, home location picker (2026-06-20)
 7. ✅ **Backend auth routes** — `/signin`, `/signup`, `/google`, `/reset-password`, `/home-location`, `/logout` added; `/register` updated; `/send-otp` invite code removed (2026-06-20)
 
-**MVP Session 2 — Remaining steps:**
-8. ✅ **Push to `uat` branch** — commits `99baa73` + `cddfcb6` pushed; Vercel auto-deployed (2026-06-20)
-9. ✅ **Configure Google OAuth in Supabase Dashboard** — Google provider enabled; Client ID + Secret added (2026-06-20)
-10. ✅ **Add Supabase callback URI in Google Cloud Console** — `https://jneoxwumccmjwaojfazh.supabase.co/auth/v1/callback` added as Authorized Redirect URI (2026-06-20)
-11. ✅ **Supabase Redirect URLs updated** — `https://mapit-backend-*.vercel.app/**` added; Google OAuth confirmed working end-to-end (2026-06-20)
-12. ✅ **CORS fix** — `50dd9dd` pushed to `uat`; email auth unblocked; signup flow confirmed partially working (duplicate-email error returned correctly) (2026-06-21)
-13. **⬅ NEXT: Delete test account + re-test full signup flow** — Supabase Auth Dashboard → Users → ⋮ → Delete; then `DELETE FROM profiles WHERE id='<uuid>'`; re-run: signup → step-profile → step-homeloc → app
-14. **Test OTP fallback** — click "Use email OTP →" in step-auth; verify 6-digit code email arrives; completes to profile setup
-15. **Test session expiry re-auth** — clear localStorage, reload; verify step-auth shown with email pre-filled
-16. **Nagesh/Arun UAT sign-off → merge `uat` → `main`**
+**MVP Session 2 — All steps complete ✅**
+8–17. ✅ All Session 2 steps done (see Completed section above)
+
+**MVP Session 3 — All steps complete ✅ (2026-06-24)**
+18. ✅ **Migration 002 applied** — 4 columns added to `listings` table in Supabase
+19. ✅ **Backend + frontend built and pushed** — commit `634e1f7` on `uat`
+
+**⬅ Immediate next steps:**
+20. ✅ **Test landing screen on UAT** — user confirmed landing screen working (2026-06-27)
+21. ✅ **Commit UAT docs** — already committed in prior commits (`c2ac6f1` + `398d867`)
+22. **Send Arun** the UAT preview URL + `docs/session-02-uat-checklist-arun.html` for Session 2 sign-off
+    - UAT URL: `https://mapit-backend-git-uat-nagesh-n-arun.vercel.app`
+23. **Nagesh: run manual UAT checklist** — `docs/session-03-uat-checklist-nagesh.html` (now has Blocks G, H, I for today's changes); 10 new manual tests to run
+24. **Arun + Nagesh sign-off → merge `uat` → `main`** — open PR from uat to main, await approval
+25. **Address entry (Tester-6 item 2)** — add forward-geocoding address search field to post-listing form using Nominatim; converts typed address to lat/lng; tagged for Session 4
 
 **Data cleanup (run any time in Supabase SQL Editor):**
-17. `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb`
-18. `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
+23. `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb`
+24. `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
 
 **⚠️ Pre-public-launch (do NOT skip):**
-19. **Email verification** — add `step-verify-email` OTP step after account creation; change `email_confirm: false` in `POST /api/auth/signup` backend; currently anyone can register with another person's email (intentionally skipped for family beta to reduce friction)
+22. **Email verification** — add `step-verify-email` OTP step after account creation; change `email_confirm: false` in `POST /api/auth/signup` backend; currently anyone can register with another person's email (intentionally skipped for family beta to reduce friction)
 
 ---
 
@@ -421,7 +625,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **Photo limit:** 5 per listing — enforced in both frontend (slice) and backend (multer + DB check)
 - **`listings.details` JSONB**: stores all category-specific fields; `total_price` inside details is used as the canonical price
 - **Category IDs:** `re` = Real Estate, `veh` = Vehicles, `hh` = Household Items; `furn` kept in VALID_CATEGORIES for legacy data only
-- **`LISTING_FIELDS` JS object**: canonical field definitions per cat+subcat; drives form, hover card, and detail panel
+- **`LISTING_FIELDS` JS object**: canonical field definitions per cat+subcat; drives form, hover card, and detail panel; vehicle subcategories now have `placeholder` for Brand/Model and `default:1` for owners field
+- **`ST.favListings[]`**: separate from `ST.listings` — populated by `renderFavs()` via `GET /api/listings/saved/all`; used by `drawMarkers()` when `ST.tab==='fav'`; `fitBounds(padding:[50,50],maxZoom:14)` auto-fits map to all saved pins on Saved tab open; `viewFav()` uses `keepTab=true` so detail stays on Saved tab
+- **Proximity radius (`.rad-box`)**: disabled (opacity .4, pointer-events:none) when `ST.tab !== 'browse'`; toggled by `switchTab()` and `selListing(!keepTab)`
 - **Listing detail Block A layout (Session 12):** `ld-info-bar` is `flex-direction:column`; first child is `ld-dist-bar` (full-bleed teal gradient); second is `ld-info-top`; third is `ld-photo-strip`
 - **`selListing(id, keepTab=false)`:** second param prevents tab switch when called from My Ads; `ST.editingId` tracks edit mode
 - **Listings API list endpoint:** uses `SELECT *` + JS haversineM() filter; returns `distance_m` field; frontend maps `distance_m → d` (km)
