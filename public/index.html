@@ -1075,7 +1075,7 @@ function listingRow(l){
   const loc = activeLoc();
   const d   = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
   const sel = l.id === ST.selId;
-  return `<div class="lr-row ${sel?'sel':''}" onclick="selListing('${l.id}')">
+  return `<div class="lr-row ${sel?'sel':''}" onclick="selListing('${l.id}', ST.tab==='fav'||ST.tab==='mine')">
     <div class="lr-ico">${l.cover_photo?`<img src="${l.cover_photo}" alt=""/>`:`<span>${listingEmoji(l)}</span>`}</div>
     <div class="lr-info">
       <div class="lr-title">${l.title}</div>
