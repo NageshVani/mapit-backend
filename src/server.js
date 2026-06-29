@@ -47,17 +47,19 @@ app.use(morgan('dev'));
 // Allow requests from the frontend (update APP_URL in .env)
 const allowedOrigins = [
   process.env.APP_URL || 'http://localhost:3000',
+  'http://localhost:3001',          // local Express dev server (Express runs on 3001)
   'http://127.0.0.1:5500',
   'http://localhost:5500',
   'https://mapit.co.in',
   'https://www.mapit.co.in',
+  'https://uat.mapit.co.in',        // UAT subdomain
 ];
 app.use(cors({
   origin: (origin, cb) => {
     // allow server-to-server calls (no origin) and listed origins
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    // allow all Vercel preview deployments for this project (dev/uat branches)
-    if (/^https:\/\/mapit-backend(-[a-z0-9-]+)?\.vercel\.app$/.test(origin)) return cb(null, true);
+    // allow all Vercel preview deployments — case-insensitive to handle uppercase in deployment hash URLs
+    if (/^https:\/\/mapit-backend(-[a-zA-Z0-9-]+)?\.vercel\.app$/i.test(origin)) return cb(null, true);
     cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -67,23 +69,20 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Trust Vercel's proxy so rate limiters use the real client IP from X-Forwarded-For,
+// not the shared Vercel edge IP (which would bucket all users together).
+app.set('trust proxy', 1);
+
 // ── Global rate limiter ──────────────────────────────────────
-// Max 100 requests per 15 minutes per IP
+// Max 200 requests per 15 minutes per real client IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests. Please try again in 15 minutes.' },
 });
 app.use(limiter);
-
-// Stricter limiter for auth endpoints (prevent OTP abuse)
-const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: parseInt(process.env.OTP_RATE_LIMIT) || 5,
-  message: { error: 'Too many login attempts. Please wait 1 hour.' },
-});
 
 // ── Health check ─────────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -96,7 +95,7 @@ app.get('/health', (req, res) => {
 });
 
 // ── Routes ───────────────────────────────────────────────────
-app.use('/api/auth',     authLimiter, authRoutes);
+app.use('/api/auth',     authRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/pins',     pinRoutes);
 app.use('/api/messages', messageRoutes);

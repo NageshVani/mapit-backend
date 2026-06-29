@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 1 UAT Report</title>
+<style>
+  :root {
+    --orange: #F06030;
+    --orange2: #FF7A50;
+    --green: #22C55E;
+    --red: #EF4444;
+    --yellow: #F59E0B;
+    --blue: #3B82F6;
+    --purple: #8B5CF6;
+    --teal: #14B8A6;
+    --bg: #0F1117;
+    --panel: #1A1D27;
+    --card: #22263A;
+    --border: rgba(255,255,255,0.08);
+    --text: #F0F4FF;
+    --muted: #8892AA;
+    --muted2: #B0BCCC;
+    --code-bg: #161B2E;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .doc-header {
+    background: linear-gradient(135deg, #1A1D27 0%, #0F1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 60px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(240,96,48,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .logo { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .logo em { font-style: normal; color: var(--orange); }
+  .doc-title { font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.2; }
+  .doc-meta { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 16px; }
+  .doc-meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .doc-meta-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .doc-meta-val { font-size: 13px; font-weight: 600; color: var(--muted2); }
+  .badge-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+  .badge-green  { background: rgba(34,197,94,0.15);  border: 1px solid rgba(34,197,94,0.35);  color: #4ADE80; }
+  .badge-red    { background: rgba(239,68,68,0.15);  border: 1px solid rgba(239,68,68,0.35);  color: #F87171; }
+  .badge-orange { background: rgba(240,96,48,0.15);  border: 1px solid rgba(240,96,48,0.35);  color: var(--orange2); }
+  .badge-blue   { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.35); color: #60A5FA; }
+  .badge-yellow { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35); color: #FCD34D; }
+  .badge-teal   { background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.35); color: #2DD4BF; }
+
+  /* ── LAYOUT ── */
+  .doc-body { display: flex; min-height: calc(100vh - 200px); }
+  .sidebar {
+    width: 240px; flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky; top: 0; height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar-section { padding: 0 16px; margin-bottom: 8px; }
+  .sidebar-label { font-size: 9px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); padding: 0 8px; margin-bottom: 6px; }
+  .sidebar-link {
+    display: block; padding: 7px 12px; border-radius: 6px;
+    font-size: 12px; color: var(--muted2); text-decoration: none;
+    transition: all 0.15s; margin-bottom: 1px;
+  }
+  .sidebar-link:hover { background: var(--card); color: var(--text); }
+  .sidebar-link.active { background: rgba(240,96,48,0.15); color: var(--orange2); }
+  .sidebar-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%; font-size: 9px; font-weight: 800;
+    margin-right: 6px;
+  }
+  .num-pass { background: rgba(34,197,94,0.2); color: #4ADE80; }
+  .num-warn { background: rgba(245,158,11,0.2); color: #FCD34D; }
+  .num-info { background: rgba(59,130,246,0.2); color: #93C5FD; }
+
+  .content { flex: 1; padding: 40px 60px; max-width: 1100px; }
+
+  /* ── SECTIONS ── */
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  .section-title {
+    font-size: 20px; font-weight: 700; color: var(--text);
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title .section-ico { font-size: 22px; }
+  .section-desc { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+  .section-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .summary-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 22px;
+  }
+  .summary-card .s-num { font-size: 36px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .summary-card .s-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .s-pass .s-num  { color: var(--green); }
+  .s-manual .s-num { color: var(--teal); }
+  .s-warn .s-num  { color: var(--yellow); }
+  .s-note .s-num  { color: var(--orange); }
+
+  /* ── TABLES ── */
+  .test-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .test-table th {
+    text-align: left; padding: 10px 14px;
+    background: var(--card); color: var(--muted);
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .test-table th:first-child { border-radius: 8px 0 0 0; }
+  .test-table th:last-child { border-radius: 0 8px 0 0; }
+  .test-table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  .test-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .test-table tr:last-child td { border-bottom: none; }
+  .test-id { font-size: 11px; font-weight: 700; color: var(--muted); font-family: monospace; }
+  .test-name { font-weight: 600; color: var(--text); }
+  .test-expect { color: var(--muted2); font-family: monospace; font-size: 11.5px; }
+  .test-result-cell { white-space: nowrap; }
+  .pill-pass {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
+    color: #4ADE80; padding: 2px 9px; border-radius: 12px;
+    font-size: 10.5px; font-weight: 700;
+  }
+  .pill-manual {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(20,184,166,0.12); border: 1px solid rgba(20,184,166,0.3);
+    color: #2DD4BF; padding: 2px 9px; border-radius: 12px;
+    font-size: 10.5px; font-weight: 700;
+  }
+  .pill-warn {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3);
+    color: #FCD34D; padding: 2px 9px; border-radius: 12px;
+    font-size: 10.5px; font-weight: 700;
+  }
+
+  /* ── OBSERVATION / FINDING CARDS ── */
+  .obs-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 20px; overflow: hidden;
+  }
+  .obs-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+  }
+  .obs-severity {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .sev-resolved   { background: rgba(34,197,94,0.2);  border: 1px solid rgba(34,197,94,0.4);  color: #4ADE80; }
+  .sev-warning    { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4); color: #FCD34D; }
+  .sev-info       { background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.4); color: #93C5FD; }
+  .sev-security   { background: rgba(239,68,68,0.2);  border: 1px solid rgba(239,68,68,0.4);  color: #F87171; }
+  .sev-config     { background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.4); color: #C4B5FD; }
+  .obs-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .obs-id { font-size: 11px; font-weight: 700; color: var(--muted); font-family: monospace; }
+  .obs-body { padding: 20px; }
+  .obs-section-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px; margin-top: 16px;
+  }
+  .obs-section-label:first-child { margin-top: 0; }
+  .obs-text { font-size: 13px; color: var(--muted2); line-height: 1.7; }
+  .obs-text strong { color: var(--text); }
+  .obs-text code { font-family: monospace; font-size: 12px; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; color: var(--orange2); }
+  .action-tag {
+    margin-left: auto; flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+  }
+  .action-done    { background: rgba(34,197,94,0.15);  border: 1px solid rgba(34,197,94,0.35);  color: #4ADE80; }
+  .action-manual  { background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.35); color: #2DD4BF; }
+  .action-monitor { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35); color: #FCD34D; }
+  .action-future  { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.35); color: #C4B5FD; }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-top: 12px;
+  }
+  .code-title {
+    padding: 8px 14px; background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    font-family: monospace; letter-spacing: 0.3px;
+  }
+  .code-body { padding: 14px; overflow-x: auto; }
+  .code-body pre { font-size: 12px; line-height: 1.65; font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace; color: var(--muted2); }
+  .code-body pre .kw  { color: #60A5FA; }
+  .code-body pre .str { color: #4ADE80; }
+  .code-body pre .cmt { color: var(--muted); font-style: italic; }
+  .code-body pre .val { color: var(--orange2); }
+
+  /* ── FILE CHANGE ── */
+  .file-row {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 16px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 10px;
+  }
+  .file-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .file-name { font-family: monospace; font-size: 13px; font-weight: 700; color: var(--orange2); margin-bottom: 3px; }
+  .file-desc { font-size: 12px; color: var(--muted2); line-height: 1.5; }
+  .file-desc code { font-family: monospace; font-size: 11px; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; color: var(--orange2); }
+
+  /* ── NEXT STEPS ── */
+  .next-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 16px; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px;
+  }
+  .next-num {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: rgba(240,96,48,0.15); border: 1px solid rgba(240,96,48,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: var(--orange2); flex-shrink: 0;
+  }
+  .next-content { flex: 1; }
+  .next-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .next-detail { font-size: 12px; color: var(--muted2); line-height: 1.5; }
+  .next-detail code { font-family: monospace; font-size: 11px; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; color: var(--orange2); }
+  .next-tag {
+    flex-shrink: 0; align-self: flex-start;
+    padding: 3px 10px; border-radius: 12px;
+    font-size: 10px; font-weight: 700;
+  }
+  .tag-done    { background: rgba(34,197,94,0.15);  border: 1px solid rgba(34,197,94,0.3);  color: #4ADE80; }
+  .tag-session { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60A5FA; }
+  .tag-manual  { background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.3); color: #2DD4BF; }
+  .tag-future  { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #C4B5FD; }
+
+  /* ── DECISION TABLE ── */
+  .decision-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .decision-table th {
+    text-align: left; padding: 10px 14px;
+    background: var(--card); color: var(--muted);
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .decision-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 12.5px; color: var(--muted2); }
+  .decision-table tr:last-child td { border-bottom: none; }
+  .decision-table td:first-child { color: var(--text); font-weight: 600; }
+
+  /* ── INLINE TAG ── */
+  .inline-tag {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .it-auto   { background: rgba(34,197,94,0.12);  border: 1px solid rgba(34,197,94,0.25);  color: #4ADE80; }
+  .it-manual { background: rgba(20,184,166,0.12); border: 1px solid rgba(20,184,166,0.25); color: #2DD4BF; }
+  .it-done   { background: rgba(240,96,48,0.12);  border: 1px solid rgba(240,96,48,0.25);  color: var(--orange2); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .doc-header { padding: 28px 24px 24px; }
+    .content { padding: 24px; }
+    .sidebar { display: none; }
+    .summary-grid { grid-template-columns: repeat(2,1fr); }
+    .doc-title { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="doc-header">
+  <div class="logo">Map<em>It</em></div>
+  <div class="doc-title">Session 1 — UAT Test Report &amp; Verification Log</div>
+  <div style="font-size:14px;color:var(--muted);margin-top:4px;">
+    Automated file &amp; live-endpoint checks · Manual dashboard verifications · Observations · Decisions · Next Steps
+  </div>
+  <div class="doc-meta">
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">Session</span>
+      <span class="doc-meta-val">MVP Session 1 — Foundation &amp; Housekeeping</span>
+    </div>
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">UAT Date</span>
+      <span class="doc-meta-val">22 June 2026</span>
+    </div>
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">Tester</span>
+      <span class="doc-meta-val">Nagesh Nagaraja Rao (automated + manual)</span>
+    </div>
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">Session 1 Commit</span>
+      <span class="doc-meta-val">c7f86e8 — uat branch</span>
+    </div>
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">Stack</span>
+      <span class="doc-meta-val">Node.js · Supabase · Vercel · Namecheap DNS</span>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-green">✓ 37 Auto-Verified Checks Passed</span>
+    <span class="badge badge-teal">⊙ 29 Manual Checks Required</span>
+    <span class="badge badge-yellow">⚠ 6 Observations Noted</span>
+    <span class="badge badge-blue">Branch: uat · Commit: c7f86e8</span>
+    <span class="badge badge-orange">Session: Foundation</span>
+  </div>
+</div>
+
+<div class="doc-body">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="sidebar-link" href="#summary">📊 Summary</a>
+      <a class="sidebar-link" href="#scope">🔖 Session 1 Scope</a>
+      <a class="sidebar-link" href="#environment">🖥 Test Environment</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Auto-Verified (37)</div>
+      <a class="sidebar-link" href="#t-files"><span class="sidebar-num num-pass">✓</span>Local Files (A)</a>
+      <a class="sidebar-link" href="#t-migrations"><span class="sidebar-num num-pass">✓</span>Migrations &amp; Templates (B)</a>
+      <a class="sidebar-link" href="#t-branches"><span class="sidebar-num num-pass">✓</span>Branch Strategy (C)</a>
+      <a class="sidebar-link" href="#t-server"><span class="sidebar-num num-pass">✓</span>Server Config (D)</a>
+      <a class="sidebar-link" href="#t-vercel-cfg"><span class="sidebar-num num-pass">✓</span>Vercel Config Files (E)</a>
+      <a class="sidebar-link" href="#t-dns"><span class="sidebar-num num-pass">✓</span>DNS &amp; Domains (F)</a>
+      <a class="sidebar-link" href="#t-api"><span class="sidebar-num num-pass">✓</span>Live API Endpoints (G)</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Manual Checks (29)</div>
+      <a class="sidebar-link" href="#t-vercel-dash"><span class="sidebar-num num-info">⊙</span>Vercel Dashboard (H)</a>
+      <a class="sidebar-link" href="#t-supabase-db"><span class="sidebar-num num-info">⊙</span>Supabase Tables (I)</a>
+      <a class="sidebar-link" href="#t-supabase-auth"><span class="sidebar-num num-info">⊙</span>Supabase Auth (J)</a>
+      <a class="sidebar-link" href="#t-migration001"><span class="sidebar-num num-info">⊙</span>Migration 001 (K)</a>
+      <a class="sidebar-link" href="#t-smoke"><span class="sidebar-num num-info">⊙</span>Browser Smoke (L)</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Analysis</div>
+      <a class="sidebar-link" href="#observations">⚠ Observations</a>
+      <a class="sidebar-link" href="#decisions">💡 Key Decisions</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Handover</div>
+      <a class="sidebar-link" href="#files">📁 Files Created</a>
+      <a class="sidebar-link" href="#next">🔜 Next Steps</a>
+    </div>
+  </nav>
+
+  <!-- ── CONTENT ── -->
+  <main class="content">
+
+    <!-- ════ SUMMARY ════ -->
+    <section id="summary">
+      <div class="section-title"><span class="section-ico">📊</span> Executive Summary</div>
+      <div class="section-desc">
+        Session 1 established the complete foundation for the MapIt MVP: canonical frontend, documentation, branch strategy,
+        migration scripts, server configuration, and all external service integrations (Vercel, Supabase, Namecheap DNS).
+        This UAT was conducted on 22 June 2026 — retrospectively, as Session 1 delivered housekeeping artefacts rather than user-facing features.
+        37 checks were auto-verified by Claude Code (file system, curl, dig, grep). 29 checks require manual confirmation
+        in external dashboards (Vercel, Supabase, Namecheap). 6 non-blocking observations were documented. No bugs were found in the code deliverables.
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card s-pass">
+          <div class="s-num">37</div>
+          <div class="s-label">Auto-Verified</div>
+          <div style="font-size:11px;color:#4ADE80;margin-top:4px;">All passed ✓</div>
+        </div>
+        <div class="summary-card s-manual">
+          <div class="s-num">29</div>
+          <div class="s-label">Manual Checks</div>
+          <div style="font-size:11px;color:#2DD4BF;margin-top:4px;">Nagesh to confirm</div>
+        </div>
+        <div class="summary-card s-warn">
+          <div class="s-num">6</div>
+          <div class="s-label">Observations</div>
+          <div style="font-size:11px;color:#FCD34D;margin-top:4px;">Non-blocking notes</div>
+        </div>
+        <div class="summary-card s-note">
+          <div class="s-num">0</div>
+          <div class="s-label">Bugs Found</div>
+          <div style="font-size:11px;color:var(--orange2);margin-top:4px;">None — housekeeping session</div>
+        </div>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px 24px;font-size:13px;color:var(--muted2);line-height:1.75;">
+        <strong style="color:var(--text)">Why Session 1 has no automated backend tests:</strong> Session 1 delivered infrastructure artefacts —
+        files, config, branch strategy, external service setup — not API routes or user-facing features.
+        There are no new Express routes to curl-test. The appropriate verification method is:
+        (a) file-system and git checks for local artefacts, (b) curl/dig checks for live infrastructure,
+        and (c) manual dashboard checks for Vercel, Supabase, and Namecheap.
+        Session 2 introduced the first testable API routes (signin, signup, OTP, etc.) and used curl extensively.
+      </div>
+    </section>
+
+    <!-- ════ SCOPE ════ -->
+    <section id="scope">
+      <div class="section-title"><span class="section-ico">🔖</span> Session 1 Deliverable Scope</div>
+      <div class="section-desc">Everything created or configured in Session 1. Each row maps to a test block in the UAT checklist.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th>Deliverable</th>
+          <th>What Was Done</th>
+          <th>Test Block</th>
+          <th>Method</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-name">Git global config</td>
+            <td class="test-expect">Fixed email — removed erroneous literal quote chars stored by Windows git config GUI</td>
+            <td class="test-expect">Block A</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">MapIt_MVP_v1.html</td>
+            <td class="test-expect">Canonical MVP frontend created from prototype; public/index.html synced (byte-identical diff)</td>
+            <td class="test-expect">Block A</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">CLAUDE.md v4.0</td>
+            <td class="test-expect">12 collaboration rules — mentor role, scope discipline, two-file rule, branch strategy, security, DB safety, budget, screenshots, MVP boundary</td>
+            <td class="test-expect">Block A</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">docs/architecture.md</td>
+            <td class="test-expect">Stack table, branch strategy, key architectural decisions, budget plan</td>
+            <td class="test-expect">Block A</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">docs/ux-audit.md</td>
+            <td class="test-expect">30-issue audit across typography, colour, spacing, forms, auth, map interaction</td>
+            <td class="test-expect">Block A</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Migration SQL files (001, 002, 003)</td>
+            <td class="test-expect">Pre-written migrations for Sessions 2, 3, 6 — profiles auth columns, listings additions, chat schema</td>
+            <td class="test-expect">Block B</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">.env.example</td>
+            <td class="test-expect">14 documented env vars with comments; safe to commit</td>
+            <td class="test-expect">Block B</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">.gitignore</td>
+            <td class="test-expect">Protects .env, node_modules, client_secret_*.json from accidental commit</td>
+            <td class="test-expect">Block B</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Branch strategy</td>
+            <td class="test-expect">main, uat, dev — all exist locally and on remote (origin/NageshVani/mapit-backend)</td>
+            <td class="test-expect">Block C</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Server configuration</td>
+            <td class="test-expect">require.main guard, express.static, Helmet CSP disabled, trust proxy, CORS whitelist, API_URL auto-detect</td>
+            <td class="test-expect">Block D</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Vercel config files</td>
+            <td class="test-expect">vercel.json routes all traffic to src/server.js; public/vercel.json with cleanUrls</td>
+            <td class="test-expect">Block E</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">DNS records (Namecheap)</td>
+            <td class="test-expect">mapit.co.in → 308; www.mapit.co.in → 200; api.mapit.co.in CNAME → Vercel; uat.mapit.co.in → 200</td>
+            <td class="test-expect">Block F</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Live API endpoints</td>
+            <td class="test-expect">auth/me → 401, listings → 401, CORS headers correct, Helmet x-content-type-options present</td>
+            <td class="test-expect">Block G</td>
+            <td class="test-expect"><span class="inline-tag it-auto">Auto</span></td>
+            <td><span class="pill-pass">✓ Verified</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Vercel Dashboard</td>
+            <td class="test-expect">mapit-frontend deleted, mapit-backend production=main, uat branch preview deployed, env vars set, Deployment Protection off</td>
+            <td class="test-expect">Block H</td>
+            <td class="test-expect"><span class="inline-tag it-manual">Manual</span></td>
+            <td><span class="pill-manual">⊙ Nagesh to check</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Supabase database tables</td>
+            <td class="test-expect">profiles, listings, user_pins, messages, invite_codes, feedback all exist; RLS enabled on profiles</td>
+            <td class="test-expect">Block I</td>
+            <td class="test-expect"><span class="inline-tag it-manual">Manual</span></td>
+            <td><span class="pill-manual">⊙ Nagesh to check</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Supabase Auth &amp; Email</td>
+            <td class="test-expect">Site URL = www.mapit.co.in; Resend SMTP wired; email OTP enabled; redirect URLs allowlist correct</td>
+            <td class="test-expect">Block J</td>
+            <td class="test-expect"><span class="inline-tag it-manual">Manual</span></td>
+            <td><span class="pill-manual">⊙ Nagesh to check</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Migration 001 applied</td>
+            <td class="test-expect">nickname, home_lat/lng, auth_provider added to profiles; invite_code renamed; condition_check dropped</td>
+            <td class="test-expect">Block K</td>
+            <td class="test-expect"><span class="inline-tag it-manual">Manual</span></td>
+            <td><span class="pill-manual">⊙ Nagesh to check</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Browser smoke test</td>
+            <td class="test-expect">App loads at www.mapit.co.in; Leaflet map renders; no JS console errors; who-am-I modal on fresh load</td>
+            <td class="test-expect">Block L</td>
+            <td class="test-expect"><span class="inline-tag it-manual">Manual</span></td>
+            <td><span class="pill-manual">⊙ Nagesh to check</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ ENVIRONMENT ════ -->
+    <section id="environment">
+      <div class="section-title"><span class="section-ico">🖥</span> Test Environment</div>
+      <div class="section-divider"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">Development Machine</div>
+          <div class="file-desc">MacBook Air (Apple Silicon, arm64, macOS 26.5.1)<br>Node.js v26.0.0 · npm 11.16.0 · Homebrew<br>Migrated from Windows 11 on 2026-06-08</div>
+        </div>
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">Production Deployment</div>
+          <div class="file-desc">Vercel (Free tier) · Branch: <code>main</code><br>URL: <code>https://www.mapit.co.in</code><br>API: <code>https://api.mapit.co.in</code></div>
+        </div>
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">UAT Deployment</div>
+          <div class="file-desc">Vercel preview · Branch: <code>uat</code><br>URL: <code>mapit-backend-git-uat-nagesh-n-arun.vercel.app</code><br>Note: <code>uat.mapit.co.in</code> points to production (free tier limitation)</div>
+        </div>
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">Database</div>
+          <div class="file-desc">Supabase: <code>jneoxwumccmjwaojfazh.supabase.co</code><br>Single project (UAT + production shared for MVP phase)<br>PostgreSQL + PostGIS · Storage: Supabase Storage</div>
+        </div>
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">DNS Registrar</div>
+          <div class="file-desc">Namecheap · Domain: <code>mapit.co.in</code><br>A: 216.198.79.1 · CNAME: 4bb267e12ef05e09.vercel-dns-017.com</div>
+        </div>
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">Automated Test Method</div>
+          <div class="file-desc">File-system checks · <code>diff</code> (two-file rule) · <code>grep</code> (code inspection) · <code>curl</code> (live HTTP) · <code>dig</code> (DNS records) · <code>node -e require()</code> (syntax check)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ BLOCK A — LOCAL FILES ════ -->
+    <section id="t-files">
+      <div class="section-title"><span class="section-ico">📁</span> Block A — Local Project Files (Auto-Verified)</div>
+      <div class="section-desc">File-system checks run by Claude Code on 2026-06-22. All 9 checks passed.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:55px">ID</th>
+          <th style="width:200px">Check</th>
+          <th>Verified Value</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-id">A01</td>
+            <td class="test-name">Git email — no quote chars</td>
+            <td class="test-expect"><code>nagesh.aadi@gmail.com</code> (was stored with literal quotes on Windows)</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">A02</td>
+            <td class="test-name">Git author name</td>
+            <td class="test-expect"><code>Nagesh Nagaraja Rao</code></td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">A03</td>
+            <td class="test-name">Session 1 commit c7f86e8 in git log</td>
+            <td class="test-expect">Commit present, authored 2026-06-19, message: "docs(session-01): foundation &amp; housekeeping"</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">A04</td>
+            <td class="test-name">MapIt_MVP_v1.html exists</td>
+            <td class="test-expect">171,960 bytes · 2,981 lines (canonical MVP frontend)</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">A05</td>
+            <td class="test-name">Two-file rule — diff is clean</td>
+            <td class="test-expect"><code>diff MapIt_MVP_v1.html public/index.html</code> → empty output; both 171,960 bytes (IDENTICAL)</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">A06</td>
+            <td class="test-name">CLAUDE.md has 12 rules</td>
+            <td class="test-expect">8,512 bytes · grep found all 12 headings "## Rule 1" through "## Rule 12"</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">A07</td>
+            <td class="test-name">docs/architecture.md exists</td>
+            <td class="test-expect">2,702 bytes · created 2026-06-19</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">A08</td>
+            <td class="test-name">docs/ux-audit.md exists</td>
+            <td class="test-expect">8,489 bytes · 30-issue audit · created 2026-06-19</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">A09</td>
+            <td class="test-name">docs/screenshots/session-01/ exists</td>
+            <td class="test-expect">Directory present with .gitkeep placeholder</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ BLOCK B — MIGRATIONS ════ -->
+    <section id="t-migrations">
+      <div class="section-title"><span class="section-ico">🗃</span> Block B — Migration Scripts &amp; Environment Template (Auto-Verified)</div>
+      <div class="section-desc">File-system checks. All 5 checks passed.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:55px">ID</th>
+          <th style="width:250px">Check</th>
+          <th>Verified Value</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-id">B01</td>
+            <td class="test-name">001-mvp-auth-schema.sql exists</td>
+            <td class="test-expect">1,529 bytes · profiles columns: nickname, phone, home_lat/lng, auth_provider, default_view, agreed_tos_at · invite_code → invite_code_legacy rename · all IF NOT EXISTS</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">B02</td>
+            <td class="test-name">002-mvp-listings-schema.sql exists</td>
+            <td class="test-expect">1,535 bytes · listings columns: reference_code, expires_at, show_phone, views_count, city_id</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">B03</td>
+            <td class="test-name">003-chat-schema.sql exists</td>
+            <td class="test-expect">1,877 bytes · conversations + chat_messages tables with FK constraints and RLS stubs</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">B04</td>
+            <td class="test-name">.env.example has 14 env vars</td>
+            <td class="test-expect">3,424 bytes · SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_DB_PASSWORD, PORT, NODE_ENV, APP_URL, JWT_SECRET, STORAGE_BUCKET, MAX_PHOTO_SIZE, MAX_PHOTOS_PER_LISTING, REQUIRE_INVITE_CODE, EMAIL_FROM_NAME, OTP_RATE_LIMIT</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">B05</td>
+            <td class="test-name">.gitignore protects secrets</td>
+            <td class="test-expect">374 bytes · node_modules/, .env, .env.local, .env.production, client_secret_*.json — all 5 entries present</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ BLOCK C — BRANCHES ════ -->
+    <section id="t-branches">
+      <div class="section-title"><span class="section-ico">🌿</span> Block C — Branch Strategy (Auto-Verified)</div>
+      <div class="section-desc">git branch -a and remote checks. All 4 checks passed.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:55px">ID</th>
+          <th style="width:220px">Check</th>
+          <th>Verified Value</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-id">C01</td>
+            <td class="test-name">main branch on remote</td>
+            <td class="test-expect"><code>remotes/origin/main</code> present; origin/HEAD → origin/main</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">C02</td>
+            <td class="test-name">uat branch on remote</td>
+            <td class="test-expect"><code>remotes/origin/uat</code> present; currently checked-out branch</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">C03</td>
+            <td class="test-name">dev branch on remote</td>
+            <td class="test-expect"><code>remotes/origin/dev</code> present</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">C04</td>
+            <td class="test-name">git remote URL is correct</td>
+            <td class="test-expect"><code>https://NageshVani@github.com/NageshVani/mapit-backend.git</code></td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ BLOCK D — SERVER CONFIG ════ -->
+    <section id="t-server">
+      <div class="section-title"><span class="section-ico">⚙️</span> Block D — Server.js Configuration (Auto-Verified)</div>
+      <div class="section-desc">grep and node require checks. All 7 checks passed.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:55px">ID</th>
+          <th style="width:250px">Check</th>
+          <th>Verified Value / Location</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-id">D01</td>
+            <td class="test-name">server.js loads without errors</td>
+            <td class="test-expect"><code>node -e "require('./src/server.js')"</code> → "server.js loaded OK"; "[auth.js] Auth router loaded"</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">D02</td>
+            <td class="test-name">require.main === module guard</td>
+            <td class="test-expect">Found at <code>src/server.js:118</code> — prevents Vercel cold-start double-listen failure</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">D03</td>
+            <td class="test-name">express.static serving frontend</td>
+            <td class="test-expect">Found at <code>src/server.js:107</code> — <code>path.join(__dirname, '../public')</code></td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">D04</td>
+            <td class="test-name">Helmet CSP disabled</td>
+            <td class="test-expect">Found at <code>src/server.js:43</code> — <code>helmet({ contentSecurityPolicy: false })</code> — required for inline scripts + CDN (Leaflet, Font Awesome, Google Fonts)</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">D05</td>
+            <td class="test-name">trust proxy = 1</td>
+            <td class="test-expect">Found at <code>src/server.js:74</code> — uses X-Forwarded-For for real client IPs in rate limiting</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">D06</td>
+            <td class="test-name">CORS whitelist — all 7 origins + Vercel regex</td>
+            <td class="test-expect"><code>src/server.js:48–63</code> — localhost:3000, localhost:3001, 127.0.0.1:5500, localhost:5500, mapit.co.in, www.mapit.co.in, uat.mapit.co.in + <code>/mapit-backend(-[a-zA-Z0-9-]+)?\.vercel\.app/i</code></td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">D07</td>
+            <td class="test-name">API_URL auto-detects environment</td>
+            <td class="test-expect"><code>MapIt_MVP_v1.html:828</code> — IIFE sets localhost→3001, mapit.co.in→api.mapit.co.in, UAT/preview→same-origin. No hardcoded URL.</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ BLOCK E — VERCEL CFG ════ -->
+    <section id="t-vercel-cfg">
+      <div class="section-title"><span class="section-ico">▲</span> Block E — Vercel Config Files (Auto-Verified)</div>
+      <div class="section-desc">File read checks. All 3 checks passed.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:55px">ID</th>
+          <th style="width:250px">Check</th>
+          <th>Verified Value</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-id">E01</td>
+            <td class="test-name">vercel.json routes to src/server.js</td>
+            <td class="test-expect">builds: @vercel/node → src/server.js; route /(.*) → src/server.js; NODE_ENV=production</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">E02</td>
+            <td class="test-name">public/vercel.json — cleanUrls &amp; trailingSlash</td>
+            <td class="test-expect">cleanUrls: true, trailingSlash: false</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">E03</td>
+            <td class="test-name">package.json entry point</td>
+            <td class="test-expect">name: mapit-backend · main: src/server.js · scripts: start / dev / test</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ BLOCK F — DNS ════ -->
+    <section id="t-dns">
+      <div class="section-title"><span class="section-ico">🌐</span> Block F — DNS &amp; Live Domain Configuration (Auto-Verified)</div>
+      <div class="section-desc">curl and dig checks run against live infrastructure on 2026-06-22. All 5 checks passed.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:55px">ID</th>
+          <th style="width:220px">Check</th>
+          <th>Verified Value</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-id">F01</td>
+            <td class="test-name">mapit.co.in → 308 redirect</td>
+            <td class="test-expect">curl returns HTTP/2 308; A record: 216.198.79.1</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">F02</td>
+            <td class="test-name">www.mapit.co.in → 200 OK</td>
+            <td class="test-expect">curl returns 200; CNAME: 4bb267e12ef05e09.vercel-dns-017.com</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">F03</td>
+            <td class="test-name">api.mapit.co.in CNAME → Vercel</td>
+            <td class="test-expect">dig CNAME: 4bb267e12ef05e09.vercel-dns-017.com</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">F04</td>
+            <td class="test-name">uat.mapit.co.in → 200 OK</td>
+            <td class="test-expect">curl returns 200 (points to production on free tier — expected; preview URL used for UAT)</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">F05</td>
+            <td class="test-name">Vercel UAT preview URL → 200 OK</td>
+            <td class="test-expect">mapit-backend-git-uat-nagesh-n-arun.vercel.app returns 200</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ BLOCK G — LIVE API ════ -->
+    <section id="t-api">
+      <div class="section-title"><span class="section-ico">🔌</span> Block G — Live Production API Endpoints (Auto-Verified)</div>
+      <div class="section-desc">curl checks against https://api.mapit.co.in on 2026-06-22. All 4 checks passed.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:55px">ID</th>
+          <th style="width:240px">Check</th>
+          <th>Verified Value</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-id">G01</td>
+            <td class="test-name">GET /api/auth/me → 401</td>
+            <td class="test-expect">HTTP 401 Unauthorized — route exists, auth middleware active, not a 404 or 500</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">G02</td>
+            <td class="test-name">GET /api/listings → 401</td>
+            <td class="test-expect">HTTP 401 Unauthorized — listings route exists and is protected</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">G03</td>
+            <td class="test-name">CORS header returned for www origin</td>
+            <td class="test-expect"><code>access-control-allow-origin: https://www.mapit.co.in</code> + <code>access-control-allow-credentials: true</code> in response to request with matching Origin header</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">G04</td>
+            <td class="test-name">Helmet security header present</td>
+            <td class="test-expect"><code>x-content-type-options: nosniff</code> in response — confirms Helmet is active (CSP disabled but other headers applied)</td>
+            <td><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ MANUAL BLOCKS H–L (status summary) ════ -->
+    <section id="t-vercel-dash">
+      <div class="section-title"><span class="section-ico">▲</span> Block H — Vercel Dashboard (Manual)</div>
+      <div class="section-desc">6 checks require Nagesh to open <strong>vercel.com/dashboard → mapit-backend</strong>. Results to be recorded in the UAT checklist (session-01-uat-checklist-nagesh.html).</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr><th style="width:55px">ID</th><th style="width:300px">Check</th><th>How to Verify</th><th style="width:100px">Status</th></tr></thead>
+        <tbody>
+          <tr><td class="test-id">H01</td><td class="test-name">mapit-frontend deleted; only mapit-backend project exists</td><td class="test-expect">Vercel Dashboard → All Projects</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">H02</td><td class="test-name">Production Branch = main</td><td class="test-expect">Settings → Git → Production Branch</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">H03</td><td class="test-name">uat branch auto-deploys to preview</td><td class="test-expect">Deployments tab → filter uat → status Ready</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">H04</td><td class="test-name">uat.mapit.co.in domain — Valid Configuration</td><td class="test-expect">Settings → Domains</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">H05</td><td class="test-name">All required env vars set (non-blank)</td><td class="test-expect">Settings → Environment Variables — check 9 key vars</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">H06</td><td class="test-name">Deployment Protection disabled on preview</td><td class="test-expect">Settings → Deployment Protection → off</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="t-supabase-db">
+      <div class="section-title"><span class="section-ico">🗄</span> Block I — Supabase Database Tables (Manual)</div>
+      <div class="section-desc">8 checks via Supabase SQL Editor. Run: <code style="color:var(--orange2);font-size:12px">SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;</code></div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr><th style="width:55px">ID</th><th style="width:220px">Check</th><th>SQL / Method</th><th style="width:100px">Status</th></tr></thead>
+        <tbody>
+          <tr><td class="test-id">I01</td><td class="test-name">profiles table exists</td><td class="test-expect">Table list query above</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">I02</td><td class="test-name">listings table + details JSONB column</td><td class="test-expect"><code>SELECT column_name FROM information_schema.columns WHERE table_name='listings'</code></td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">I03</td><td class="test-name">user_pins table exists</td><td class="test-expect">Table list query</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">I04</td><td class="test-name">messages table exists</td><td class="test-expect">Table list query</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">I05</td><td class="test-name">invite_codes table exists (archived)</td><td class="test-expect">Table list query — must NOT be dropped</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">I06</td><td class="test-name">feedback table exists</td><td class="test-expect">Table list query</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">I07</td><td class="test-name">RLS enabled on profiles</td><td class="test-expect"><code>SELECT relrowsecurity FROM pg_class WHERE relname = 'profiles'</code> → true</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">I08</td><td class="test-name">invite_codes.code values — no whitespace</td><td class="test-expect"><code>SELECT code, length(code) FROM invite_codes</code> — all codes exactly 10 chars</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="t-supabase-auth">
+      <div class="section-title"><span class="section-ico">🔐</span> Block J — Supabase Auth &amp; Email (Manual)</div>
+      <div class="section-desc">5 checks via Supabase Dashboard → Authentication settings.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr><th style="width:55px">ID</th><th style="width:280px">Check</th><th>Where to Find</th><th style="width:100px">Status</th></tr></thead>
+        <tbody>
+          <tr><td class="test-id">J01</td><td class="test-name">Site URL = https://www.mapit.co.in</td><td class="test-expect">Auth → URL Configuration → Site URL</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">J02</td><td class="test-name">Vercel preview pattern in Redirect URLs</td><td class="test-expect">Auth → URL Configuration → Redirect URLs → https://mapit-backend-*.vercel.app/**</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">J03</td><td class="test-name">Email OTP enabled; Confirm email OFF</td><td class="test-expect">Auth → Providers → Email</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">J04</td><td class="test-name">Resend SMTP configured (not Supabase default)</td><td class="test-expect">Auth → Settings → SMTP → host: smtp.resend.com, port 465</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">J05</td><td class="test-name">From email = noreply@mapit.co.in</td><td class="test-expect">Auth → Settings → SMTP → Sender email field</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="t-migration001">
+      <div class="section-title"><span class="section-ico">🔄</span> Block K — Migration 001 Applied (Manual)</div>
+      <div class="section-desc">5 SQL checks confirming all Session 2 auth columns were added and cleanup SQL ran. Run: <code style="color:var(--orange2);font-size:12px">SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'profiles' ORDER BY ordinal_position;</code></div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr><th style="width:55px">ID</th><th style="width:240px">Check</th><th>Expected</th><th style="width:100px">Status</th></tr></thead>
+        <tbody>
+          <tr><td class="test-id">K01</td><td class="test-name">profiles.nickname column exists</td><td class="test-expect">type: text — backfilled from full_name for existing rows on 2026-06-21</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">K02</td><td class="test-name">profiles.home_lat, home_lng, home_address exist</td><td class="test-expect">home_lat / home_lng: double precision; home_address: text</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">K03</td><td class="test-name">profiles.auth_provider exists with default 'email'</td><td class="test-expect">type: text; column_default: 'email'</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">K04</td><td class="test-name">profiles.invite_code_legacy exists (renamed from invite_code)</td><td class="test-expect"><code>SELECT column_name FROM information_schema.columns WHERE table_name='profiles' AND column_name IN ('invite_code','invite_code_legacy')</code> → only invite_code_legacy</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">K05</td><td class="test-name">listings_condition_check constraint dropped</td><td class="test-expect"><code>SELECT constraint_name FROM information_schema.table_constraints WHERE table_name='listings' AND constraint_name='listings_condition_check'</code> → 0 rows</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="t-smoke">
+      <div class="section-title"><span class="section-ico">🌐</span> Block L — Browser Smoke Test (Manual)</div>
+      <div class="section-desc">5 checks in Chrome with DevTools open. Clear localStorage first: run <code style="color:var(--orange2);font-size:12px">localStorage.clear()</code> in the DevTools console, then reload.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr><th style="width:55px">ID</th><th style="width:280px">Check</th><th>Expected</th><th style="width:100px">Status</th></tr></thead>
+        <tbody>
+          <tr><td class="test-id">L01</td><td class="test-name">https://www.mapit.co.in loads the app</td><td class="test-expect">MapIt app HTML visible — not a Vercel 500/404 or blank screen</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">L02</td><td class="test-name">Leaflet map renders correctly</td><td class="test-expect">OSM tiles visible; ± zoom buttons at bottom-right</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">L03</td><td class="test-name">No JS errors in DevTools Console</td><td class="test-expect">Zero red errors on initial load (yellow warnings acceptable)</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">L04</td><td class="test-name">"Who's using MapIt?" modal on fresh load</td><td class="test-expect">After localStorage.clear() + reload, auth modal appears</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+          <tr><td class="test-id">L05</td><td class="test-name">api.mapit.co.in returns JSON in browser</td><td class="test-expect">Navigate to https://api.mapit.co.in/api/auth/me → JSON error response (not Vercel 404)</td><td><span class="pill-manual">⊙ Manual</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ OBSERVATIONS ════ -->
+    <section id="observations">
+      <div class="section-title"><span class="section-ico">⚠</span> Observations &amp; Non-Blocking Notes</div>
+      <div class="section-desc">
+        No code bugs were found in Session 1 deliverables. The following observations surfaced during the UAT — they are either
+        resolved constraints, known limitations, or items to watch. None block merging uat → main.
+      </div>
+      <div class="section-divider"></div>
+
+      <!-- OBS 1 -->
+      <div class="obs-card">
+        <div class="obs-header">
+          <span class="obs-severity sev-config">Config</span>
+          <span class="obs-title">uat.mapit.co.in always points to production (main), not the uat branch</span>
+          <span class="obs-id">OBS-01</span>
+          <span class="action-tag action-monitor">⊙ Known — Monitor</span>
+        </div>
+        <div class="obs-body">
+          <div class="obs-section-label">What Was Found</div>
+          <p class="obs-text">
+            <strong>Vercel Free Tier limitation:</strong> branch-specific custom domains require a Pro plan.
+            <code>uat.mapit.co.in</code> is registered in the Vercel project but points to the <em>production</em> deployment (main branch),
+            not the uat branch preview. This is confirmed by the fact that both <code>uat.mapit.co.in</code> and
+            <code>www.mapit.co.in</code> return identical responses.
+          </p>
+          <div class="obs-section-label" style="margin-top:12px;">Impact &amp; Mitigation</div>
+          <p class="obs-text">
+            UAT testing must use the Vercel preview URL: <code>https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code>.
+            This was confirmed working (200 OK). All UAT checklist links use the preview URL, not <code>uat.mapit.co.in</code>.
+            If Vercel Pro is upgraded in the future, branch-specific domains can be configured.
+          </p>
+        </div>
+      </div>
+
+      <!-- OBS 2 -->
+      <div class="obs-card">
+        <div class="obs-header">
+          <span class="obs-severity sev-warning">Data</span>
+          <span class="obs-title">Migration 001 columns were missing from Supabase until 2026-06-21 re-apply</span>
+          <span class="obs-id">OBS-02</span>
+          <span class="action-tag action-done">✓ Fixed</span>
+        </div>
+        <div class="obs-body">
+          <div class="obs-section-label">What Was Found</div>
+          <p class="obs-text">
+            CONTEXT.md originally stated Migration 001 was applied, but a manual inspection on 2026-06-21 confirmed that
+            <strong>5 columns were missing</strong> from the <code>profiles</code> table: <code>nickname</code>, <code>home_lat</code>,
+            <code>home_lng</code>, <code>home_address</code>, <code>agreed_tos_at</code>.
+            <code>auth_provider</code> and <code>default_view</code> had been applied correctly.
+          </p>
+          <div class="obs-section-label" style="margin-top:12px;">Resolution</div>
+          <p class="obs-text">
+            All 5 missing columns were added via a single <code>BEGIN/COMMIT</code> block in the Supabase SQL Editor on 2026-06-21.
+            The migration script uses <code>IF NOT EXISTS</code> on every <code>ALTER TABLE</code>, so re-running was safe — it silently skipped
+            the 2 columns that already existed and only added the 5 missing ones.
+            Nickname was then backfilled: <code>UPDATE profiles SET nickname = full_name WHERE nickname IS NULL</code>.
+          </p>
+        </div>
+      </div>
+
+      <!-- OBS 3 -->
+      <div class="obs-card">
+        <div class="obs-header">
+          <span class="obs-severity sev-info">Infrastructure</span>
+          <span class="obs-title">Single Supabase project serves both UAT and production</span>
+          <span class="obs-id">OBS-03</span>
+          <span class="action-tag action-monitor">⊙ Accepted — Revisit Pre-Public</span>
+        </div>
+        <div class="obs-body">
+          <div class="obs-section-label">What Was Found</div>
+          <p class="obs-text">
+            There is only one Supabase project (<code>map it-backend</code>). UAT tests and production traffic both read from and write to
+            the same database. Any schema change or data inserted during UAT is immediately visible in production.
+          </p>
+          <div class="obs-section-label" style="margin-top:12px;">Rationale</div>
+          <p class="obs-text">
+            Accepted for the family-beta MVP phase (12 users, no paying customers). The overhead of maintaining two database schemas
+            is not justified at this stage. <strong>Decision to revisit</strong> before public launch or before any destructive schema migration
+            is needed (e.g., a column type change that would require a data migration).
+          </p>
+        </div>
+      </div>
+
+      <!-- OBS 4 -->
+      <div class="obs-card">
+        <div class="obs-header">
+          <span class="obs-severity sev-security">Security</span>
+          <span class="obs-title">OTP_RATE_LIMIT is set to 100 in local .env — Vercel production value must be verified</span>
+          <span class="obs-id">OBS-04</span>
+          <span class="action-tag action-manual">⊙ Verify Manually</span>
+        </div>
+        <div class="obs-body">
+          <div class="obs-section-label">What Was Found</div>
+          <p class="obs-text">
+            The local <code>.env</code> file has <code>OTP_RATE_LIMIT=100</code> (per hour per IP). This is intentionally high for local development
+            to avoid hitting the limit during test cycles. The Vercel production environment variable should be set to <code>10</code> (10 OTP sends per IP per hour) to match the intended security posture.
+          </p>
+          <div class="obs-section-label" style="margin-top:12px;">Action Required</div>
+          <p class="obs-text">
+            Verify in Vercel Dashboard → Settings → Environment Variables → <code>OTP_RATE_LIMIT</code>.
+            Supabase's built-in 60-second OTP cooldown provides a secondary guard even if the Express rate limit is misconfigured.
+            However, the Vercel value should explicitly be <code>10</code> to avoid a large number of OTP sends from a single abusive IP.
+          </p>
+        </div>
+      </div>
+
+      <!-- OBS 5 -->
+      <div class="obs-card">
+        <div class="obs-header">
+          <span class="obs-severity sev-info">Data</span>
+          <span class="obs-title">invite_codes.used_by is NULL for all rows — backfill not possible without email column</span>
+          <span class="obs-id">OBS-05</span>
+          <span class="action-tag action-future">Deferred — Invite codes archived</span>
+        </div>
+        <div class="obs-body">
+          <div class="obs-section-label">What Was Found</div>
+          <p class="obs-text">
+            All rows in the <code>invite_codes</code> table have <code>used_by = NULL</code>. This means the <code>profiles.full_name</code>
+            auto-backfill SQL (<code>UPDATE profiles SET full_name = ic.created_for FROM invite_codes ic WHERE profiles.id = ic.used_by</code>)
+            would affect zero rows even if run. The <code>invite_codes</code> table also has no <code>email</code> column,
+            ruling out a join via <code>auth.users.email</code>.
+          </p>
+          <div class="obs-section-label" style="margin-top:12px;">Impact &amp; Resolution</div>
+          <p class="obs-text">
+            Family member names were set manually by Nagesh in the Supabase table editor after identifying UUIDs via a
+            <code>SELECT p.id, u.email FROM profiles JOIN auth.users ON u.id = p.id</code> join query.
+            The <code>needsProfile</code> check added in Session 2 now prevents placeholder names (<code>'MapIt User'</code>) from
+            persisting in new accounts. This issue is fully mitigated going forward.
+            Invite codes are archived — the table is kept for historical record but is no longer used in auth.
+          </p>
+        </div>
+      </div>
+
+      <!-- OBS 6 -->
+      <div class="obs-card">
+        <div class="obs-header">
+          <span class="obs-severity sev-warning">Data</span>
+          <span class="obs-title">Some invite_codes.created_for names have "1" appended (e.g. "Chirag 1")</span>
+          <span class="obs-id">OBS-06</span>
+          <span class="action-tag action-manual">⊙ Fix Before Login</span>
+        </div>
+        <div class="obs-body">
+          <div class="obs-section-label">What Was Found</div>
+          <p class="obs-text">
+            Four <code>invite_codes</code> rows have <code>created_for</code> values with a trailing "1":
+            <code>Chirag 1</code>, <code>Kalpith 1</code>, <code>Srikanth 1</code>, <code>Vijay 1</code>.
+            This appears to be an accidental duplicate entry from the Supabase table editor where rows were inserted twice
+            and the second row got " 1" appended.
+          </p>
+          <div class="obs-section-label" style="margin-top:12px;">Action Required</div>
+          <p class="obs-text">
+            Fix in Supabase Table Editor before the corresponding family members log in.
+            Run: <code>UPDATE invite_codes SET created_for = trim(trailing ' 1' from created_for) WHERE created_for LIKE '% 1';</code>
+            — or edit manually in the table editor. Since invite codes are now archived (not used for auth),
+            this only affects historical display; it does not block any functionality.
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ════ KEY DECISIONS ════ -->
+    <section id="decisions">
+      <div class="section-title"><span class="section-ico">💡</span> Key Architectural Decisions Made in Session 1</div>
+      <div class="section-desc">Decisions recorded here because they constrain future sessions. Each was a deliberate trade-off, not a default.</div>
+      <div class="section-divider"></div>
+      <table class="decision-table">
+        <thead><tr>
+          <th style="width:240px">Decision</th>
+          <th>Rationale &amp; Implication</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td>Frontend served from Express backend (not a separate Vercel project)</td>
+            <td>Vercel always reads the root <code>vercel.json</code> regardless of "Root Directory" setting — routing everything to Express. A separate static Vercel project would require a separate repo. Single-project approach is simpler and avoids CORS complexity. Trade-off: one cold-start handles both UI and API requests.</td>
+          </tr>
+          <tr>
+            <td>Helmet CSP disabled globally (<code>contentSecurityPolicy: false</code>)</td>
+            <td>The single-file frontend uses inline <code>&lt;script&gt;</code> blocks and loads Leaflet, Font Awesome, and Google Fonts from CDNs. Default Helmet CSP blocks all of these. Disabling CSP entirely is acceptable for MVP but should be replaced with a proper CSP nonce strategy before public launch.</td>
+          </tr>
+          <tr>
+            <td>Two-file rule: MapIt_MVP_v1.html ↔ public/index.html must always be byte-identical</td>
+            <td>The canonical frontend is edited in the root as <code>MapIt_MVP_v1.html</code> (for readability and git history), then synced to <code>public/index.html</code> (the deployed copy). The diff check is the commit gate. This rule must be enforced on every frontend change.</td>
+          </tr>
+          <tr>
+            <td>API_URL auto-detects via window.location.hostname IIFE</td>
+            <td>Eliminates the error-prone manual comment/uncomment cycle before every commit. localhost → port 3001 (local Express), mapit.co.in → api.mapit.co.in, any other host → same-origin (UAT/Vercel preview). Zero config across all environments.</td>
+          </tr>
+          <tr>
+            <td>Migrations pre-written in database/migrations/ before their session</td>
+            <td>Avoids time spent writing SQL at the start of each session. The session can begin with applying the migration and immediately building features. All migrations use <code>IF NOT EXISTS</code> so they are safe to re-run.</td>
+          </tr>
+          <tr>
+            <td>dev / uat / main branch strategy</td>
+            <td>dev = local-only work; uat = Vercel preview, family sign-off; main = production auto-deploy. No direct commits to main. Feature branches named feat/session-NN-description. Conventional commits enforced (feat/fix/docs prefix + scope).</td>
+          </tr>
+          <tr>
+            <td>CLAUDE.md v4.0 as the single collaboration contract</td>
+            <td>12 rules covering every aspect of how Claude Code works with Nagesh — mentor role, scope discipline, two-file rule, branch strategy, security, DB safety, budget, screenshots, MVP boundary. Version-controlled so changes are tracked. Replaces ad-hoc inline instructions.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ════ FILES CREATED ════ -->
+    <section id="files">
+      <div class="section-title"><span class="section-ico">📁</span> Files Created in Session 1</div>
+      <div class="section-desc">All files were committed in <code>c7f86e8</code> on 2026-06-19 and pushed to the <code>uat</code> branch.</div>
+      <div class="section-divider"></div>
+
+      <div class="file-row">
+        <div class="file-icon">📄</div>
+        <div>
+          <div class="file-name">MapIt_MVP_v1.html</div>
+          <div class="file-desc">Canonical MVP frontend (171,960 bytes · 2,981 lines at time of UAT). Copied from <code>MapIt_Demo 30052026.html</code> (prototype). All future frontend edits go here. <code>MapIt_Demo 30052026.html</code> kept read-only for reference.</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">📄</div>
+        <div>
+          <div class="file-name">public/index.html</div>
+          <div class="file-desc">Deployed copy of the frontend — must always be byte-identical to <code>MapIt_MVP_v1.html</code>. Synced via <code>cp MapIt_MVP_v1.html public/index.html</code> after every frontend change. Served by <code>express.static</code> from the backend.</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">📋</div>
+        <div>
+          <div class="file-name">CLAUDE.md</div>
+          <div class="file-desc">Collaboration rules v4.0 (8,512 bytes). 12 rules: mentor role, one-thing-at-a-time, scope discipline, CONTEXT.md as source of truth, every-action-teaches, branch discipline, document-as-you-build, security non-negotiable, known constraints, DB safety, budget awareness, screenshot UI before/after. MVP scope boundary (out-of-scope list).</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">📖</div>
+        <div>
+          <div class="file-name">docs/architecture.md</div>
+          <div class="file-desc">2,702 bytes. Stack table (Frontend · Backend · DB · Auth · Email · Storage), branch strategy, key architectural decisions (why Express for frontend, why Supabase, why Resend), budget plan per session.</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">🔍</div>
+        <div>
+          <div class="file-name">docs/ux-audit.md</div>
+          <div class="file-desc">8,489 bytes. 30-issue audit categorised across: typography, colour contrast, spacing, form design, auth flow, map interaction. Prioritised by severity. Feeds into Session 2 and beyond UX improvements.</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">📷</div>
+        <div>
+          <div class="file-name">docs/screenshots/session-01/.gitkeep</div>
+          <div class="file-desc">Placeholder file to track the screenshots directory in git. Actual screenshots to be added per Rule 12 (capture before/after for every UI change in this session). Session 1 had no UI changes — placeholder only.</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">🗃</div>
+        <div>
+          <div class="file-name">database/migrations/001-mvp-auth-schema.sql</div>
+          <div class="file-desc">1,529 bytes. Adds to <code>profiles</code>: <code>nickname</code>, <code>phone</code>, <code>home_lat</code>, <code>home_lng</code>, <code>home_address</code>, <code>agreed_tos_at</code>, <code>auth_provider</code> (CHECK 'email'|'google'|'phone'), <code>default_view</code> (CHECK 'map'|'list'). Renames <code>invite_code</code> → <code>invite_code_legacy</code>. All statements use <code>IF NOT EXISTS</code>. Prepared for Session 2; applied on 2026-06-21.</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">🗃</div>
+        <div>
+          <div class="file-name">database/migrations/002-mvp-listings-schema.sql</div>
+          <div class="file-desc">1,535 bytes. Adds to <code>listings</code>: <code>reference_code</code> (UNIQUE TEXT), <code>expires_at</code> (TIMESTAMPTZ), <code>show_phone</code> (TEXT DEFAULT 'always'), <code>views_count</code> (INTEGER DEFAULT 0), <code>city_id</code> (UUID, FK to future cities table). Prepared for Session 3.</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">🗃</div>
+        <div>
+          <div class="file-name">database/migrations/003-chat-schema.sql</div>
+          <div class="file-desc">1,877 bytes. Creates <code>conversations</code> (listing_id + buyer_id + seller_id, UNIQUE triple) and <code>chat_messages</code> (conversation_id FK, sender_id FK, content, message_type, sent_at, read_at). Includes stubs for RLS and Supabase Realtime publication. Prepared for Session 6.</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <div class="file-icon">🔑</div>
+        <div>
+          <div class="file-name">.env.example</div>
+          <div class="file-desc">3,424 bytes. 14 documented environment variables with comments explaining purpose and acceptable values. Safe to commit — contains no real secrets. Template for any new developer or deployment environment. Key vars: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, STORAGE_BUCKET, OTP_RATE_LIMIT, REQUIRE_INVITE_CODE.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ NEXT STEPS ════ -->
+    <section id="next">
+      <div class="section-title"><span class="section-ico">🔜</span> Next Steps &amp; Outstanding Actions</div>
+      <div class="section-desc">Actions remaining after Session 1. Items marked <em>Done</em> were completed in subsequent sessions before this UAT was written.</div>
+      <div class="section-divider"></div>
+
+      <div class="next-item">
+        <div class="next-num">1</div>
+        <div class="next-content">
+          <div class="next-title">Complete the 29 manual checks in the UAT checklist</div>
+          <div class="next-detail">Open <code>docs/session-01-uat-checklist-nagesh.html</code> in Chrome and work through Blocks H–L: Vercel Dashboard, Supabase tables, Supabase Auth, Migration 001 verification, and browser smoke test. Record all results before sign-off.</div>
+        </div>
+        <span class="next-tag tag-manual">Manual — Nagesh</span>
+      </div>
+
+      <div class="next-item">
+        <div class="next-num">2</div>
+        <div class="next-content">
+          <div class="next-title">Verify OTP_RATE_LIMIT = 10 in Vercel production env vars</div>
+          <div class="next-detail">Vercel Dashboard → Settings → Environment Variables → <code>OTP_RATE_LIMIT</code>. Should be <code>10</code> (not 100 which is the local dev value). See OBS-04.</div>
+        </div>
+        <span class="next-tag tag-manual">Manual — Nagesh</span>
+      </div>
+
+      <div class="next-item">
+        <div class="next-num">3</div>
+        <div class="next-content">
+          <div class="next-title">Fix invite_codes "1" suffix for 4 family members</div>
+          <div class="next-detail">Supabase SQL Editor: <code>UPDATE invite_codes SET created_for = trim(trailing ' 1' from created_for) WHERE created_for LIKE '% 1';</code> — affects Chirag 1, Kalpith 1, Srikanth 1, Vijay 1. See OBS-06. Run before those members log in.</div>
+        </div>
+        <span class="next-tag tag-manual">Manual — Nagesh</span>
+      </div>
+
+      <div class="next-item">
+        <div class="next-num">4</div>
+        <div class="next-content">
+          <div class="next-title">Commit Session 1 UAT docs to uat branch</div>
+          <div class="next-detail">
+            Add and commit this report and the checklist:
+            <code>git add docs/session-01-uat-report.html docs/session-01-uat-checklist-nagesh.html &amp;&amp; git commit -m 'docs(session-01): UAT report and verification checklist' &amp;&amp; git push origin uat</code>
+          </div>
+        </div>
+        <span class="next-tag tag-session">This session</span>
+      </div>
+
+      <div class="next-item">
+        <div class="next-num">5</div>
+        <div class="next-content">
+          <div class="next-title">Commit Session 2 UAT fix changes to uat branch</div>
+          <div class="next-detail">4 frontend bug fixes (BUG-01 through BUG-04) + Session 2 UAT docs are local-only. Commit: <code>git add MapIt_MVP_v1.html public/index.html docs/session-02-uat-report.html docs/session-02-uat-checklist-arun.html</code> → commit → push uat.</div>
+        </div>
+        <span class="next-tag tag-session">This session</span>
+      </div>
+
+      <div class="next-item">
+        <div class="next-num">6</div>
+        <div class="next-content">
+          <div class="next-title">Arun to complete Session 2 manual UAT (51-test checklist)</div>
+          <div class="next-detail">Send Arun: <code>docs/session-02-uat-checklist-arun.html</code> + UAT URL <code>https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code>. Blocks A–I: Create Account, Sign In, Password Reset, OTP Fallback, Nickname, Who's using MapIt?, Splash, Home Location, Google OAuth.</div>
+        </div>
+        <span class="next-tag tag-manual">Manual — Arun</span>
+      </div>
+
+      <div class="next-item">
+        <div class="next-num">7</div>
+        <div class="next-content">
+          <div class="next-title">Run Supabase data cleanup SQL (any time)</div>
+          <div class="next-detail">
+            Two cleanup queries outstanding:<br>
+            <code>DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb;</code><br>
+            <code>UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%';</code>
+          </div>
+        </div>
+        <span class="next-tag tag-manual">Manual — Nagesh</span>
+      </div>
+
+      <div class="next-item">
+        <div class="next-num">8</div>
+        <div class="next-content">
+          <div class="next-title">After Arun sign-off → merge uat → main via PR</div>
+          <div class="next-detail">Open PR from uat to main in GitHub. Await Nagesh + Arun sign-off. Merge for production deploy. Both Session 1 and Session 2 changes will be included.</div>
+        </div>
+        <span class="next-tag tag-session">Post-UAT</span>
+      </div>
+
+      <div class="next-item">
+        <div class="next-num">9</div>
+        <div class="next-content">
+          <div class="next-title">Pre-public-launch — add email verification step</div>
+          <div class="next-detail">Session 2 signup uses <code>email_confirm: true</code> in admin.createUser (skips verification email). Before public launch: change to <code>email_confirm: false</code> + add <code>step-verify-email</code> OTP step after account creation. Currently anyone can register with another person's email (intentionally skipped for family beta).</div>
+        </div>
+        <span class="next-tag tag-future">Pre-public launch</span>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const links = document.querySelectorAll('.sidebar-link[href^="#"]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar-link[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

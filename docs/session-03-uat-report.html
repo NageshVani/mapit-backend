@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MapIt — Session 3 UAT Report</title>
+<style>
+  :root{--bg:#0f1117;--card:#1a1d27;--card2:#21253a;--border:#2a2e3e;--green:#22c55e;--red:#ef4444;--orange:#f97316;--gold:#eab308;--blue:#3b82f6;--muted:#6b7280;--muted2:#9ca3af;--text:#e2e8f0;--mono:'JetBrains Mono',monospace;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',system-ui,sans-serif;font-size:14px;line-height:1.6;display:flex;min-height:100vh;}
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  /* Sidebar */
+  nav{width:220px;min-height:100vh;background:var(--card);border-right:1px solid var(--border);padding:24px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0;}
+  nav .logo{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;}
+  nav .logo span{color:var(--orange);}
+  nav .sub{font-size:11px;color:var(--muted);margin-bottom:24px;}
+  nav a{display:block;padding:6px 10px;border-radius:6px;color:var(--muted2);font-size:12px;text-decoration:none;margin-bottom:2px;transition:all .15s;}
+  nav a:hover,nav a.on{background:var(--card2);color:var(--text);}
+  nav .nav-section{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:16px 0 6px 10px;}
+  /* Main */
+  main{flex:1;padding:32px 40px;max-width:960px;}
+  h1{font-size:24px;font-weight:700;margin-bottom:4px;}
+  .meta{color:var(--muted);font-size:13px;margin-bottom:32px;}
+  .meta span{color:var(--muted2);}
+  h2{font-size:16px;font-weight:700;margin:32px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  h3{font-size:13px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin:20px 0 8px;}
+  /* Summary cards */
+  .summary-row{display:flex;gap:12px;margin-bottom:32px;flex-wrap:wrap;}
+  .sum-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;flex:1;min-width:140px;}
+  .sum-num{font-size:28px;font-weight:700;line-height:1;}
+  .sum-lbl{font-size:11px;color:var(--muted);margin-top:4px;}
+  .sum-card.green .sum-num{color:var(--green);}
+  .sum-card.orange .sum-num{color:var(--orange);}
+  .sum-card.red .sum-num{color:var(--red);}
+  .sum-card.blue .sum-num{color:var(--blue);}
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;}
+  th{background:var(--card2);color:var(--muted2);font-weight:600;text-align:left;padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+  td{padding:9px 12px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .pass{color:var(--green);font-weight:600;}
+  .fail{color:var(--red);font-weight:600;}
+  .warn{color:var(--orange);font-weight:600;}
+  .info{color:var(--blue);font-weight:600;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+  .badge.green{background:rgba(34,197,94,.15);color:var(--green);}
+  .badge.orange{background:rgba(249,115,22,.15);color:var(--orange);}
+  .badge.red{background:rgba(239,68,68,.15);color:var(--red);}
+  .badge.blue{background:rgba(59,130,246,.15);color:var(--blue);}
+  .badge.gray{background:rgba(107,114,128,.15);color:var(--muted2);}
+  code{font-family:var(--mono);font-size:12px;background:var(--card2);padding:2px 6px;border-radius:4px;color:#93c5fd;}
+  pre{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;margin:10px 0;}
+  .obs-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:8px;padding:14px 16px;margin-bottom:12px;}
+  .obs-card.green{border-left-color:var(--green);}
+  .obs-card.blue{border-left-color:var(--blue);}
+  .obs-card.red{border-left-color:var(--red);}
+  .obs-id{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px;}
+  .obs-ttl{font-weight:700;margin-bottom:6px;}
+  .obs-body{font-size:13px;color:var(--muted2);}
+  .section-tag{display:inline-block;background:var(--card2);border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--mono);padding:1px 7px;color:var(--muted2);margin-right:6px;}
+  .diff-block{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:10px 0;}
+  .diff-hd{background:var(--card2);padding:8px 14px;font-size:12px;font-weight:600;color:var(--muted2);}
+  .diff-body{padding:12px 14px;font-family:var(--mono);font-size:12px;}
+  .diff-add{color:var(--green);}
+  .diff-rem{color:var(--red);}
+  .diff-ctx{color:var(--muted);}
+  .next-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
+  .next-num{width:26px;height:26px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:var(--orange);}
+  .next-body{}
+  .next-ttl{font-weight:600;font-size:13px;margin-bottom:2px;}
+  .next-sub{font-size:12px;color:var(--muted2);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Map<span>It</span></div>
+  <div class="sub">Session 3 UAT Report</div>
+  <div class="nav-section">Overview</div>
+  <a href="#summary">Test Summary</a>
+  <a href="#scope">Session Scope</a>
+  <div class="nav-section">Test Blocks</div>
+  <a href="#blockA">A — DB Schema</a>
+  <a href="#blockB">B — Backend Code</a>
+  <a href="#blockC">C — Frontend Code</a>
+  <a href="#blockD">D — Auth Enforcement</a>
+  <a href="#blockE">E — Input Validation</a>
+  <a href="#blockF">F — Security</a>
+  <a href="#blockG">G — Tab UX &amp; Post Form</a>
+  <a href="#blockH">H — Saved Tab &amp; Radius</a>
+  <div class="nav-section">Analysis</div>
+  <a href="#observations">Observations</a>
+  <a href="#changes">Files Changed</a>
+  <a href="#next">Next Steps</a>
+</nav>
+
+<main>
+  <h1>MapIt — Session 3 UAT Report</h1>
+  <div class="meta">
+    Prepared by Claude Code &nbsp;·&nbsp;
+    <span>Date: 2026-06-24</span> &nbsp;·&nbsp;
+    <span>Branch: uat</span> &nbsp;·&nbsp;
+    <span>Commit: 634e1f7</span> &nbsp;·&nbsp;
+    <span>Session: MVP Session 3 — Listing Lifecycle</span>
+  </div>
+
+  <!-- SUMMARY -->
+  <div id="summary">
+    <div class="summary-row">
+      <div class="sum-card green"><div class="sum-num">47</div><div class="sum-lbl">Tests Passed</div></div>
+      <div class="sum-card red"><div class="sum-num">0</div><div class="sum-lbl">Tests Failed</div></div>
+      <div class="sum-card orange"><div class="sum-num">1</div><div class="sum-lbl">False Positive (B7)</div></div>
+      <div class="sum-card blue"><div class="sum-num">+20</div><div class="sum-lbl">New checks 2026-06-27</div></div>
+    </div>
+    <p style="color:var(--muted2);font-size:13px;">
+      All 47 automated checks passed (27 original + 20 added 2026-06-27). One test (B7) initially flagged stale <code>view_count</code> references but was a false positive —
+      the grep matched <code>review_count</code> (a <code>profiles</code> table column) as a substring.
+      New Blocks G and H cover tab UX, post-form improvements, the Saved tab map redesign, and the proximity-radius disable feature (commits <code>be19c4e</code> + <code>d4226b4</code>).
+    </p>
+  </div>
+
+  <!-- SCOPE -->
+  <h2 id="scope">Session 3 Scope</h2>
+  <p style="color:var(--muted2);font-size:13px;margin-bottom:14px;">
+    Session 3 completes the listing lifecycle. Listings now get a permanent reference code, expire after 30 days,
+    and sellers control their phone number visibility. Sellers can also delete their own listings from My Ads.
+  </p>
+  <table>
+    <tr><th>Feature</th><th>Layer</th><th>What Changed</th></tr>
+    <tr><td><code>reference_code</code></td><td>Backend + DB</td><td>Auto-generated <code>MP-BLR-XXXXXX</code> on every new listing; unique constraint in DB; immutable after creation</td></tr>
+    <tr><td><code>expires_at</code></td><td>Backend + DB</td><td>Set to <code>created_at + 30 days</code> on insert; immutable after creation</td></tr>
+    <tr><td><code>show_phone</code></td><td>Backend + DB + Frontend</td><td>Seller preference: <code>always / on_agreement / never</code>; editable; defaults to <code>always</code></td></tr>
+    <tr><td><code>views_count</code></td><td>Backend + DB</td><td>Bug fix: was referencing non-existent <code>view_count</code> column; now matches migration 002</td></tr>
+    <tr><td>Delete Listing</td><td>Frontend</td><td>🗑️ Del button in My Ads; <code>deleteListing()</code> with confirm dialog; calls <code>DELETE /api/listings/:id</code></td></tr>
+    <tr><td>Expiry Countdown</td><td>Frontend</td><td>My Ads cards show "Expires in Xd"; orange at ≤5 days; red "⚠️ Expired"</td></tr>
+    <tr><td>Ref Code in Detail</td><td>Frontend</td><td><code>Ref: MP-BLR-XXXXXX</code> shown in <code>ld-dist-bar</code> alongside address + time</td></tr>
+    <tr><td colspan="3" style="background:rgba(249,115,22,.06);color:var(--orange);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">2026-06-27 additions — commits be19c4e &amp; d4226b4</td></tr>
+    <tr><td>Tab ghosting + active tab styling</td><td>Frontend CSS</td><td>Inactive tabs dimmed to 45% opacity; active tab gets orange border + tint bg + 15px font; <code>white-space:nowrap</code> prevents height jump</td></tr>
+    <tr><td>Views count display</td><td>Frontend</td><td><code>👁 N views</code> shown in listing detail <code>ld-dist-bar</code> after full listing fetch</td></tr>
+    <tr><td>Vehicle form placeholders</td><td>Frontend</td><td>Brand/Model placeholder text added for Cars (Maruti/Hyundai/Honda), 2-Wheelers (Honda/TVS/Hero), Cycles, Trucks in <code>LISTING_FIELDS</code></td></tr>
+    <tr><td>Default previous owners = 1</td><td>Frontend</td><td><code>default:1</code> added to <code>owners</code> field in Cars, 2-Wheelers, Trucks; <code>renderDynamicFields()</code> emits <code>value="${f.default}"</code></td></tr>
+    <tr><td>Proximity radius disable</td><td>Frontend</td><td><code>.rad-box.disabled</code> CSS; <code>switchTab()</code> toggles it; only active on Listings browse tab</td></tr>
+    <tr><td>Saved tab map pins</td><td>Frontend</td><td><code>ST.favListings[]</code> state; <code>drawMarkers()</code> draws saved pins; <code>fitBounds</code> auto-fits all saved pins; <code>viewFav()</code> stays on fav tab with <code>keepTab=true</code></td></tr>
+    <tr><td>Listing row tab retention</td><td>Frontend</td><td><code>listingRow()</code> passes <code>ST.tab==='fav'||ST.tab==='mine'</code> as <code>keepTab</code> at click time — no unwanted tab switch</td></tr>
+  </table>
+
+  <!-- BLOCK A -->
+  <h2 id="blockA">Block A — DB Schema Verification</h2>
+  <p style="color:var(--muted2);font-size:13px;margin-bottom:10px;">Migration 002 applied by user in Supabase SQL Editor on 2026-06-24. All 4 columns confirmed present via <code>information_schema.columns</code> query.</p>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Expected</th><th>Actual</th><th>Result</th></tr>
+    <tr><td><code>A1</code></td><td><code>reference_code</code> column in listings</td><td>TEXT UNIQUE</td><td>Confirmed by user</td><td><span class="pass">PASS</span></td></tr>
+    <tr><td><code>A2</code></td><td><code>expires_at</code> column in listings</td><td>TIMESTAMPTZ</td><td>Confirmed by user</td><td><span class="pass">PASS</span></td></tr>
+    <tr><td><code>A3</code></td><td><code>show_phone</code> column in listings</td><td>TEXT DEFAULT 'always'</td><td>Confirmed by user</td><td><span class="pass">PASS</span></td></tr>
+    <tr><td><code>A4</code></td><td><code>views_count</code> column in listings</td><td>INTEGER DEFAULT 0</td><td>Confirmed by user</td><td><span class="pass">PASS</span></td></tr>
+  </table>
+
+  <!-- BLOCK B -->
+  <h2 id="blockB">Block B — Backend Code Verification</h2>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    <tr><td><code>B1</code></td><td><code>generateRefCode()</code> defined in listings.js</td><td><span class="pass">PASS</span></td><td>2 occurrences (definition + call)</td></tr>
+    <tr><td><code>B2</code></td><td><code>MP-BLR-</code> prefix in reference code</td><td><span class="pass">PASS</span></td><td>Format: <code>MP-BLR-</code> + 6 chars from unambiguous alphabet</td></tr>
+    <tr><td><code>B3</code></td><td><code>expires_at</code> set in POST insert</td><td><span class="pass">PASS</span></td><td><code>new Date(now + 30d).toISOString()</code></td></tr>
+    <tr><td><code>B4</code></td><td><code>show_phone</code> in POST insert block</td><td><span class="pass">PASS</span></td><td>5 occurrences (destructure, validate, insert, PUT field, validation array)</td></tr>
+    <tr><td><code>B5</code></td><td><code>show_phone</code> in PUT <code>allowedFields</code></td><td><span class="pass">PASS</span></td><td>Sellers can update phone visibility on edit</td></tr>
+    <tr><td><code>B6</code></td><td><code>views_count</code> (correct name) in view route</td><td><span class="pass">PASS</span></td><td>2 occurrences in <code>POST /:id/view</code></td></tr>
+    <tr><td><code>B7</code></td><td>Stale <code>view_count</code> references absent</td><td><span class="pass">PASS</span></td><td>Initial grep matched <code>review_count</code> (profiles column) as substring — false positive. Zero actual <code>listings.view_count</code> references remain.</td></tr>
+    <tr><td><code>B8</code></td><td><code>show_phone</code> validation with fallback</td><td><span class="pass">PASS</span></td><td><code>validShowPhone.includes()</code> guard; invalid values fall back to <code>'always'</code></td></tr>
+  </table>
+
+  <h3>generateRefCode() implementation</h3>
+  <pre><span class="diff-add">function generateRefCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
+  let code = 'MP-BLR-';
+  for (let i = 0; i &lt; 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}</span>
+<span class="diff-ctx">// e.g. MP-BLR-A3K9X2 — 32^6 = ~1 billion combinations</span></pre>
+
+  <!-- BLOCK C -->
+  <h2 id="blockC">Block C — Frontend Code Verification</h2>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    <tr><td><code>C1</code></td><td><code>showPhone</code> radio group in post form HTML</td><td><span class="pass">PASS</span></td><td>4 occurrences (Always / On Agreement / Never labels + JS read)</td></tr>
+    <tr><td><code>C2</code></td><td><code>on_agreement</code> option present</td><td><span class="pass">PASS</span></td><td>Radio value matches backend accepted value</td></tr>
+    <tr><td><code>C3</code></td><td><code>show_phone</code> in <code>submitListing()</code> payload</td><td><span class="pass">PASS</span></td><td>Read via <code>document.querySelector('input[name="showPhone"]:checked')?.value</code></td></tr>
+    <tr><td><code>C4</code></td><td><code>reference_code</code> rendered in detail view</td><td><span class="pass">PASS</span></td><td>In <code>ld-dist-bar</code> alongside address + time</td></tr>
+    <tr><td><code>C5</code></td><td><code>Ref:</code> prefix in detail bar</td><td><span class="pass">PASS</span></td><td>Displays as <code>Ref: MP-BLR-XXXXXX</code> in JetBrains Mono font</td></tr>
+    <tr><td><code>C6</code></td><td><code>expires_at</code> countdown in My Ads</td><td><span class="pass">PASS</span></td><td>2 occurrences in <code>renderMyAds()</code> expiry logic</td></tr>
+    <tr><td><code>C7</code></td><td><code>async function deleteListing()</code> defined</td><td><span class="pass">PASS</span></td><td>Confirm dialog → <code>apiDelete</code> → remove from <code>ST.myListings</code> → re-render</td></tr>
+    <tr><td><code>C8</code></td><td><code>.del-btn</code> CSS class defined</td><td><span class="pass">PASS</span></td><td>Red-tinted style matching <code>.sold-btn</code> pattern</td></tr>
+    <tr><td><code>C9</code></td><td>Delete calls <code>apiDelete('/api/listings/:id')</code></td><td><span class="pass">PASS</span></td><td>Uses existing <code>apiDelete</code> helper (defined at line ~1116)</td></tr>
+    <tr><td><code>C10</code></td><td>Expiry orange warning at ≤5 days</td><td><span class="pass">PASS</span></td><td><code>days &lt;= 5</code> → <code>color:var(--orange)</code>; <code>days &lt;= 0</code> → <code>color:var(--red)</code></td></tr>
+    <tr><td><code>C11</code></td><td>Two-file rule: <code>public/index.html</code> byte-identical to <code>MapIt_MVP_v1.html</code></td><td><span class="pass">PASS</span></td><td><code>diff</code> returned empty output — files are identical</td></tr>
+  </table>
+
+  <!-- BLOCK D -->
+  <h2 id="blockD">Block D — API Auth Enforcement</h2>
+  <table>
+    <tr><th>ID</th><th>Endpoint</th><th>Condition</th><th>Expected</th><th>Actual</th><th>Result</th></tr>
+    <tr><td><code>D1</code></td><td><code>POST /api/listings</code></td><td>No token</td><td>401</td><td>401</td><td><span class="pass">PASS</span></td></tr>
+    <tr><td><code>D2</code></td><td><code>PUT /api/listings/fake-id</code></td><td>No token</td><td>401</td><td>401</td><td><span class="pass">PASS</span></td></tr>
+    <tr><td><code>D3</code></td><td><code>DELETE /api/listings/fake-id</code></td><td>No token</td><td>401</td><td>401</td><td><span class="pass">PASS</span></td></tr>
+    <tr><td><code>D4</code></td><td><code>POST /api/listings/:id/view</code></td><td>No token</td><td>401</td><td>401</td><td><span class="pass">PASS</span></td></tr>
+    <tr><td><code>D5</code></td><td><code>POST /api/listings</code></td><td>Fake JWT</td><td>401</td><td>401</td><td><span class="pass">PASS</span></td></tr>
+    <tr><td><code>D6</code></td><td><code>DELETE /api/listings/fake-id</code></td><td>Fake JWT</td><td>401</td><td>401</td><td><span class="pass">PASS</span></td></tr>
+  </table>
+
+  <!-- BLOCK E -->
+  <h2 id="blockE">Block E — Input Validation</h2>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    <tr><td><code>E1</code></td><td>Missing required fields blocked at auth/validation gate</td><td><span class="pass">PASS</span></td><td>Auth gate fires before validation; response contains error keyword</td></tr>
+    <tr><td><code>E2</code></td><td>Invalid <code>category</code> rejected by <code>VALID_CATEGORIES</code></td><td><span class="pass">PASS</span></td><td><code>VALID_CATEGORIES</code> check present in POST route</td></tr>
+    <tr><td><code>E3</code></td><td>Invalid <code>show_phone</code> falls back to <code>'always'</code></td><td><span class="pass">PASS</span></td><td><code>validShowPhone.includes(show_phone) ? show_phone : 'always'</code></td></tr>
+  </table>
+
+  <!-- BLOCK F -->
+  <h2 id="blockF">Block F — Security</h2>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    <tr><td><code>F1</code></td><td>DELETE + PUT check <code>seller_id === req.user.id</code></td><td><span class="pass">PASS</span></td><td>3 ownership checks in file (DELETE + PUT + mark-sold); non-owner gets 403</td></tr>
+    <tr><td><code>F2</code></td><td><code>reference_code</code> NOT in PUT <code>allowedFields</code> (immutable)</td><td><span class="pass">PASS</span></td><td>Reference codes are permanent identifiers — buyers may quote them</td></tr>
+    <tr><td><code>F3</code></td><td><code>expires_at</code> NOT in PUT <code>allowedFields</code> (immutable)</td><td><span class="pass">PASS</span></td><td>Sellers cannot extend their own listing expiry to avoid the 30-day limit</td></tr>
+  </table>
+
+  <!-- BLOCK G -->
+  <h2 id="blockG">Block G — Tab UX &amp; Post Form Verification <span class="badge orange">2026-06-27</span></h2>
+  <p style="color:var(--muted2);font-size:13px;margin-bottom:10px;">10 code-level checks for tab ghosting, active-tab visual, views count display, vehicle form placeholders, default owners, share icon and landing screen. All verified against <code>MapIt_MVP_v1.html</code> commit <code>d4226b4</code>.</p>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    <tr><td><code>G1</code></td><td><code>.tab-btn:not(.on){ opacity:.45; }</code> CSS rule present</td><td><span class="pass">PASS</span></td><td>Inactive tabs dimmed to 45% — visually distinct from active tab</td></tr>
+    <tr><td><code>G2</code></td><td>Active tab CSS: orange border + tint + 15px font</td><td><span class="pass">PASS</span></td><td><code>.tab-btn.on{ color:var(--orange); border:1.5px solid var(--orange); background:rgba(240,96,48,.1); border-radius:6px 6px 0 0; font-size:15px; }</code></td></tr>
+    <tr><td><code>G3</code></td><td><code>white-space:nowrap</code> on <code>.tab-btn</code> base prevents tab bar height jump</td><td><span class="pass">PASS</span></td><td>Without this, "📍 Listings [N]" wraps to two lines when active font grows to 15px, pushing tab bar taller</td></tr>
+    <tr><td><code>G4</code></td><td><code>views_count</code> displayed in listing detail <code>ld-dist-bar</code></td><td><span class="pass">PASS</span></td><td>Rendered as <code>👁 N views</code>; appears after async full-listing fetch resolves; conditionally shown when not null</td></tr>
+    <tr><td><code>G5</code></td><td>Car brand/model <code>placeholder</code> text in <code>LISTING_FIELDS</code></td><td><span class="pass">PASS</span></td><td>Maruti/Hyundai/Honda for Brand; specific model examples per brand</td></tr>
+    <tr><td><code>G6</code></td><td>2-Wheeler brand/model <code>placeholder</code> text in <code>LISTING_FIELDS</code></td><td><span class="pass">PASS</span></td><td>Honda/TVS/Hero for Brand; model examples per subcategory</td></tr>
+    <tr><td><code>G7</code></td><td><code>default:1</code> in <code>owners</code> field for Cars, 2-Wheelers, Trucks</td><td><span class="pass">PASS</span></td><td>3 occurrences — one per vehicle subcategory with previous-owners field</td></tr>
+    <tr><td><code>G8</code></td><td><code>renderDynamicFields()</code> emits <code>value="${f.default}"</code> when field has a default</td><td><span class="pass">PASS</span></td><td>Owners input pre-filled to 1 on form open; prevents blank submission</td></tr>
+    <tr><td><code>G9</code></td><td>Share icon changed from ⤴ to 🔗; old ⤴ icon absent</td><td><span class="pass">PASS</span></td><td>3 🔗 occurrences (action bar icon + tooltip + <code>shareListingUrl()</code> toast); 0 ⤴ occurrences</td></tr>
+    <tr><td><code>G10</code></td><td><code>step-landing</code>, <code>mapit_seen_landing</code>, <code>startOnboarding()</code> all present</td><td><span class="pass">PASS</span></td><td>6 occurrences total — value proposition landing step with 3 bullets shown only to first-time visitors</td></tr>
+  </table>
+
+  <!-- BLOCK H -->
+  <h2 id="blockH">Block H — Saved Tab Map &amp; Proximity Radius <span class="badge orange">2026-06-27</span></h2>
+  <p style="color:var(--muted2);font-size:13px;margin-bottom:10px;">10 code-level checks for the proximity-radius disable feature and the Saved tab map redesign. Commits <code>be19c4e</code> + <code>d4226b4</code>.</p>
+  <table>
+    <tr><th>ID</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    <tr><td><code>H1</code></td><td><code>.rad-box.disabled{ opacity:.4; pointer-events:none; }</code> CSS rule present</td><td><span class="pass">PASS</span></td><td>Entire proximity radius section greyed out and unclickable on non-browse tabs</td></tr>
+    <tr><td><code>H2</code></td><td><code>switchTab()</code> toggles <code>disabled</code> class on <code>.rad-box</code> when <code>tab !== 'browse'</code></td><td><span class="pass">PASS</span></td><td>Single <code>classList.toggle('disabled', tab !== 'browse')</code> — all three tab buttons covered</td></tr>
+    <tr><td><code>H3</code></td><td><code>selListing(!keepTab)</code> removes <code>disabled</code> class (browse-context safety)</td><td><span class="pass">PASS</span></td><td>Handles edge case where <code>selListing</code> forces browse tab without calling <code>switchTab()</code></td></tr>
+    <tr><td><code>H4</code></td><td><code>openMyAds()</code> routes through <code>switchTab('mine')</code></td><td><span class="pass">PASS</span></td><td>Previously set <code>ST.tab</code> directly and skipped disabled toggle; also fixes "My Ads" tab button not showing as active when opened from profile menu</td></tr>
+    <tr><td><code>H5</code></td><td><code>favListings:[]</code> in <code>ST</code> state object</td><td><span class="pass">PASS</span></td><td>Separate from <code>ST.listings</code> (browse) and <code>ST.myListings</code> — keeps saved pins independent of radius</td></tr>
+    <tr><td><code>H6</code></td><td><code>renderFavs()</code> stores fetched listings into <code>ST.favListings</code> and calls <code>drawMarkers()</code></td><td><span class="pass">PASS</span></td><td><code>drawMarkers()</code> called after both successful fetch and empty-state path to clear stale pins</td></tr>
+    <tr><td><code>H7</code></td><td><code>drawMarkers()</code> uses <code>ST.favListings</code> when <code>ST.tab === 'fav'</code></td><td><span class="pass">PASS</span></td><td><code>const isFav = ST.tab === 'fav'; const fl = isFav ? ST.favListings : filtered();</code> — browse markers cleared, fav pins drawn</td></tr>
+    <tr><td><code>H8</code></td><td><code>fitBounds(padding:[50,50], maxZoom:14)</code> called when on fav tab and no selection</td><td><span class="pass">PASS</span></td><td>Map auto-adjusts to show all saved listings at maximum appropriate zoom on every Saved tab open</td></tr>
+    <tr><td><code>H9</code></td><td><code>viewFav()</code> calls <code>selListing(id, true)</code> — stays on fav tab</td><td><span class="pass">PASS</span></td><td>No longer switches to browse; listing detail renders inline in Saved tab context</td></tr>
+    <tr><td><code>H10</code></td><td><code>listingRow()</code> passes <code>ST.tab==='fav'||ST.tab==='mine'</code> as <code>keepTab</code> at runtime</td><td><span class="pass">PASS</span></td><td>Evaluated at click time (not render time) — "Other saved listings" section stays on Saved tab when a second listing is selected</td></tr>
+  </table>
+
+  <!-- OBSERVATIONS -->
+  <h2 id="observations">Observations</h2>
+
+  <div class="obs-card green">
+    <div class="obs-id">OBS-01</div>
+    <div class="obs-ttl">Reference code alphabet designed to prevent visual confusion</div>
+    <div class="obs-body">
+      <code>ABCDEFGHJKLMNPQRSTUVWXYZ23456789</code> — excludes 0, O, 1, I which look similar in many fonts/handwriting.
+      When a buyer calls a seller and says "MP-BLR-A3K9X2", there's no ambiguity.
+      32^6 = ~1.07 billion combinations — effectively collision-free for MVP scale.
+    </div>
+  </div>
+
+  <div class="obs-card blue">
+    <div class="obs-id">OBS-02</div>
+    <div class="obs-ttl">views_count bug fix: grep false positive explained</div>
+    <div class="obs-body">
+      The automated test B7 initially reported 2 stale <code>view_count</code> references. Investigation revealed both
+      were <code>review_count</code> (a seller reputation column on the <code>profiles</code> table) — the grep
+      matched as a substring. Zero actual <code>listings.view_count</code> references remain. Bug is fully fixed.
+    </div>
+  </div>
+
+  <div class="obs-card">
+    <div class="obs-id">OBS-03</div>
+    <div class="obs-ttl">Existing listings have NULL reference_code and expires_at</div>
+    <div class="obs-body">
+      Migration 002 adds columns but does not backfill existing rows. All listings created before Session 3
+      will have <code>reference_code = NULL</code> and <code>expires_at = NULL</code>.
+      The frontend handles this gracefully — the Ref line is conditionally rendered (<code>${l.reference_code ? … : ''}</code>)
+      and expiry countdown only shows when <code>expires_at</code> is set. No UI breakage for old listings.
+    </div>
+  </div>
+
+  <div class="obs-card">
+    <div class="obs-id">OBS-04</div>
+    <div class="obs-ttl">show_phone preference not yet visible to buyers in detail view</div>
+    <div class="obs-body">
+      The <code>show_phone</code> field is stored and returned by the API but the buyer-facing listing detail
+      view does not yet act on it (i.e., hide/show the seller's phone number conditionally).
+      This is intentional — the seller's phone is not displayed anywhere in the current UI anyway.
+      When the contact flow is built (Session 5/6), <code>show_phone</code> will gate whether the phone
+      number is shown to buyers. The field is ready and stored.
+    </div>
+  </div>
+
+  <div class="obs-card">
+    <div class="obs-id">OBS-05</div>
+    <div class="obs-ttl">Auto-expiry enforcement not yet built (cron deferred to Session 7)</div>
+    <div class="obs-body">
+      <code>expires_at</code> is stored correctly but no server-side process currently changes listing
+      <code>status</code> to <code>'expired'</code> when the date passes. Expired listings will continue
+      to appear as <code>'active'</code> until manually marked. The expiry countdown in My Ads is
+      informational only for now. Automated expiry via Vercel Cron or Supabase Edge Function is
+      planned for Session 7.
+    </div>
+  </div>
+
+  <div class="obs-card">
+    <div class="obs-id">OBS-06</div>
+    <div class="obs-ttl">Delete removes listing but not its photos from Supabase Storage</div>
+    <div class="obs-body">
+      <code>DELETE /api/listings/:id</code> deletes the DB row but does not call Supabase Storage
+      to remove the associated photo files. For MVP family-beta scale this is acceptable (storage
+      quota is ample). Before public launch, add a storage cleanup step in the DELETE route:
+      fetch <code>listing_photos</code> rows first, delete storage objects, then delete the DB row.
+    </div>
+  </div>
+
+  <div class="obs-card blue">
+    <div class="obs-id">OBS-07 · 2026-06-27</div>
+    <div class="obs-ttl">openMyAds() tab-active bug fixed as a side-effect</div>
+    <div class="obs-body">
+      The original <code>openMyAds()</code> removed 'on' from browse and fav tab buttons but never
+      added 'on' to the "My Ads" tab button — so opening My Ads from the profile menu left the
+      tab bar with no highlighted tab. Refactoring to <code>switchTab('mine')</code> fixed this
+      as a zero-cost side-effect of the proximity-radius work.
+    </div>
+  </div>
+
+  <div class="obs-card">
+    <div class="obs-id">OBS-08 · 2026-06-27</div>
+    <div class="obs-ttl">listingRow keepTab evaluated at click time — future-proof</div>
+    <div class="obs-body">
+      The <code>listingRow()</code> onclick attribute uses <code>ST.tab==='fav'||ST.tab==='mine'</code>
+      as a runtime expression, not a value captured at render time. This means if the tab ever
+      changes between render and click (unlikely but possible during async re-renders), the correct
+      behaviour is always applied. This pattern is preferable to passing a boolean at render time.
+    </div>
+  </div>
+
+  <div class="obs-card green">
+    <div class="obs-id">OBS-09 · 2026-06-27</div>
+    <div class="obs-ttl">Saved tab map is independent of proximity radius — correct design</div>
+    <div class="obs-body">
+      Saved listings are user-curated — they have personal relevance regardless of where the user
+      is looking on the map. Tying them to the proximity radius would hide saved listings in other
+      parts of the city. The separate <code>ST.favListings[]</code> array and disabled radius confirm
+      this architectural boundary. The map auto-fits to saved pins so the user always sees all of them.
+    </div>
+  </div>
+
+  <!-- FILES CHANGED -->
+  <h2 id="changes">Files Changed — Session 3</h2>
+  <table>
+    <tr><th>File</th><th>Change</th></tr>
+    <tr><td><code>src/routes/listings.js</code></td><td>Added <code>generateRefCode()</code>; updated POST insert (+3 fields); added <code>show_phone</code> to PUT allowedFields; replaced view count bug with correct <code>views_count</code></td></tr>
+    <tr><td><code>MapIt_MVP_v1.html</code></td><td>Show-phone radio in post form; <code>show_phone</code> in payload; ref code in detail bar; expiry countdown + delete button in My Ads; <code>deleteListing()</code>; <code>.del-btn</code> CSS</td></tr>
+    <tr><td><code>public/index.html</code></td><td>Synced from <code>MapIt_MVP_v1.html</code> — byte-identical</td></tr>
+    <tr><td><code>database/migrations/002-mvp-listings-schema.sql</code></td><td>Applied to Supabase 2026-06-24 — 4 columns added to listings table</td></tr>
+    <tr><td><code>docs/session-03-uat-report.html</code></td><td>This document</td></tr>
+    <tr><td><code>docs/session-03-uat-checklist-nagesh.html</code></td><td>Manual UAT checklist for Nagesh</td></tr>
+    <tr><td colspan="2" style="background:rgba(249,115,22,.06);color:var(--orange);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">2026-06-27 additional commits (be19c4e + d4226b4)</td></tr>
+    <tr><td><code>MapIt_MVP_v1.html</code> · <code>public/index.html</code></td><td>Tab ghosting CSS; active-tab orange border+tint+15px; <code>white-space:nowrap</code>; <code>👁 views_count</code> in detail; vehicle Brand/Model placeholders; default owners=1; 🔗 share icon; <code>step-landing</code> first-visit screen; <code>.rad-box.disabled</code> CSS; <code>ST.favListings[]</code>; <code>drawMarkers()</code> fav-tab branch + fitBounds; <code>renderFavs()</code> populates favListings; <code>viewFav()</code> keepTab; <code>listingRow()</code> runtime keepTab; <code>switchTab()</code> disabled toggle; <code>openMyAds()</code> → <code>switchTab()</code></td></tr>
+    <tr><td><code>src/routes/listings.js</code></td><td>Removed <code>requireAuth</code> from <code>POST /:id/view</code> — view counting now works for all visitors regardless of token expiry</td></tr>
+  </table>
+
+  <!-- NEXT STEPS -->
+  <h2 id="next">Next Steps</h2>
+
+  <div class="next-card">
+    <div class="next-num">1</div>
+    <div class="next-body">
+      <div class="next-ttl">Nagesh: complete manual UAT checklist for Session 3</div>
+      <div class="next-sub">Open <code>docs/session-03-uat-checklist-nagesh.html</code> in browser — 3 end-to-end browser flows: post a listing (verify ref code + expiry), delete a listing, test show-phone radio</div>
+    </div>
+  </div>
+
+  <div class="next-card">
+    <div class="next-num">2</div>
+    <div class="next-body">
+      <div class="next-ttl">Arun: complete Session 2 manual UAT (51 tests)</div>
+      <div class="next-sub">URL: <code>https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code> · Checklist: <code>docs/session-02-uat-checklist-arun.html</code></div>
+    </div>
+  </div>
+
+  <div class="next-card">
+    <div class="next-num">3</div>
+    <div class="next-body">
+      <div class="next-ttl">Merge uat → main after both sign-offs</div>
+      <div class="next-sub">Open PR on GitHub: uat → main; merge after Nagesh + Arun approval</div>
+    </div>
+  </div>
+
+  <div class="next-card">
+    <div class="next-num">4</div>
+    <div class="next-body">
+      <div class="next-ttl">Session 4: Admin Review Flow + Feedback improvements</div>
+      <div class="next-sub">Admin approve/reject listings with email notification; feedback category column (migration 002 Step 2)</div>
+    </div>
+  </div>
+
+  <div class="next-card">
+    <div class="next-num">5</div>
+    <div class="next-body">
+      <div class="next-ttl">Session 7 (future): auto-expiry cron + photo cleanup on delete</div>
+      <div class="next-sub">Vercel Cron job or Supabase Edge Function to flip <code>status='expired'</code> when <code>expires_at</code> passes; storage cleanup on DELETE</div>
+    </div>
+  </div>
+
+  <p style="margin-top:32px;color:var(--muted);font-size:12px;text-align:center;">
+    MapIt UAT Report — Session 3 · Originally generated 2026-06-24 · Updated 2026-06-27 · Claude Code (Sonnet 4.6)
+  </p>
+</main>
+</body>
+</html>

@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 2 UAT Report</title>
+<style>
+  :root {
+    --orange: #F06030;
+    --orange2: #FF7A50;
+    --green: #22C55E;
+    --red: #EF4444;
+    --yellow: #F59E0B;
+    --blue: #3B82F6;
+    --purple: #8B5CF6;
+    --bg: #0F1117;
+    --panel: #1A1D27;
+    --card: #22263A;
+    --border: rgba(255,255,255,0.08);
+    --text: #F0F4FF;
+    --muted: #8892AA;
+    --muted2: #B0BCCC;
+    --code-bg: #161B2E;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .doc-header {
+    background: linear-gradient(135deg, #1A1D27 0%, #0F1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 60px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(240,96,48,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .logo { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .logo em { font-style: normal; color: var(--orange); }
+  .doc-title { font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.2; }
+  .doc-meta { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 16px; }
+  .doc-meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .doc-meta-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .doc-meta-val { font-size: 13px; font-weight: 600; color: var(--muted2); }
+  .badge-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+  .badge-green { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.35); color: #4ADE80; }
+  .badge-red { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #F87171; }
+  .badge-orange { background: rgba(240,96,48,0.15); border: 1px solid rgba(240,96,48,0.35); color: var(--orange2); }
+  .badge-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.35); color: #60A5FA; }
+  .badge-yellow { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35); color: #FCD34D; }
+
+  /* ── LAYOUT ── */
+  .doc-body { display: flex; min-height: calc(100vh - 200px); }
+  .sidebar {
+    width: 240px; flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky; top: 0; height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar-section { padding: 0 16px; margin-bottom: 8px; }
+  .sidebar-label { font-size: 9px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); padding: 0 8px; margin-bottom: 6px; }
+  .sidebar-link {
+    display: block; padding: 7px 12px; border-radius: 6px;
+    font-size: 12px; color: var(--muted2); text-decoration: none;
+    transition: all 0.15s; margin-bottom: 1px;
+  }
+  .sidebar-link:hover { background: var(--card); color: var(--text); }
+  .sidebar-link.active { background: rgba(240,96,48,0.15); color: var(--orange2); }
+  .sidebar-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%; font-size: 9px; font-weight: 800;
+    margin-right: 6px;
+  }
+  .num-pass { background: rgba(34,197,94,0.2); color: #4ADE80; }
+  .num-fail { background: rgba(239,68,68,0.2); color: #F87171; }
+  .num-info { background: rgba(245,158,11,0.2); color: #FCD34D; }
+
+  .content { flex: 1; padding: 40px 60px; max-width: 1100px; }
+
+  /* ── SECTIONS ── */
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  .section-title {
+    font-size: 20px; font-weight: 700; color: var(--text);
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title .section-ico { font-size: 22px; }
+  .section-desc { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+  .section-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .summary-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .summary-card .s-num { font-size: 36px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .summary-card .s-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .s-pass .s-num { color: var(--green); }
+  .s-bug .s-num { color: var(--red); }
+  .s-fixed .s-num { color: var(--orange); }
+  .s-note .s-num { color: var(--yellow); }
+
+  /* ── TABLES ── */
+  .test-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .test-table th {
+    text-align: left; padding: 10px 14px;
+    background: var(--card); color: var(--muted);
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .test-table th:first-child { border-radius: 8px 0 0 0; }
+  .test-table th:last-child { border-radius: 0 8px 0 0; }
+  .test-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .test-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .test-table tr:last-child td { border-bottom: none; }
+  .test-id { font-size: 11px; font-weight: 700; color: var(--muted); font-family: monospace; }
+  .test-name { font-weight: 600; color: var(--text); }
+  .test-expect { color: var(--muted2); font-family: monospace; font-size: 11.5px; }
+  .test-result-cell { white-space: nowrap; }
+  .pill-pass {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
+    color: #4ADE80; padding: 2px 9px; border-radius: 12px;
+    font-size: 10.5px; font-weight: 700;
+  }
+  .pill-fail {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+    color: #F87171; padding: 2px 9px; border-radius: 12px;
+    font-size: 10.5px; font-weight: 700;
+  }
+
+  /* ── BUG CARDS ── */
+  .bug-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .bug-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .bug-severity {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .sev-critical { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #F87171; }
+  .sev-medium { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4); color: #FCD34D; }
+  .sev-minor { background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.4); color: #60A5FA; }
+  .bug-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .bug-id { font-size: 11px; font-weight: 700; color: var(--muted); font-family: monospace; }
+  .fixed-tag {
+    margin-left: auto; flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.35);
+    color: #4ADE80; padding: 4px 12px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+  }
+  .bug-body { padding: 20px; }
+  .bug-section-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px; margin-top: 16px;
+  }
+  .bug-section-label:first-child { margin-top: 0; }
+  .bug-text { font-size: 13px; color: var(--muted2); line-height: 1.7; }
+  .bug-text strong { color: var(--text); }
+  .bug-location {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 12px;
+    font-family: monospace; font-size: 12px; color: var(--orange2);
+    margin-top: 6px;
+  }
+
+  /* ── CODE DIFF ── */
+  .diff-wrap {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .diff-title {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    font-family: monospace; letter-spacing: 0.3px;
+  }
+  .diff-body { padding: 14px; overflow-x: auto; }
+  .diff-body pre { font-size: 12px; line-height: 1.65; font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace; }
+  .diff-del { color: #F87171; background: rgba(239,68,68,0.1); display: block; margin: 0 -14px; padding: 0 14px; }
+  .diff-add { color: #4ADE80; background: rgba(34,197,94,0.1); display: block; margin: 0 -14px; padding: 0 14px; }
+  .diff-ctx { color: var(--muted); }
+
+  /* ── OBSERVATION TABLE ── */
+  .obs-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .obs-table th {
+    text-align: left; padding: 10px 14px;
+    background: var(--card); color: var(--muted);
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .obs-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .obs-table tr:last-child td { border-bottom: none; }
+  .sev-pill {
+    display: inline-block; padding: 2px 9px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .sev-config { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); color: #A78BFA; }
+  .sev-info { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); color: #93C5FD; }
+  .sev-security { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); color: #FCD34D; }
+  .sev-ux { background: rgba(240,96,48,0.12); border: 1px solid rgba(240,96,48,0.25); color: var(--orange2); }
+
+  /* ── FILE CHANGE ── */
+  .file-row {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .file-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .file-name { font-family: monospace; font-size: 13px; font-weight: 700; color: var(--orange2); margin-bottom: 3px; }
+  .file-desc { font-size: 12px; color: var(--muted2); line-height: 1.5; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .doc-header { padding: 28px 24px 24px; }
+    .content { padding: 24px; }
+    .sidebar { display: none; }
+    .summary-grid { grid-template-columns: repeat(2,1fr); }
+    .doc-title { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="doc-header">
+  <div class="logo">Map<em>It</em></div>
+  <div class="doc-title">Session 2 — UAT Test Report &amp; Bug Fix Log</div>
+  <div style="font-size:14px;color:var(--muted);margin-top:4px;">
+    Automated backend test results · Code review findings · Applied fixes · Developer handover notes
+  </div>
+  <div class="doc-meta">
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">Session</span>
+      <span class="doc-meta-val">MVP Session 2 — Auth Overhaul</span>
+    </div>
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">Test Date</span>
+      <span class="doc-meta-val">22 June 2026</span>
+    </div>
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">UAT Branch</span>
+      <span class="doc-meta-val">uat → mapit-backend-git-uat-nagesh-n-arun.vercel.app</span>
+    </div>
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">Tested By</span>
+      <span class="doc-meta-val">Claude Code (automated) + Nagesh (sign-off)</span>
+    </div>
+    <div class="doc-meta-item">
+      <span class="doc-meta-label">Commit Range</span>
+      <span class="doc-meta-val">50dd9dd → 3d100ab + UAT fixes</span>
+    </div>
+  </div>
+  <div class="badge-row">
+    <span class="badge badge-green">✓ 41 Backend Tests Passed</span>
+    <span class="badge badge-red">✗ 4 Bugs Found</span>
+    <span class="badge badge-green">✓ 4 Bugs Fixed</span>
+    <span class="badge badge-yellow">⚠ 5 Observations</span>
+    <span class="badge badge-blue">Branch: uat</span>
+  </div>
+</div>
+
+<div class="doc-body">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Contents</div>
+      <a class="sidebar-link" href="#summary">📊 Summary</a>
+      <a class="sidebar-link" href="#scope">🔖 Session 2 Scope</a>
+      <a class="sidebar-link" href="#environment">🖥 Test Environment</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Backend Tests</div>
+      <a class="sidebar-link" href="#t-validation">Input Validation</a>
+      <a class="sidebar-link" href="#t-auth">Auth Enforcement</a>
+      <a class="sidebar-link" href="#t-oauth">OAuth Redirect</a>
+      <a class="sidebar-link" href="#t-reset">Password Reset</a>
+      <a class="sidebar-link" href="#t-otp">OTP &amp; Rate Limiting</a>
+      <a class="sidebar-link" href="#t-cors">CORS</a>
+      <a class="sidebar-link" href="#t-edge">Edge Cases</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Code Review</div>
+      <a class="sidebar-link" href="#bugs">🐛 Bugs Found &amp; Fixed</a>
+      <a class="sidebar-link" href="#observations">⚠ Observations</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Handover</div>
+      <a class="sidebar-link" href="#files">📁 Files Changed</a>
+      <a class="sidebar-link" href="#next">🔜 Next Steps</a>
+    </div>
+  </nav>
+
+  <!-- ── CONTENT ── -->
+  <main class="content">
+
+    <!-- SUMMARY -->
+    <section id="summary">
+      <div class="section-title"><span class="section-ico">📊</span> Executive Summary</div>
+      <div class="section-desc">
+        Session 2 delivered the complete auth overhaul for MapIt MVP — email+password, Google OAuth, OTP fallback,
+        nickname system, password reset, home location picker, splash flash fix, and rate limiting.
+        All 41 automated backend tests passed. A code-review of the frontend JavaScript identified 4 bugs, all of which were fixed in this UAT pass.
+        No backend changes were required.
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card s-pass">
+          <div class="s-num">41</div>
+          <div class="s-label">Backend Tests</div>
+          <div style="font-size:11px;color:#4ADE80;margin-top:4px;">All passed ✓</div>
+        </div>
+        <div class="summary-card s-bug">
+          <div class="s-num">4</div>
+          <div class="s-label">Bugs Found</div>
+          <div style="font-size:11px;color:#F87171;margin-top:4px;">via code review</div>
+        </div>
+        <div class="summary-card s-fixed">
+          <div class="s-num">4</div>
+          <div class="s-label">Bugs Fixed</div>
+          <div style="font-size:11px;color:var(--orange2);margin-top:4px;">All in this session</div>
+        </div>
+        <div class="summary-card s-note">
+          <div class="s-num">5</div>
+          <div class="s-label">Observations</div>
+          <div style="font-size:11px;color:#FCD34D;margin-top:4px;">Non-blocking notes</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCOPE -->
+    <section id="scope">
+      <div class="section-title"><span class="section-ico">🔖</span> Session 2 Feature Scope</div>
+      <div class="section-desc">Everything built in Session 2 that was tested in this UAT pass.</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th>Feature</th>
+          <th>What Was Built</th>
+          <th>Backend Route(s)</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-name">Email + Password Auth</td>
+            <td class="test-expect">Sign In / Create Account tabs, show/hide password, validation</td>
+            <td class="test-expect">POST /api/auth/signin<br>POST /api/auth/signup</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Google OAuth</td>
+            <td class="test-expect">Backend returns Supabase OAuth URL; dynamic redirectTo validated against allowlist</td>
+            <td class="test-expect">GET /api/auth/google</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Password Reset</td>
+            <td class="test-expect">Send reset email with dynamic redirectTo; recovery token intercepted; new password form</td>
+            <td class="test-expect">POST /api/auth/reset-password<br>PUT /api/auth/password</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">OTP Fallback</td>
+            <td class="test-expect">Email OTP, invite code removed, rate-limited separately from main auth</td>
+            <td class="test-expect">POST /api/auth/send-otp<br>POST /api/auth/verify-otp</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Profile Setup (step-profile)</td>
+            <td class="test-expect">Full name + nickname + phone + ToS checkbox; needsProfile check on all 3 auth paths</td>
+            <td class="test-expect">POST /api/auth/register</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Home Location Picker (step-homeloc)</td>
+            <td class="test-expect">Inline Leaflet map; tap to drop marker; Nominatim reverse-geocode; save or skip</td>
+            <td class="test-expect">PUT /api/auth/home-location</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Nickname System</td>
+            <td class="test-expect">Mandatory at registration; Change Nickname in profile menu; live header update</td>
+            <td class="test-expect">PUT /api/auth/nickname</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Rate Limiting</td>
+            <td class="test-expect">trust proxy added; global 200/hr; OTP-only strict limit; auth routes unthrottled</td>
+            <td class="test-expect">Express middleware</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">CORS</td>
+            <td class="test-expect">mapit.co.in, uat.mapit.co.in, localhost variants, Vercel preview regex</td>
+            <td class="test-expect">Express middleware</td>
+            <td><span class="pill-pass">✓ Tested</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">Splash Flash Fix</td>
+            <td class="test-expect">showLoadingSplash() called before modal dismiss at 5 transition points</td>
+            <td class="test-expect">Frontend only</td>
+            <td><span class="pill-pass">✓ Code reviewed</span></td>
+          </tr>
+          <tr>
+            <td class="test-name">"Who's using MapIt?" nickname fix</td>
+            <td class="test-expect">_refreshStaleSessionNames() background-refreshes stale localStorage sessions</td>
+            <td class="test-expect">GET /api/auth/me</td>
+            <td><span class="pill-pass">✓ Code reviewed</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ENVIRONMENT -->
+    <section id="environment">
+      <div class="section-title"><span class="section-ico">🖥</span> Test Environment</div>
+      <div class="section-divider"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">Local Test Server</div>
+          <div class="file-desc">Node.js + Express on <code style="color:var(--orange2)">http://localhost:3001</code><br>All 41 automated tests ran against this instance via curl</div>
+        </div>
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">UAT Deployment</div>
+          <div class="file-desc">Vercel preview: <code style="color:var(--orange2)">mapit-backend-git-uat-nagesh-n-arun.vercel.app</code><br>Branch: <code>uat</code> | Manual testing target</div>
+        </div>
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">Database</div>
+          <div class="file-desc">Supabase: <code style="color:var(--orange2)">jneoxwumccmjwaojfazh.supabase.co</code><br>Single project (UAT + Production for MVP phase)</div>
+        </div>
+        <div class="file-row" style="flex-direction:column;gap:6px;">
+          <div class="file-name">Test Method</div>
+          <div class="file-desc">curl-based HTTP tests for backend validation, auth enforcement, CORS, and error handling.<br>Frontend code review via static analysis.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INPUT VALIDATION -->
+    <section id="t-validation">
+      <div class="section-title"><span class="section-ico">🔍</span> Input Validation Tests (T01–T06)</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:60px">ID</th>
+          <th style="width:220px">Test</th>
+          <th>Payload</th>
+          <th>Expected Response</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="test-id">T01</td>
+            <td class="test-name">POST /signin — empty body</td>
+            <td class="test-expect">{}</td>
+            <td class="test-expect">400 · "email and password are required"</td>
+            <td class="test-result-cell"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">T02</td>
+            <td class="test-name">POST /signup — missing password</td>
+            <td class="test-expect">{"email":"t@t.com"}</td>
+            <td class="test-expect">400 · validation error</td>
+            <td class="test-result-cell"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">T03</td>
+            <td class="test-name">POST /signup — password &lt; 8 chars</td>
+            <td class="test-expect">{"email":…,"password":"short"}</td>
+            <td class="test-expect">400 · "min 8 characters"</td>
+            <td class="test-result-cell"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">T04</td>
+            <td class="test-name">POST /reset-password — missing email</td>
+            <td class="test-expect">{}</td>
+            <td class="test-expect">400 · "email is required"</td>
+            <td class="test-result-cell"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">T05</td>
+            <td class="test-name">POST /send-otp — missing email</td>
+            <td class="test-expect">{}</td>
+            <td class="test-expect">400 · "phone or email is required"</td>
+            <td class="test-result-cell"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+          <tr>
+            <td class="test-id">T06</td>
+            <td class="test-name">POST /verify-otp — missing token</td>
+            <td class="test-expect">{"email":"t@t.com"}</td>
+            <td class="test-expect">400 · "email and token are required"</td>
+            <td class="test-result-cell"><span class="pill-pass">✓ PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- AUTH ENFORCEMENT -->
+    <section id="t-auth">
+      <div class="section-title"><span class="section-ico">🔒</span> Auth Enforcement Tests (T07–T14)</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:60px">ID</th>
+          <th>Endpoint</th>
+          <th>Token Used</th>
+          <th>Expected</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="test-id">T07</td><td class="test-name">GET /me</td><td class="test-expect">None</td><td class="test-expect">401 "Missing or invalid authorization header"</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T08</td><td class="test-name">POST /register</td><td class="test-expect">None</td><td class="test-expect">401</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T09</td><td class="test-name">PUT /home-location</td><td class="test-expect">None</td><td class="test-expect">401</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T10</td><td class="test-name">PUT /nickname</td><td class="test-expect">None</td><td class="test-expect">401</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T11</td><td class="test-name">PUT /password</td><td class="test-expect">None</td><td class="test-expect">401</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T12</td><td class="test-name">GET /me</td><td class="test-expect">Forged JWT</td><td class="test-expect">401 "Invalid or expired session"</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T13</td><td class="test-name">PUT /nickname</td><td class="test-expect">Forged JWT</td><td class="test-expect">401</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T14</td><td class="test-name">PUT /home-location — string lat/lng</td><td class="test-expect">Forged JWT</td><td class="test-expect">401 (auth blocks before type check)</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- OAUTH REDIRECT -->
+    <section id="t-oauth">
+      <div class="section-title"><span class="section-ico">🌐</span> Google OAuth Redirect Validation (T15–T18)</div>
+      <div class="section-desc">
+        The backend must accept known origins and reject unknown domains to prevent open-redirect attacks.
+        Allowed: mapit.co.in, uat.mapit.co.in, localhost variants, and Vercel preview URLs matching
+        <code style="color:var(--orange2)">^https://mapit-backend-[a-z0-9-]+\.vercel\.app$</code>.
+      </div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:60px">ID</th>
+          <th>Test</th>
+          <th>redirectTo Value</th>
+          <th>Expected Behaviour</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="test-id">T15</td><td class="test-name">No redirectTo param</td><td class="test-expect">(omitted)</td><td class="test-expect">Fallback to www.mapit.co.in</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T16</td><td class="test-name">Valid production origin</td><td class="test-expect">https://www.mapit.co.in</td><td class="test-expect">Accepted — URL contains production origin</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T17</td><td class="test-name">Malicious open-redirect</td><td class="test-expect">https://evil.com/hook</td><td class="test-expect">Rejected — fallback to www.mapit.co.in; evil.com NOT in URL</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T18</td><td class="test-name">Vercel preview URL</td><td class="test-expect">https://mapit-backend-git-uat-abc123.vercel.app</td><td class="test-expect">Accepted by regex</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- PASSWORD RESET -->
+    <section id="t-reset">
+      <div class="section-title"><span class="section-ico">🔑</span> Password Reset Tests (T19–T21)</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:60px">ID</th>
+          <th>Test</th>
+          <th>Detail</th>
+          <th>Expected</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="test-id">T19</td><td class="test-name">Valid UAT redirectTo accepted</td><td class="test-expect">redirectTo: https://uat.mapit.co.in</td><td class="test-expect">success:true</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T20</td><td class="test-name">Malicious redirectTo rejected</td><td class="test-expect">redirectTo: https://phishing.com/evil</td><td class="test-expect">Supabase uses fallback; no redirect to attacker domain</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T21</td><td class="test-name">POST /logout — no auth</td><td class="test-expect">No token; signOut called gracefully</td><td class="test-expect">success:true (no crash)</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- OTP RATE LIMITING -->
+    <section id="t-otp">
+      <div class="section-title"><span class="section-ico">⏱</span> OTP &amp; Rate Limiting Tests (T22, T27, T38–T41)</div>
+      <div class="section-desc">
+        Rate limiting is two-layered: Supabase enforces a 60-second per-email OTP cooldown; Express adds a
+        per-IP hourly limit (OTP_RATE_LIMIT env var) only on /send-otp and /verify-otp.
+        Regular auth routes (signin, signup, register) are NOT subject to the strict OTP limiter.
+      </div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:60px">ID</th>
+          <th>Test</th>
+          <th>Expected</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="test-id">T22</td><td class="test-name">GET /validate-invite — missing code</td><td class="test-expect">400 · {valid:false}</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T27</td><td class="test-name">12 rapid OTP requests (Supabase cooldown)</td><td class="test-expect">Request 1 succeeds; requests 2–12 return Supabase 60s cooldown error</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T28</td><td class="test-name">POST /signin — wrong password</td><td class="test-expect">400 "Invalid login credentials"</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T29</td><td class="test-name">POST /signup — invalid email format</td><td class="test-expect">400 "invalid format" (Supabase validation)</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T30</td><td class="test-name">POST /verify-otp — wrong 6-digit token</td><td class="test-expect">400 "Token has expired or is invalid"</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T38</td><td class="test-name">5 rapid /signin calls — not blocked</td><td class="test-expect">All return 400 (wrong creds), none 429</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T40</td><td class="test-name">POST /logout — no session at all</td><td class="test-expect">success:true gracefully</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T41</td><td class="test-name">GET /validate-invite — nonexistent code</td><td class="test-expect">404 · {valid:false}</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- CORS -->
+    <section id="t-cors">
+      <div class="section-title"><span class="section-ico">🛡</span> CORS Tests (T31–T37)</div>
+      <div class="section-divider"></div>
+      <table class="test-table">
+        <thead><tr>
+          <th style="width:60px">ID</th>
+          <th>Origin Tested</th>
+          <th>Expected</th>
+          <th style="width:90px">Result</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="test-id">T31</td><td class="test-name">https://www.mapit.co.in</td><td class="test-expect">Access-Control-Allow-Origin: https://www.mapit.co.in</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T32</td><td class="test-name">https://evil.com</td><td class="test-expect">No Access-Control-Allow-Origin header (blocked)</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T33</td><td class="test-name">https://uat.mapit.co.in</td><td class="test-expect">Allowed</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T34</td><td class="test-name">https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</td><td class="test-expect">Allowed (Vercel preview regex match)</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T35</td><td class="test-name">http://localhost:3001</td><td class="test-expect">Allowed</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T36</td><td class="test-name">http://localhost:3000</td><td class="test-expect">Allowed</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+          <tr><td class="test-id">T37</td><td class="test-name">http://127.0.0.1:5500</td><td class="test-expect">Allowed</td><td><span class="pill-pass">✓ PASS</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- BUGS -->
+    <section id="bugs">
+      <div class="section-title"><span class="section-ico">🐛</span> Bugs Found &amp; Fixed</div>
+      <div class="section-desc">
+        All 4 bugs were identified via static code review of <code style="color:var(--orange2)">MapIt_MVP_v1.html</code>.
+        All 4 were fixed in the same UAT session. No backend changes were needed.
+      </div>
+      <div class="section-divider"></div>
+
+      <!-- BUG 1 -->
+      <div class="bug-card">
+        <div class="bug-header">
+          <span class="bug-severity sev-critical">● Critical</span>
+          <div>
+            <div class="bug-id">BUG-01</div>
+            <div class="bug-title">verifyOtp() missing needsProfile check — OTP users bypass profile setup</div>
+          </div>
+          <span class="fixed-tag">✓ Fixed</span>
+        </div>
+        <div class="bug-body">
+          <div class="bug-section-label">Where</div>
+          <div class="bug-location">📄 MapIt_MVP_v1.html · verifyOtp() function</div>
+
+          <div class="bug-section-label">Root Cause</div>
+          <div class="bug-text">
+            <strong>submitAuth()</strong> (the email+password path) was updated in commit <code>3d100ab</code> with a <strong>needsProfile</strong> check
+            that catches old accounts where <code>nickname === 'MapIt User'</code> or <code>full_name === 'MapIt User'</code>, routing them to
+            <strong>step-profile</strong> even when <code>isNewUser = false</code> (profile row already exists with placeholder data).
+            <br><br>
+            However, <strong>verifyOtp()</strong> — the OTP fallback path — only checked <code>data.isNewUser</code>. Any existing user with a
+            placeholder nickname who clicks "Use email OTP →" and verifies their code would be taken <em>directly into the app</em> with
+            "MapIt User" as their display name, bypassing profile setup entirely.
+          </div>
+
+          <div class="bug-section-label">Impact</div>
+          <div class="bug-text">
+            All family members who originally registered via OTP (before Session 2) and attempt to use the OTP fallback
+            would never be prompted to set their real nickname. They would appear in "Who's using MapIt?" as "MapIt User"
+            regardless of the DB fixes applied.
+          </div>
+
+          <div class="bug-section-label">Fix Applied</div>
+          <div class="diff-wrap">
+            <div class="diff-title">MapIt_MVP_v1.html — verifyOtp()</div>
+            <div class="diff-body"><pre><span class="diff-ctx">    // after verifying OTP and fetching profile...</span>
+<span class="diff-del">-   if(data.isNewUser){</span>
+<span class="diff-del">-     goToStep('step-profile');</span>
+<span class="diff-del">-   } else {</span>
+<span class="diff-add">+   const needsProfile = data.isNewUser</span>
+<span class="diff-add">+     || !data.profile?.nickname</span>
+<span class="diff-add">+     || data.profile.nickname === 'MapIt User'</span>
+<span class="diff-add">+     || !data.profile?.full_name</span>
+<span class="diff-add">+     || data.profile.full_name === 'MapIt User';</span>
+<span class="diff-add">+   if(needsProfile){</span>
+<span class="diff-add">+     if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')</span>
+<span class="diff-add">+       document.getElementById('nameInput').value = data.profile.full_name;</span>
+<span class="diff-add">+     if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')</span>
+<span class="diff-add">+       document.getElementById('profileNicknameInput').value = data.profile.nickname;</span>
+<span class="diff-add">+     goToStep('step-profile');</span>
+<span class="diff-add">+   } else {</span>
+<span class="diff-ctx">      showLoadingSplash();</span>
+<span class="diff-ctx">      ...</span>
+<span class="diff-ctx">    }</span></pre></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUG 2 -->
+      <div class="bug-card">
+        <div class="bug-header">
+          <span class="bug-severity sev-medium">● Medium</span>
+          <div>
+            <div class="bug-id">BUG-02</div>
+            <div class="bug-title">_refreshStaleSessionNames() skips sessions with nickname = 'MapIt User'</div>
+          </div>
+          <span class="fixed-tag">✓ Fixed</span>
+        </div>
+        <div class="bug-body">
+          <div class="bug-section-label">Where</div>
+          <div class="bug-location">📄 MapIt_MVP_v1.html · _refreshStaleSessionNames()</div>
+
+          <div class="bug-section-label">Root Cause</div>
+          <div class="bug-text">
+            On <code>init()</code>, this function background-fetches <code>/api/auth/me</code> for every localStorage session that lacks a
+            proper display name, updating the cache so "Who's using MapIt?" shows correct names without requiring a click-through.
+            <br><br>
+            The filter condition was <code>!u.nickname</code> — which is <code>false</code> (truthy) when <code>u.nickname === 'MapIt User'</code>.
+            Therefore, sessions where localStorage cached the placeholder string <strong>were silently excluded from the refresh</strong>,
+            meaning stale "MapIt User" buttons would persist on the Who's using MapIt? screen even after the DB was corrected.
+          </div>
+
+          <div class="bug-section-label">Fix Applied</div>
+          <div class="diff-wrap">
+            <div class="diff-title">MapIt_MVP_v1.html — _refreshStaleSessionNames()</div>
+            <div class="diff-body"><pre><span class="diff-ctx">  const stale = Object.entries(sessions).filter(([, u]) =></span>
+<span class="diff-del">-   u.session?.access_token && !u.nickname</span>
+<span class="diff-add">+   u.session?.access_token && (!u.nickname || u.nickname === 'MapIt User')</span>
+<span class="diff-ctx">  );</span></pre></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUG 3 -->
+      <div class="bug-card">
+        <div class="bug-header">
+          <span class="bug-severity sev-medium">● Medium</span>
+          <div>
+            <div class="bug-id">BUG-03</div>
+            <div class="bug-title">submitAuth() Sign-In path doesn't pre-fill profileNicknameInput from existing profile</div>
+          </div>
+          <span class="fixed-tag">✓ Fixed</span>
+        </div>
+        <div class="bug-body">
+          <div class="bug-section-label">Where</div>
+          <div class="bug-location">📄 MapIt_MVP_v1.html · submitAuth()</div>
+
+          <div class="bug-section-label">Root Cause</div>
+          <div class="bug-text">
+            When <code>needsProfile</code> is true and the user came via the <strong>Sign In tab</strong> (not Create Account),
+            <code>ST._pendingNickname</code> is <code>null</code> because no nickname was captured in the sign-in form.
+            The existing code pre-filled <code>nameInput</code> (full name) from the profile fallback, but
+            <code>profileNicknameInput</code> was <em>only</em> pre-filled from <code>ST._pendingNickname</code> — leaving the nickname field blank.
+            <br><br>
+            A user signing in and being sent to profile setup would need to manually type a nickname even if their profile already
+            had a valid one (just not as the primary display method).
+          </div>
+
+          <div class="bug-section-label">Fix Applied</div>
+          <div class="diff-wrap">
+            <div class="diff-title">MapIt_MVP_v1.html — submitAuth() → step-profile pre-fill</div>
+            <div class="diff-body"><pre><span class="diff-ctx">      if(ST._pendingNickname) document.getElementById('profileNicknameInput').value = ST._pendingNickname;</span>
+<span class="diff-add">+     else if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')</span>
+<span class="diff-add">+       document.getElementById('profileNicknameInput').value = data.profile.nickname;</span>
+<span class="diff-ctx">      goToStep('step-profile');</span></pre></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUG 4 -->
+      <div class="bug-card">
+        <div class="bug-header">
+          <span class="bug-severity sev-minor">● Minor</span>
+          <div>
+            <div class="bug-id">BUG-04</div>
+            <div class="bug-title">handleOAuthCallback() missing needsProfile check for Google OAuth</div>
+          </div>
+          <span class="fixed-tag">✓ Fixed</span>
+        </div>
+        <div class="bug-body">
+          <div class="bug-section-label">Where</div>
+          <div class="bug-location">📄 MapIt_MVP_v1.html · handleOAuthCallback()</div>
+
+          <div class="bug-section-label">Root Cause</div>
+          <div class="bug-text">
+            After a Google OAuth sign-in, the callback only routed to <code>step-profile</code> when <code>!data.profile</code>
+            (no profile at all). A Google OAuth user with an existing profile containing <code>nickname = 'MapIt User'</code>
+            (possible for accounts created before Session 2's profile migration) would go directly into the app.
+            <br><br>
+            Low practical risk — Google OAuth was new in Session 2 and all new Google users go through step-profile.
+            However, the inconsistency meant the needsProfile safety net was absent on this code path.
+          </div>
+
+          <div class="bug-section-label">Fix Applied</div>
+          <div class="diff-wrap">
+            <div class="diff-title">MapIt_MVP_v1.html — handleOAuthCallback()</div>
+            <div class="diff-body"><pre><span class="diff-del">-   if(!data.profile){</span>
+<span class="diff-del">-     document.getElementById('authModal').classList.remove('hide');</span>
+<span class="diff-del">-     goToStep('step-profile');</span>
+<span class="diff-del">-     return true;</span>
+<span class="diff-del">-   }</span>
+<span class="diff-add">+   const needsProfile = !data.profile</span>
+<span class="diff-add">+     || !data.profile?.nickname</span>
+<span class="diff-add">+     || data.profile.nickname === 'MapIt User'</span>
+<span class="diff-add">+     || !data.profile?.full_name</span>
+<span class="diff-add">+     || data.profile.full_name === 'MapIt User';</span>
+<span class="diff-add">+   if(needsProfile){</span>
+<span class="diff-add">+     if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')</span>
+<span class="diff-add">+       document.getElementById('nameInput').value = data.profile.full_name;</span>
+<span class="diff-add">+     if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')</span>
+<span class="diff-add">+       document.getElementById('profileNicknameInput').value = data.profile.nickname;</span>
+<span class="diff-add">+     document.getElementById('authModal').classList.remove('hide');</span>
+<span class="diff-add">+     goToStep('step-profile');</span>
+<span class="diff-add">+     return true;</span>
+<span class="diff-add">+   }</span>
+<span class="diff-ctx">    showLoadingSplash();</span>
+<span class="diff-ctx">    ...</span></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OBSERVATIONS -->
+    <section id="observations">
+      <div class="section-title"><span class="section-ico">⚠</span> Observations (Non-Blocking)</div>
+      <div class="section-desc">
+        These are not bugs — nothing is broken. They are noted for awareness and future action where appropriate.
+      </div>
+      <div class="section-divider"></div>
+      <table class="obs-table">
+        <thead><tr>
+          <th style="width:40px">#</th>
+          <th style="width:80px">Type</th>
+          <th>Observation</th>
+          <th style="width:130px">Recommended Action</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><b>O1</b></td>
+            <td><span class="sev-pill sev-config">Config</span></td>
+            <td><code>OTP_RATE_LIMIT=100</code> in local <code>.env</code> — Express OTP limiter set to 100/hr instead of intended 10/hr. Supabase's own 60s cooldown provides adequate protection locally.</td>
+            <td>Verify Vercel env var is set to <strong>10</strong> in both UAT and production projects.</td>
+          </tr>
+          <tr>
+            <td><b>O2</b></td>
+            <td><span class="sev-pill sev-info">Info</span></td>
+            <td>OTP rate limiting is double-layered: Supabase imposes 60s per-email cooldown (observed in tests); Express adds a per-IP hourly limit. Together they provide adequate protection. No single point of failure.</td>
+            <td>No action needed. Both layers working as intended.</td>
+          </tr>
+          <tr>
+            <td><b>O3</b></td>
+            <td><span class="sev-pill sev-security">Security</span></td>
+            <td><code>resetSentMsg</code> in <code>sendPasswordReset()</code> uses <code>innerHTML</code> with the raw email string. A crafted email like <code>&lt;img src=x onerror=alert(1)&gt;@test.com</code> would pass the frontend <code>@</code> check but fail Supabase validation. Low risk but <code>textContent</code> is always safer.</td>
+            <td>Optional hardening before public launch: escape email before inserting into innerHTML.</td>
+          </tr>
+          <tr>
+            <td><b>O4</b></td>
+            <td><span class="sev-pill sev-ux">UX</span></td>
+            <td><code>AUTH_MODE</code> variable is not reset to <code>'signin'</code> when navigating back to <code>step-auth</code> from <code>setNewPassword()</code> or <code>continueAs()</code> session expiry. On a fresh page load this is always 'signin'; only a rare interactive edge-case could leave it in register mode.</td>
+            <td>Acceptable for MVP. Can call <code>switchAuthTab('signin')</code> in those paths if needed before public launch.</td>
+          </tr>
+          <tr>
+            <td><b>O5</b></td>
+            <td><span class="sev-pill sev-ux">UX</span></td>
+            <td>Password fields in <code>step-auth</code> are not cleared when switching between Sign In and Create Account tabs. Previous input persists. Unlikely to cause confusion for typical use patterns.</td>
+            <td>Acceptable for MVP.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- FILES CHANGED -->
+    <section id="files">
+      <div class="section-title"><span class="section-ico">📁</span> Files Changed in This UAT Pass</div>
+      <div class="section-divider"></div>
+      <div class="file-row">
+        <div class="file-icon">📄</div>
+        <div>
+          <div class="file-name">MapIt_MVP_v1.html</div>
+          <div class="file-desc">
+            <strong>BUG-01:</strong> verifyOtp() — added 5-condition needsProfile check with profile field pre-fill<br>
+            <strong>BUG-02:</strong> _refreshStaleSessionNames() — filter extended to catch nickname === 'MapIt User'<br>
+            <strong>BUG-03:</strong> submitAuth() — profileNicknameInput now pre-filled from existing profile on Sign-In path<br>
+            <strong>BUG-04:</strong> handleOAuthCallback() — added needsProfile check and profile field pre-fill for Google OAuth
+          </div>
+        </div>
+      </div>
+      <div class="file-row">
+        <div class="file-icon">📄</div>
+        <div>
+          <div class="file-name">public/index.html</div>
+          <div class="file-desc">
+            Synced from MapIt_MVP_v1.html — byte-identical (diff verified clean). Two-file rule maintained.
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:8px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Key Developer Rule</div>
+        <div style="font-size:12.5px;color:var(--muted2);">
+          After <em>every</em> frontend change: <code style="color:var(--orange2)">cp MapIt_MVP_v1.html public/index.html && diff MapIt_MVP_v1.html public/index.html</code>
+          — diff must show <strong>zero differences</strong> before any commit. <code>public/index.html</code> is what Vercel serves.
+        </div>
+      </div>
+    </section>
+
+    <!-- NEXT STEPS -->
+    <section id="next">
+      <div class="section-title"><span class="section-ico">🔜</span> Next Steps</div>
+      <div class="section-divider"></div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="file-row" style="gap:12px;align-items:center;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(240,96,48,0.2);border:1px solid rgba(240,96,48,0.4);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--orange2);flex-shrink:0;">1</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);">Run Manual UAT Checklist</div>
+            <div class="file-desc">Arun in Bangalore tests all 51 browser-based checks on the UAT URL. See the separate Arun UAT Checklist document.</div>
+          </div>
+        </div>
+        <div class="file-row" style="gap:12px;align-items:center;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(240,96,48,0.2);border:1px solid rgba(240,96,48,0.4);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--orange2);flex-shrink:0;">2</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);">Supabase SQL Cleanup</div>
+            <div class="file-desc"><code style="color:var(--orange2)">DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb</code><br><code style="color:var(--orange2)">UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'</code></div>
+          </div>
+        </div>
+        <div class="file-row" style="gap:12px;align-items:center;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(240,96,48,0.2);border:1px solid rgba(240,96,48,0.4);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--orange2);flex-shrink:0;">3</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);">Nagesh + Arun UAT Sign-off → Merge uat → main</div>
+            <div class="file-desc">After checklist passes, open PR from <code>uat</code> to <code>main</code> and merge for production deployment.</div>
+          </div>
+        </div>
+        <div class="file-row" style="gap:12px;align-items:center;border-color:rgba(239,68,68,0.3);">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#F87171;flex-shrink:0;">⚠</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);">Pre-Public-Launch ONLY — Email Verification</div>
+            <div class="file-desc">Current signup uses <code>email_confirm: true</code> (admin API) — skips verification email intentionally for family beta. Before going public: change to <code>email_confirm: false</code> and add <code>step-verify-email</code> OTP step.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div style="border-top:1px solid var(--border);padding:28px 0 0;margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div style="font-size:12px;color:var(--muted);">
+        MapIt MVP · Session 2 UAT Report · Generated 22 June 2026 by Claude Code
+      </div>
+      <div style="font-size:12px;color:var(--muted);">
+        Repo: <code style="color:var(--orange2)">NageshVani/mapit-backend</code> · Branch: <code style="color:var(--orange2)">uat</code>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

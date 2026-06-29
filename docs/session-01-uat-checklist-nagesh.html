@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 1 UAT Checklist</title>
+<style>
+  :root {
+    --orange: #F06030;
+    --orange2: #FF7A50;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --green-border: #bbf7d0;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --yellow: #d97706;
+    --yellow-light: #fffbeb;
+    --yellow-border: #fde68a;
+    --blue: #1d4ed8;
+    --blue-light: #eff6ff;
+    --blue-border: #bfdbfe;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --purple-border: #ddd6fe;
+    --bg: #F8FAFC;
+    --panel: #FFFFFF;
+    --card: #F1F5F9;
+    --border: #E2E8F0;
+    --border2: #CBD5E1;
+    --text: #0F172A;
+    --muted: #64748B;
+    --muted2: #475569;
+  }
+  @media print {
+    body { font-size: 11pt; background: #fff; }
+    .no-print { display: none !important; }
+    .check-block { break-inside: avoid; }
+    .page-break { page-break-before: always; }
+    a { color: inherit; text-decoration: none; }
+    .print-note { display: block !important; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .doc-header {
+    background: linear-gradient(135deg, #1A1D27 0%, #2D3250 100%);
+    padding: 36px 60px 32px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(240,96,48,0.2) 0%, transparent 70%);
+  }
+  .logo { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .logo em { font-style: normal; color: var(--orange2); }
+  .doc-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .doc-subtitle { font-size: 14px; opacity: 0.65; margin-bottom: 20px; }
+  .uat-url-box {
+    background: rgba(240,96,48,0.2);
+    border: 1.5px solid rgba(240,96,48,0.5);
+    border-radius: 10px;
+    padding: 14px 20px;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  .uat-url-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.7; margin-bottom: 4px; }
+  .uat-url { font-size: 15px; font-weight: 700; font-family: monospace; color: #FFA07A; }
+  .header-meta { display: flex; gap: 32px; flex-wrap: wrap; margin-top: 8px; }
+  .meta-item { }
+  .meta-label { font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.55; }
+  .meta-val { font-size: 13px; font-weight: 600; opacity: 0.9; }
+
+  /* ── LEGEND ── */
+  .legend-bar {
+    background: var(--purple-light);
+    border: 1.5px solid var(--purple-border);
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin: 24px 60px 8px;
+    display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap;
+  }
+  .legend-title { font-size: 12px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }
+  .legend-items { display: flex; gap: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.auto { background: #86efac; border: 1.5px solid var(--green); }
+  .legend-dot.manual { background: #fde68a; border: 1.5px solid var(--yellow); }
+
+  /* ── AUTO-PASS BANNER ── */
+  .auto-banner {
+    background: var(--green-light);
+    border: 1.5px solid var(--green-border);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 12px;
+    color: var(--green);
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 600;
+  }
+
+  /* ── INSTRUCTIONS ── */
+  .instructions {
+    background: var(--blue-light);
+    border: 1.5px solid var(--blue-border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 12px 60px 0;
+  }
+  .instructions-title { font-size: 14px; font-weight: 700; color: var(--blue); margin-bottom: 10px; }
+  .instructions ol { padding-left: 20px; }
+  .instructions li { font-size: 13px; color: #1e40af; margin-bottom: 6px; line-height: 1.6; }
+  .instructions li strong { color: var(--blue); }
+  .instructions code { background: rgba(29,78,216,0.1); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+  /* ── TESTER INFO ── */
+  .tester-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 24px 60px 32px;
+  }
+  .tester-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+  .tester-input {
+    width: 100%; border: 2px solid var(--border2);
+    border-radius: 8px; padding: 10px 13px;
+    font-size: 13px; font-family: inherit; color: var(--text);
+    background: var(--panel); outline: none; transition: border-color 0.15s;
+  }
+  .tester-input:focus { border-color: var(--orange); }
+
+  /* ── MAIN CONTENT ── */
+  .content { padding: 0 60px 60px; }
+
+  /* ── BLOCK ── */
+  .check-block { margin-bottom: 36px; }
+  .block-header {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--text);
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    padding: 14px 20px;
+  }
+  .block-header.auto-block { background: #14532d; }
+  .block-header.manual-block { background: #78350f; }
+  .block-letter {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .block-header.auto-block .block-letter { background: #16a34a; }
+  .block-header.manual-block .block-letter { background: #d97706; }
+  .block-title { font-size: 16px; font-weight: 700; }
+  .block-desc { font-size: 12px; opacity: 0.6; margin-top: 1px; }
+  .block-type-badge {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    border-radius: 12px; padding: 3px 10px; letter-spacing: 0.5px;
+  }
+  .block-header.auto-block .block-type-badge { background: rgba(134,239,172,0.3); color: #86efac; }
+  .block-header.manual-block .block-type-badge { background: rgba(253,230,138,0.3); color: #fde68a; }
+  .block-count {
+    font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.15); border-radius: 12px; padding: 3px 10px;
+  }
+  .block-prereq {
+    background: var(--yellow-light);
+    border: 1px solid var(--yellow-border);
+    border-top: none;
+    padding: 10px 20px;
+    font-size: 12px; color: var(--yellow);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .block-prereq.info {
+    background: var(--blue-light);
+    border-color: var(--blue-border);
+    color: #1e40af;
+  }
+  .block-prereq.auto-note {
+    background: var(--green-light);
+    border-color: var(--green-border);
+    color: var(--green);
+  }
+
+  /* ── CHECK ITEM ── */
+  .check-list {
+    border: 1px solid var(--border2);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: #F8FAFC; }
+  .check-item.passed { background: var(--green-light) !important; }
+  .check-item.failed { background: var(--red-light) !important; }
+  .check-item.skipped { background: #FAFAFA !important; opacity: 0.6; }
+
+  .check-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--card); border: 1.5px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: var(--muted);
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .check-item.passed .check-num { background: #DCFCE7; border-color: #86EFAC; color: var(--green); }
+  .check-item.failed .check-num { background: #FEE2E2; border-color: #FCA5A5; color: var(--red); }
+
+  .check-content { flex: 1; min-width: 0; }
+  .check-action { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .check-expect { font-size: 11.5px; color: var(--muted2); line-height: 1.5; }
+  .check-expect code { font-family: monospace; font-size: 11px; background: var(--card); padding: 1px 5px; border-radius: 3px; }
+  .auto-result {
+    font-size: 11px; font-family: monospace;
+    background: #dcfce7; border: 1px solid #86efac; border-radius: 4px;
+    padding: 3px 8px; color: #166534; margin-top: 5px; display: inline-block;
+  }
+  .check-note-field {
+    width: 100%; border: 1px solid var(--border2); border-radius: 5px;
+    padding: 5px 9px; font-size: 12px; font-family: inherit; color: var(--text);
+    background: #fff; resize: none; margin-top: 6px; display: none;
+  }
+  .check-item.failed .check-note-field { display: block; }
+
+  .check-actions { display: flex; gap: 6px; flex-shrink: 0; margin-top: 1px; }
+  .btn-pass {
+    padding: 5px 14px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
+    border: 1.5px solid var(--green-border); background: transparent;
+    color: var(--green); cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-pass:hover, .check-item.passed .btn-pass { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn-fail {
+    padding: 5px 14px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
+    border: 1.5px solid #FCA5A5; background: transparent;
+    color: var(--red); cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-fail:hover, .check-item.failed .btn-fail { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 60px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .progress-label { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .progress-bar { flex: 1; height: 8px; background: var(--card); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--orange); border-radius: 4px; transition: width 0.3s; }
+  .progress-stats { font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .stat-pass { color: var(--green); }
+  .stat-fail { color: var(--red); }
+
+  /* ── SIGN-OFF ── */
+  .signoff {
+    background: var(--panel);
+    border: 2px solid var(--border2);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-top: 40px;
+  }
+  .signoff-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .signoff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .signoff-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .signoff-line { border-bottom: 2px solid var(--border2); height: 36px; }
+  .overall-result { margin-top: 24px; display: flex; gap: 16px; }
+  .result-btn {
+    flex: 1; padding: 16px; border-radius: 10px;
+    border: 2.5px solid var(--border2); background: transparent;
+    font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: all 0.2s; text-align: center;
+  }
+  .result-btn.approve { color: var(--green); border-color: var(--green-border); }
+  .result-btn.approve:hover, .result-btn.approve.selected { background: var(--green); border-color: var(--green); color: #fff; }
+  .result-btn.reject { color: var(--red); border-color: #FCA5A5; }
+  .result-btn.reject:hover, .result-btn.reject.selected { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* ── SECTION DIVIDER ── */
+  .section-divider {
+    display: flex; align-items: center; gap: 14px;
+    margin: 36px 0 20px;
+  }
+  .section-divider-line { flex: 1; height: 1px; background: var(--border2); }
+  .section-divider-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 4px 14px; border-radius: 20px;
+  }
+  .section-divider-label.auto { background: #dcfce7; color: #166534; }
+  .section-divider-label.manual { background: #fef3c7; color: #92400e; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 800px) {
+    .doc-header, .instructions, .tester-form, .content, .legend-bar { padding-left: 20px; padding-right: 20px; }
+    .progress-bar-wrap { padding-left: 20px; padding-right: 20px; }
+    .tester-form { grid-template-columns: 1fr; }
+    .signoff-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="logo">Map<em>It</em></div>
+  <div class="doc-title">Session 1 — UAT Checklist</div>
+  <div class="doc-subtitle">Foundation & Housekeeping · Git · Files · Vercel · Supabase · DNS · Live Smoke Test</div>
+  <div class="uat-url-box">
+    <div class="uat-url-label">Production URL</div>
+    <div class="uat-url">https://www.mapit.co.in</div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">Session</div>
+      <div class="meta-val">MVP Session 1</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Date</div>
+      <div class="meta-val">June 2026</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Tester</div>
+      <div class="meta-val">Nagesh Nagaraja Rao</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Commit</div>
+      <div class="meta-val">c7f86e8 (uat branch)</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Total Tests</div>
+      <div class="meta-val">66 (37 auto + 29 manual)</div>
+    </div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend-bar" style="margin-bottom:0">
+  <div>
+    <div class="legend-title">Test Types in This Checklist</div>
+    <div class="legend-items">
+      <div class="legend-item"><div class="legend-dot auto"></div> <strong>Auto-verified</strong> — Claude Code ran these checks (file diffs, curl, dig, grep). Pre-marked PASS. Override only if you observe otherwise.</div>
+      <div class="legend-item"><div class="legend-dot manual"></div> <strong>Manual</strong> — Requires you to open a browser, Vercel/Supabase dashboard, or run a SQL query.</div>
+    </div>
+  </div>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="instructions" style="margin-top:12px">
+  <div class="instructions-title">📋 How to use this checklist</div>
+  <ol>
+    <li><strong>Auto-verified tests (Blocks A–G)</strong> are pre-marked green. Review them — if anything looks wrong in your environment, click <strong>Fail</strong> and add a note.</li>
+    <li><strong>Manual tests (Blocks H–L)</strong> require you to open the Vercel Dashboard, Supabase Dashboard, or a browser. Work through each block in order.</li>
+    <li>For any <strong>Fail</strong> — a note field appears automatically. Write what you saw (e.g. "Column missing", "Env var blank").</li>
+    <li>At the end, use the <strong>Sign-Off</strong> section. All tests must be green before merging <code>uat → main</code>.</li>
+    <li><strong>Supabase SQL Editor</strong> for database checks: <code>https://supabase.com/dashboard/project/jneoxwumccmjwaojfazh/editor</code></li>
+  </ol>
+</div>
+
+<!-- TESTER INFO -->
+<div class="tester-form">
+  <div>
+    <div class="tester-label">Tester Name</div>
+    <input class="tester-input" type="text" value="Nagesh Nagaraja Rao" />
+  </div>
+  <div>
+    <div class="tester-label">Test Date</div>
+    <input class="tester-input" type="date" />
+  </div>
+  <div>
+    <div class="tester-label">Environment</div>
+    <input class="tester-input" type="text" placeholder="e.g. MacBook Air, Chrome 126" />
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar-wrap no-print">
+  <span class="progress-label">Overall Progress</span>
+  <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+  <span class="progress-stats">
+    <span class="stat-pass" id="pPass">0</span> pass &nbsp;·&nbsp;
+    <span class="stat-fail" id="pFail">0</span> fail &nbsp;·&nbsp;
+    <span id="pTotal">0</span> / <span id="pCount">66</span>
+  </span>
+</div>
+
+<div class="content">
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- AUTO-VERIFIED SECTION DIVIDER -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="section-divider-line"></div>
+  <div class="section-divider-label auto">✅ Auto-Verified by Claude Code — Blocks A through G</div>
+  <div class="section-divider-line"></div>
+</div>
+
+<!-- ════ BLOCK A ════ -->
+<div class="check-block">
+  <div class="block-header auto-block">
+    <div class="block-letter">A</div>
+    <div>
+      <div class="block-title">Local Project Files</div>
+      <div class="block-desc">Canonical frontend, documentation, and project structure created in Session 1</div>
+    </div>
+    <span class="block-type-badge">AUTO-VERIFIED</span>
+    <span class="block-count">9 tests</span>
+  </div>
+  <div class="block-prereq auto-note">✅ All 9 tests verified by Claude Code on 2026-06-22 via file system checks and diff comparison.</div>
+  <div class="check-list">
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">Git global email is set without quote characters</div>
+        <div class="check-expect">Expected: <code>nagesh.aadi@gmail.com</code> (no surrounding quotes)</div>
+        <div class="auto-result">✅ VERIFIED — git config returns: nagesh.aadi@gmail.com</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Git author name is correct</div>
+        <div class="check-expect">Expected: <code>Nagesh Nagaraja Rao</code></div>
+        <div class="auto-result">✅ VERIFIED — git config user.name: Nagesh Nagaraja Rao</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Session 1 commit <code>c7f86e8</code> exists in git history</div>
+        <div class="check-expect">Expected: commit with message <em>"docs(session-01): foundation &amp; housekeeping"</em></div>
+        <div class="auto-result">✅ VERIFIED — git log shows c7f86e8 authored by Nagesh Nagaraja Rao, 2026-06-19</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action"><code>MapIt_MVP_v1.html</code> created as canonical MVP frontend</div>
+        <div class="check-expect">Expected: file exists, ≈ 2981 lines, ≥ 160 KB</div>
+        <div class="auto-result">✅ VERIFIED — 171,960 bytes · 2,981 lines (copied from prototype, all Session 2 fixes applied)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">Two-file rule: <code>public/index.html</code> is byte-identical to <code>MapIt_MVP_v1.html</code></div>
+        <div class="check-expect">Expected: <code>diff MapIt_MVP_v1.html public/index.html</code> returns no output</div>
+        <div class="auto-result">✅ VERIFIED — diff returned empty; both files are 171,960 bytes (IDENTICAL)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">6</div>
+      <div class="check-content">
+        <div class="check-action"><code>CLAUDE.md</code> created with all 12 collaboration rules</div>
+        <div class="check-expect">Expected: file exists, contains exactly 12 rules (Rule 1 through Rule 12)</div>
+        <div class="auto-result">✅ VERIFIED — CLAUDE.md is 8,512 bytes; grep found all 12 rule headings</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">7</div>
+      <div class="check-content">
+        <div class="check-action"><code>docs/architecture.md</code> created</div>
+        <div class="check-expect">Expected: file exists, covers stack, branch strategy, and key decisions</div>
+        <div class="auto-result">✅ VERIFIED — 2,702 bytes · created 2026-06-19</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">8</div>
+      <div class="check-content">
+        <div class="check-action"><code>docs/ux-audit.md</code> created (30-issue UX audit)</div>
+        <div class="check-expect">Expected: file exists, covers typography, colour, spacing, forms, auth, map</div>
+        <div class="auto-result">✅ VERIFIED — 8,489 bytes · created 2026-06-19</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">9</div>
+      <div class="check-content">
+        <div class="check-action"><code>docs/screenshots/session-01/</code> directory created</div>
+        <div class="check-expect">Expected: directory exists with <code>.gitkeep</code> placeholder</div>
+        <div class="auto-result">✅ VERIFIED — directory present with .gitkeep</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block A -->
+
+<!-- ════ BLOCK B ════ -->
+<div class="check-block">
+  <div class="block-header auto-block">
+    <div class="block-letter">B</div>
+    <div>
+      <div class="block-title">Migration Scripts &amp; Environment Template</div>
+      <div class="block-desc">Pre-written SQL migrations and .env.example created for future sessions</div>
+    </div>
+    <span class="block-type-badge">AUTO-VERIFIED</span>
+    <span class="block-count">5 tests</span>
+  </div>
+  <div class="block-prereq auto-note">✅ All 5 tests verified by Claude Code — files confirmed to exist with expected content.</div>
+  <div class="check-list">
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">10</div>
+      <div class="check-content">
+        <div class="check-action"><code>database/migrations/001-mvp-auth-schema.sql</code> created</div>
+        <div class="check-expect">Expected: adds nickname, phone, home_lat/lng, auth_provider, default_view, agreed_tos_at to profiles; renames invite_code → invite_code_legacy</div>
+        <div class="auto-result">✅ VERIFIED — 1,529 bytes; all ALTER TABLE IF NOT EXISTS statements present</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">11</div>
+      <div class="check-content">
+        <div class="check-action"><code>database/migrations/002-mvp-listings-schema.sql</code> created</div>
+        <div class="check-expect">Expected: adds reference_code, expires_at, show_phone, views_count, city_id to listings table</div>
+        <div class="auto-result">✅ VERIFIED — 1,535 bytes; all ALTER TABLE IF NOT EXISTS statements present</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">12</div>
+      <div class="check-content">
+        <div class="check-action"><code>database/migrations/003-chat-schema.sql</code> created</div>
+        <div class="check-expect">Expected: defines conversations and chat_messages tables with RLS stubs (for Session 6)</div>
+        <div class="auto-result">✅ VERIFIED — 1,877 bytes; CREATE TABLE IF NOT EXISTS for both tables present</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">13</div>
+      <div class="check-content">
+        <div class="check-action"><code>.env.example</code> created with all 14 documented environment variables</div>
+        <div class="check-expect">Expected: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_DB_PASSWORD, PORT, NODE_ENV, APP_URL, JWT_SECRET, STORAGE_BUCKET, MAX_PHOTO_SIZE, MAX_PHOTOS_PER_LISTING, REQUIRE_INVITE_CODE, EMAIL_FROM_NAME, OTP_RATE_LIMIT</div>
+        <div class="auto-result">✅ VERIFIED — 3,424 bytes; all 14 keys present with comments</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">14</div>
+      <div class="check-content">
+        <div class="check-action"><code>.gitignore</code> protects sensitive files from accidental commit</div>
+        <div class="check-expect">Expected: <code>node_modules/</code>, <code>.env</code>, <code>.env.local</code>, <code>.env.production</code>, and <code>client_secret_*.json</code> all listed</div>
+        <div class="auto-result">✅ VERIFIED — all 5 entries confirmed in .gitignore</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block B -->
+
+<!-- ════ BLOCK C ════ -->
+<div class="check-block">
+  <div class="block-header auto-block">
+    <div class="block-letter">C</div>
+    <div>
+      <div class="block-title">Branch Strategy</div>
+      <div class="block-desc">dev / uat / main branches created and pushed to GitHub</div>
+    </div>
+    <span class="block-type-badge">AUTO-VERIFIED</span>
+    <span class="block-count">4 tests</span>
+  </div>
+  <div class="block-prereq auto-note">✅ All 4 tests verified by Claude Code via <code>git branch -a</code> and <code>git remote -v</code>.</div>
+  <div class="check-list">
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">15</div>
+      <div class="check-content">
+        <div class="check-action"><code>main</code> branch exists locally and on remote</div>
+        <div class="check-expect">Expected: <code>origin/main</code> in <code>git branch -a</code></div>
+        <div class="auto-result">✅ VERIFIED — remotes/origin/main present; origin/HEAD → origin/main</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">16</div>
+      <div class="check-content">
+        <div class="check-action"><code>uat</code> branch exists locally and on remote</div>
+        <div class="check-expect">Expected: <code>origin/uat</code> in <code>git branch -a</code>; currently checked-out branch</div>
+        <div class="auto-result">✅ VERIFIED — uat is the current branch; remotes/origin/uat present</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">17</div>
+      <div class="check-content">
+        <div class="check-action"><code>dev</code> branch exists locally and on remote</div>
+        <div class="check-expect">Expected: <code>origin/dev</code> in <code>git branch -a</code></div>
+        <div class="auto-result">✅ VERIFIED — remotes/origin/dev present</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">18</div>
+      <div class="check-content">
+        <div class="check-action">Git remote points to the correct GitHub repo</div>
+        <div class="check-expect">Expected: <code>https://NageshVani@github.com/NageshVani/mapit-backend.git</code></div>
+        <div class="auto-result">✅ VERIFIED — origin remote confirmed</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block C -->
+
+<!-- ════ BLOCK D ════ -->
+<div class="check-block">
+  <div class="block-header auto-block">
+    <div class="block-letter">D</div>
+    <div>
+      <div class="block-title">Server Configuration</div>
+      <div class="block-desc">Express server guards, CORS, trust proxy, static file serving, Helmet CSP</div>
+    </div>
+    <span class="block-type-badge">AUTO-VERIFIED</span>
+    <span class="block-count">7 tests</span>
+  </div>
+  <div class="block-prereq auto-note">✅ All 7 tests verified by Claude Code via file grep and Node.js require check.</div>
+  <div class="check-list">
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">19</div>
+      <div class="check-content">
+        <div class="check-action"><code>server.js</code> loads without syntax or runtime errors</div>
+        <div class="check-expect">Expected: <code>node -e "require('./src/server.js')"</code> exits cleanly</div>
+        <div class="auto-result">✅ VERIFIED — "server.js loaded OK" confirmed; [auth.js] Auth router loaded</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">20</div>
+      <div class="check-content">
+        <div class="check-action"><code>require.main === module</code> guard prevents Vercel cold-start failures</div>
+        <div class="check-expect">Expected: <code>app.listen()</code> is inside an <code>if (require.main === module)</code> block in server.js (line ~118)</div>
+        <div class="auto-result">✅ VERIFIED — found at src/server.js line 118-119</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">21</div>
+      <div class="check-content">
+        <div class="check-action"><code>express.static('../public')</code> serves the frontend from the backend project</div>
+        <div class="check-expect">Expected: <code>app.use(express.static(path.join(__dirname, '../public')))</code> present in server.js</div>
+        <div class="auto-result">✅ VERIFIED — found at src/server.js line 107</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">22</div>
+      <div class="check-content">
+        <div class="check-action">Helmet CSP disabled (<code>contentSecurityPolicy: false</code>)</div>
+        <div class="check-expect">Expected: <code>app.use(helmet({ contentSecurityPolicy: false }))</code> — required for inline scripts and CDN resources (Leaflet, Font Awesome, Google Fonts)</div>
+        <div class="auto-result">✅ VERIFIED — found at src/server.js line 43</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">23</div>
+      <div class="check-content">
+        <div class="check-action"><code>app.set('trust proxy', 1)</code> ensures real client IPs for rate limiting</div>
+        <div class="check-expect">Expected: line present in server.js before rate limiter setup — without it, all users share Vercel's edge IP as a single rate-limit bucket</div>
+        <div class="auto-result">✅ VERIFIED — found at src/server.js line 74</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">24</div>
+      <div class="check-content">
+        <div class="check-action">CORS whitelist contains all 7 required origins + Vercel preview regex</div>
+        <div class="check-expect">Expected in <code>allowedOrigins</code>: localhost:3000, localhost:3001, 127.0.0.1:5500, localhost:5500, mapit.co.in, www.mapit.co.in, uat.mapit.co.in + regex for mapit-backend-*.vercel.app</div>
+        <div class="auto-result">✅ VERIFIED — all 7 origins + case-insensitive Vercel regex confirmed in src/server.js lines 48-63</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">25</div>
+      <div class="check-content">
+        <div class="check-action"><code>API_URL</code> auto-detects environment — no hardcoded production URL in frontend</div>
+        <div class="check-expect">Expected: IIFE sets <code>API_URL</code> based on <code>window.location.hostname</code>: localhost → 3001, mapit.co.in → api.mapit.co.in, UAT/preview → same-origin</div>
+        <div class="auto-result">✅ VERIFIED — auto-detect IIFE found at MapIt_MVP_v1.html line 828; no manual comment/uncomment needed</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block D -->
+
+<!-- ════ BLOCK E ════ -->
+<div class="check-block">
+  <div class="block-header auto-block">
+    <div class="block-letter">E</div>
+    <div>
+      <div class="block-title">Vercel Config Files</div>
+      <div class="block-desc">vercel.json routing and public/vercel.json static config</div>
+    </div>
+    <span class="block-type-badge">AUTO-VERIFIED</span>
+    <span class="block-count">3 tests</span>
+  </div>
+  <div class="block-prereq auto-note">✅ All 3 tests verified by Claude Code via file read.</div>
+  <div class="check-list">
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">26</div>
+      <div class="check-content">
+        <div class="check-action">Root <code>vercel.json</code> routes all traffic through <code>src/server.js</code> via <code>@vercel/node</code></div>
+        <div class="check-expect">Expected: builds with <code>"use": "@vercel/node"</code>; route <code>/(.*)</code> → <code>src/server.js</code>; NODE_ENV set to production</div>
+        <div class="auto-result">✅ VERIFIED — vercel.json confirmed with correct build and route config</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">27</div>
+      <div class="check-content">
+        <div class="check-action"><code>public/vercel.json</code> has <code>cleanUrls: true</code> and <code>trailingSlash: false</code></div>
+        <div class="check-expect">Expected: prevents Vercel serving <code>/index.html</code> with trailing slashes in static mode</div>
+        <div class="auto-result">✅ VERIFIED — public/vercel.json confirmed with both settings</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">28</div>
+      <div class="check-content">
+        <div class="check-action"><code>package.json</code> has correct entry point and scripts</div>
+        <div class="check-expect">Expected: <code>name: mapit-backend</code>, <code>main: src/server.js</code>, scripts: start / dev / test</div>
+        <div class="auto-result">✅ VERIFIED — package.json confirmed with all three fields</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block E -->
+
+<!-- ════ BLOCK F ════ -->
+<div class="check-block">
+  <div class="block-header auto-block">
+    <div class="block-letter">F</div>
+    <div>
+      <div class="block-title">DNS &amp; Live Domain Configuration</div>
+      <div class="block-desc">Namecheap DNS records verified via dig + curl</div>
+    </div>
+    <span class="block-type-badge">AUTO-VERIFIED</span>
+    <span class="block-count">5 tests</span>
+  </div>
+  <div class="block-prereq auto-note">✅ All 5 tests verified by Claude Code via <code>dig</code> and <code>curl</code> on 2026-06-22.</div>
+  <div class="check-list">
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">29</div>
+      <div class="check-content">
+        <div class="check-action"><code>mapit.co.in</code> (apex domain) redirects to <code>www.mapit.co.in</code></div>
+        <div class="check-expect">Expected: HTTP 308 permanent redirect to www</div>
+        <div class="auto-result">✅ VERIFIED — curl returns HTTP/2 308 redirect; A record → 216.198.79.1</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">30</div>
+      <div class="check-content">
+        <div class="check-action"><code>www.mapit.co.in</code> returns 200 OK</div>
+        <div class="check-expect">Expected: HTTP 200 with HTML body (the MapIt app)</div>
+        <div class="auto-result">✅ VERIFIED — curl returns 200; CNAME → 4bb267e12ef05e09.vercel-dns-017.com</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">31</div>
+      <div class="check-content">
+        <div class="check-action"><code>api.mapit.co.in</code> CNAME points to Vercel DNS</div>
+        <div class="check-expect">Expected: CNAME record resolves to <code>*.vercel-dns*.com</code></div>
+        <div class="auto-result">✅ VERIFIED — dig returns CNAME: 4bb267e12ef05e09.vercel-dns-017.com</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">32</div>
+      <div class="check-content">
+        <div class="check-action"><code>uat.mapit.co.in</code> is live and returns 200 OK</div>
+        <div class="check-expect">Expected: HTTP 200 (note: free Vercel tier points this to production branch, not uat branch — known limitation)</div>
+        <div class="auto-result">✅ VERIFIED — curl returns 200</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">33</div>
+      <div class="check-content">
+        <div class="check-action">Vercel UAT preview URL is live and returns 200 OK</div>
+        <div class="check-expect">Expected: <code>https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code> returns HTTP 200</div>
+        <div class="auto-result">✅ VERIFIED — curl returns 200; this is the correct URL for UAT testing</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block F -->
+
+<!-- ════ BLOCK G ════ -->
+<div class="check-block">
+  <div class="block-header auto-block">
+    <div class="block-letter">G</div>
+    <div>
+      <div class="block-title">Production API — Live Endpoint Tests</div>
+      <div class="block-desc">API auth enforcement and CORS headers verified against production</div>
+    </div>
+    <span class="block-type-badge">AUTO-VERIFIED</span>
+    <span class="block-count">4 tests</span>
+  </div>
+  <div class="block-prereq auto-note">✅ All 4 tests verified by Claude Code via <code>curl</code> against <code>https://api.mapit.co.in</code> on 2026-06-22.</div>
+  <div class="check-list">
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">34</div>
+      <div class="check-content">
+        <div class="check-action"><code>GET /api/auth/me</code> returns 401 (not 404 or 500)</div>
+        <div class="check-expect">Expected: unauthenticated request returns HTTP 401 Unauthorized — confirms the route exists and auth middleware is active</div>
+        <div class="auto-result">✅ VERIFIED — curl returns 401 to https://api.mapit.co.in/api/auth/me</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">35</div>
+      <div class="check-content">
+        <div class="check-action"><code>GET /api/listings</code> returns 401 (not 404 or 500)</div>
+        <div class="check-expect">Expected: unauthenticated request returns HTTP 401 — confirms listings route exists and is protected</div>
+        <div class="auto-result">✅ VERIFIED — curl returns 401 to https://api.mapit.co.in/api/listings</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">36</div>
+      <div class="check-content">
+        <div class="check-action">CORS returns correct <code>Access-Control-Allow-Origin</code> header for production origin</div>
+        <div class="check-expect">Expected: request with <code>Origin: https://www.mapit.co.in</code> header gets <code>access-control-allow-origin: https://www.mapit.co.in</code> in response</div>
+        <div class="auto-result">✅ VERIFIED — curl -I confirms header; access-control-allow-credentials: true also present</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" data-auto="pass" onclick="toggle(this)">
+      <div class="check-num">37</div>
+      <div class="check-content">
+        <div class="check-action">Response includes security headers (Helmet active)</div>
+        <div class="check-expect">Expected: <code>x-content-type-options: nosniff</code> present in response headers — confirms Helmet is running (CSP disabled but other headers still applied)</div>
+        <div class="auto-result">✅ VERIFIED — x-content-type-options: nosniff confirmed in curl headers</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block G -->
+
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- MANUAL SECTION DIVIDER -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="section-divider-line"></div>
+  <div class="section-divider-label manual">⚠️ Manual Verification Required — Blocks H through L</div>
+  <div class="section-divider-line"></div>
+</div>
+
+<!-- ════ BLOCK H ════ -->
+<div class="check-block">
+  <div class="block-header manual-block">
+    <div class="block-letter">H</div>
+    <div>
+      <div class="block-title">Vercel Dashboard</div>
+      <div class="block-desc">Project settings, environment variables, domain config, broken project cleanup</div>
+    </div>
+    <span class="block-type-badge">MANUAL</span>
+    <span class="block-count">6 tests</span>
+  </div>
+  <div class="block-prereq">⚠️ Open the Vercel Dashboard at <strong>vercel.com/dashboard</strong> → project <strong>mapit-backend</strong> before starting this block.</div>
+  <div class="check-list">
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">38</div>
+      <div class="check-content">
+        <div class="check-action">Only one active Vercel project — broken <code>mapit-frontend</code> project has been deleted</div>
+        <div class="check-expect">Expected: Only <code>mapit-backend</code> visible in your Vercel dashboard. The old <code>mapit-frontend</code> project (which returned 500/FUNCTION_INVOCATION_FAILED) must not appear.</div>
+        <textarea class="check-note-field" rows="2" placeholder="If mapit-frontend still exists, delete it from Vercel dashboard…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">39</div>
+      <div class="check-content">
+        <div class="check-action"><code>mapit-backend</code> project — Production Branch is set to <code>main</code></div>
+        <div class="check-expect">Go to: Settings → Git → Production Branch. Expected: <code>main</code> (not <code>uat</code> or <code>dev</code>)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note what branch is set as production…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">40</div>
+      <div class="check-content">
+        <div class="check-action"><code>uat</code> branch auto-deploys to a Vercel preview URL</div>
+        <div class="check-expect">Go to: Deployments tab → filter by branch <code>uat</code>. Expected: a recent deployment exists with URL <code>mapit-backend-git-uat-*.vercel.app</code> and status <strong>Ready</strong></div>
+        <textarea class="check-note-field" rows="2" placeholder="Note deployment status or URL…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">41</div>
+      <div class="check-content">
+        <div class="check-action"><code>uat.mapit.co.in</code> is added as a domain on the <code>mapit-backend</code> project</div>
+        <div class="check-expect">Go to: Settings → Domains. Expected: <code>uat.mapit.co.in</code> listed with status <strong>Valid Configuration</strong>. Note: on free tier it points to the production (main) build — this is expected behaviour.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note what you see in the Domains tab…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">42</div>
+      <div class="check-content">
+        <div class="check-action">All required environment variables are set in Vercel (not blank)</div>
+        <div class="check-expect">Go to: Settings → Environment Variables. Check that these are present with non-empty values:
+          <code>SUPABASE_URL</code>, <code>SUPABASE_ANON_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>PORT</code>, <code>NODE_ENV</code>, <code>APP_URL</code>, <code>STORAGE_BUCKET</code>, <code>OTP_RATE_LIMIT</code>, <code>REQUIRE_INVITE_CODE</code></div>
+        <textarea class="check-note-field" rows="2" placeholder="List any missing or blank env vars…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">43</div>
+      <div class="check-content">
+        <div class="check-action">Deployment Protection is disabled on the UAT preview URL</div>
+        <div class="check-expect">Go to: Settings → Deployment Protection. Expected: Vercel Authentication for preview deployments is <strong>disabled</strong> (otherwise Arun gets a login wall when accessing the UAT preview URL)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note the current protection setting…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block H -->
+
+<!-- ════ BLOCK I ════ -->
+<div class="check-block">
+  <div class="block-header manual-block">
+    <div class="block-letter">I</div>
+    <div>
+      <div class="block-title">Supabase Database Tables</div>
+      <div class="block-desc">Core tables required by the MVP — verified in Supabase Table Editor or SQL Editor</div>
+    </div>
+    <span class="block-type-badge">MANUAL</span>
+    <span class="block-count">8 tests</span>
+  </div>
+  <div class="block-prereq">⚠️ Open Supabase SQL Editor: <strong>supabase.com/dashboard/project/jneoxwumccmjwaojfazh/editor</strong>. Run: <code>SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;</code> to list all tables.</div>
+  <div class="check-list">
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">44</div>
+      <div class="check-content">
+        <div class="check-action"><code>profiles</code> table exists</div>
+        <div class="check-expect">Expected: table is present; it stores user profile data (full_name, nickname, phone, home location, auth_provider, etc.)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if missing or has unexpected structure…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">45</div>
+      <div class="check-content">
+        <div class="check-action"><code>listings</code> table exists with <code>details</code> JSONB column</div>
+        <div class="check-expect">Run: <code>SELECT column_name FROM information_schema.columns WHERE table_name='listings' ORDER BY ordinal_position;</code> — confirm <code>details</code> column of type <code>jsonb</code> is present</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if details column is missing or wrong type…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">46</div>
+      <div class="check-content">
+        <div class="check-action"><code>user_pins</code> table exists</div>
+        <div class="check-expect">Expected: table stores user GPS pin locations (lat, lng as float8, label, is_active)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if missing…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">47</div>
+      <div class="check-content">
+        <div class="check-action"><code>messages</code> table exists (used for Express Interest / Inbox)</div>
+        <div class="check-expect">Expected: table stores buyer→seller messages (sender_id, receiver_id, listing_id, content, is_read)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if missing or renamed…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">48</div>
+      <div class="check-content">
+        <div class="check-action"><code>invite_codes</code> table exists (archived — not deleted)</div>
+        <div class="check-expect">Expected: table is present with columns <code>code</code>, <code>created_for</code>, <code>used_by</code>. It is no longer used for auth but must not be dropped — historical data.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if missing or accidentally dropped…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">49</div>
+      <div class="check-content">
+        <div class="check-action"><code>feedback</code> table exists</div>
+        <div class="check-expect">Expected: table stores user feedback submissions (user_id FK → profiles.id, content, category)</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if missing…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">50</div>
+      <div class="check-content">
+        <div class="check-action">Row Level Security (RLS) is enabled on <code>profiles</code> table</div>
+        <div class="check-expect">Run: <code>SELECT relname, relrowsecurity FROM pg_class WHERE relname = 'profiles';</code> — Expected: <code>relrowsecurity = true</code>. Without RLS, any authenticated user could read all profiles.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note the relrowsecurity value…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">51</div>
+      <div class="check-content">
+        <div class="check-action"><code>invite_codes.code</code> values have no leading or trailing whitespace</div>
+        <div class="check-expect">Run: <code>SELECT code, length(code), created_for FROM invite_codes ORDER BY created_at DESC;</code> — Expected: all codes are exactly 10 characters (e.g. <code>MAPIT-N-01</code>). The trim SQL was run during Session 1 setup.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note any codes with unexpected length…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block I -->
+
+<!-- ════ BLOCK J ════ -->
+<div class="check-block">
+  <div class="block-header manual-block">
+    <div class="block-letter">J</div>
+    <div>
+      <div class="block-title">Supabase Auth &amp; Email (Resend)</div>
+      <div class="block-desc">Auth settings, Resend SMTP configuration, OTP, and redirect URL allowlist</div>
+    </div>
+    <span class="block-type-badge">MANUAL</span>
+    <span class="block-count">5 tests</span>
+  </div>
+  <div class="block-prereq">⚠️ Open Supabase Dashboard → <strong>Authentication → Settings</strong> and <strong>Authentication → URL Configuration</strong> for this block.</div>
+  <div class="check-list">
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">52</div>
+      <div class="check-content">
+        <div class="check-action">Supabase Site URL is set to <code>https://www.mapit.co.in</code></div>
+        <div class="check-expect">Go to: Auth → URL Configuration → Site URL. Expected: <code>https://www.mapit.co.in</code>. This controls where password-reset and magic-link emails redirect users.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note the current Site URL value…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">53</div>
+      <div class="check-content">
+        <div class="check-action">Supabase Redirect URLs allowlist includes the Vercel preview pattern</div>
+        <div class="check-expect">Go to: Auth → URL Configuration → Redirect URLs. Expected: list includes <code>https://mapit-backend-*.vercel.app/**</code> (added for OAuth and password-reset redirects to work from any preview URL)</div>
+        <textarea class="check-note-field" rows="2" placeholder="List the redirect URLs present…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">54</div>
+      <div class="check-content">
+        <div class="check-action">Email OTP is enabled in Supabase Auth settings</div>
+        <div class="check-expect">Go to: Auth → Providers → Email. Expected: <strong>Email provider is enabled</strong>; OTP (one-time password) flow is active. The "Confirm email" toggle should be <strong>OFF</strong> (we use admin.createUser with email_confirm:true instead).</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note the Email provider status…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">55</div>
+      <div class="check-content">
+        <div class="check-action">Resend SMTP is configured as the custom email provider</div>
+        <div class="check-expect">Go to: Auth → Settings (scroll to SMTP Settings). Expected: custom SMTP is enabled with Resend credentials (host: <code>smtp.resend.com</code>, port 465). Without this, Supabase uses its own free SMTP which has low deliverability and uses <code>resend.dev</code> test domain.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note whether custom SMTP is enabled and the host…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">56</div>
+      <div class="check-content">
+        <div class="check-action">Email sender address is <code>noreply@mapit.co.in</code></div>
+        <div class="check-expect">In SMTP Settings: Sender email should be <code>noreply@mapit.co.in</code> (not the default Supabase address or a Resend test address). Verify by checking a real OTP email received by a test account.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note the From address shown in SMTP settings or an email…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block J -->
+
+<!-- ════ BLOCK K ════ -->
+<div class="check-block">
+  <div class="block-header manual-block">
+    <div class="block-letter">K</div>
+    <div>
+      <div class="block-title">Supabase Migration 001 Applied</div>
+      <div class="block-desc">Verify all Session 2 auth columns exist in the profiles table, and cleanup SQL was run</div>
+    </div>
+    <span class="block-type-badge">MANUAL</span>
+    <span class="block-count">5 tests</span>
+  </div>
+  <div class="block-prereq">⚠️ Run this in Supabase SQL Editor to inspect the profiles table: <code>SELECT column_name, data_type, column_default FROM information_schema.columns WHERE table_name = 'profiles' ORDER BY ordinal_position;</code></div>
+  <div class="check-list">
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">57</div>
+      <div class="check-content">
+        <div class="check-action"><code>profiles.nickname</code> column exists</div>
+        <div class="check-expect">Expected: column of type <code>text</code> present. This was confirmed added on 2026-06-21 (was missing after initial migration was thought to have run). All existing rows should have been backfilled from <code>full_name</code>.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if column is missing…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">58</div>
+      <div class="check-content">
+        <div class="check-action"><code>profiles.home_lat</code>, <code>home_lng</code>, and <code>home_address</code> columns exist</div>
+        <div class="check-expect">Expected: <code>home_lat</code> and <code>home_lng</code> of type <code>double precision</code> (float8); <code>home_address</code> of type <code>text</code>. Used by the home location picker in onboarding.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note any missing columns…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">59</div>
+      <div class="check-content">
+        <div class="check-action"><code>profiles.auth_provider</code> column exists with correct default</div>
+        <div class="check-expect">Expected: type <code>text</code>, default <code>'email'</code>. Stores how the user signed up ('email', 'google', 'phone'). Existing rows should all show <code>email</code> as the value.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if missing or default is wrong…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">60</div>
+      <div class="check-content">
+        <div class="check-action"><code>profiles.invite_code</code> has been renamed to <code>profiles.invite_code_legacy</code></div>
+        <div class="check-expect">Run: <code>SELECT column_name FROM information_schema.columns WHERE table_name='profiles' AND column_name IN ('invite_code', 'invite_code_legacy');</code> — Expected: only <code>invite_code_legacy</code> appears (not <code>invite_code</code>). Historical data preserved, column renamed.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note what column names you see…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">61</div>
+      <div class="check-content">
+        <div class="check-action"><code>listings_condition_check</code> constraint has been dropped</div>
+        <div class="check-expect">Run: <code>SELECT constraint_name FROM information_schema.table_constraints WHERE table_name='listings' AND constraint_name='listings_condition_check';</code> — Expected: <strong>zero rows</strong> (constraint no longer exists). It checked the old <code>condition</code> column that was removed in Session 10.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Note if the constraint still appears…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block K -->
+
+<!-- ════ BLOCK L ════ -->
+<div class="check-block">
+  <div class="block-header manual-block">
+    <div class="block-letter">L</div>
+    <div>
+      <div class="block-title">Browser Smoke Test</div>
+      <div class="block-desc">Open the live app in Chrome and verify the foundation is working end-to-end</div>
+    </div>
+    <span class="block-type-badge">MANUAL</span>
+    <span class="block-count">5 tests</span>
+  </div>
+  <div class="block-prereq">⚠️ Open Chrome → DevTools (F12) → Console tab → then navigate to <strong>https://www.mapit.co.in</strong>. Clear localStorage first: in DevTools Console run <code>localStorage.clear()</code> then reload to test fresh state.</div>
+  <div class="check-list">
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">62</div>
+      <div class="check-content">
+        <div class="check-action"><code>https://www.mapit.co.in</code> loads the MapIt app — not a Vercel error page</div>
+        <div class="check-expect">Expected: page title is "MapIt" (or similar); you see the orange MapIt header. You should NOT see a Vercel 500/404 page, a blank white screen, or "FUNCTION_INVOCATION_FAILED".</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">63</div>
+      <div class="check-content">
+        <div class="check-action">Leaflet map renders correctly — tiles visible, zoom buttons present</div>
+        <div class="check-expect">Expected: after logging in and setting a location, the map shows OpenStreetMap tiles (the teal/blue map). The +/− zoom controls appear at the bottom-right. If tiles are blank/grey, there is likely a CSP or network issue.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe any map rendering issues…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">64</div>
+      <div class="check-content">
+        <div class="check-action">No JavaScript errors in the DevTools Console on initial page load</div>
+        <div class="check-expect">Expected: Console tab shows no red errors after the page loads. Yellow warnings about CDN resources or deprecations are acceptable. Any red errors must be investigated.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Copy-paste any red error messages here…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">65</div>
+      <div class="check-content">
+        <div class="check-action">"Who's using MapIt?" modal appears on first fresh load</div>
+        <div class="check-expect">Expected: after clearing localStorage and reloading, the auth/who-am-I modal appears (not a blank screen or auto-login). This confirms the session store is empty and the app is in correct first-visit state.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you see instead…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggle(this)">
+      <div class="check-num">66</div>
+      <div class="check-content">
+        <div class="check-action">API domain returns a JSON error in browser (not a Vercel 404 or blank page)</div>
+        <div class="check-expect">Open a new tab → navigate to <code>https://api.mapit.co.in/api/auth/me</code>. Expected: browser shows a JSON response like <code>{"error":"No authorization header"}</code> or similar 401 message. A Vercel 404 ("The deployment could not be found") means the API domain is not correctly wired.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Paste the response you see in the browser…"></textarea>
+      </div>
+      <div class="check-actions no-print">
+        <button class="btn-pass" onclick="setResult(event,this.closest('.check-item'),'passed')">Pass</button>
+        <button class="btn-fail" onclick="setResult(event,this.closest('.check-item'),'failed')">Fail</button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /block L -->
+
+<!-- ════ SIGN-OFF ════ -->
+<div class="signoff">
+  <div class="signoff-title">✍️ Session 1 UAT Sign-Off</div>
+  <div class="signoff-grid">
+    <div>
+      <div class="signoff-label">Tester Name</div>
+      <div class="signoff-line"></div>
+    </div>
+    <div>
+      <div class="signoff-label">Date Completed</div>
+      <div class="signoff-line"></div>
+    </div>
+    <div>
+      <div class="signoff-label">Overall Observations / Notes</div>
+      <div class="signoff-line" style="height:60px;"></div>
+    </div>
+    <div>
+      <div class="signoff-label">Manual Tests Blocked / Deferred (if any)</div>
+      <div class="signoff-line" style="height:60px;"></div>
+    </div>
+  </div>
+  <div class="overall-result">
+    <button class="result-btn approve" onclick="signOff('approve',this)">✅ Session 1 Foundation APPROVED — ready to proceed to Session 2</button>
+    <button class="result-btn reject" onclick="signOff('reject',this)">❌ Issues Found — fix before proceeding</button>
+  </div>
+  <div id="signoff-ts" style="font-size:11px;color:var(--muted);margin-top:10px;display:none;"></div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+const TOTAL = 66;
+const AUTO_IDS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37];
+
+function updateProgress() {
+  const items = document.querySelectorAll('.check-item');
+  let pass = 0, fail = 0, done = 0;
+  items.forEach(it => {
+    if (it.classList.contains('passed')) { pass++; done++; }
+    if (it.classList.contains('failed')) { fail++; done++; }
+  });
+  document.getElementById('pPass').textContent = pass;
+  document.getElementById('pFail').textContent = fail;
+  document.getElementById('pTotal').textContent = done;
+  document.getElementById('pFill').style.width = (done / TOTAL * 100) + '%';
+}
+
+function setResult(e, item, state) {
+  if (e) e.stopPropagation();
+  item.classList.remove('passed','failed','skipped');
+  if (state) item.classList.add(state);
+  updateProgress();
+}
+
+function toggle(item) {
+  if (item.classList.contains('passed')) setResult(null, item, null);
+  else if (!item.classList.contains('failed')) setResult(null, item, 'passed');
+}
+
+function signOff(type, btn) {
+  document.querySelectorAll('.result-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const ts = document.getElementById('signoff-ts');
+  ts.style.display = 'block';
+  ts.textContent = (type === 'approve' ? '✅ Approved' : '❌ Rejected') + ' · ' + new Date().toLocaleString();
+}
+
+// Pre-mark auto-verified tests as passed on load
+document.addEventListener('DOMContentLoaded', () => {
+  const items = document.querySelectorAll('.check-item');
+  items.forEach((item, idx) => {
+    const numEl = item.querySelector('.check-num');
+    if (!numEl) return;
+    const num = parseInt(numEl.textContent.trim(), 10);
+    if (AUTO_IDS.includes(num)) {
+      item.classList.add('passed');
+    }
+  });
+  updateProgress();
+});
+</script>
+
+</body>
+</html>
