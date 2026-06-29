@@ -3,9 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MapIt — Bangalore Beta</title>
+<title>MapIt — Buy &amp; Sell Near You</title>
+<meta name="description" content="MapIt is a location-first marketplace for Bangalore. Browse listings by exact GPS pin, post your ad for free, and connect with nearby buyers and sellers.">
+<!-- Open Graph / WhatsApp / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.mapit.co.in/">
+<meta property="og:title" content="MapIt — Buy &amp; Sell Near You">
+<meta property="og:description" content="Browse real estate, vehicles, and household items on an interactive map. Every listing has an exact GPS pin. Free to post.">
+<meta property="og:image" content="https://www.mapit.co.in/og-image.png">
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MapIt — Buy &amp; Sell Near You">
+<meta name="twitter:description" content="Location-first marketplace for Bangalore. Browse by map, post for free.">
+<meta name="twitter:image" content="https://www.mapit.co.in/og-image.png">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet"></noscript>
 <style>
 :root{
   --ink:#F7F9FC;--deep:#EDF0F5;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
@@ -199,6 +215,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .vbtn.on{background:var(--orange);color:#fff;}
 .cnt-mini{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(255,255,255,.92);border:1px solid var(--border2);backdrop-filter:blur(8px);border-radius:20px;padding:5px 16px;font-size:11px;color:var(--muted);white-space:nowrap;}
 .cnt-mini b{color:var(--orange);}
+.sat-btn{position:absolute;top:12px;right:12px;z-index:600;background:rgba(255,255,255,.95);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 2px 8px rgba(0,0,0,.12);transition:background .15s,color .15s;}
+.sat-btn.on{background:#1a73e8;border-color:#1a73e8;}
 
 /* ── HOVER CARD ── */
 #hoverCard{position:absolute;z-index:700;pointer-events:none;opacity:0;transform:translateY(4px) scale(.97);transition:opacity .15s,transform .15s;min-width:210px;max-width:240px;}
@@ -627,8 +645,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <!-- Step: Home location picker -->
     <div class="modal-step" id="step-homeloc">
       <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📍 Set your home area</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Tap the map to mark where you're based. We'll show nearby listings first.</div>
-      <div id="homeLocMap" style="height:200px;border-radius:10px;overflow:hidden;border:1px solid var(--border2);margin-bottom:12px;"></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll show nearby listings first.</div>
+      <div id="homeLocHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop your pin</div>
+      <div id="homeLocMap" style="height:200px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-bottom:8px;cursor:crosshair;"></div>
       <div id="homeLocAddr" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
       <button class="modal-btn" id="saveHomeLocBtn" onclick="saveHomeLocation()" style="display:none;">
         <span>Save Home Location →</span>
@@ -843,6 +862,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
   <div id="mapc">
     <div id="map"></div>
+    <button id="satBtn" class="sat-btn" onclick="toggleSatellite()" title="Toggle satellite view">🛰</button>
     <div class="cnt-mini"><b id="mapCnt">0</b> pins visible</div>
     <div id="hoverCard"><div class="hc-inner" id="hcInner"></div></div>
   </div>
@@ -1468,27 +1488,40 @@ function initHomeLocMap(){
   const center = ST.activePin ? [ST.activePin.lat, ST.activePin.lng] : [12.9716, 77.5946];
   setTimeout(()=>{
     _homeLocMap = L.map('homeLocMap', { zoomControl: true, attributionControl: false }).setView(center, 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_homeLocMap);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(_homeLocMap);
     _homeLocMap.on('click', async e=>{
       const { lat, lng } = e.latlng;
       _homeLocCoords = { lat, lng };
       if(_homeLocMarker) _homeLocMarker.setLatLng([lat, lng]);
-      else _homeLocMarker = L.marker([lat, lng]).addTo(_homeLocMap);
+      else {
+        _homeLocMarker = L.marker([lat, lng], {draggable: true}).addTo(_homeLocMap);
+        _homeLocMarker.on('dragend', async ev => {
+          const p = ev.target.getLatLng();
+          _homeLocCoords = { lat: p.lat, lng: p.lng };
+          await _resolveHomeLocAddr(p.lat, p.lng);
+        });
+      }
+      document.getElementById('homeLocHint').textContent = '✅ Pin placed — drag to adjust';
       document.getElementById('homeLocAddr').textContent = 'Getting address…';
       document.getElementById('saveHomeLocBtn').style.display = 'flex';
-      try {
-        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
-        const g = await r.json();
-        const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-        _homeLocCoords.address = addr;
-        document.getElementById('homeLocAddr').textContent = '📍 ' + addr;
-      } catch(_){
-        _homeLocCoords.address = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-        document.getElementById('homeLocAddr').textContent = '📍 ' + _homeLocCoords.address;
-      }
+      await _resolveHomeLocAddr(lat, lng);
     });
     _homeLocMap.invalidateSize();
   }, 120);
+}
+
+async function _resolveHomeLocAddr(lat, lng){
+  document.getElementById('homeLocAddr').textContent = 'Getting address…';
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+    const g = await r.json();
+    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    _homeLocCoords.address = addr;
+    document.getElementById('homeLocAddr').textContent = '📍 ' + addr;
+  } catch(_){
+    _homeLocCoords.address = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('homeLocAddr').textContent = '📍 ' + _homeLocCoords.address;
+  }
 }
 
 async function saveHomeLocation(){
@@ -1585,7 +1618,7 @@ document.addEventListener('click', e => {
 // ═══════════════════════════════════════════════
 // MAP
 // ═══════════════════════════════════════════════
-let map, radCircle, postPickerMap, postPickerMarker, _searchMarker;
+let map, radCircle, postPickerMap, postPickerMarker, _searchMarker, _voyagerLayer, _satLayer, _satOn = false;
 const mMarkers = {};
 let hoverTO;
 
@@ -1593,8 +1626,8 @@ let _userMarker = null;
 
 function initMap(){
   const loc = activeLoc();
-  map = L.map('map',{center:[loc.lat,loc.lng],zoom:14,zoomControl:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  map = L.map('map',{center:[loc.lat,loc.lng],zoom:14,zoomControl:false,renderer:L.canvas()});
+  _voyagerLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
     attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> © <a href="https://carto.com">CARTO</a>',
     subdomains:'abcd',maxZoom:20,
   }).addTo(map);
@@ -1608,6 +1641,19 @@ function initMap(){
   _userMarker.bindPopup(`<b style="color:#F06030">📍 ${ST.activePin?.label||'Your Location'}</b>`);
 
   updateCircle();
+}
+
+function toggleSatellite(){
+  if(!_satLayer){
+    _satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+      attribution:'© Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USGS, AeroGRID, IGN',
+      maxZoom:20,
+    });
+  }
+  _satOn = !_satOn;
+  if(_satOn){ _voyagerLayer.remove(); _satLayer.addTo(map); }
+  else { _satLayer.remove(); _voyagerLayer.addTo(map); }
+  document.getElementById('satBtn').classList.toggle('on', _satOn);
 }
 
 function mkIcon(l, sel){
@@ -2031,7 +2077,7 @@ async function selListing(id, keepTab=false){
     document.querySelector('.rad-box').classList.remove('disabled');
   }
   const l = ST.listings.find(x=>x.id===id) || ST.favListings.find(x=>x.id===id) || (ST.tab==='mine' ? ST.myListings.find(x=>x.id===id) : null);
-  if(l) map.panTo([l.lat,l.lng],{animate:true,duration:.5});
+  if(l) map.flyTo([l.lat,l.lng], ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14), {animate:true,duration:.6});
   Object.keys(mMarkers).forEach(k=>{
     const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
     mMarkers[k].setIcon(mkIcon(ml, k===id));
@@ -2330,6 +2376,9 @@ async function submitListing(){
   if(!title){ toast('Please enter a title.'); return; }
   if(!subcategory){ toast('Please select a listing type (e.g. Cars, 2 Wheelers).'); return; }
   if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
+  if(!ST.editingId && document.getElementById('postPhotos').files.length === 0){
+    toast('Please add at least 1 photo.'); return;
+  }
 
   // Resolve location — saved pin or manual GPS entry
   let locObj;
