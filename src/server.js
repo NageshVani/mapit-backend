@@ -58,7 +58,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
     // allow all Vercel preview deployments — case-insensitive to handle uppercase in deployment hash URLs
     if (/^https:\/\/mapit-backend(-[a-zA-Z0-9-]+)?\.vercel\.app$/i.test(origin)) return cb(null, true);
-    cb(new Error('Not allowed by CORS'));
+    const corsErr = new Error('Not allowed by CORS'); corsErr.statusCode = 403; cb(corsErr);
   },
   credentials: true,
 }));
