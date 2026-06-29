@@ -30,9 +30,16 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .demo-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
 .srch{flex:1;max-width:400px;position:relative;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.5;}
-#srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 12px 8px 32px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
+#srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 30px 8px 32px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 #srchIn:focus{border-color:var(--orange);}
 #srchIn::placeholder{color:var(--muted);}
+.srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;display:none;}
+.srch-clear:hover{color:var(--text);}
+.kwrd-box{padding:5px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+#kwrdIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;color:var(--text);font-size:12px;font-family:'Outfit',sans-serif;outline:none;}
+#kwrdIn:focus{border-color:var(--orange);}
+#kwrdIn::placeholder{color:var(--muted);}
+.kwrd-box.disabled{opacity:.4;pointer-events:none;}
 .srch-dd{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--panel);border:1px solid var(--border2);border-radius:8px;box-shadow:var(--shadow);max-height:380px;overflow-y:auto;z-index:950;}
 .srch-dd.hide{display:none;}
 .srch-dd-hd{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--deep);position:sticky;top:0;}
@@ -772,8 +779,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <div class="logo">Map<em>It</em></div>
   <div class="demo-tag">Beta</div>
   <div class="srch">
-    <span class="srch-ic">🔍</span>
-    <input id="srchIn" type="text" placeholder="Search listings in Bangalore…" autocomplete="off"/>
+    <span class="srch-ic">📍</span>
+    <input id="srchIn" type="text" placeholder="Search area (e.g. Koramangala, HSR Layout…)" autocomplete="off"/>
+    <button id="srchClear" class="srch-clear" onclick="clearSearchCenter()" title="Clear location">×</button>
     <div id="srchDD" class="srch-dd hide"></div>
   </div>
   <div class="hsp"></div>
@@ -818,6 +826,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <button class="rbt" onclick="setRad(999)">City</button>
         <button class="rbt" onclick="setRad(50)">Region</button>
       </div>
+    </div>
+    <div class="kwrd-box" id="kwrdBox">
+      <input id="kwrdIn" type="text" placeholder="🔍 Filter listings by keyword…" autocomplete="off"/>
     </div>
     <div class="tab-bar">
       <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse')">📍 Listings <span class="tab-count" id="cnt-badge">0</span></button>
@@ -1090,7 +1101,7 @@ function listingRow(l){
 // ═══════════════════════════════════════════════
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
-  cat:'all', sub:null, rad:5, q:'',
+  cat:'all', sub:null, rad:5, q:'', searchCenter:null,
   selId:null, tab:'browse', editingId:null,
   chatOpen:false, chatMsgs:[], chatIdx:0,
   listings:[],          // from API (browse — excludes the current user's own listings)
@@ -1135,6 +1146,7 @@ function fmtPrice(p){
   return `₹${p}`;
 }
 function activeLoc(){
+  if(ST.searchCenter) return { lat: ST.searchCenter.lat, lng: ST.searchCenter.lng };
   return ST.activePin
     ? { lat: ST.activePin.lat, lng: ST.activePin.lng }
     : { lat: DEFAULT_LOC.lat, lng: DEFAULT_LOC.lng };
@@ -1573,7 +1585,7 @@ document.addEventListener('click', e => {
 // ═══════════════════════════════════════════════
 // MAP
 // ═══════════════════════════════════════════════
-let map, radCircle, postPickerMap, postPickerMarker;
+let map, radCircle, postPickerMap, postPickerMarker, _searchMarker;
 const mMarkers = {};
 let hoverTO;
 
@@ -2537,8 +2549,9 @@ function switchTab(tab){
   document.getElementById('tab-browse').classList.toggle('on',tab==='browse');
   document.getElementById('tab-fav').classList.toggle('on',tab==='fav');
   document.getElementById('tab-mine').classList.toggle('on',tab==='mine');
-  // Proximity radius only applies to the Listings browse tab
+  // Proximity radius and keyword filter only apply to the Listings browse tab
   document.querySelector('.rad-box').classList.toggle('disabled', tab !== 'browse');
+  document.getElementById('kwrdBox').classList.toggle('disabled', tab !== 'browse');
   // Redraw markers for the new tab (fav shows saved pins, browse shows radius listings, mine keeps browse pins)
   drawMarkers();
   renderSidebar();
@@ -3023,60 +3036,106 @@ async function openInboxModal(){
 function closeInboxModal(){ document.getElementById('inboxModal').classList.add('hide'); }
 
 // ═══════════════════════════════════════════════
-// Search — typing shows a clickable dropdown of matches; the left panel
-// only updates once the user picks a result from that dropdown.
-function searchMatches(q){
-  const ql = q.toLowerCase();
-  return ST.listings.filter(l=>
-    l.title?.toLowerCase().includes(ql)||
-    (l.address||'').toLowerCase().includes(ql)||
-    (l.subcategory||'').toLowerCase().includes(ql)
-  ).sort((a,b)=>(a.d||0)-(b.d||0));
+// LOCATION SEARCH (Nominatim forward geocoding)
+// ═══════════════════════════════════════════════
+function placeSearchPin(lat, lng, label){
+  if(_searchMarker) _searchMarker.remove();
+  const icon = L.divIcon({
+    className:'',
+    html:`<div style="width:14px;height:14px;background:#1a73e8;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(26,115,232,.5);"></div>`,
+    iconSize:[14,14], iconAnchor:[7,7]
+  });
+  _searchMarker = L.marker([lat,lng],{icon,zIndexOffset:500})
+    .addTo(map)
+    .bindPopup(`<b style="color:#1a73e8">🔍 ${label}</b>`);
 }
-function renderSearchDD(q){
+
+function clearSearchCenter(){
+  ST.searchCenter = null;
+  if(_searchMarker){ _searchMarker.remove(); _searchMarker = null; }
+  const inp = document.getElementById('srchIn');
+  if(inp) inp.value = '';
+  document.getElementById('srchClear').style.display = 'none';
+  document.getElementById('srchDD').classList.add('hide');
+  updateCircle();
+  if(radCircle) map.fitBounds(radCircle.getBounds(),{padding:[30,30],animate:true});
+  else { const l=activeLoc(); map.setView([l.lat,l.lng],13,{animate:true}); }
+  loadListings();
+}
+
+async function fetchLocSuggestions(q){
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=in`,{headers:{'Accept-Language':'en'}});
+    return await r.json();
+  }catch(_){ return []; }
+}
+
+function renderLocDD(results, q){
   const dd = document.getElementById('srchDD');
-  const matches = searchMatches(q);
-  if(!matches.length){
-    dd.innerHTML = `<div class="srch-dd-empty">No listings match "${q}"</div>`;
+  dd._locResults = results;
+  if(!results.length){
+    dd.innerHTML = `<div class="srch-dd-empty">No places found for "${q}"</div>`;
   } else {
-    const loc = activeLoc();
-    const top = matches.slice(0,8);
-    dd.innerHTML = `<div class="srch-dd-hd"><span>Matching listings</span><span class="srch-dd-count">${matches.length} result${matches.length!==1?'s':''}</span></div>`
-      + top.map(l=>{
-          const d = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
-          return `<div class="srch-dd-item" onclick="pickSearchResult('${l.id}')">
-            <div class="srch-dd-ico">${l.cover_photo?`<img src="${l.cover_photo}" alt=""/>`:`<span>${listingEmoji(l)}</span>`}</div>
+    dd.innerHTML = `<div class="srch-dd-hd"><span>Places</span><span class="srch-dd-count">${results.length} result${results.length!==1?'s':''}</span></div>`
+      + results.map((r,i)=>{
+          const parts = r.display_name.split(',');
+          return `<div class="srch-dd-item" onclick="pickLocResult(${i})">
+            <div class="srch-dd-ico"><span>📍</span></div>
             <div class="srch-dd-info">
-              <div class="srch-dd-title">${l.title}</div>
-              <div class="srch-dd-meta">${l.subcategory||''} · ${l.price_label||fmtPrice(l.price)} · ${fmtD(d)}</div>
+              <div class="srch-dd-title">${parts[0]}</div>
+              <div class="srch-dd-meta">${parts.slice(1,3).join(',').trim()}</div>
             </div>
           </div>`;
         }).join('');
   }
   dd.classList.remove('hide');
 }
-function hideSearchDD(){ document.getElementById('srchDD').classList.add('hide'); }
-function pickSearchResult(id){
-  ST.q = document.getElementById('srchIn').value.trim().toLowerCase();
-  hideSearchDD();
-  drawMarkers();
-  selListing(id);
+
+function pickLocResult(i){
+  const r = document.getElementById('srchDD')._locResults?.[i];
+  if(!r) return;
+  const label = r.display_name.split(',')[0];
+  const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
+  ST.searchCenter = { lat, lng, label };
+  document.getElementById('srchIn').value = label;
+  document.getElementById('srchClear').style.display = '';
+  document.getElementById('srchDD').classList.add('hide');
+  placeSearchPin(lat, lng, label);
+  updateCircle();
+  map.setView([lat, lng], 13, { animate:true });
+  loadListings();
 }
+
+let _locTimer = null;
 const srchInEl = document.getElementById('srchIn');
-srchInEl.addEventListener('input',e=>{
+srchInEl.addEventListener('input', e => {
   const q = e.target.value.trim();
+  clearTimeout(_locTimer);
   if(!q){
-    hideSearchDD();
-    if(ST.q){ ST.q=''; drawMarkers(); renderSidebar(); }
+    document.getElementById('srchDD').classList.add('hide');
+    if(ST.searchCenter) clearSearchCenter();
     return;
   }
-  renderSearchDD(q);
+  _locTimer = setTimeout(async () => {
+    const results = await fetchLocSuggestions(q);
+    renderLocDD(results, q);
+  }, 400);
 });
-srchInEl.addEventListener('focus',e=>{
-  const q = e.target.value.trim();
-  if(q) renderSearchDD(q);
+srchInEl.addEventListener('focus', e => {
+  const dd = document.getElementById('srchDD');
+  if(e.target.value.trim() && dd._locResults?.length) dd.classList.remove('hide');
 });
-srchInEl.addEventListener('blur',()=>{ setTimeout(hideSearchDD, 180); });
+srchInEl.addEventListener('blur', () => { setTimeout(()=>document.getElementById('srchDD').classList.add('hide'), 180); });
+
+// Keyword filter (sidebar) — filters already-loaded ST.listings in place
+const kwrdInEl = document.getElementById('kwrdIn');
+if(kwrdInEl){
+  kwrdInEl.addEventListener('input', e => {
+    ST.q = e.target.value.trim().toLowerCase();
+    drawMarkers();
+    renderSidebar();
+  });
+}
 
 // Kick off
 init();
