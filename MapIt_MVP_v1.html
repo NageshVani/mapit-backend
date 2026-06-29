@@ -506,7 +506,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 </div>
 
 <!-- ── AUTH MODAL ── -->
-<div class="modal-overlay" id="authModal">
+<div class="modal-overlay hide" id="authModal">
   <div class="modal-box">
     <div class="modal-logo">Map<em>It</em></div>
     <div class="modal-sub">Bangalore's location-first marketplace</div>
@@ -1329,7 +1329,7 @@ async function sendPasswordReset(){
   const email = document.getElementById('authEmail').value.trim().toLowerCase();
   if(!email || !email.includes('@')){ showErr('authError','Enter your email above to receive a reset link.'); return; }
   try {
-    await apiPost('/api/auth/reset-password', { email, redirectTo: window.location.origin });
+    await apiPost('/api/auth/reset-password', { email, redirectTo: window.location.origin + '/' });
     document.getElementById('resetSentMsg').innerHTML =
       `A password reset link has been sent to<br><b>${email}</b><br><br>Click the link in the email to set a new password. The link expires in 1 hour.`;
     goToStep('step-reset-sent');
@@ -1490,6 +1490,14 @@ async function saveHomeLocation(){
       home_address: _homeLocCoords.address||null,
     });
     ST.profile = data.profile;
+    // Also create a user_pin so the header badge and map centre reflect the saved location
+    // (profiles.home_* and user_pins are separate stores; without this the header stays at the HTML default)
+    await apiPost('/api/pins', {
+      label: _homeLocCoords.address || `${_homeLocCoords.lat.toFixed(4)}, ${_homeLocCoords.lng.toFixed(4)}`,
+      lat: _homeLocCoords.lat,
+      lng: _homeLocCoords.lng,
+      is_default: true,
+    });
     toast('Home location saved!');
     _closeAuthModal();
   } catch(e){
