@@ -51,24 +51,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #srchIn::placeholder{color:var(--muted);}
 .srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;display:none;}
 .srch-clear:hover{color:var(--text);}
-.kwrd-box{padding:5px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
-#kwrdIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;color:var(--text);font-size:12px;font-family:'Outfit',sans-serif;outline:none;}
-#kwrdIn:focus{border-color:var(--orange);}
-#kwrdIn::placeholder{color:var(--muted);}
-.kwrd-box.disabled{opacity:.4;pointer-events:none;}
-.srch-dd{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--panel);border:1px solid var(--border2);border-radius:8px;box-shadow:var(--shadow);max-height:380px;overflow-y:auto;z-index:950;}
-.srch-dd.hide{display:none;}
-.srch-dd-hd{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--deep);position:sticky;top:0;}
-.srch-dd-count{font-weight:600;letter-spacing:.3px;text-transform:none;text-align:right;color:var(--muted);}
-.srch-dd-item{display:flex;gap:9px;padding:8px 12px;cursor:pointer;align-items:center;border-bottom:1px solid var(--border);}
-.srch-dd-item:last-child{border-bottom:none;}
-.srch-dd-item:hover{background:var(--card);}
-.srch-dd-ico{width:34px;height:34px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--card2);}
-.srch-dd-ico img{width:100%;height:100%;object-fit:cover;}
-.srch-dd-info{flex:1;min-width:0;}
-.srch-dd-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
-.srch-dd-meta{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.srch-dd-empty{padding:18px 12px;text-align:center;font-size:12px;color:var(--muted);}
 .hsp{flex:1;}
 .loc-badge{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:11.5px;color:var(--muted);flex-shrink:0;cursor:pointer;transition:border-color .18s;}
 .loc-badge:hover{border-color:var(--orange);}
@@ -215,8 +197,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .vbtn.on{background:var(--orange);color:#fff;}
 .cnt-mini{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(255,255,255,.92);border:1px solid var(--border2);backdrop-filter:blur(8px);border-radius:20px;padding:5px 16px;font-size:11px;color:var(--muted);white-space:nowrap;}
 .cnt-mini b{color:var(--orange);}
-.sat-btn{position:absolute;top:12px;right:12px;z-index:600;background:rgba(255,255,255,.95);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;font-size:15px;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 2px 8px rgba(0,0,0,.12);transition:background .15s,color .15s;}
-.sat-btn.on{background:#1a73e8;border-color:#1a73e8;}
 
 /* ── HOVER CARD ── */
 #hoverCard{position:absolute;z-index:700;pointer-events:none;opacity:0;transform:translateY(4px) scale(.97);transition:opacity .15s,transform .15s;min-width:210px;max-width:240px;}
@@ -316,19 +296,23 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 /* ── POST LISTING MODAL ── */
 .post-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
 .post-modal.hide{display:none;}
-.post-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);}
-.post-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:1;}
+.post-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:840px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);}
+.post-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:1;}
 .post-title{font-size:16px;font-weight:700;}
 .post-close{width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;}
 .post-close:hover{background:var(--card2);color:var(--text);}
-.post-body{padding:20px 24px;}
+.post-body{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:0 24px;align-items:start;}
+.post-col-l,.post-col-r{min-width:0;}
+.post-col-full{grid-column:1/-1;}
+#dynamicFields{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+@media(max-width:640px){.post-box{max-width:98vw;}.post-body{grid-template-columns:1fr;}#dynamicFields{grid-template-columns:1fr;}}
 .form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:12px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
 .form-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 .tx-radio-row{display:flex;gap:20px;padding:10px 13px;background:var(--card);border:1px solid var(--border2);border-radius:8px;}
 .tx-radio-lbl{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;}
 .tx-radio-lbl input[type=radio]{accent-color:var(--orange);width:16px;height:16px;cursor:pointer;}
-.dyn-section-hd{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:8px 0 4px;border-top:1px solid var(--border);margin:4px 0 12px;}
+.dyn-section-hd{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:8px 0 4px;border-top:1px solid var(--border);margin:4px 0 12px;grid-column:1/-1;}
 .dist-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(240,96,48,.1);color:var(--orange);border:1.5px solid rgba(240,96,48,.3);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:700;margin:10px 13px 0;}
 .form-input:focus{border-color:var(--orange);}
 .form-input::placeholder{color:var(--muted);}
@@ -691,70 +675,78 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="post-close" onclick="closePostModal()">✕</div>
     </div>
     <div class="post-body">
-      <!-- 1. Location (FIRST) -->
-      <div class="form-group">
-        <label class="form-label">📍 Listing Location</label>
-        <select class="form-input form-select" id="postLocation" onchange="toggleManualListingLoc()"></select>
-        <div id="manualListingLocGroup" style="display:none;margin-top:10px;">
-          <input class="form-input" id="manualListingCoords" placeholder='GPS coordinates, e.g. 12.9352, 77.6245' style="margin-bottom:8px;"/>
-          <input class="form-input" id="manualListingLabel" placeholder='Area label, e.g. Koramangala'/>
-          <div style="font-size:11px;color:var(--muted);margin-top:5px;">Tip: open Google Maps, long-press your location and copy the coordinates shown.</div>
+      <!-- LEFT column: category, type, dynamic fields, title -->
+      <div class="post-col-l">
+        <!-- Category + Subcategory -->
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Category</label>
+            <select class="form-input form-select" id="postCat" onchange="updatePostSubcats()">
+              <option value="re">🏠 Real Estate</option>
+              <option value="veh">🚗 Vehicles</option>
+              <option value="hh">🏡 Household Items</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Subcategory</label>
+            <select class="form-input form-select" id="postSubcat" onchange="renderDynamicFields()"></select>
+          </div>
         </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px;">
-          Want to save this area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add to My Locations →</span>
+        <!-- Sell/Rent (Real Estate only) -->
+        <div class="form-group" id="txTypeGroup" style="display:none;margin-top:14px;">
+          <label class="form-label">Transaction Type</label>
+          <div class="tx-radio-row">
+            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell" checked> Sell</label>
+            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Rent"> Rent</label>
+          </div>
         </div>
-      </div>
-      <!-- 2. Category + Subcategory -->
-      <div class="form-row">
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Category</label>
-          <select class="form-input form-select" id="postCat" onchange="updatePostSubcats()">
-            <option value="re">🏠 Real Estate</option>
-            <option value="veh">🚗 Vehicles</option>
-            <option value="hh">🏡 Household Items</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Subcategory</label>
-          <select class="form-input form-select" id="postSubcat" onchange="renderDynamicFields()"></select>
-        </div>
-      </div>
-      <!-- 3. Sell/Rent (Real Estate only) -->
-      <div class="form-group" id="txTypeGroup" style="display:none;margin-top:14px;">
-        <label class="form-label">Transaction Type</label>
-        <div class="tx-radio-row">
-          <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell" checked> Sell</label>
-          <label class="tx-radio-lbl"><input type="radio" name="txType" value="Rent"> Rent</label>
+        <!-- Dynamic category-specific fields (rendered as 2-col subgrid via CSS) -->
+        <div id="dynamicFields" style="margin-top:14px;"></div>
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label">Title <span style="color:var(--muted);font-weight:400;">(max 80 chars)</span></label>
+          <input class="form-input" id="postTitle" placeholder="e.g. Honda City ZX 2021 – Single Owner" maxlength="80"/>
         </div>
       </div>
-      <!-- 4. Dynamic category-specific fields -->
-      <div id="dynamicFields" style="margin-top:14px;"></div>
-      <!-- 5. Title -->
-      <div class="form-group">
-        <label class="form-label">Title <span style="color:var(--muted);font-weight:400;">(max 80 chars)</span></label>
-        <input class="form-input" id="postTitle" placeholder="e.g. Honda City ZX 2021 – Single Owner" maxlength="80"/>
-      </div>
-      <!-- 6. Description -->
-      <div class="form-group">
-        <label class="form-label">Description <span style="color:var(--muted);font-weight:400;">(max 1000 chars)</span></label>
-        <textarea class="form-input form-textarea" id="postDesc" placeholder="Any additional details about your listing…" maxlength="1000"></textarea>
-      </div>
-      <!-- 7. Photos -->
-      <div class="form-group">
-        <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5)</span></label>
-        <input type="file" class="form-input" id="postPhotos" accept="image/*" multiple style="padding:8px;cursor:pointer;"/>
-      </div>
-      <!-- 8. Phone visibility -->
-      <div class="form-group">
-        <label class="form-label">📞 Show My Phone Number to Buyers</label>
-        <div class="tx-radio-row">
-          <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="always" checked> Always</label>
-          <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement"> On Agreement</label>
-          <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
+      <!-- RIGHT column: location, photos, phone -->
+      <div class="post-col-r">
+        <!-- Location -->
+        <div class="form-group">
+          <label class="form-label">📍 Listing Location</label>
+          <select class="form-input form-select" id="postLocation" onchange="toggleManualListingLoc()"></select>
+          <div id="manualListingLocGroup" style="display:none;margin-top:10px;">
+            <input class="form-input" id="manualListingCoords" placeholder='GPS coordinates, e.g. 12.9352, 77.6245' style="margin-bottom:8px;"/>
+            <input class="form-input" id="manualListingLabel" placeholder='Area label, e.g. Koramangala'/>
+            <div style="font-size:11px;color:var(--muted);margin-top:5px;">Tip: open Google Maps, long-press your location and copy the coordinates shown.</div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+            Want to save this area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add to My Locations →</span>
+          </div>
+        </div>
+        <!-- Photos -->
+        <div class="form-group">
+          <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5)</span></label>
+          <input type="file" class="form-input" id="postPhotos" accept="image/*" multiple style="padding:8px;cursor:pointer;"/>
+        </div>
+        <!-- Phone visibility -->
+        <div class="form-group">
+          <label class="form-label">📞 Show Phone Number to Buyers</label>
+          <div class="tx-radio-row" style="flex-direction:column;gap:8px;">
+            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="always" checked> Always</label>
+            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement"> On Agreement</label>
+            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
+          </div>
         </div>
       </div>
-      <button class="post-submit" id="postSubmitBtn" onclick="submitListing()">Submit for Review 🚀</button>
-      <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;">Your listing will be reviewed and go live within 4 hours.</div>
+      <!-- FULL WIDTH: description + submit -->
+      <div class="post-col-full">
+        <div class="form-group">
+          <label class="form-label">Description <span style="color:var(--muted);font-weight:400;">(max 1000 chars)</span></label>
+          <textarea class="form-input form-textarea" id="postDesc" placeholder="Any additional details about your listing…" maxlength="1000"></textarea>
+        </div>
+        <button class="post-submit" id="postSubmitBtn" onclick="submitListing()">Submit for Review 🚀</button>
+        <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;">Your listing will be reviewed and go live within 4 hours.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -798,10 +790,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <div class="logo">Map<em>It</em></div>
   <div class="demo-tag">Beta</div>
   <div class="srch">
-    <span class="srch-ic">📍</span>
-    <input id="srchIn" type="text" placeholder="Search area (e.g. Koramangala, HSR Layout…)" autocomplete="off"/>
-    <button id="srchClear" class="srch-clear" onclick="clearSearchCenter()" title="Clear location">×</button>
-    <div id="srchDD" class="srch-dd hide"></div>
+    <span class="srch-ic">🔍</span>
+    <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
+    <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
   </div>
   <div class="hsp"></div>
   <div class="loc-badge" title="Your active location" style="cursor:default;">
@@ -846,9 +837,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <button class="rbt" onclick="setRad(50)">Region</button>
       </div>
     </div>
-    <div class="kwrd-box" id="kwrdBox">
-      <input id="kwrdIn" type="text" placeholder="🔍 Filter listings by keyword…" autocomplete="off"/>
-    </div>
     <div class="tab-bar">
       <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse')">📍 Listings <span class="tab-count" id="cnt-badge">0</span></button>
       <button class="tab-btn" id="tab-fav" onclick="switchTab('fav')">❤ Saved <span class="tab-count" id="fav-badge">0</span></button>
@@ -862,7 +850,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
   <div id="mapc">
     <div id="map"></div>
-    <button id="satBtn" class="sat-btn" onclick="toggleSatellite()" title="Toggle satellite view">🛰</button>
     <div class="cnt-mini"><b id="mapCnt">0</b> pins visible</div>
     <div id="hoverCard"><div class="hc-inner" id="hcInner"></div></div>
   </div>
@@ -1121,7 +1108,7 @@ function listingRow(l){
 // ═══════════════════════════════════════════════
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
-  cat:'all', sub:null, rad:5, q:'', searchCenter:null,
+  cat:'all', sub:null, rad:5, q:'',
   selId:null, tab:'browse', editingId:null,
   chatOpen:false, chatMsgs:[], chatIdx:0,
   listings:[],          // from API (browse — excludes the current user's own listings)
@@ -1166,7 +1153,6 @@ function fmtPrice(p){
   return `₹${p}`;
 }
 function activeLoc(){
-  if(ST.searchCenter) return { lat: ST.searchCenter.lat, lng: ST.searchCenter.lng };
   return ST.activePin
     ? { lat: ST.activePin.lat, lng: ST.activePin.lng }
     : { lat: DEFAULT_LOC.lat, lng: DEFAULT_LOC.lng };
@@ -1618,7 +1604,7 @@ document.addEventListener('click', e => {
 // ═══════════════════════════════════════════════
 // MAP
 // ═══════════════════════════════════════════════
-let map, radCircle, postPickerMap, postPickerMarker, _searchMarker, _voyagerLayer, _satLayer, _satOn = false;
+let map, radCircle, postPickerMap, postPickerMarker;
 const mMarkers = {};
 let hoverTO;
 
@@ -1627,7 +1613,7 @@ let _userMarker = null;
 function initMap(){
   const loc = activeLoc();
   map = L.map('map',{center:[loc.lat,loc.lng],zoom:14,zoomControl:false,renderer:L.canvas()});
-  _voyagerLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
     attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> © <a href="https://carto.com">CARTO</a>',
     subdomains:'abcd',maxZoom:20,
   }).addTo(map);
@@ -1643,18 +1629,6 @@ function initMap(){
   updateCircle();
 }
 
-function toggleSatellite(){
-  if(!_satLayer){
-    _satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
-      attribution:'© Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USGS, AeroGRID, IGN',
-      maxZoom:20,
-    });
-  }
-  _satOn = !_satOn;
-  if(_satOn){ _voyagerLayer.remove(); _satLayer.addTo(map); }
-  else { _satLayer.remove(); _voyagerLayer.addTo(map); }
-  document.getElementById('satBtn').classList.toggle('on', _satOn);
-}
 
 function mkIcon(l, sel){
   const col = catCol(l.category||l.cat), sz = sel?42:34;
@@ -1801,6 +1775,13 @@ function filtered(){
       (l.address||'').toLowerCase().includes(ql)||
       (l.subcategory||'').toLowerCase().includes(ql)
     );
+    // Also constrain to current map viewport so results respect where the user is looking
+    if(map && map.getBounds){
+      try {
+        const bounds = map.getBounds();
+        list = list.filter(l => l.lat && l.lng && bounds.contains([l.lat, l.lng]));
+      } catch(_){}
+    }
   }
   return list.sort((a,b)=>(a.d||0)-(b.d||0));
 }
@@ -2598,9 +2579,14 @@ function switchTab(tab){
   document.getElementById('tab-browse').classList.toggle('on',tab==='browse');
   document.getElementById('tab-fav').classList.toggle('on',tab==='fav');
   document.getElementById('tab-mine').classList.toggle('on',tab==='mine');
-  // Proximity radius and keyword filter only apply to the Listings browse tab
+  // Proximity radius only applies to the Listings browse tab
   document.querySelector('.rad-box').classList.toggle('disabled', tab !== 'browse');
-  document.getElementById('kwrdBox').classList.toggle('disabled', tab !== 'browse');
+  // Clear keyword state when leaving browse tab (no draw yet — drawMarkers below handles it)
+  if(tab !== 'browse'){
+    ST.q = '';
+    const si = document.getElementById('srchIn'); if(si) si.value = '';
+    const sc = document.getElementById('srchClear'); if(sc) sc.style.display = 'none';
+  }
   // Redraw markers for the new tab (fav shows saved pins, browse shows radius listings, mine keeps browse pins)
   drawMarkers();
   renderSidebar();
@@ -3085,106 +3071,23 @@ async function openInboxModal(){
 function closeInboxModal(){ document.getElementById('inboxModal').classList.add('hide'); }
 
 // ═══════════════════════════════════════════════
-// LOCATION SEARCH (Nominatim forward geocoding)
+// KEYWORD SEARCH
 // ═══════════════════════════════════════════════
-function placeSearchPin(lat, lng, label){
-  if(_searchMarker) _searchMarker.remove();
-  const icon = L.divIcon({
-    className:'',
-    html:`<div style="width:14px;height:14px;background:#1a73e8;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(26,115,232,.5);"></div>`,
-    iconSize:[14,14], iconAnchor:[7,7]
-  });
-  _searchMarker = L.marker([lat,lng],{icon,zIndexOffset:500})
-    .addTo(map)
-    .bindPopup(`<b style="color:#1a73e8">🔍 ${label}</b>`);
-}
-
-function clearSearchCenter(){
-  ST.searchCenter = null;
-  if(_searchMarker){ _searchMarker.remove(); _searchMarker = null; }
+function clearKeyword(){
+  ST.q = '';
   const inp = document.getElementById('srchIn');
   if(inp) inp.value = '';
   document.getElementById('srchClear').style.display = 'none';
-  document.getElementById('srchDD').classList.add('hide');
-  updateCircle();
-  if(radCircle) map.fitBounds(radCircle.getBounds(),{padding:[30,30],animate:true});
-  else { const l=activeLoc(); map.setView([l.lat,l.lng],13,{animate:true}); }
-  loadListings();
+  drawMarkers();
+  renderSidebar();
 }
 
-async function fetchLocSuggestions(q){
-  try{
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=in`,{headers:{'Accept-Language':'en'}});
-    return await r.json();
-  }catch(_){ return []; }
-}
-
-function renderLocDD(results, q){
-  const dd = document.getElementById('srchDD');
-  dd._locResults = results;
-  if(!results.length){
-    dd.innerHTML = `<div class="srch-dd-empty">No places found for "${q}"</div>`;
-  } else {
-    dd.innerHTML = `<div class="srch-dd-hd"><span>Places</span><span class="srch-dd-count">${results.length} result${results.length!==1?'s':''}</span></div>`
-      + results.map((r,i)=>{
-          const parts = r.display_name.split(',');
-          return `<div class="srch-dd-item" onclick="pickLocResult(${i})">
-            <div class="srch-dd-ico"><span>📍</span></div>
-            <div class="srch-dd-info">
-              <div class="srch-dd-title">${parts[0]}</div>
-              <div class="srch-dd-meta">${parts.slice(1,3).join(',').trim()}</div>
-            </div>
-          </div>`;
-        }).join('');
-  }
-  dd.classList.remove('hide');
-}
-
-function pickLocResult(i){
-  const r = document.getElementById('srchDD')._locResults?.[i];
-  if(!r) return;
-  const label = r.display_name.split(',')[0];
-  const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
-  ST.searchCenter = { lat, lng, label };
-  document.getElementById('srchIn').value = label;
-  document.getElementById('srchClear').style.display = '';
-  document.getElementById('srchDD').classList.add('hide');
-  placeSearchPin(lat, lng, label);
-  updateCircle();
-  map.setView([lat, lng], 13, { animate:true });
-  loadListings();
-}
-
-let _locTimer = null;
-const srchInEl = document.getElementById('srchIn');
-srchInEl.addEventListener('input', e => {
-  const q = e.target.value.trim();
-  clearTimeout(_locTimer);
-  if(!q){
-    document.getElementById('srchDD').classList.add('hide');
-    if(ST.searchCenter) clearSearchCenter();
-    return;
-  }
-  _locTimer = setTimeout(async () => {
-    const results = await fetchLocSuggestions(q);
-    renderLocDD(results, q);
-  }, 400);
+document.getElementById('srchIn').addEventListener('input', e => {
+  ST.q = e.target.value.trim().toLowerCase();
+  document.getElementById('srchClear').style.display = ST.q ? '' : 'none';
+  drawMarkers();
+  renderSidebar();
 });
-srchInEl.addEventListener('focus', e => {
-  const dd = document.getElementById('srchDD');
-  if(e.target.value.trim() && dd._locResults?.length) dd.classList.remove('hide');
-});
-srchInEl.addEventListener('blur', () => { setTimeout(()=>document.getElementById('srchDD').classList.add('hide'), 180); });
-
-// Keyword filter (sidebar) — filters already-loaded ST.listings in place
-const kwrdInEl = document.getElementById('kwrdIn');
-if(kwrdInEl){
-  kwrdInEl.addEventListener('input', e => {
-    ST.q = e.target.value.trim().toLowerCase();
-    drawMarkers();
-    renderSidebar();
-  });
-}
 
 // Kick off
 init();
