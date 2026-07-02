@@ -97,6 +97,15 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .rbt:hover{background:var(--card);color:var(--text);}
 .rbt.on{background:var(--orange);border-color:var(--orange);color:#fff;}
 .rad-box.disabled{opacity:.4;pointer-events:none;}
+/* ── SEARCH MODE TOGGLE ── */
+.search-mode-box{padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.search-mode-box.disabled{opacity:.4;pointer-events:none;}
+.smode-hd{font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.smode-tog{display:flex;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:3px;gap:2px;}
+.smb{flex:1;padding:5px 8px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;white-space:nowrap;}
+.smb:hover{color:var(--text);background:rgba(0,0,0,.05);}
+.smb.on{background:var(--orange);color:#fff;}
+.smb.on.explore{background:var(--blue);}
 .tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
 .tab-btn{flex:1;padding:9px 10px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Outfit',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;}
 .tab-btn:hover{color:var(--text);}
@@ -827,8 +836,15 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <aside id="sb">
     <div class="cat-row" id="catRow"></div>
     <div class="sub-row" id="subRow"></div>
+    <div class="search-mode-box" id="searchModeBox">
+      <div class="smode-hd">Search Mode</div>
+      <div class="smode-tog">
+        <button class="smb on" id="smPin" onclick="setSearchMode('pin')">📍 My Locations</button>
+        <button class="smb explore" id="smExplore" onclick="setSearchMode('explore')">🗺 Explore Area</button>
+      </div>
+    </div>
     <div class="rad-box">
-      <div class="rad-hd">Proximity Radius <span id="radLbl">5 km</span></div>
+      <div class="rad-hd"><span id="radMode">Proximity Radius</span> <span id="radLbl">5 km</span></div>
       <div class="rad-btns">
         <button class="rbt" onclick="setRad(3)">3 km</button>
         <button class="rbt on" onclick="setRad(5)">5 km</button>
@@ -1108,7 +1124,7 @@ function listingRow(l){
 // ═══════════════════════════════════════════════
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
-  cat:'all', sub:null, rad:5, q:'',
+  cat:'all', sub:null, rad:5, q:'', exploreMode:false,
   selId:null, tab:'browse', editingId:null,
   chatOpen:false, chatMsgs:[], chatIdx:0,
   listings:[],          // from API (browse — excludes the current user's own listings)
@@ -1153,6 +1169,10 @@ function fmtPrice(p){
   return `₹${p}`;
 }
 function activeLoc(){
+  if(ST.exploreMode && map){
+    const c = map.getCenter();
+    return { lat: c.lat, lng: c.lng };
+  }
   return ST.activePin
     ? { lat: ST.activePin.lat, lng: ST.activePin.lng }
     : { lat: DEFAULT_LOC.lat, lng: DEFAULT_LOC.lng };
@@ -1605,6 +1625,7 @@ document.addEventListener('click', e => {
 // MAP
 // ═══════════════════════════════════════════════
 let map, radCircle, postPickerMap, postPickerMarker;
+let _exploreMarker = null, _exploreMoveTO = null;
 const mMarkers = {};
 let hoverTO;
 
@@ -1692,9 +1713,10 @@ function drawPinMarkers(){
 function updateCircle(){
   if(radCircle) radCircle.remove();
   const loc = activeLoc();
+  const circleColor = ST.exploreMode ? '#3B82F6' : '#F06030';
   if(ST.rad<999){
     radCircle=L.circle([loc.lat,loc.lng],{
-      radius:ST.rad*1000,color:'#F06030',fillColor:'#F06030',
+      radius:ST.rad*1000,color:circleColor,fillColor:circleColor,
       fillOpacity:.035,weight:1.5,dashArray:'7 6',
     }).addTo(map);
   }
@@ -2568,6 +2590,47 @@ function setRad(r){
   else{const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180);map.fitBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]],{padding:[20,20],animate:true});}
   loadListings();
 }
+function setSearchMode(mode){
+  ST.exploreMode = (mode === 'explore');
+  document.getElementById('smPin').classList.toggle('on', !ST.exploreMode);
+  document.getElementById('smExplore').classList.toggle('on', ST.exploreMode);
+  const radMode = document.getElementById('radMode');
+  if(radMode) radMode.textContent = ST.exploreMode ? 'Search Radius' : 'Proximity Radius';
+  if(ST.exploreMode){
+    _placeExploreMarker();
+    map.on('move', _onExploreMove);
+    map.on('moveend', _onExploreMoveEnd);
+    toast('🗺 Explore mode — pan the map to search any area');
+  } else {
+    if(_exploreMarker){ _exploreMarker.remove(); _exploreMarker = null; }
+    clearTimeout(_exploreMoveTO);
+    map.off('move', _onExploreMove);
+    map.off('moveend', _onExploreMoveEnd);
+  }
+  updateCircle();
+  loadListings();
+}
+function _placeExploreMarker(){
+  if(_exploreMarker) _exploreMarker.remove();
+  const c = map.getCenter();
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="width:14px;height:14px;border-radius:50%;background:#3B82F6;border:2.5px solid #fff;box-shadow:0 0 0 3px rgba(59,130,246,.35),0 2px 8px rgba(59,130,246,.5)"></div>`,
+    iconSize: [14,14],
+    iconAnchor: [7,7],
+  });
+  _exploreMarker = L.marker([c.lat,c.lng],{icon,interactive:false,zIndexOffset:-100}).addTo(map);
+}
+function _onExploreMove(){
+  if(!_exploreMarker) return;
+  const c = map.getCenter();
+  _exploreMarker.setLatLng(c);
+  if(radCircle) radCircle.setLatLng(c);
+}
+function _onExploreMoveEnd(){
+  clearTimeout(_exploreMoveTO);
+  _exploreMoveTO = setTimeout(loadListings, 800);
+}
 function setMode(btn){
   document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on',b===btn));
   if(btn.dataset.m==='post') openPostModal();
@@ -2579,8 +2642,10 @@ function switchTab(tab){
   document.getElementById('tab-browse').classList.toggle('on',tab==='browse');
   document.getElementById('tab-fav').classList.toggle('on',tab==='fav');
   document.getElementById('tab-mine').classList.toggle('on',tab==='mine');
-  // Proximity radius only applies to the Listings browse tab
+  // Proximity radius and search mode only apply to the Listings browse tab
   document.querySelector('.rad-box').classList.toggle('disabled', tab !== 'browse');
+  const smBox = document.getElementById('searchModeBox');
+  if(smBox) smBox.classList.toggle('disabled', tab !== 'browse');
   // Clear keyword state when leaving browse tab (no draw yet — drawMarkers below handles it)
   if(tab !== 'browse'){
     ST.q = '';
