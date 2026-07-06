@@ -9,7 +9,7 @@
 - **Project:** MapIt — location-first buy-and-sell marketplace for India (and USA)
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
-- **Last updated:** 2026-07-06, later same day (Session 5 item #1 fully closed out and LIVE on production; Session 5 item #2 — Claude-based lead scoring — built and locally verified on new branch `feat/session-05-lead-scoring`, not yet committed/pushed; see 🎯 Current Goal for what's next)
+- **Last updated:** 2026-07-06, later same day (Session 5 item #1 fully closed out and LIVE on production; Session 5 item #2 — Claude-based lead scoring — built, locally verified, and committed (`cd74c99`) on branch `feat/session-05-lead-scoring`, not yet pushed to `uat`; see 🎯 Current Goal for what's next)
 
 ---
 
@@ -23,13 +23,13 @@
 
 **Session 5 item #2 — Claude-based spam/lead-qualifying check — CODE COMPLETE, LOCALLY VERIFIED, NOT YET COMMITTED (2026-07-06).** Design spec agreed with Nagesh (see Decisions Made), built on new branch `feat/session-05-lead-scoring` (cut from `main`, which already has Session 5 #1). Key discovery during design: the "I'm Interested" tap sent identical fixed boilerplate text with no buyer-authored content for any classifier to read — fixed by replacing the one-tap send with an inline editable note box (placeholder hint, not pre-filled value; Send disabled until the buyer types something). Backend adds `src/utils/leadScoring.js` (Claude Haiku classification, fails open to `unscreened` on any error/timeout/missing key — never blocks or drops the seller email) and a `scoreAndNotify()` wrapper in `src/routes/messages.js`. New migration `004-lead-scoring.sql` (nullable `lead_verdict`/`lead_scored_at` on `messages`) already run by Nagesh in Supabase. End-to-end tested locally (after fixing an unrelated stale `.env` `APP_URL` port mismatch that was blocking local login with a CORS error) — confirmed `lead_verdict='unscreened'` persists correctly and the seller email arrives with the `[Unscreened]` flag, since no `ANTHROPIC_API_KEY` is configured yet.
 
-**Blocked on:** `ANTHROPIC_API_KEY` — Nagesh wants Arun's sign-off first since it's a new recurring cost (Rule 11), however small. The feature is safe to leave in this state indefinitely (fails open, never breaks message sending) — real spam/genuine classification simply won't happen until the key is added. Not yet committed, not pushed to `uat`, not merged to `main`.
+**Blocked on:** `ANTHROPIC_API_KEY` — Nagesh wants Arun's sign-off first since it's a new recurring cost (Rule 11), however small. The feature is safe to leave in this state indefinitely (fails open, never breaks message sending) — real spam/genuine classification simply won't happen until the key is added. Committed (`cd74c99`) but not yet pushed to `uat`, not merged to `main`.
 
 ---
 
 ## ✅ Completed This Session
 
-- ✅ **Session 5 #2 — Claude-based spam/lead-qualifying check built and locally verified (2026-07-06, branch `feat/session-05-lead-scoring`, not yet committed):**
+- ✅ **Session 5 #2 — Claude-based spam/lead-qualifying check built, locally verified, and committed (2026-07-06, branch `feat/session-05-lead-scoring`, commit `cd74c99`):**
   - **Design decisions locked in with Nagesh** (all via explicit confirmation): check runs passively server-side, no separate Q&A gate; whatever the verdict, the seller email **always sends** (never silently dropped/blocked), only flagged `[Unscreened]` when not confirmed genuine; scoring criteria universal (not per-category); new additive-only migration approved.
   - **Blocking discovery**: today's "I'm Interested" tap sent identical fixed boilerplate text (`Hi! I'm interested in your listing "X". Please get in touch.`) — no buyer-authored content existed for any classifier to read. Resolved by making the note editable in place (small inline textarea, not a modal/separate gate) instead of a single-tap fixed send.
   - **New `src/utils/leadScoring.js`**: `scoreLead(noteText)` calls Anthropic's Messages API directly via raw `fetch` (no SDK, matches `email.js`'s lean-dependency pattern), model `claude-haiku-4-5-20251001`, `max_tokens:5` (one-word answer only). Buyer text passed as user-turn content wrapped in `<buyer_note>`, never concatenated into the system prompt — basic prompt-injection hygiene, since the model's output only ever narrows to a hard-validated enum (`spam`/`genuine`/`unscreened`), never trusted or interpolated directly. 4s timeout via `AbortController`. Never throws — missing key, network error, timeout, non-2xx, or unexpected output all resolve to `unscreened`.
@@ -487,7 +487,7 @@
 | Session 5 #2 — Frontend inline note box + UX refinement | ✅ Done (2026-07-06) | `MapIt_MVP_v1.html`, `public/index.html` | Placeholder hint (not pre-filled value); Send disabled until typed; synced, diff clean |
 | Session 5 #2 — End-to-end local verification | ✅ Done (2026-07-06) | local + Supabase | Two real test sends confirmed `lead_verdict='unscreened'` persists + seller email flagged `[Unscreened]` received |
 | Session 5 #2 — `ANTHROPIC_API_KEY` creation | 🟡 Pending | Vercel + local `.env` | Blocked on Arun's financial sign-off (Rule 11 — new recurring cost); feature safe to leave in fail-open state indefinitely |
-| Session 5 #2 — Commit to `feat/session-05-lead-scoring` | ✅ Done (2026-07-06) | git | See commit hash in Key Files Modified |
+| Session 5 #2 — Commit to `feat/session-05-lead-scoring` | ✅ Done (2026-07-06) | git | Commit `cd74c99` — 8 files (migration, leadScoring.js, messages.js, MapIt_MVP_v1.html + public/index.html, og-image.png, Context.md); unrelated WIP left uncommitted in working tree |
 | Session 5 #2 — Push to `uat`, merge to `main` | 🟡 Pending | git | Not started — awaiting Anthropic key decision before promoting |
 
 ---
@@ -495,6 +495,13 @@
 ## 📂 Key Files Modified
 
 ```
+src/utils/leadScoring.js   — NEW (2026-07-06, cd74c99, branch feat/session-05-lead-scoring): scoreLead() — Claude Haiku classification via raw fetch, fails open to 'unscreened' on any error/timeout/missing key, enum-validated output
+src/routes/messages.js     — Session 5 #2 (2026-07-06, cd74c99): scoreAndNotify() helper added; notifySellerOfInterest() gains verdict param (flags email when not 'genuine'); call site swapped to scoreAndNotify(...).catch(...)
+database/migrations/004-lead-scoring.sql — NEW (2026-07-06, cd74c99): nullable lead_verdict/lead_scored_at columns on messages; run by Nagesh in Supabase
+.env.example               — Session 5 #2 (2026-07-06, cd74c99): ANTHROPIC_API_KEY entry added (key not yet created — pending Arun's sign-off)
+MapIt_MVP_v1.html          — Session 5 #2 (2026-07-06, cd74c99): expressInterest() split into openInterestNote()/cancelInterestNote()/sendInterestNote(); new #interestBox inline note UI; placeholder-not-value + Send disabled until typed
+public/index.html          — Session 5 #2 (2026-07-06, cd74c99): synced from MapIt_MVP_v1.html (diff clean)
+public/og-image.png        — NEW (2026-07-06, cd74c99): 1200×630 PNG generated via Python/Pillow (throwaway venv); MapIt wordmark + pin motif + brand orange #F06030
 src/routes/messages.js     — Bug fix (2026-07-06, 64cfdff): removed invalid .catch() chained on Postgrest .single() builder in inquiry-count-increment block; wrapped in try/catch instead; was crashing every buyer's first-message send
 (merge)                    — uat → main (2026-07-06, d441152): promoted Session 4 + Explore Area toggle + Session 5 #1 seller notification + hotfix to production; 8 files (MapIt_MVP_v1.html, public/index.html, src/routes/messages.js, src/utils/email.js, src/server.js, src/middleware/errorHandler.js, Context.md, .env.example)
 MapIt_MVP_v1.html          — Explore Area toggle (2026-07-02, efabd47): Search Mode toggle HTML+CSS; setSearchMode(); _placeExploreMarker(); _onExploreMove/End(); activeLoc() explore branch; updateCircle() blue/orange; switchTab() smBox disabled; ST.exploreMode state
@@ -589,13 +596,16 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 
+- **`ANTHROPIC_API_KEY` not yet created (Session 5 #2)** — 🟡 Blocked on Arun's financial sign-off before creating the key and adding it to local `.env` + Vercel (new recurring cost, however small — Rule 11). Code is fully built, committed (`cd74c99`), and safe to leave in this state indefinitely: `scoreLead()` fails open to `unscreened` when the key is absent, so messages keep sending normally, just always flagged `[Unscreened]` until the key exists.
+- **`feat/session-05-lead-scoring` not yet pushed to `uat`** — 🟡 Pending, waiting on the Anthropic key decision before promoting (or could push as-is in its safe fail-open state if Nagesh wants `uat` testing to start regardless)
+- **Local `.env` had stale `APP_URL=http://localhost:3000`** — ✅ FIXED (2026-07-06): server actually runs on `PORT=3001` and serves the frontend itself; corrected locally to `http://localhost:3001`. Local-only file, never committed, no production impact.
 - **`RESEND_API_KEY` in Vercel** — ✅ DONE (2026-07-06): Nagesh confirmed added to Production + Preview scopes
 - **`feat/session-05-seller-notification` → `uat` merge** — ✅ DONE (2026-07-06): fast-forward merge `df714d8`, pushed to `origin/uat`
 - **Session 5 #1 verified on deployed `uat`** — ✅ DONE (2026-07-06): message sent + notification email read in inbox, after the `.catch()` hotfix below
 - **`.catch()` chained on Supabase Postgrest builder crashed first-message sends** — ✅ FIXED (2026-07-06, commit `64cfdff`): `src/routes/messages.js` inquiry-count-increment block (pre-existing code from `96642c9`, unrelated to Session 5) called `.catch()` directly on a `.single()` query builder; that builder only implements `.then()` in the installed client version, so it threw `TypeError: ...catch is not a function` and failed the *entire* `POST /api/messages` request whenever a buyer sent their first message on a listing — i.e. every "I'm Interested" tap was silently broken before this fix, not just something Session 5 introduced. Fixed by wrapping in a plain `try/catch` instead of chaining `.catch()` on the builder; confirmed via grep this was the only occurrence of the anti-pattern in the codebase
 - **`uat → main` merge** — ✅ DONE (2026-07-06, merge commit `d441152`): Session 4 + Explore Area toggle + Session 5 #1 (+ hotfix) all now live on production `https://mapit.co.in`
 - **Production smoke test** — ✅ DONE (2026-07-06): Nagesh tapped "I'm Interested" live on `mapit.co.in`; new `messages` row confirmed via Supabase REST query (service role) and notification email confirmed received. Session 5 #1 fully closed out end-to-end on production.
-- **AI spam/lead-qualifying bot — design pending (2026-07-02)** — Nagesh wants sellers to only receive notification emails for buyers who pass a spam check + a short qualifying Q&A. Needs its own spec before building: LLM provider/cost (Claude via Anthropic API is the likely fit), what counts as spam, what qualifying questions to ask (universal vs category-specific), what happens if a buyer ignores/evades the bot (silently drop the email, or send anyway flagged "unscreened"?), where the Q&A gets stored. Deferred out of Session 5 item #1 — see Decisions Made
+- **AI spam/lead-qualifying bot** — ✅ DESIGNED + BUILT (2026-07-06, Session 5 #2, commit `cd74c99`): see Completed This Session for full detail. Blocked only on the `ANTHROPIC_API_KEY` creation (Arun's sign-off) before real classification is live — code path is fully safe without it.
 - **`uat → main` merge PENDING** — commits `093d49f` + `efabd47` both Arun-approved (2026-07-02); merge to kick off Session 5
 - **`public/og-image.png`** — ✅ DONE (2026-07-06): 1200×630px PNG generated programmatically (Python/Pillow venv, discarded after use) — MapIt wordmark, pin icon, brand orange `#F06030` (matched from existing CSS), tagline "Buy & Sell Near You", description line, `mapit.co.in`, decorative scattered pins. This is a functional placeholder, not final brand design — swap for polished artwork whenever a designer is available. File committed at `public/og-image.png`; OG/Twitter tags already pointed at this path so no HTML change needed.
 - **Nominatim location search is India-only** — `countrycodes=in` param in `fetchLocSuggestions()`; remove restriction before USA launch
@@ -778,8 +788,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 **⬅ Immediate:**
-1. **Create `public/og-image.png`** — 1200×630px PNG for WhatsApp OG preview (manual task, still outstanding)
-2. 🟡 **AI spam/lead-qualifying bot** — Session 5 follow-on, deliberately deferred; needs its own design spec before building (see Open Issues + Decisions Made)
+1. **Get Arun's sign-off + create `ANTHROPIC_API_KEY`** — console.anthropic.com/settings/keys; add to local `.env` first for a real genuine/spam test, then to Vercel (Production + Preview) before promoting past `uat`
+2. **Test real classification** — with the key in place, send one genuine-sounding note and one spam-like note locally, confirm `lead_verdict` differs correctly and email wording matches
+3. **Push `feat/session-05-lead-scoring` → `uat`** for Nagesh/Arun sign-off, then merge to `main` (standard Rule 6 promotion flow)
+
+**✅ Session 5 #2 — Claude-based spam/lead-qualifying check — CODE COMPLETE, COMMITTED, LOCALLY VERIFIED (2026-07-06):**
+- Built on `feat/session-05-lead-scoring` (commit `cd74c99`); fails open to `unscreened` — safe to leave as-is indefinitely. Only the Anthropic key + `uat`/`main` promotion remain — see Completed section for full detail.
 
 **✅ Session 5 #1 — FULLY COMPLETE AND LIVE ON PRODUCTION (2026-07-06):**
 - Seller notification email, the `.catch()` hotfix, `uat` verification, and `uat → main` promotion (`d441152`) all done — see Completed section for full detail
