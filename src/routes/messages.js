@@ -9,8 +9,37 @@ const express         = require('express');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
+const { sendEmail, escapeHtml } = require('../utils/email');
 
 const router = express.Router();
+
+// ── Notify seller by email on a buyer's first message on a listing ────
+// Fire-and-forget: called without await from POST / below. A Resend
+// outage or missing RESEND_API_KEY must never fail the message send.
+async function notifySellerOfInterest(listing, buyerId, messageContent) {
+  const [{ data: sellerAuth }, { data: buyerProfile }] = await Promise.all([
+    supabaseAdmin.auth.admin.getUserById(listing.seller_id),
+    supabaseAdmin.from('profiles').select('nickname').eq('id', buyerId).single(),
+  ]);
+
+  const sellerEmail = sellerAuth?.user?.email;
+  if (!sellerEmail) return;
+
+  const buyerName = escapeHtml(buyerProfile?.nickname || 'A buyer');
+  const title     = escapeHtml(listing.title);
+
+  await sendEmail({
+    to:      sellerEmail,
+    subject: `${buyerName} is interested in your listing "${title}"`,
+    html: `
+      <p>Hi,</p>
+      <p><strong>${buyerName}</strong> is interested in your MapIt listing <strong>"${title}"</strong>:</p>
+      <blockquote style="margin:12px 0;padding:8px 12px;border-left:3px solid #f06030;color:#444;">${escapeHtml(messageContent)}</blockquote>
+      <p><a href="https://www.mapit.co.in">Open MapIt</a> to reply.</p>
+      <p style="color:#888;font-size:12px;">You're receiving this because someone messaged you about your listing on MapIt.</p>
+    `,
+  });
+}
 
 // ── Get inbox (all conversations) ────────────────────────────
 // GET /api/messages/inbox
@@ -111,12 +140,15 @@ router.post('/', requireAuth, async (req, res, next) => {
     if (receiver_id === req.user.id) return next(createError('You cannot message yourself.'));
 
     // Listing validation — only when listing_id is provided
+    let listing = null;
+    let isFirstMessageFromBuyer = false;
     if (listing_id) {
-      const { data: listing } = await supabaseAdmin
+      const { data: listingRow } = await supabaseAdmin
         .from('listings')
-        .select('id, status, seller_id')
+        .select('id, status, seller_id, title')
         .eq('id', listing_id)
         .single();
+      listing = listingRow;
 
       if (!listing) return next(createError('Listing not found.', 404));
       if (listing.status === 'sold') {
@@ -131,19 +163,23 @@ router.post('/', requireAuth, async (req, res, next) => {
           .eq('listing_id', listing_id)
           .eq('sender_id', req.user.id);
 
-        if (count === 0) {
-          const { data: cur } = await supabaseAdmin
-            .from('listings')
-            .select('inquiry_count')
-            .eq('id', listing_id)
-            .single()
-            .catch(() => ({ data: null }));
-          if (cur) {
-            await supabaseAdmin
+        isFirstMessageFromBuyer = count === 0;
+
+        if (isFirstMessageFromBuyer) {
+          try {
+            const { data: cur } = await supabaseAdmin
               .from('listings')
-              .update({ inquiry_count: (cur.inquiry_count || 0) + 1 })
+              .select('inquiry_count')
               .eq('id', listing_id)
-              .catch(() => {});
+              .single();
+            if (cur) {
+              await supabaseAdmin
+                .from('listings')
+                .update({ inquiry_count: (cur.inquiry_count || 0) + 1 })
+                .eq('id', listing_id);
+            }
+          } catch (err) {
+            console.error('Inquiry count increment failed:', err.message);
           }
         }
       }
@@ -161,6 +197,12 @@ router.post('/', requireAuth, async (req, res, next) => {
       .single();
 
     if (error) return next(createError(error.message));
+
+    // Fire-and-forget: never block or fail the response on email errors.
+    if (isFirstMessageFromBuyer && listing) {
+      notifySellerOfInterest(listing, req.user.id, content.trim())
+        .catch(err => console.error('Seller notification email failed:', err.message));
+    }
 
     res.status(201).json({ message });
   } catch (err) { next(err); }

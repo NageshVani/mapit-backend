@@ -9,17 +9,110 @@
 - **Project:** MapIt — location-first buy-and-sell marketplace for India (and USA)
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
-- **Last updated:** 2026-06-27 (Saved tab map redesign + proximity radius disable + UAT docs updated — commits `be19c4e`, `d4226b4`, `83d4a34` on `uat`)
+- **Last updated:** 2026-07-02 (Session 5 started — seller notification email built on `feat/session-05-seller-notification`, blocked on RESEND_API_KEY; AI screening bot scoped and deferred to its own item)
 
 ---
 
 ## 🎯 Current Goal
 
-**All 2026-06-27 feature work complete (commits `5cc2dfe`, `be19c4e`, `d4226b4`, `83d4a34` on `uat`). UAT docs updated with 20 new auto-checks + 10 new manual tests. Next: send Arun the Session 2 checklist for sign-off, then merge `uat → main`.**
+**Session 5 started (2026-07-02) on branch `feat/session-05-seller-notification`, in parallel with Arun's Session 4 UAT sign-off (still pending — `uat → main` merge not yet done). Item #1 (seller notification email on "I'm Interested") built and boot/route-verified locally; blocked on `RESEND_API_KEY` (not yet set anywhere) before it can actually send. A second, bigger feature — an AI spam/lead-qualifying bot gating the notification — was scoped in discussion but deliberately deferred to its own session so the simple email could ship first.**
 
 ---
 
 ## ✅ Completed This Session
+
+- ✅ **Session 5 #1 — Seller notification email on "I'm Interested" (2026-07-02, branch `feat/session-05-seller-notification`, NOT yet committed/merged):**
+  - New `src/utils/email.js` — `sendEmail({to,subject,html})` posts directly to the Resend REST API via native `fetch` (Node 18+, no SDK dependency added); `escapeHtml()` helper for interpolating buyer-supplied text into HTML email bodies safely
+  - `src/routes/messages.js` — `notifySellerOfInterest(listing, buyerId, messageContent)` added; fires only on a buyer's **first** message per listing (reuses the existing inquiry-count `count === 0` check) so it won't spam the seller once Session 6 real-time chat exists; looks up seller email via `supabaseAdmin.auth.admin.getUserById()` (same admin-API pattern already used in `auth.js`) and buyer nickname via `profiles`
+  - Called fire-and-forget (not awaited) after the message insert succeeds — a Resend outage or missing key can never fail the message send or the API response; errors are caught and logged without PII
+  - `.env.example` — `RESEND_API_KEY` uncommented (was documented but inactive); **still needs a real value in `.env` and in Vercel env vars** — until then `sendEmail()` no-ops with a console warning, verified via local server boot + unauth route check (no live send test possible without the key + a real buyer/seller/listing)
+  - Verified: `node -c` on both files, local server boots clean, `POST /api/messages` still correctly 401s unauthenticated requests — no regression to existing message-send flow
+  - **Not yet done:** commit, `.env`/Vercel key setup, live end-to-end send test, merge to `uat`
+
+- ✅ **Explore Area search mode toggle (2026-07-02, commit `efabd47`, pushed to `uat`, Arun-approved):**
+  - New "Search Mode" toggle added to Browse sidebar between category filter and radius buttons
+  - **"📍 My Locations"** (default): unchanged — searches from saved pin, orange dashed radius circle
+  - **"🗺 Explore Area"**: blue dot marker tracks map centre in real-time; blue dashed radius circle follows pan; listings auto-reload 800ms after pan stops (`moveend` debounce)
+  - `activeLoc()` returns `map.getCenter()` when `ST.exploreMode=true` — affects `loadListings()`, `updateCircle()`, hover card distances, and `renderFavs()` distances
+  - `_onExploreMove()` wired to `map.on('move')` — moves `_exploreMarker` and shifts `radCircle.setLatLng()` for performance (no full re-create on every frame)
+  - `_onExploreMoveEnd()` wired to `map.on('moveend')` — 800ms debounced `loadListings()`
+  - Toggle greyed out (disabled class) on Saved and My Ads tabs via `switchTab()`
+  - Radius label changes "Proximity Radius" → "Search Radius" in explore mode
+  - Toast: "🗺 Explore mode — pan the map to search any area" on mode entry
+  - Discussed and agreed in PDF: `docs/Search option MVP.pdf` — Nagesh's design, James (Claude) recommendation
+  - Arun tested and commended: "That was really good"
+  - Note: Claude has been fondly named **"James"** by Nagesh and Arun (reference: James Bond 007)
+
+- ✅ **Session 4 UAT checklist updated for search redesign (2026-07-02):**
+  - `docs/session-04-uat-checklist-Arun.html` rewritten — Block A (was "Location Search" 4 tests) → "Header Keyword Search" (3 tests); Block B (was "Keyword Filter sidebar" 2 tests) → "Explore Area Search Mode" (4 tests); Blocks C–G renumbered; total **19 checks** (was 18)
+  - Block A tests: (1) 🔍 icon + instant keyword filter; (2) keyword + map pan = viewport-constrained results; (3) × clear restores all listings
+  - Block B tests: (4) toggle visible in Browse sidebar; (5) Explore → blue dot + blue circle + toast + "Search Radius" label; (6) pan auto-reloads listings; (7) toggle greyed out on Saved/My Ads
+
+- ✅ **Session 4 UAT report updated — automated UAT run on search redesign (2026-07-02):**
+  - `docs/session-04-uat-report.html` updated: Block C entirely replaced with "Search Redesign — Keyword Header & Explore Area Mode" (17 new automated checks, all PASS)
+  - Old Block B satellite tests (T-004/T-005/T-006) marked REPLACED — satellite toggle removed in `093d49f`; CartoDB Voyager now hardcoded; T-008 updated to test `_exploreMarker`
+  - 5 new CHANGE entries added explaining Nominatim removal, keyword search, Explore Area, and satellite simplification
+  - Summary: **44 PASS / 0 FAIL / 1 WARN / 3 REPLACED** across 48 total checks; footer updated to commit `efabd47`
+  - Key finding: keyword search + Explore Area compose correctly — pan to area, type keyword, get viewport-filtered results from new centre
+
+- ✅ **Arun UAT observation 2 — Post form 2-column layout (2026-06-30, commit `093d49f`, pushed to `uat`):**
+  - `.post-box` widened from `max-width:520px → 840px`
+  - `.post-body` is now a CSS grid: `grid-template-columns:1fr 1fr`
+  - **Left column:** Category + Subcategory (inner `.form-row`), Transaction Type (RE only), Dynamic category fields (2-col subgrid via `#dynamicFields` grid), Title
+  - **Right column:** Location, Photos, Phone visibility (radio stacked vertically)
+  - **Full-width footer:** Description textarea + Submit button
+  - `.dyn-section-hd` gets `grid-column:1/-1` so the "X Details" header spans both dyn-field columns
+  - Responsive `@media(max-width:640px)` collapses everything back to 1 column
+  - No JS changes needed — all `id` attributes preserved
+
+- ✅ **Arun UAT observation 1 — Keyword search restored in header (2026-06-30, commit `093d49f`, pushed to `uat`):**
+  - `srchIn` icon `📍→🔍`, placeholder `"Search listings by keyword…"`, clear button wired to `clearKeyword()`
+  - Removed `srchDD` dropdown div from HTML; removed entire Nominatim block (~90 lines): `placeSearchPin`, `clearSearchCenter`, `fetchLocSuggestions`, `renderLocDD`, `pickLocResult`, `_locTimer`, `srchInEl` Nominatim listeners
+  - Removed sidebar `#kwrdBox` / `#kwrdIn` and their CSS (`.kwrd-box`, `.kwrd-box.disabled`, `.srch-dd*`)
+  - `ST.searchCenter` state removed; `activeLoc()` reverted to `ST.activePin` / `DEFAULT_LOC` only; `_searchMarker` removed
+  - `filtered()` updated: when `ST.q` is set, also filters by `map.getBounds().contains([lat,lng])` — results respect the current map viewport and zoom
+  - `switchTab()` now inlines keyword-state reset (no `clearKeyword()` call) to avoid double `renderFavs`/`renderMyAds` API calls
+  - New `clearKeyword()` function for standalone use (× button and any future callers)
+
+- ✅ **`uat → main` merged (2026-06-29, merge commit `cec7848`):** Arun confirmed sign-off on A9/C4/I3 fixes; all Session 3 + Arun-UAT fixes now on production at `https://mapit.co.in`
+
+- ✅ **Session 4 — Unified Location Search (2026-06-29, commit `e1d4e7e`, pushed to `uat`):**
+  - Header `srchIn` bar replaced: now does Nominatim forward geocoding (place name → coordinates)
+  - Dropdown shows up to 5 place suggestions from `nominatim.openstreetmap.org` (400ms debounce)
+  - Selecting a result: sets `ST.searchCenter`, drops a blue pin (`_searchMarker`) on map, re-centers radius circle, calls `loadListings()` from new center
+  - `×` clear button resets `ST.searchCenter` → restores home-pin behaviour
+  - `activeLoc()` updated to use `ST.searchCenter` when set (priority over home pin)
+  - Keyword filter `#kwrdIn` added to sidebar between rad-box and tab-bar; filters `ST.listings` in place; disabled on Saved/My Ads tabs
+  - `countrycodes=in` Nominatim param limits suggestions to India (correct for Bangalore MVP)
+
+- ✅ **Session 4 — Satellite Toggle + Map UX (2026-06-29, commit `772e7bf`, pushed to `uat`):**
+  - 🛰 button top-right of map: toggles between CartoDB Voyager and ESRI WorldImagery (free, no API key)
+  - `_voyagerLayer` / `_satLayer` / `_satOn` variables; `toggleSatellite()` swaps tile layers on map
+  - `selListing()`: changed `panTo` → `flyTo(zoom 16)` for My Ads / Saved tabs — pin always flies into view
+  - For Browse tab: `flyTo(max(currentZoom, 14))` preserves context without over-zooming
+  - Min 1 photo: frontend toast guard before submit + uploads route already rejects empty payloads
+  - Canvas renderer: `L.canvas()` passed to `L.map()` — lighter on low-end Android (no per-pin DOM nodes)
+  - `step-homeloc` UX: tap-instruction label (orange), orange map border, draggable marker, "drag to adjust" hint on pin-place, CartoDB Voyager tiles, `_resolveHomeLocAddr()` shared helper for click + dragend
+  - OG / Twitter meta tags: `og:title`, `og:description`, `og:image`, `twitter:card` in `<head>` — WhatsApp rich preview cards when link shared
+  - Perf: Leaflet `rel="preload"` hint; Google Fonts `media="print" onload` non-blocking
+  - Page title: "MapIt — Buy & Sell Near You" (was "Bangalore Beta")
+
+- ✅ **Session 4 — CORS Security Hardening (2026-06-29, commit `dc8199a`, pushed to `uat`):**
+  - All hardcoded localhost/127.0.0.1 origins removed from `allowedOrigins` in `src/server.js`
+  - Local dev uses `APP_URL` env var only (set in `.env`, never committed)
+  - **BUG fixed:** CORS rejection was returning HTTP 500 → now correctly returns 403
+  - **BUG fixed:** Stack trace was included in 4xx error responses in dev mode → gated to 5xx-only
+  - Both fixes found + applied during Session 4 UAT automated testing
+
+- ✅ **Session 4 UAT (2026-06-29) — 30/30 automated tests PASS:**
+  - `docs/session-04-uat-report.html` written
+  - 2 inline security fixes: CORS 500→403; errorHandler stack trace gate for 4xx
+  - Manual checklist pending (tester name not yet received)
+
+- ✅ **Arun Session 2 UAT failures fixed (2026-06-29, commit `7919558`, pushed to `uat`):**
+  - **A9 — Home location showed "Koramangala" instead of saved address:** Root cause: `step-homeloc` saved to `profiles.home_*` only; `initApp()` reads `user_pins` for the header badge; new users had no pins so the hardcoded HTML default "Koramangala" in `activePinLabel` was never replaced. Fix: `saveHomeLocation()` now also calls `POST /api/pins` with the saved coordinates + `is_default:true`; backend already handles unsetting other defaults.
+  - **C4 — Password reset email linked to production (www.mapit.co.in) not UAT:** Root cause: Supabase redirect URL allowlist entry `https://mapit-backend-*.vercel.app/**` requires a path (`/**` glob); bare `window.location.origin` has no path so Supabase silently dropped `redirect_to` and fell back to Site URL. Fix: `sendPasswordReset()` now sends `window.location.origin + '/'` (trailing slash satisfies `/**`); Nagesh also added bare-origin entry `https://mapit-backend-*.vercel.app` in Supabase Dashboard → Auth → Redirect URLs. Supabase email template confirmed correct (`{{ .ConfirmationURL }}`).
+  - **I3 — Sign-in page flashed briefly during Google OAuth new-user flow:** Root cause: `authModal` had no `hide` class in the HTML — it was visible from first render with `step-auth` as the active step; the ~100–300ms between HTML render and JS execution caused the flash. Fix: added `hide` to `authModal` in HTML; all code paths that need to show it already call `classList.remove('hide')` explicitly.
 
 - ✅ **UAT docs updated — session-03 report + checklist (2026-06-27, commit `83d4a34`, pushed to `uat`):**
   - **18 automated checks run** against `MapIt_MVP_v1.html` — all 18 PASS; results embedded in both docs
@@ -344,6 +437,12 @@
 | Vercel: delete broken frontend project | ✅ Done | Vercel dashboard | `mapit-frontend` project deleted (2026-06-20) |
 | Supabase SQL cleanup: trim invite_codes | ✅ Done | Supabase SQL Editor | Ran successfully (2026-06-20) |
 | Supabase SQL cleanup: drop condition_check constraint | ✅ Done | Supabase SQL Editor | Ran successfully (2026-06-20) |
+| Arun UAT obs-1: keyword search | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html` | Nominatim removed; header srchIn → keyword filter with map bounds; commit `093d49f` |
+| Arun UAT obs-2: post form 2-col | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html` | 2-col CSS grid; dynamic fields 2-col subgrid; responsive ≤640px; commit `093d49f` |
+| Explore Area search mode toggle | ✅ Done | `MapIt_MVP_v1.html`, `public/index.html` | My Locations/Explore Area toggle; blue dot + blue circle; moveend debounce; commit `efabd47`; Arun-approved |
+| Session 4 manual UAT checklist | ✅ Done (updated 2026-07-02) | `docs/session-04-uat-checklist-Arun.html` | Rewritten for search redesign: 19 checks (was 18); Blocks A+B replaced to cover keyword search + Explore Area mode; Arun verbal sign-off received |
+| `uat → main` merge (post Session 4 + explore toggle) | 🟡 Pending | git | Awaiting explicit merge instruction — all changes Arun-approved |
+| Create `public/og-image.png` | 🟡 Pending | `public/` | 1200×630px image for WhatsApp/Twitter OG preview; OBS-01 from Session 4 UAT |
 | Run SQL cleanup for empty-`details` listings | 🟡 Pending | Supabase SQL Editor | `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb` |
 | Fix TVS SCOOTY subcategory in Supabase | 🟡 Pending | Supabase SQL Editor | `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'` |
 | Backfill `invite_codes.used_by` | 🔴 Deferred | Supabase table editor | ALL rows have `used_by = NULL`; invite codes no longer used in MVP auth — archived |
@@ -353,6 +452,22 @@
 ## 📂 Key Files Modified
 
 ```
+MapIt_MVP_v1.html          — Explore Area toggle (2026-07-02, efabd47): Search Mode toggle HTML+CSS; setSearchMode(); _placeExploreMarker(); _onExploreMove/End(); activeLoc() explore branch; updateCircle() blue/orange; switchTab() smBox disabled; ST.exploreMode state
+public/index.html          — Explore Area toggle (2026-07-02, efabd47): synced from MapIt_MVP_v1.html (diff clean)
+MapIt_MVP_v1.html          — Arun UAT feedback (2026-06-30, 093d49f): keyword search in header (replaces Nominatim); post form 2-col CSS grid layout; ~90 lines of Nominatim code removed
+public/index.html          — Arun UAT feedback (2026-06-30, 093d49f): synced from MapIt_MVP_v1.html (diff clean)
+MapIt_MVP_v1.html          — Session 4 CORS/security fix (2026-06-29, dc8199a): committed alongside src/server.js fix; diff clean
+public/index.html          — Session 4 (2026-06-29, dc8199a): synced from MapIt_MVP_v1.html (diff clean)
+MapIt_MVP_v1.html          — Session 4 map UX (2026-06-29, 772e7bf): satellite toggle (satBtn CSS+HTML+toggleSatellite); canvas renderer L.canvas(); flyTo in selListing (zoom-16 mine/fav, max-14 browse); 1-photo frontend validation toast; step-homeloc: homeLocHint label + orange border + draggable marker + dragend + _resolveHomeLocAddr helper + Voyager tiles; OG+Twitter meta tags; Leaflet preload + Google Fonts non-blocking; page title updated
+public/index.html          — Session 4 map UX (2026-06-29, 772e7bf): synced from MapIt_MVP_v1.html (diff clean)
+MapIt_MVP_v1.html          — Session 4 location search (2026-06-29, e1d4e7e): header srch placeholder→location search; srchClear × button; kwrd-box + kwrdIn sidebar input; ST.searchCenter state; activeLoc() searchCenter priority; _searchMarker + _voyagerLayer + _satLayer + _satOn vars; placeSearchPin / clearSearchCenter / fetchLocSuggestions / renderLocDD / pickLocResult functions; switchTab kwrdBox disabled toggle; replaced old srchInEl listeners + searchMatches/renderSearchDD/pickSearchResult/hideSearchDD removed
+public/index.html          — Session 4 location search (2026-06-29, e1d4e7e): synced from MapIt_MVP_v1.html (diff clean)
+src/server.js              — Session 4 CORS hardening (2026-06-29, dc8199a): removed all hardcoded localhost/127.0.0.1 from allowedOrigins; APP_URL env var spread for local dev; CORS cb now sets statusCode=403 on rejection
+src/middleware/errorHandler.js — Session 4 security fix (2026-06-29, dc8199a): stack trace gated to 5xx-only in dev mode (never 4xx)
+docs/session-04-uat-report.html — CREATED (2026-06-29); UPDATED (2026-07-02): Block C replaced with "Search Redesign" (17 new tests: keyword search KW-1..7 + Explore Area EX-1..10); Block B T-004/T-005/T-006 satellite tests marked REPLACED; T-008 updated to _exploreMarker; 5 CHANGE entries; summary 44 PASS/0 FAIL/1 WARN/3 REPLACED; 5 observations (was 4)
+docs/session-04-uat-checklist-Arun.html — UPDATED (2026-07-02): Block A rewritten (keyword search, 3 tests); Block B rewritten (Explore Area mode, 4 tests); blocks C–G renumbered to items 8–19; total 19 checks (was 18); subtitle + progress bar + TOTAL JS updated
+MapIt_MVP_v1.html          — Arun UAT fixes (2026-06-29, 7919558): authModal starts with hide class (I3 flash fix); sendPasswordReset() redirectTo += '/' (C4 fix); saveHomeLocation() calls POST /api/pins after profile save (A9 fix)
+public/index.html          — Arun UAT fixes (2026-06-29, 7919558): synced from MapIt_MVP_v1.html (diff clean)
 MapIt_MVP_v1.html          — Saved tab + radius (2026-06-27, be19c4e): .rad-box.disabled CSS; ST.favListings[] state; drawMarkers fav branch + fitBounds; renderFavs→favListings + drawMarkers; viewFav keepTab; selListing favListings lookup + icon update + merge-back; renderSidebar fav detail branch + fl + listing lookup + nav arrows + "other saved" header; switchTab disabled toggle + drawMarkers; openMyAds→switchTab; selListing !keepTab re-enables radius
 public/index.html          — Saved tab + radius (2026-06-27, be19c4e): synced from MapIt_MVP_v1.html (diff clean)
 MapIt_MVP_v1.html          — listingRow keepTab fix (2026-06-27, d4226b4): onclick now passes ST.tab==='fav'||ST.tab==='mine' as keepTab at click time
@@ -429,6 +544,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 
+- **`RESEND_API_KEY` not set anywhere (2026-07-02)** — required for the new Session 5 seller notification email to actually send; add the real key to local `.env` and to Vercel env vars (both UAT and production projects) from resend.com/api-keys. Manual action, cannot be done via code. Until set, `sendEmail()` no-ops safely with a console warning — no crash, just silent no-send
+- **AI spam/lead-qualifying bot — design pending (2026-07-02)** — Nagesh wants sellers to only receive notification emails for buyers who pass a spam check + a short qualifying Q&A. Needs its own spec before building: LLM provider/cost (Claude via Anthropic API is the likely fit), what counts as spam, what qualifying questions to ask (universal vs category-specific), what happens if a buyer ignores/evades the bot (silently drop the email, or send anyway flagged "unscreened"?), where the Q&A gets stored. Deferred out of Session 5 item #1 — see Decisions Made
+- **`uat → main` merge PENDING** — commits `093d49f` + `efabd47` both Arun-approved (2026-07-02); merge to kick off Session 5
+- **`public/og-image.png` not yet created** — OG tags reference `https://www.mapit.co.in/og-image.png`; file doesn't exist; WhatsApp/Twitter will show no thumbnail image until a 1200×630px PNG is placed at `public/og-image.png` (manual task for Nagesh/designer)
+- **`public/og-image.png` not yet created** — OG tags reference `https://www.mapit.co.in/og-image.png`; file doesn't exist; WhatsApp/Twitter will show no thumbnail image until a 1200×630px PNG is placed at `public/og-image.png` (manual task for Nagesh/designer before Session 9 launch)
+- **Nominatim location search is India-only** — `countrycodes=in` param in `fetchLocSuggestions()`; remove restriction before USA launch
+- **Arun Session 2 UAT — A9, C4, I3 all FIXED** — commit `7919558` on `uat` (2026-06-29); ✅ merged to main (2026-06-29, cec7848)
 - **Session 1 UAT docs created but not yet committed** — `docs/session-01-uat-report.html` + `docs/session-01-uat-checklist-nagesh.html` are local only; commit to uat branch (see Next Steps 18)
 - **Session 1 UAT manual checks pending (Nagesh)** — 29 checks in Blocks H–L of the checklist require Vercel Dashboard, Supabase SQL Editor, and browser; OTP_RATE_LIMIT=10 in Vercel must be verified (local .env has 100); 4 invite_codes.created_for names have " 1" suffix (Chirag 1, Kalpith 1, Srikanth 1, Vijay 1) — fix before those members log in
 - **"Who's using MapIt?" showed "Mapit User"** — ✅ FULLY FIXED (2026-06-22): (1) `submitAuth()` needsProfile check (`3d100ab`); (2) `verifyOtp()` needsProfile check added (BUG-01, UAT 2026-06-22); (3) `_refreshStaleSessionNames()` now also refreshes sessions where `nickname === 'MapIt User'` (BUG-02, UAT 2026-06-22); (4) DB rows manually corrected; localStorage.clear() guidance documented for testers. All 3 auth paths now protected.
@@ -469,6 +591,34 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| AI spam/lead-qualifying bot deferred to its own session, split from the plain notification email (2026-07-02) | Nagesh wants sellers to only get emailed about genuine buyers — combining spam screening + a qualifying Q&A before the email sends. That's a real sub-project (LLM call = new recurring cost per Rule 11, new conversational frontend step, spam-scoring design, storage design) not a ~1.5hr add-on. Decision: ship the plain "email on first message" now to close the conversion gap immediately, spec the bot properly as a separate follow-on item |
+| Resend called via raw `fetch` to the REST API, no `resend` npm package (2026-07-02) | One call type (`POST /emails`); Node 18+ has global fetch; avoids adding and maintaining a dependency for something ~15 lines of code covers, consistent with the project's lean-dependency style |
+| Seller notification fires only on buyer's first message per listing (2026-07-02) | Reuses the existing `count === 0` inquiry-count check in `POST /api/messages`; prevents the seller getting one email per chat bubble once Session 6 real-time chat ships |
+| Explore Area uses `map.getCenter()` as search origin (2026-07-02) | Nagesh's design brief (Search option MVP.pdf): buyer pans to any area without saving a pin; `activeLoc()` returns live map centre when `ST.exploreMode=true`; all existing callers (loadListings, updateCircle, dist, renderFavs) automatically derive from the new origin |
+| Blue dot + blue dashed circle for explore mode (2026-07-02) | Visual distinction from orange home-pin system; `L.divIcon` 14px circle with white border + blue halo; `radCircle.setLatLng()` on move for performance (no recreate per frame); colour switches via `circleColor` in `updateCircle()` |
+| 800ms debounce on `moveend` for explore reload (2026-07-02) | `moveend` fires once on pan stop; debounce prevents double-fire if Leaflet emits spurious events; 800ms feels responsive without hammering the API on every micro-pan |
+| Toggle toggle label "My Locations / Explore Area" (2026-07-02) | Agreed in PDF discussion: labels describe intent not mechanism; "My Locations" defaults on so existing UX is unchanged for all current users |
+| Satellite toggle removed; CartoDB Voyager hardcoded as sole tile layer (2026-07-02, confirmed by automated UAT) | `toggleSatellite()`, `_voyagerLayer`, `_satLayer`, `_satOn`, `satBtn` all absent from current code; Explore Area mode provides equivalent discovery value; no action needed — documented in UAT report as CHANGE-S4-05 |
+| Keyword search + Explore Area compose correctly (2026-07-02) | When both modes active: `activeLoc()` returns map centre (Explore), `filtered()` also constrains by `getBounds()` (keyword) — results are keyword-matching listings visible in panned viewport |
+| Keyword search uses `map.getBounds()` to constrain results (2026-06-30) | Arun's feedback: "results should consider current map position and zoom level"; `filtered()` now checks `bounds.contains([lat,lng])` when `ST.q` is set — user pans/zooms to area, types keyword, sees only matching pins in that viewport |
+| `switchTab()` inlines keyword-state reset instead of calling `clearKeyword()` (2026-06-30) | `clearKeyword()` calls `drawMarkers()+renderSidebar()`; calling it from `switchTab` (which also calls them) would double-invoke `renderFavs()`/`renderMyAds()` — async API calls fired twice; inline reset avoids the extra render |
+| Post form 2-col layout: description in full-width footer, not left column (2026-06-30) | Left col (category+fields+title) and right col (location+photos+phone) are balanced; putting description in a full-width footer prevents the left col from being disproportionately long on Real Estate (8+ dynamic fields) |
+| Nominatim for unified buyer location search (Session 4) | Free, no API key, same library already used for reverse geocoding; Geoapify/Google Places upgrade path available before public launch if coverage gaps found |
+| CartoDB Voyager + ESRI satellite toggle for map tiles (Session 4) | Voyager: free, no key, shows POI labels at zoom 14+ (shops, restaurants, schools); ESRI WorldImagery: free satellite layer; both are significant UX improvements over plain OSM with zero added cost |
+| Header search bar repurposed as location search (not keyword) | Nominatim place search is the higher-value action; keyword filter moved to sidebar where it filters already-loaded listings in-place — no API call needed |
+| `ST.searchCenter` as a separate location state from `ST.activePin` | User's home pin should persist while they browse around different locations; `activeLoc()` priority chain: searchCenter > activePin > DEFAULT_LOC |
+| `selListing()` uses `flyTo` (not `panTo`) | My Ads listings can be geographically far from the browse view; `flyTo(zoom 16)` guarantees the pin is visible regardless of current viewport; Browse tab uses `max(currentZoom, 14)` to preserve context |
+| Google Fonts loaded with `media="print" onload` trick | Eliminates render-blocking font CSS; browser initially ignores `media=print` then applies after load; `<noscript>` fallback for JS-disabled browsers; standard technique, zero risk |
+| CORS allowedOrigins: APP_URL env var instead of hardcoded localhost | Hardcoded localhost is a security smell on a production server; dev adds `APP_URL=http://localhost:3001` in `.env` (gitignored); production Vercel never sets APP_URL so it's never in the allowlist |
+| CORS errors return 403 (not 500) | 500 triggers monitoring alerts and confuses WAFs; 403 is semantically correct for "forbidden by access policy" |
+| Stack traces gated to 5xx-only in errorHandler | 4xx errors (including CORS, validation, auth) are client-facing; they should never reveal internal file paths or stack frames regardless of NODE_ENV |
+| OpenStreetMap Overpass API for POI proximity (Session 5) | Free, no API key; fire-and-forget async after listing creation; results stored in details.nearby_pois JSONB; upgrade to Geoapify/Google Places before public launch if Bangalore coverage gaps found in UAT |
+| Side-by-side listing comparison deferred to post-MVP | Explicitly out of scope per CLAUDE.md; complexity doesn't justify at family-beta scale |
+| Full FAQ/Help page deferred; lightweight help modal in Session 5 | Full FAQ is out of scope; 5–6 bullet help modal in a simple overlay covers the UAT need (Tester-4c) without the overhead |
+| Marker clustering deferred to Session 8 | At 20 family-beta listings clustering adds zero value; build it in Session 8 before public launch when listing density will be higher |
+| `saveHomeLocation()` creates a `user_pin` in addition to saving `profiles.home_*` | `profiles.home_*` and `user_pins` are separate data stores; the header badge reads from `user_pins` (ST.activePin); without a pin entry the badge shows the HTML placeholder "Koramangala" forever; the backend POST /api/pins already handles is_default correctly |
+| `authModal` starts hidden in HTML (`class="hide"`) | Prevents sign-in page flash during Google OAuth page load — the ~100–300ms before JS runs was enough to show step-auth; all code paths that show the modal already call classList.remove('hide') explicitly |
+| Password reset `redirectTo` sends `window.location.origin + '/'` | Supabase's redirect URL `/**` glob requires at least one path character; bare origin with no path silently failed validation and fell back to Site URL; trailing `/` satisfies the glob; also added bare-origin entry in Supabase dashboard as belt-and-suspenders |
 | `listingRow()` keepTab evaluated at runtime (not render time) | `onclick="selListing(id, ST.tab==='fav'||ST.tab==='mine')"` — `ST.tab` is read at click time; ensures "Other saved listings" rows always stay on the Saved tab regardless of when they were rendered |
 | `openMyAds()` refactored to call `switchTab('mine')` | Was setting `ST.tab` directly and missing the disabled-class toggle; routing through `switchTab` also fixed the pre-existing bug where "My Ads" tab button was never highlighted when opened from the profile menu |
 | `ST.favListings[]` separate from `ST.listings` | Saved listings are user-curated and must be visible regardless of proximity radius; separate array keeps fav map state independent of browse state |
@@ -568,37 +718,175 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**Pre-Session 2 actions — ALL DONE ✅**
-1. ✅ **Vercel dashboard** — `uat.mapit.co.in` configured (2026-06-20)
-2. ✅ **Vercel dashboard** — `mapit-frontend` broken project deleted (2026-06-20)
-3. ✅ **Supabase SQL** — `trim(invite_codes.code)` ran (2026-06-20)
-4. ✅ **Supabase SQL** — `listings_condition_check` constraint dropped (2026-06-20)
-5. ✅ **Migration 001** — all columns added/renamed in Supabase (2026-06-20)
-6. ✅ **Auth modal rebuilt** — email+password, Google OAuth, OTP fallback, ToS, home location picker (2026-06-20)
-7. ✅ **Backend auth routes** — `/signin`, `/signup`, `/google`, `/reset-password`, `/home-location`, `/logout` added; `/register` updated; `/send-otp` invite code removed (2026-06-20)
+**Sessions 1–3 — ALL COMPLETE ✅**
+- Session 1: Foundation, housekeeping, CLAUDE.md, migrations pre-written
+- Session 2: Auth modal (email+password, Google OAuth, OTP, ToS, home location, nickname, password reset)
+- Session 3: Listing lifecycle (reference codes, expiry, show_phone, views_count, delete, edit, UAT fixes, landing screen)
 
-**MVP Session 2 — All steps complete ✅**
-8–17. ✅ All Session 2 steps done (see Completed section above)
+---
 
-**MVP Session 3 — All steps complete ✅ (2026-06-24)**
-18. ✅ **Migration 002 applied** — 4 columns added to `listings` table in Supabase
-19. ✅ **Backend + frontend built and pushed** — commit `634e1f7` on `uat`
+**⬅ Immediate:**
+1. **Merge `uat → main`** — commits `093d49f` + `efabd47` both Arun-approved; all Session 4 + Explore Area toggle goes to production
+2. **Create `public/og-image.png`** — 1200×630px PNG for WhatsApp OG preview (manual task; can be done after merge)
+3. 🔴 **Seller notification email on "I'm Interested"** — Session 5 #1 critical: Resend email to seller when buyer taps the button; biggest conversion gap in the app (~1.5 hrs)
 
-**⬅ Immediate next steps:**
-20. ✅ **Test landing screen on UAT** — user confirmed landing screen working (2026-06-27)
-21. ✅ **Commit UAT docs** — already committed in prior commits (`c2ac6f1` + `398d867`)
-22. **Send Arun** the UAT preview URL + `docs/session-02-uat-checklist-arun.html` for Session 2 sign-off
-    - UAT URL: `https://mapit-backend-git-uat-nagesh-n-arun.vercel.app`
-23. **Nagesh: run manual UAT checklist** — `docs/session-03-uat-checklist-nagesh.html` (now has Blocks G, H, I for today's changes); 10 new manual tests to run
-24. **Arun + Nagesh sign-off → merge `uat` → `main`** — open PR from uat to main, await approval
-25. **Address entry (Tester-6 item 2)** — add forward-geocoding address search field to post-listing form using Nominatim; converts typed address to lat/lng; tagged for Session 4
+**✅ Session 1–4 — ALL COMPLETE:**
+- Session 1: Foundation, housekeeping, CLAUDE.md, migrations pre-written
+- Session 2: Auth modal (email+password, Google OAuth, OTP, ToS, home location, nickname, password reset)
+- Session 3: Listing lifecycle (reference codes, expiry, show_phone, views_count, delete, edit, UAT fixes, landing screen)
+- Session 4: Location search (Nominatim), satellite toggle (ESRI), flyTo UX, 1-photo validation, canvas renderer, step-homeloc UX, OG tags, CORS hardening (2 security fixes)
 
-**Data cleanup (run any time in Supabase SQL Editor):**
-23. `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb`
-24. `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
+**✅ UAT dummy listings seeded (2026-06-28):**
+- Script: `database/uat-dummy-listings.sql` — run in Supabase SQL Editor, all 20 rows confirmed present
+- 12 listings under Nagesh · 8 under Arun · spread across Bangalore
+- 3 listings at 12.9352, 77.6245 (Koramangala 5th Block) — overlap test for T7-1
+- Expiry states: +20-28d (normal) · +4d (orange) · +2d (red) · −3d (expired) · sold · pending
+- Cleanup when done: `DELETE FROM listings WHERE reference_code LIKE 'MP-BLR-UAT%'`
 
-**⚠️ Pre-public-launch (do NOT skip):**
-22. **Email verification** — add `step-verify-email` OTP step after account creation; change `email_confirm: false` in `POST /api/auth/signup` backend; currently anyone can register with another person's email (intentionally skipped for family beta to reduce friction)
+---
+
+**✅ SESSION 4 — ALL FEATURES COMPLETE (2026-06-29, commits e1d4e7e → dc8199a)**
+- Unified location search, satellite toggle, flyTo, 1-photo validation, canvas renderer, step-homeloc UX, OG tags, perf hints, CORS hardening — see Completed section for full detail
+
+**✅ UAT dummy listings seeded (2026-06-28):**
+- Script: `database/uat-dummy-listings.sql` — run in Supabase SQL Editor, all 20 rows confirmed present
+- 12 listings under Nagesh · 8 under Arun · spread across Bangalore
+- 3 listings at 12.9352, 77.6245 (Koramangala 5th Block) — overlap test for T7-1
+- Expiry states: +20-28d (normal) · +4d (orange) · +2d (red) · −3d (expired) · sold · pending
+- Cleanup when done: `DELETE FROM listings WHERE reference_code LIKE 'MP-BLR-UAT%'`
+
+---
+
+**✅ SESSION 4 — COMPLETE (2026-06-29) — Location Search + Map UX + Security**
+> All 12 planned items built and tested (30/30 automated UAT PASS). Manual UAT checklist pending.
+> Email verification (item 4) deferred to Session 5 by user — Resend already configured, no new subscription needed.
+
+**Core feature — Unified Location + Category + Keyword Search (Tester-1, Tester-6, Family feedback F1):**
+1. **Buyer search experience** — replace the simple address-entry concept with a full location-based search bar:
+   - Location field: buyer types a place name (e.g. "Kumaraswamy Layout 2nd Stage") → Nominatim forward-geocodes → drops a distinct blue "search pin" on the map (separate from the user's green home pin)
+   - Category + subcategory dropdowns alongside the location field (same as existing filter pills but in the search context)
+   - Optional keyword field to refine results (e.g. "2BHK", "Honda", "leather sofa") — searches listing title + details
+   - Search button → recenters map on geocoded location, applies radius (default 5km), filters by category/subcategory/keyword
+   - Radius buttons still work from the new search center point
+   - Hint label: "Use radius buttons to adjust search area"
+   - Nominatim: free, no API key required
+   ~3 hrs.
+
+**Map experience upgrade (Family feedback F3):**
+2. **CartoDB Voyager tile provider** — replace default OpenStreetMap tiles (`tile.openstreetmap.org`) with CartoDB Voyager (`basemaps.cartocdn.com/rastertiles/voyager`). Shows shops, restaurants, landmarks at zoom 14+; warmer colours; more professional look. Single URL change. ~10 min.
+3. **Satellite / Hybrid map toggle** — add a 🛰 button in the map UI to switch between Voyager (street view) and ESRI WorldImagery (satellite/hybrid) tile layers. Free, no API key needed. ~45 min.
+
+**Security — CRITICAL (must complete in this session):**
+4. 🔴 **Email verification (`step-verify-email`)** — change `POST /api/auth/signup` from `email_confirm: true` (admin API, skips verification) to `email_confirm: false`; add new `step-verify-email` modal step after account creation that accepts a 6-digit OTP sent via Resend; currently anyone can register with another person's email — this is the highest-risk pre-launch gap. ~3 hrs.
+5. 🔴 **PostGIS GiST index verification** — run `EXPLAIN ANALYZE` on the listings haversine query; confirm "Index Scan" not "Seq Scan" on `lat`/`lng`; if missing, add: `CREATE INDEX ON listings USING gist(ll_to_earth(lat, lng))`. ~15 min.
+
+**UAT feedback quick wins (Testers 2, 7):**
+6. **My Ads pin visible on map (Tester-2a)** — when a listing is selected in My Ads tab, `map.flyTo([lat, lng], zoom)` so the listing's pin is visible on the map. Currently the map stays static when opening a My Ads listing. ~30 min.
+7. **Minimum 1 photo required (Tester-2b)** — validate in `submitListing()` (frontend) and `POST /api/listings` (backend) that at least 1 photo is attached; show inline error "At least 1 photo is required" if empty. ~20 min.
+8. **Canvas renderer for map pins (Tester-7)** — switch Leaflet from default SVG DOM renderer to Canvas: `L.map('map', {renderer: L.canvas()})`. Dramatically lighter on low-end Android devices — each pin is drawn to `<canvas>` rather than a separate DOM node. ~10 min.
+9. **Simpler pin-drop UX — step-homeloc (Tester-3b)** — add "Tap anywhere on the map to drop your pin 📍" instruction label; subtle pulsing animation on first load to draw attention to the map; "Drag marker to adjust" hint text after pin is placed. ~30 min.
+
+**Additional quick wins:**
+10. **CORS localhost removal** — remove `localhost:3000`, `localhost:3001`, `localhost:5500`, `127.0.0.1:5500` from the allowlist in `src/server.js`; these are dev-only origins that must not exist on the production server. ~5 min.
+11. **Open Graph / WhatsApp share meta tags** — add `og:title`, `og:description`, `og:image`, `og:url` to `<head>` of `MapIt_MVP_v1.html`; when a listing link is shared on WhatsApp a rich preview card appears instead of a bare URL. ~20 min.
+12. **Leaflet preload + Google Fonts non-blocking** — add `rel="preload"` for Leaflet CDN JS; change Google Fonts `<link>` to `media="print" onload="this.media='all'"`. Eliminates two render-blocking resources for slow 4G Indian mobile users. ~10 min.
+
+---
+
+**📋 SESSION 5 — Notifications, POI, Map UX Depth + Platform Hardening** ⭐ NEW SESSION (inserted 2026-06-27)
+> This session did not exist in the original plan. It was added after the pre-launch ops review.
+> Updated scope (2026-06-28): added POI proximity feature (F2) and remaining UAT map/UX items (Testers 2, 3, 4, 7).
+> Purpose: close the biggest conversion gap (no seller notifications), add the POI proximity differentiator, improve map UX depth, and audit security.
+
+**Critical:**
+1. 🟡 **Seller notification email on "I'm Interested"** — built 2026-07-02 on `feat/session-05-seller-notification` (see Completed section); blocked on `RESEND_API_KEY` + live send test before commit/merge. **Follow-on (separate, unscoped item):** AI spam/lead-qualifying bot gating this email — see Open Issues.
+2. 🔴 **Listing expiry notification email (3 days before)** — add a Vercel Cron Job (requires Vercel Pro from Session 7; build the route now, wire the cron after upgrade): `SELECT * FROM listings WHERE expires_at BETWEEN NOW() AND NOW() + INTERVAL '3 days' AND status='active'` → Resend email per seller: "Your MapIt listing '[title]' expires in 3 days." ~2 hrs.
+3. 🔴 **RLS policy full audit** — systematically verify RLS is enabled and correctly scoped on every table: `listings`, `profiles`, `messages`, `user_pins`, `invite_codes`. For each: confirm RLS enabled, read policy definition, test that an unauthenticated Supabase client cannot read private data. `spatial_ref_sys` is intentionally unrestricted (PostGIS system table) — leave it. ~2 hrs.
+
+**Location & Map UX depth (Family feedback F2, Testers 2, 3, 7):**
+4. **POI proximity on listing post — OpenStreetMap Overpass API (Family feedback F2)** — when a listing is created, fire an async background call to the Overpass API to find the nearest school, mall, and supermarket within 2km of the listing's GPS coordinates. Store result in `details.nearby_pois` JSONB (e.g. `[{type:"school", name:"JSS School", distance_m:450}, ...]`). Display in listing detail view as a "📍 Nearby" section below the address. Fire-and-forget pattern: listing creation succeeds immediately; POI data appears within a few seconds. Overpass API: free, no key required. Upgrade path: Geoapify or Google Places before public launch if OSM coverage gaps found in UAT. ~4 hrs.
+5. **Same-location pin popup — multiple listings at exact GPS point (Tester-7)** — when ≥2 listings share identical lat/lng (e.g. apartment complex, bazaar), clicking the stacked pin shows a scrollable mini-list card: "3 listings at this location" with title + price for each; clicking one opens it normally in the side panel. ~2 hrs.
+6. **GPS confirmation preview map in post form (Tester-2c)** — when a seller enters GPS coordinates in the post-listing form, a small inline Leaflet map (~180px tall) shows a pin at those exact coordinates so the seller can visually confirm the location before submitting. Updates on every input event. ~1.5 hrs.
+7. **Pin tooltip on first tap — scan UX (Tester-7)** — first tap on a map pin shows a compact floating tooltip card (title + price + distance, ~60px); second tap or "View" button on the card opens the full side panel. Reduces taps needed to scan multiple listings. ~1.5 hrs.
+8. **Default view preference — map vs list (Tester-3a)** — wire the existing `profiles.default_view` DB column (already added in migration 001) to a UI toggle in profile settings; `PUT /api/auth/profile` saves it; `initApp()` reads the value from `/api/auth/me` and sets the initial view on load. ~1 hr.
+
+**High value additions:**
+9. **Help modal — lightweight (Tester-4c)** — add a `?` icon to the header; tapping opens a simple modal with 5–6 bullet points: how to browse, how to post, how to save, how to contact a seller, how to delete a listing. No server route needed — pure frontend. ~30 min.
+10. **Orphaned photo cleanup job** — build a route or trigger that deletes Supabase Storage objects where the listing row no longer exists; prevents Storage filling silently after months of deletions and expiries. ~1 hr.
+11. **Structured feedback form upgrade (Tester-4d)** — add `category` dropdown (Bug / Content Report / Suggestion / Other) and 1–5 star `rating` field to the feedback form; add columns to `feedback` table via migration; makes post-launch feedback triage 5× faster than free-text. ~1 hr.
+12. **Supabase Auth email template branding** — update OTP email templates in Supabase Dashboard → Auth → Email Templates; replace default "Supabase Auth" subject with "Your MapIt verification code is [OTP]"; add MapIt 📍 branding. Supabase Dashboard task, not code. ~20 min.
+
+---
+
+**📋 SESSION 6 — Real-Time Chat + Content Moderation Layer**
+> Original scope: apply pre-written `003-chat-schema.sql` migration and build in-app messaging
+
+**Original planned work:**
+1. **Real-time chat** — apply `database/migrations/003-chat-schema.sql` in Supabase SQL Editor (conversations + chat_messages tables); build chat UI; wire up Supabase Realtime subscriptions for live buyer↔seller messaging. ~4 hrs.
+
+**Added scope:**
+2. **"Report Listing" button** — add flag icon to listing detail action bar; tapping shows reason dropdown (Fake / Wrong price / Spam / Offensive) + optional note; calls new `POST /api/listings/:id/report` endpoint writing to a `listing_reports` table; without this, all spam reports come via WhatsApp to Nagesh/Arun personally. ~1.5 hrs.
+3. **Admin content moderation API enhancements** — extend admin menu to support: reject listing with reason code, view listing_reports queue, one-click user suspension (`UPDATE profiles SET suspended=true`); moves moderation off Supabase Dashboard into the app itself. ~2 hrs.
+
+---
+
+**📋 SESSION 7 — Vercel Pro + Security Hardening**
+> Original scope: Vercel Pro upgrade ($20/mo, budget approved — upgrade before this session per architecture.md)
+
+**Original planned work:**
+1. **Vercel Free → Pro upgrade** — unlocks: Vercel Cron Jobs (needed for the Session 5 expiry cron), branch-specific custom domains (`uat.mapit.co.in` will finally point to UAT branch not production), higher function limits. ~30 min.
+
+**Added — CRITICAL:**
+2. 🔴 **Legal pages — Privacy Policy + Terms of Service** — create `public/privacy.html` and `public/terms.html`; add Express static routes `GET /privacy` and `GET /terms`; link both from the ToS checkbox in `step-profile`; content must cover: data collected, Supabase storage location, user rights, grievance officer contact (mandatory under Indian IT Act SPDI Rules). Google OAuth consent screen requires a live Privacy Policy URL or the Sign in with Google button is disabled for new users. Have Arun review before publishing. ~2 hrs + legal review.
+
+**Added — high value:**
+3. **Sentry error monitoring** — `npm install @sentry/node`; add `Sentry.init({ dsn: process.env.SENTRY_DSN })` to `server.js`; wrap Express error handler; free tier = 5,000 errors/month with email alerts; add `SENTRY_DSN` to `.env.example` and Vercel env vars. Closes the biggest operational blind spot: silent 500 errors currently go undetected until a user reports them. ~30 min.
+4. **Helmet CSP re-enablement** — once email verification (`step-verify-email`) is in place (Session 4), inline `<script>` blocks are reduced; write an explicit CSP allowlist for Leaflet CDN, Font Awesome, Google Fonts, and any remaining inline scripts using nonces or `sha256-` hashes. ~1.5 hrs.
+5. **Vercel + Sentry alert configuration** — set Vercel email alerts for failed deployments and function error rate spikes; configure Sentry to alert on first occurrence of any new error type. ~15 min.
+
+**External action for Arun (after legal pages are live):**
+6. **Google OAuth consent screen** — update Google Cloud Console → OAuth consent screen → Privacy Policy URL field with the live `/privacy` URL; without this, new users see a Google warning: "This app hasn't been verified" which kills sign-ups.
+
+---
+
+**📋 SESSION 8 — Admin Dashboard + Performance + UX Polish**
+> Original scope: unplanned placeholder; now anchored to admin tooling, performance audit, and UX polish (Testers 4, 5).
+
+1. **Proper admin dashboard page** — replace hardcoded email check with a dedicated `/admin` route (Express middleware guards to admin emails); page shows: listings by status (pending/active/expired/sold), new users today/week, messages sent today, listing reports queue, recent feedback. ~3 hrs.
+2. **Supabase PgBouncer connection pooler** — swap direct DB connection string for the Supabase pooler string in `.env` and Vercel env vars; prevents connection exhaustion at 50+ concurrent users (Supabase Free = 20 direct connections limit). One-line config change after Supabase Pro upgrade (Session 7). ~20 min.
+3. **Performance audit — Lighthouse mobile** — run Lighthouse on `mapit.co.in` → Mobile → Performance; target First Contentful Paint <2s on simulated 4G; identify and fix top 2–3 opportunities (preload hints already done in Session 4; focus on image quality cap at upload, unused CSS). ~1 hr.
+4. **`robots.txt` + `sitemap.xml`** — add `public/robots.txt` (Allow: /, Disallow: /api/, Sitemap: https://mapit.co.in/sitemap.xml) and `public/sitemap.xml` with root URL; add Express static route for `/sitemap.xml`. ~20 min.
+5. **Marker clustering — Leaflet.markercluster (Tester-5)** — add `Leaflet.markercluster` CDN; wrap pin rendering in `L.markerClusterGroup()`; nearby pins merge into a numbered circle at low zoom levels, fan out on click. Addresses the scalability concern raised by Tester-5 for high-density listing scenarios (apartment complexes, bazaars at public-launch scale). Free, open source. ~2 hrs.
+6. **Visual aesthetics UX polish pass (Tester-4a)** — select top 5 issues from `docs/ux-audit.md` with highest visible impact (visual hierarchy, spacing, typography weights, colour consistency); implement as a focused batch. Keep changes minimal and measurable. ~2 hrs.
+
+---
+
+**📋 SESSION 9 — Supabase Pro + Public Launch Gate**
+> Original scope: Supabase Pro upgrade ($25/mo, budget approved — upgrade before this session per architecture.md)
+
+**Original planned work:**
+1. **Supabase Free → Pro upgrade** — unlocks: daily automated backups (7-day retention), Point-in-Time Recovery (PITR), higher connection limits, Storage CDN, compute upgrade, no row-count limits. Before upgrading: run the SQL cleanup tasks below. ~30 min.
+
+**Added scope:**
+2. **Enable Supabase Storage CDN** — toggle CDN on in Supabase Dashboard → Storage → CDN after Pro upgrade; also enable Image Transformations for thumbnail-quality photos (reduces bandwidth ~60%). Dashboard toggle, not code. ~10 min.
+3. **Verify backup and PITR configuration** — confirm daily backups scheduled in Supabase → Settings → Backups; do a test restore of one table to a temporary DB to confirm restorability — the one disaster-recovery check always skipped until it is needed. ~30 min.
+4. 🔴 **Pre-launch security and readiness checklist** — final automated check: (1) CORS allows only production + UAT, no localhost; (2) Helmet CSP active in response headers; (3) RLS enabled on all tables; (4) Sentry receiving test errors; (5) legal pages live at `/privacy` and `/terms`; (6) email verification flow works end-to-end; (7) expiry notification cron firing correctly; (8) Google OAuth redirect URLs in Supabase; (9) `SUPABASE_SERVICE_ROLE_KEY` absent from all client-visible responses. All 9 must pass before public launch. ~1.5 hrs.
+5. **Soft-open (48 hrs before public announcement)** — share the live URL with 10–20 people outside family test group; monitor Sentry for new error types, Vercel logs for unexpected patterns; proceed with public announcement only after soft-open is clean.
+
+---
+
+**🗃️ Data cleanup (run in Supabase SQL Editor any time before Session 9):**
+- `DELETE FROM listings WHERE details IS NULL OR details = '{}'::jsonb`
+- `UPDATE listings SET subcategory='2 Wheelers' WHERE title ILIKE '%TVS%'`
+
+---
+
+**📌 External / non-code tasks (assign to Nagesh or Arun — cannot be done via code):**
+- 🔴 **Twilio DLT registration (TRAI)** — register entity at traidlt.com (company name, PAN, contact); link approved DLT header to Twilio; required for Indian SMS OTP delivery post-2021 TRAI mandate. Owner: Nagesh. ~2 days processing.
+- **Resend plan upgrade → Starter ($20/mo)** — upgrade before Session 9 launch; free tier (100/day) is exhausted by ~50 daily active users with seller notifications + expiry + OTP emails. Owner: Nagesh. 2 min in Resend dashboard.
+- **Geoapify API key** (if chosen over Nominatim in Session 4) — create free Geoapify account, get API key, add to `.env.example` and Vercel. Owner: Nagesh. During Session 4.
+- **UAT on real low-end Android device** — test full listing post + browse + "I'm Interested" flow on Redmi or Samsung Galaxy A-series; use Chrome on Android not desktop emulation; focus on: touch targets, keyboard pushing map, photo upload from camera roll, GPS accuracy indoors. Owner: Nagesh + family member. Before Session 9 launch gate.
+- **Legal pages content review** — have Arun review Privacy Policy and Terms of Service content before publishing (after Session 7 builds the pages). Owner: Arun. Before Session 9.
 
 ---
 
@@ -610,13 +898,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **Admin detection:** dual check — invite codes `MAPIT-N-01` / `MAPIT-A-01` OR email `nagesh.aadi@gmail.com` / `arun.bn1@gmail.com`
 - **Auth flow (new MVP):** email+password OR Google OAuth OR email OTP → Bearer token in ST.session → `requireAuth` middleware validates JWT; profile setup + home location on first login
 - **Auth flow (family legacy):** existing family sessions restored from `mapit_sessions` localStorage; session expiry shows `step-auth` with email pre-filled
-- **CORS:** allows `mapit.co.in`, `www.mapit.co.in`, `uat.mapit.co.in`, `localhost:3000`, `localhost:3001`, `localhost:5500`, `127.0.0.1:5500`, `mapit-backend-*.vercel.app` (case-insensitive regex)
+- **CORS:** allows `mapit.co.in`, `www.mapit.co.in`, `uat.mapit.co.in`, `localhost:3000`, `localhost:3001`, `localhost:5500`, `127.0.0.1:5500`, `mapit-backend-*.vercel.app` (case-insensitive regex). Localhost origins to be removed in Session 4 before public launch.
 - **OTP rate limit (Express):** `OTP_RATE_LIMIT=100` per hour per IP (Vercel env var)
 - **Resend free tier:** 100 emails/day — sufficient for family beta
 - **`MapIt_MVP_v1.html`** is the canonical MVP frontend (2603 lines, single-file). `public/index.html` is the deployed copy — **always sync both after any frontend change** with `cp MapIt_MVP_v1.html public/index.html && diff MapIt_MVP_v1.html public/index.html`. `MapIt_Demo 30052026.html` is the prototype reference — do NOT edit it.
 - **Two-file rule:** `MapIt_MVP_v1.html` ↔ `public/index.html` must always be byte-identical. Diff must show NOTHING before any commit.
 - **Vercel `vercel.json` behaviour:** Root `vercel.json` is always read regardless of "Root Directory" project setting. Frontend served via `express.static` in `src/server.js`.
-- **Helmet CSP:** Disabled globally (`contentSecurityPolicy: false`) — required for inline scripts and CDN resources.
+- **Helmet CSP:** Disabled globally (`contentSecurityPolicy: false`) — required for inline scripts and CDN resources. Planned re-enablement in Session 7 once `step-verify-email` (Session 4) reduces inline scripts.
 - **Multi-session storage key:** `localStorage['mapit_sessions']` — JSON object keyed by Supabase user ID
 - **Messages API:** `GET /api/messages/inbox`; `POST /api/messages`; `PUT /api/messages/mark-all-read`
 - **Admin menu CSS:** `.uav-item.hide{display:none;}` is the critical rule
@@ -634,3 +922,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **Proximity buttons:** 3 km · 5 km · 10 km · City (999 km / City-wide) · Region (50 km); default 5 km
 - **City map zoom:** `fitBounds` with 25 km box from user's active pin (not fixed zoom 12); Region uses `radCircle.getBounds()` fitBounds
 - **SUBCAT_MAP vs CATS.subs:** `SUBCAT_MAP` (for post form) has no 'All Types'; `CATS[].subs` (for filter bar) includes 'All Types' — intentionally different
+
+---
+
+## UAT Status — Session 04
+
+- **Report:** `docs/session-04-uat-report.html`
+- **Automated:** 40 PASS / 0 FAIL / 1 WARN (og-image.png missing — known pending)
+- **Manual checklist:** `docs/session-04-uat-checklist-Arun.html`
+- **Tester:** Arun
+- **Status:** Pending manual sign-off from Arun
+- **Blocks:** A (Location Search, 4) · B (Keyword Filter, 2) · C (Satellite Toggle, 2) · D (flyTo, 3) · E (Photo Validation, 2) · F (Home Loc UX, 3) · G (Arun Bug Fix Verification, 3) · H (WhatsApp Preview, 1) = 20 manual checks
+- **After sign-off:** merge `uat → main`, create `public/og-image.png` (1200×630px), begin Session 5

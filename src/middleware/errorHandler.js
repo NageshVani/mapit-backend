@@ -10,7 +10,8 @@ function errorHandler(err, req, res, next) {
 
   res.status(statusCode).json({
     error: err.message || 'An unexpected server error occurred.',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    // stack only in dev for 5xx — never for 4xx (which may be user-visible)
+    ...(process.env.NODE_ENV === 'development' && statusCode >= 500 && { stack: err.stack }),
   });
 }
 

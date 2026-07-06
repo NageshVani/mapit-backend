@@ -46,13 +46,11 @@ app.use(morgan('dev'));
 // ── CORS ─────────────────────────────────────────────────────
 // Allow requests from the frontend (update APP_URL in .env)
 const allowedOrigins = [
-  process.env.APP_URL || 'http://localhost:3000',
-  'http://localhost:3001',          // local Express dev server (Express runs on 3001)
-  'http://127.0.0.1:5500',
-  'http://localhost:5500',
   'https://mapit.co.in',
   'https://www.mapit.co.in',
-  'https://uat.mapit.co.in',        // UAT subdomain
+  'https://uat.mapit.co.in',
+  // dev: add APP_URL env var (e.g. http://localhost:3001) locally only — never committed
+  ...(process.env.APP_URL ? [process.env.APP_URL] : []),
 ];
 app.use(cors({
   origin: (origin, cb) => {
@@ -60,7 +58,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
     // allow all Vercel preview deployments — case-insensitive to handle uppercase in deployment hash URLs
     if (/^https:\/\/mapit-backend(-[a-zA-Z0-9-]+)?\.vercel\.app$/i.test(origin)) return cb(null, true);
-    cb(new Error('Not allowed by CORS'));
+    const corsErr = new Error('Not allowed by CORS'); corsErr.statusCode = 403; cb(corsErr);
   },
   credentials: true,
 }));
