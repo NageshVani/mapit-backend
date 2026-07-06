@@ -166,18 +166,20 @@ router.post('/', requireAuth, async (req, res, next) => {
         isFirstMessageFromBuyer = count === 0;
 
         if (isFirstMessageFromBuyer) {
-          const { data: cur } = await supabaseAdmin
-            .from('listings')
-            .select('inquiry_count')
-            .eq('id', listing_id)
-            .single()
-            .catch(() => ({ data: null }));
-          if (cur) {
-            await supabaseAdmin
+          try {
+            const { data: cur } = await supabaseAdmin
               .from('listings')
-              .update({ inquiry_count: (cur.inquiry_count || 0) + 1 })
+              .select('inquiry_count')
               .eq('id', listing_id)
-              .catch(() => {});
+              .single();
+            if (cur) {
+              await supabaseAdmin
+                .from('listings')
+                .update({ inquiry_count: (cur.inquiry_count || 0) + 1 })
+                .eq('id', listing_id);
+            }
+          } catch (err) {
+            console.error('Inquiry count increment failed:', err.message);
           }
         }
       }
