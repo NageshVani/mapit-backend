@@ -146,6 +146,13 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-chat-btn{background:transparent;border:none;color:#16a34a;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;text-align:center;line-height:1.3;padding:4px 2px;}
 .ld-chat-btn:hover{color:#15803d;}
 .ld-chat-btn:disabled{opacity:.5;cursor:not-allowed;}
+.ld-interest-box{padding:0 13px;display:flex;flex-direction:column;gap:6px;}
+.ld-interest-box textarea{width:100%;min-height:60px;max-height:140px;resize:vertical;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;background:var(--card);color:inherit;box-sizing:border-box;}
+.ld-interest-actions{display:flex;gap:8px;justify-content:flex-end;}
+.ld-interest-send{background:#16a34a;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+.ld-interest-send:disabled{opacity:.5;cursor:not-allowed;}
+.ld-interest-cancel{background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
+#interestBox.hide{display:none;}
 .ld-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .ld-spec-item{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;}
 .ld-spec-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
@@ -2017,9 +2024,16 @@ function renderSidebar(){
         <div class="ld-info-actions">
           ${ST.tab==='mine' && l.seller_id===ST.user?.id
             ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit<br>Listing</button>`
-            : `<button class="ld-chat-btn" id="interestBtn" onclick="expressInterest()">🤝 I'm<br>Interested</button>
+            : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm<br>Interested</button>
                <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
           <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Copy link to share">🔗</div>
+        </div>
+      </div>
+      <div class="ld-interest-box hide" id="interestBox">
+        <textarea id="interestNote" maxlength="500" oninput="updateInterestSendState()"></textarea>
+        <div class="ld-interest-actions">
+          <button class="ld-interest-cancel" onclick="cancelInterestNote()">Cancel</button>
+          <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote()" disabled>Send</button>
         </div>
       </div>
       ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}"/></div>`).join('')}</div>`:''}</div>
@@ -2117,23 +2131,52 @@ const CHAT_RESPONSES = [
   "Yes, I can consider a slight reduction. Let me know what works for you and we can finalise.",
 ];
 
-async function expressInterest(){
+function openInterestNote(){
   const l = ST.listings.find(x=>x.id===ST.selId);
   if(!l){ toast('Listing not found.'); return; }
   if(!ST.user){ toast('Please sign in first.'); return; }
   if(!l.seller_id){ toast('Seller information not available.'); return; }
-  const btn = document.getElementById('interestBtn');
-  if(btn){ btn.disabled=true; btn.innerHTML='Sending…'; }
+  const box = document.getElementById('interestBox');
+  const ta  = document.getElementById('interestNote');
+  if(!box || !ta) return;
+  ta.value = '';
+  ta.placeholder = `Hi! I'm interested in your listing "${l.title}". Please get in touch.`;
+  box.classList.remove('hide');
+  updateInterestSendState();
+  ta.focus();
+}
+
+function cancelInterestNote(){
+  const box = document.getElementById('interestBox');
+  if(box) box.classList.add('hide');
+}
+
+function updateInterestSendState(){
+  const ta  = document.getElementById('interestNote');
+  const btn = document.getElementById('interestSendBtn');
+  if(btn) btn.disabled = !(ta && ta.value.trim().length>0);
+}
+
+async function sendInterestNote(){
+  const l = ST.listings.find(x=>x.id===ST.selId);
+  if(!l){ toast('Listing not found.'); return; }
+  const ta = document.getElementById('interestNote');
+  const text = (ta?.value||'').trim();
+  if(!text){ toast('Please write a note before sending.'); return; }
+  const sendBtn = document.getElementById('interestSendBtn');
+  const chatBtn = document.getElementById('interestBtn');
+  if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='Sending…'; }
   try {
     await apiPost('/api/messages', {
       listing_id: l.id,
       receiver_id: l.seller_id,
-      content: `Hi! I'm interested in your listing "${l.title}". Please get in touch.`
+      content: text
     });
-    if(btn){ btn.innerHTML='✅ Sent!'; btn.style.color='#16a34a'; }
+    document.getElementById('interestBox')?.classList.add('hide');
+    if(chatBtn){ chatBtn.innerHTML='✅ Sent!'; chatBtn.style.color='#16a34a'; chatBtn.disabled=true; }
     toast(`✅ Message sent to seller — they'll see it in their Inbox.`);
   } catch(e){
-    if(btn){ btn.disabled=false; btn.innerHTML='🤝 I\'m<br>Interested'; }
+    if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='Send'; }
     toast('Could not send: '+(e.message||'Unknown error'));
   }
 }
