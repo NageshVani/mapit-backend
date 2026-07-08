@@ -641,7 +641,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📍 Set your home area</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll show nearby listings first.</div>
       <div id="homeLocHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop your pin</div>
-      <div id="homeLocMap" style="height:500px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-bottom:8px;cursor:crosshair;"></div>
+      <div id="homeLocMap" style="height:min(500px, 45vh);border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-bottom:8px;cursor:crosshair;"></div>
       <div id="homeLocAddr" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
       <button class="modal-btn" id="saveHomeLocBtn" onclick="saveHomeLocation()" style="display:none;">
         <span>Save Home Location →</span>
