@@ -527,8 +527,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <!-- ── AUTH MODAL ── -->
 <div class="modal-overlay hide" id="authModal">
   <div class="modal-box">
-    <div class="modal-logo">Map<em>It</em></div>
-    <div class="modal-sub">Bangalore's location-first marketplace</div>
+    <div class="modal-logo" id="modalLogo">Map<em>It</em></div>
+    <div class="modal-sub" id="modalSub">Bangalore's location-first marketplace</div>
 
     <!-- Step 0: Landing — value proposition for first-time visitors -->
     <div class="modal-step" id="step-landing">
@@ -1207,6 +1207,11 @@ async function apiDelete(path){
 function goToStep(id){
   document.querySelectorAll('.modal-step').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // Home-location map step is the tightest on vertical space (map + Skip link);
+  // hide the redundant branding header there to keep Skip for now in view without scrolling.
+  const showBrand = id !== 'step-homeloc';
+  document.getElementById('modalLogo').style.display = showBrand ? '' : 'none';
+  document.getElementById('modalSub').style.display = showBrand ? '' : 'none';
 }
 
 function showErr(id, msg){ const el=document.getElementById(id); el.textContent=msg; el.style.display='block'; }
