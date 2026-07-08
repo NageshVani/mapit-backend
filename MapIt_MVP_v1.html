@@ -266,7 +266,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 /* ── AUTH MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
 .modal-overlay.hide{display:none;}
-.modal-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:36px 32px;width:100%;max-width:420px;box-shadow:var(--shadow);}
+.modal-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:36px 32px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);}
 .modal-logo{font-family:'Playfair Display',serif;font-size:28px;color:var(--text);text-align:center;margin-bottom:6px;}
 .modal-logo em{font-style:normal;color:var(--orange);}
 .modal-sub{font-size:12.5px;color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.6;}
@@ -370,6 +370,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .pin-action-btn.primary{border-color:var(--orange);color:var(--orange);}
 .pin-action-btn.primary:hover{background:rgba(240,96,48,.1);}
 .pin-action-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08);}
+.pin-action-btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
 .add-pin-form{padding:16px 22px;border-top:1px solid var(--border);background:var(--card);}
 .add-pin-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;}
 .add-pin-divider{text-align:center;font-size:10px;color:var(--muted);margin:10px 0 6px;letter-spacing:.5px;text-transform:uppercase;}
@@ -627,10 +628,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <label class="modal-label">Phone (optional)</label>
       <input class="modal-input" id="phoneInput" placeholder="+91 98765 43210" type="tel"/>
       <div class="tos-row">
-        <input type="checkbox" id="tosCheck" style="margin-top:2px;accent-color:var(--orange);width:16px;height:16px;flex-shrink:0;cursor:pointer;"/>
+        <input type="checkbox" id="tosCheck" onchange="updateProfileContinueState()" style="margin-top:2px;accent-color:var(--orange);width:16px;height:16px;flex-shrink:0;cursor:pointer;"/>
         <label for="tosCheck" style="font-size:12px;color:var(--muted);line-height:1.5;cursor:pointer;">I agree to the <span style="color:var(--orange);font-weight:600;">Terms of Service</span> and <span style="color:var(--orange);font-weight:600;">Privacy Policy</span></label>
       </div>
-      <button class="modal-btn" onclick="saveProfile()" style="margin-top:14px;">
+      <button class="modal-btn" id="profileContinueBtn" onclick="saveProfile()" disabled style="margin-top:14px;">
         <span>Continue →</span>
       </button>
     </div>
@@ -640,7 +641,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📍 Set your home area</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll show nearby listings first.</div>
       <div id="homeLocHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop your pin</div>
-      <div id="homeLocMap" style="height:200px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-bottom:8px;cursor:crosshair;"></div>
+      <div id="homeLocMap" style="height:500px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-bottom:8px;cursor:crosshair;"></div>
       <div id="homeLocAddr" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
       <button class="modal-btn" id="saveHomeLocBtn" onclick="saveHomeLocation()" style="display:none;">
         <span>Save Home Location →</span>
@@ -770,16 +771,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div id="pinsList"></div>
     <div class="add-pin-form">
       <div style="font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Add New Location</div>
-      <input class="form-input" id="newPinLabel" placeholder='Label, e.g. "Office" or "Sister\'s Home"' maxlength="40" style="margin-bottom:12px;"/>
-      <label class="form-label">How to capture location</label>
-      <div class="tx-radio-row" style="margin-bottom:12px;">
-        <label class="tx-radio-lbl"><input type="radio" name="locMethod" value="current" checked onchange="toggleLocMethod()"> Use My Current Location</label>
-        <label class="tx-radio-lbl"><input type="radio" name="locMethod" value="manual" onchange="toggleLocMethod()"> Enter GPS Coordinates</label>
-      </div>
-      <div id="manualCoordsGroup" style="display:none;margin-bottom:12px;">
-        <input class="form-input" id="gpsCoords" placeholder='e.g. 12.9352, 77.6245'/>
-      </div>
-      <button class="pin-action-btn primary" onclick="saveNewLocation()" style="width:100%;padding:11px;font-size:13px;font-weight:700;">📍 Save Location</button>
+      <input class="form-input" id="newPinLabel" placeholder='Label, e.g. "Office" or "Sister\'s Home"' maxlength="40" style="margin-bottom:10px;"/>
+      <div id="addPinHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop a pin</div>
+      <div id="addPinMap" style="height:220px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-bottom:8px;cursor:crosshair;"></div>
+      <div id="addPinAddr" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
+      <button class="pin-action-btn primary" id="savePinBtn" onclick="saveNewLocation()" disabled style="width:100%;padding:11px;font-size:13px;font-weight:700;">📍 Save Location</button>
     </div>
   </div>
 </div>
@@ -1460,6 +1456,11 @@ async function verifyOtp(){
 }
 
 // ── Profile setup ────────────────────────────────────────────────
+function updateProfileContinueState(){
+  const btn = document.getElementById('profileContinueBtn');
+  const tosOk = document.getElementById('tosCheck').checked;
+  if(btn) btn.disabled = !tosOk;
+}
 async function saveProfile(){
   const full_name = document.getElementById('nameInput').value.trim();
   const nickname  = document.getElementById('profileNicknameInput').value.trim();
@@ -2343,15 +2344,71 @@ function renderDynamicFields(){
     }).join('');
 }
 
-function toggleLocMethod(){
-  const manual = document.querySelector('input[name="locMethod"]:checked')?.value === 'manual';
-  document.getElementById('manualCoordsGroup').style.display = manual ? '' : 'none';
+let _addPinMap = null, _addPinMarker = null, _addPinCoords = null;
+
+function initAddPinMap(){
+  if(_addPinMap){ _addPinMap.remove(); _addPinMap = null; _addPinMarker = null; }
+  _addPinCoords = null;
+  document.getElementById('addPinAddr').textContent = '';
+  document.getElementById('addPinHint').textContent = '👆 Tap anywhere on the map to drop a pin';
+  const saveBtn = document.getElementById('savePinBtn'); if(saveBtn) saveBtn.disabled = true;
+  const center = ST.activePin ? [ST.activePin.lat, ST.activePin.lng] : [12.9716, 77.5946];
+  setTimeout(()=>{
+    _addPinMap = L.map('addPinMap', { zoomControl: true, attributionControl: false }).setView(center, 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(_addPinMap);
+    _addPinMap.on('click', async e=>{
+      const { lat, lng } = e.latlng;
+      _addPinCoords = { lat, lng };
+      if(_addPinMarker) _addPinMarker.setLatLng([lat, lng]);
+      else {
+        _addPinMarker = L.marker([lat, lng], {draggable: true}).addTo(_addPinMap);
+        _addPinMarker.on('dragend', async ev => {
+          const p = ev.target.getLatLng();
+          _addPinCoords = { lat: p.lat, lng: p.lng };
+          await _resolveAddPinAddr(p.lat, p.lng);
+        });
+      }
+      document.getElementById('addPinHint').textContent = '✅ Pin placed — drag to adjust';
+      document.getElementById('addPinAddr').textContent = 'Getting address…';
+      const btn = document.getElementById('savePinBtn'); if(btn) btn.disabled = false;
+      await _resolveAddPinAddr(lat, lng);
+    });
+    _addPinMap.invalidateSize();
+  }, 120);
 }
 
-function saveNewLocation(){
-  const method = document.querySelector('input[name="locMethod"]:checked')?.value || 'current';
-  if(method === 'manual') addGpsLocationPin();
-  else addCurrentLocationPin();
+async function _resolveAddPinAddr(lat, lng){
+  document.getElementById('addPinAddr').textContent = 'Getting address…';
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+    const g = await r.json();
+    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    _addPinCoords.address = addr;
+    document.getElementById('addPinAddr').textContent = '📍 ' + addr;
+  } catch(_){
+    _addPinCoords.address = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('addPinAddr').textContent = '📍 ' + _addPinCoords.address;
+  }
+}
+
+async function saveNewLocation(){
+  const label = document.getElementById('newPinLabel').value.trim();
+  if(!label){ toast('Please enter a label first (e.g. "Home" or "Office").'); return; }
+  if(!_addPinCoords){ toast('Tap the map to drop a pin first.'); return; }
+  const btn = document.getElementById('savePinBtn');
+  btn.disabled = true;
+  try {
+    await apiPost('/api/pins', {
+      label,
+      lat: _addPinCoords.lat,
+      lng: _addPinCoords.lng,
+      is_default: ST.userPins.length===0,
+    });
+    document.getElementById('newPinLabel').value = '';
+    await loadAndRenderPins();
+    initAddPinMap();
+    toast(`📍 "${label}" saved!`);
+  } catch(e){ toast('Could not save pin: '+e.message); btn.disabled = false; }
 }
 
 async function submitListing(){
@@ -2459,8 +2516,12 @@ async function submitListing(){
 async function openPinsModal(){
   document.getElementById('pinsModal').classList.remove('hide');
   await loadAndRenderPins();
+  initAddPinMap();
 }
-function closePinsModal(){ document.getElementById('pinsModal').classList.add('hide'); }
+function closePinsModal(){
+  document.getElementById('pinsModal').classList.add('hide');
+  if(_addPinMap){ _addPinMap.remove(); _addPinMap = null; _addPinMarker = null; _addPinCoords = null; }
+}
 
 async function loadAndRenderPins(){
   try {
@@ -2489,6 +2550,7 @@ function renderPinsList(){
     el.innerHTML=`<div style="padding:20px 22px;color:var(--muted);font-size:13px;text-align:center;">No saved locations yet.<br>Add your first one below!</div>`;
     return;
   }
+  const onlyOne = ST.userPins.length === 1;
   el.innerHTML = ST.userPins.map(p=>`
     <div class="pin-item">
       <div class="pin-ico ${p.is_default?'default':''}">📍</div>
@@ -2498,7 +2560,7 @@ function renderPinsList(){
       </div>
       <div class="pin-actions">
         ${!p.is_default?`<button class="pin-action-btn primary" onclick="setDefaultPin('${p.id}')">Set Active</button>`:''}
-        <button class="pin-action-btn danger" onclick="deletePin('${p.id}')">Remove</button>
+        ${onlyOne?'':`<button class="pin-action-btn danger" ${p.is_default?'disabled title="Set another location as active before removing this one"':''} onclick="deletePin('${p.id}')">Remove</button>`}
       </div>
     </div>`).join('');
 }
@@ -2522,50 +2584,6 @@ async function deletePin(id){
     await loadAndRenderPins();
     toast('Pin removed.');
   } catch(e){ toast(e.message); }
-}
-
-async function addCurrentLocationPin(){
-  const label = document.getElementById('newPinLabel').value.trim();
-  if(!label){ toast('Please enter a label first (e.g. "Home" or "Office").'); return; }
-  if(!navigator.geolocation){ toast('Geolocation not available on this device.'); return; }
-  toast('Getting your location…');
-  navigator.geolocation.getCurrentPosition(
-    async pos=>{
-      try {
-        await apiPost('/api/pins',{
-          label,
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          is_default: ST.userPins.length===0,
-        });
-        document.getElementById('newPinLabel').value='';
-        await loadAndRenderPins();
-        toast(`📍 "${label}" saved!`);
-      } catch(e){ toast('Could not save pin: '+e.message); }
-    },
-    ()=>{ toast('Could not get location. Please allow location access.'); }
-  );
-}
-
-async function addGpsLocationPin(){
-  const label = document.getElementById('newPinLabel').value.trim();
-  const raw   = document.getElementById('gpsCoords').value.trim();
-  if(!label){ toast('Please enter a label first (e.g. "Home" or "Office").'); return; }
-  if(!raw){ toast('Please paste coordinates from Google Maps (e.g. 12.9352, 77.6245).'); return; }
-  // Accept "lat, lng" or "lat,lng" or "lat lng" — same format Google Maps copies
-  const parts = raw.split(/[\s,]+/).filter(Boolean);
-  if(parts.length < 2){ toast('Enter coordinates as "lat, lng" — copy directly from Google Maps.'); return; }
-  const lat = parseFloat(parts[0]), lng = parseFloat(parts[1]);
-  if(isNaN(lat)||isNaN(lng)){ toast('Could not read coordinates. Please copy them fresh from Google Maps.'); return; }
-  if(lat<-90||lat>90){ toast('Latitude must be between −90 and 90.'); return; }
-  if(lng<-180||lng>180){ toast('Longitude must be between −180 and 180.'); return; }
-  try {
-    await apiPost('/api/pins',{ label, lat, lng, is_default: ST.userPins.length===0 });
-    document.getElementById('newPinLabel').value='';
-    document.getElementById('gpsCoords').value='';
-    await loadAndRenderPins();
-    toast(`📍 "${label}" saved!`);
-  } catch(e){ toast('Could not save pin: '+e.message); }
 }
 
 // ═══════════════════════════════════════════════
@@ -3149,7 +3167,7 @@ function clearKeyword(){
 
 document.getElementById('srchIn').addEventListener('input', e => {
   ST.q = e.target.value.trim().toLowerCase();
-  document.getElementById('srchClear').style.display = ST.q ? '' : 'none';
+  document.getElementById('srchClear').style.display = ST.q ? 'block' : 'none';
   drawMarkers();
   renderSidebar();
 });
