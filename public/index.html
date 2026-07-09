@@ -586,16 +586,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <input class="modal-input" id="authPasswordConfirm" type="password" placeholder="••••••••" autocomplete="new-password"/>
       </div>
       <div id="registerNameFields" style="display:none;">
-        <div class="form-row">
-          <div>
-            <label class="modal-label">Full Name</label>
-            <input class="modal-input" id="authFullName" placeholder="e.g. Priya Sharma" maxlength="60" autocomplete="name"/>
-          </div>
-          <div>
-            <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">*</span></label>
-            <input class="modal-input" id="authNickname" placeholder="e.g. Priya" maxlength="30"/>
-          </div>
-        </div>
+        <label class="modal-label">Full Name</label>
+        <input class="modal-input" id="authFullName" placeholder="e.g. Priya Sharma" maxlength="60" autocomplete="name"/>
+        <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(shown as your display name) *</span></label>
+        <input class="modal-input" id="authNickname" placeholder="e.g. Priya" maxlength="30"/>
       </div>
       <button class="modal-btn" id="authSubmitBtn" onclick="submitAuth()">
         <span id="authBtnLabel">Sign In</span> <span>→</span>
@@ -634,15 +628,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <!-- Step: Profile setup (new users only) -->
     <div class="modal-step" id="step-profile">
       <div class="modal-success">Welcome to MapIt! Let's set up your profile.</div>
-      <div id="profileNameRow" class="form-row">
-        <div>
-          <label class="modal-label">Your Name</label>
-          <input class="modal-input" id="nameInput" placeholder="e.g. Priya Sharma" maxlength="60"/>
-        </div>
-        <div>
-          <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">*</span></label>
-          <input class="modal-input" id="profileNicknameInput" placeholder="e.g. Priya" maxlength="30"/>
-        </div>
+      <div id="profileNameRow">
+        <label class="modal-label">Your Name</label>
+        <input class="modal-input" id="nameInput" placeholder="e.g. Priya Sharma" maxlength="60"/>
+        <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(your display name) *</span></label>
+        <input class="modal-input" id="profileNicknameInput" placeholder="e.g. Priya" maxlength="30"/>
       </div>
       <label class="modal-label">Phone (optional)</label>
       <input class="modal-input" id="phoneInput" placeholder="+91 98765 43210" type="tel"/>
