@@ -2132,7 +2132,7 @@ const CHAT_RESPONSES = [
 ];
 
 function openInterestNote(){
-  const l = ST.listings.find(x=>x.id===ST.selId);
+  const l = ST.listings.find(x=>x.id===ST.selId) || ST.favListings.find(x=>x.id===ST.selId) || ST.myListings.find(x=>x.id===ST.selId);
   if(!l){ toast('Listing not found.'); return; }
   if(!ST.user){ toast('Please sign in first.'); return; }
   if(!l.seller_id){ toast('Seller information not available.'); return; }
@@ -2158,7 +2158,7 @@ function updateInterestSendState(){
 }
 
 async function sendInterestNote(){
-  const l = ST.listings.find(x=>x.id===ST.selId);
+  const l = ST.listings.find(x=>x.id===ST.selId) || ST.favListings.find(x=>x.id===ST.selId) || ST.myListings.find(x=>x.id===ST.selId);
   if(!l){ toast('Listing not found.'); return; }
   const ta = document.getElementById('interestNote');
   const text = (ta?.value||'').trim();
