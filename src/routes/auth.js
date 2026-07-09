@@ -158,8 +158,12 @@ router.post('/reset-password', async (req, res, next) => {
     const { email, redirectTo: rawRedirect } = req.body;
     if (!email) return res.status(400).json({ error: 'email is required' });
 
+    // Frontend appends a trailing '/' (required to satisfy Supabase's redirect URL
+    // glob) — strip it only for allowlist comparison, not from the value we pass on.
+    const originForCheck = typeof rawRedirect === 'string' ? rawRedirect.replace(/\/$/, '') : rawRedirect;
+
     // Use caller's origin if it's a trusted domain, else default to production
-    const redirectTo = (ALLOWED_OAUTH_ORIGINS.includes(rawRedirect) || isVercelPreview(rawRedirect))
+    const redirectTo = (ALLOWED_OAUTH_ORIGINS.includes(originForCheck) || isVercelPreview(originForCheck))
       ? rawRedirect
       : 'https://www.mapit.co.in';
 

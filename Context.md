@@ -9,13 +9,24 @@
 - **Project:** MapIt — location-first buy-and-sell marketplace for India (and USA)
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
-- **Last updated:** 2026-07-06, later same day (Session 5 item #1 fully closed out and LIVE on production; Session 5 item #2 — Claude-based lead scoring — built, locally verified, and committed (`cd74c99`) on branch `feat/session-05-lead-scoring`, not yet pushed to `uat`; see 🎯 Current Goal for what's next)
+- **Last updated:** 2026-07-08 (new branch `fix/session-04b-uat-fixes` cut from `main`, pushed to `origin` for Arun's UAT retest — see 🎯 Current Goal for full status; Session 5 item #2 remains parked on `feat/session-05-lead-scoring`, still blocked on `ANTHROPIC_API_KEY`)
 
 ---
 
 ## 🎯 Current Goal
 
-**Session 5 item #1 (seller notification email on "I'm Interested") is now LIVE ON PRODUCTION (2026-07-06).** Sequence completed today: `RESEND_API_KEY` confirmed in Vercel → merged to `uat` → live test on deployed `uat` preview surfaced a real bug (`.catch()` chained on a Supabase query builder, crashing the whole message-send on a buyer's first contact) → bug fixed (`64cfdff`) and re-pushed to `uat` → Nagesh re-tested, confirmed the notification email arrived and was readable in the inbox → `uat → main` merged (`d441152`) and pushed to production on Nagesh's own sign-off (chose not to wait for Arun this time). All of Session 4 + Explore Area toggle + Session 5 #1 are now live at `https://mapit.co.in`.
+**Session 04B — Arun's follow-up UAT fixes on Session 4, branch `fix/session-04b-uat-fixes` (2026-07-08) — CODE COMPLETE, COMMITTED, PUSHED TO `origin` for UAT retest, not yet merged to `uat`/`main`.** Cut from `main` (not from the still-parked `feat/session-05-lead-scoring`) so this fix batch stays isolated from the Anthropic-key-blocked Session 5 work. Addressed Arun's Session 4 UAT re-test findings:
+- **A3 (Fail → Fixed):** keyword-search clear (×) button now actually appears — the show-logic set `style.display=''` which fell back to the base CSS `display:none` instead of overriding it; now sets `'block'` explicitly.
+- **F17 (Fail → Fixed):** password-reset email was still linking to production instead of the UAT preview URL — the frontend appends a trailing `/` to satisfy Supabase's redirect glob, but the backend's allowlist/regex check in `src/routes/auth.js` didn't account for that trailing slash and always fell back to `https://www.mapit.co.in`. Fixed by normalizing the trailing slash only for the comparison (security check itself unchanged, Rule 8 preserved).
+- **E14 (observation):** profile-step "Continue" button now stays `disabled` until the ToS checkbox is ticked.
+- **E14 (observation):** home-location map enlarged 200px → 500px (2.5x, as requested); `.modal-box` gained `max-height:90vh; overflow-y:auto` since the taller map would otherwise clip the Save/Skip controls off-screen on phones.
+- **F16 (observation, treated as its own step):** "Add New Location" (Profile → My Locations) rebuilt to mirror the first-login home-location flow exactly — tap-to-drop-pin map with drag-to-adjust and reverse-geocoded address — replacing the old "Use My Current Location" / "Enter GPS Coordinates" radio choice. The label input is the only addition on top of that flow, per Arun's instruction. Also: the "Remove" button is now hidden entirely when only one saved location exists, and disabled (with an explanatory tooltip) for the currently active location. Confirmed via code review that the backend `DELETE /api/pins/:id` already handles removing the default pin gracefully (auto-promotes another to default), so no backend change was made — this is a frontend-only UX guardrail.
+- **Not in scope / not touched:** the general feedback that `docs/session-04-uat-checklist-Arun.html` doesn't persist pass/fail state across reloads — that's a bug in the standalone checklist document's own local-storage logic, not MapIt app code; flagged in Open Issues below, not yet fixed.
+- **Verification done:** Two-File sync clean on every change; all `<script>` blocks in `MapIt_MVP_v1.html` parse without syntax errors (Node `new Function()` smoke check — no browser available in this environment, so manual click-through by Nagesh/Arun still needed before sign-off, especially the new Add-Location map init/teardown on repeated modal open/close).
+- **Branch hygiene:** Nagesh's ~20 unrelated pre-existing uncommitted/untracked files, plus an in-progress uncommitted fix on `feat/session-05-lead-scoring` (interest-note listing lookup now also checks `ST.favListings`/`ST.myListings`), were stashed before cutting this branch and restored immediately after — same safety procedure used for prior branch switches.
+- **Next:** push already done (`origin/fix/session-04b-uat-fixes`); awaiting Nagesh/Arun retest on this branch before promoting to `uat` then `main` (Rule 6 flow).
+
+**Session 5 item #1 (seller notification email on "I'm Interested") is LIVE ON PRODUCTION (2026-07-06).** Sequence completed that day: `RESEND_API_KEY` confirmed in Vercel → merged to `uat` → live test on deployed `uat` preview surfaced a real bug (`.catch()` chained on a Supabase query builder, crashing the whole message-send on a buyer's first contact) → bug fixed (`64cfdff`) and re-pushed to `uat` → Nagesh re-tested, confirmed the notification email arrived and was readable in the inbox → `uat → main` merged (`d441152`) and pushed to production on Nagesh's own sign-off (chose not to wait for Arun this time). All of Session 4 + Explore Area toggle + Session 5 #1 are now live at `https://mapit.co.in`.
 
 **Production smoke test passed (2026-07-06):** Nagesh tapped "I'm Interested" live on `mapit.co.in`; new `messages` row confirmed via Supabase and notification email confirmed received. Session 5 #1 is now fully closed out on production.
 
@@ -28,6 +39,17 @@
 ---
 
 ## ✅ Completed This Session
+
+- ✅ **Session 04B — Arun's follow-up UAT fixes on Session 4 (2026-07-08, branch `fix/session-04b-uat-fixes`, commit `5d6b932`, pushed to `origin`):**
+  - Cut from `main` (not `feat/session-05-lead-scoring`) to keep this fix batch isolated from the Anthropic-key-blocked Session 5 work; Nagesh's uncommitted working-tree files and Session 5's in-progress uncommitted fix were stashed/restored safely around the branch switch.
+  - **A3 fix** — keyword-search clear (×) button: `document.getElementById('srchClear').style.display = ST.q ? '' : 'none'` → `'block'`; empty string doesn't override the base CSS `.srch-clear{display:none}` rule, so the button was silently staying hidden even when a keyword was typed.
+  - **F17 fix** (`src/routes/auth.js`) — password-reset redirect validation now strips the trailing `/` (which the frontend appends to satisfy Supabase's `/**` redirect glob) before comparing against `ALLOWED_OAUTH_ORIGINS`/`isVercelPreview()`, but still passes the original value with the slash to Supabase. Previously the trailing slash caused every comparison to fail, silently falling back to production for both the UAT preview URL and any other trusted origin.
+  - **E14 fix** — profile step "Continue" button (`#profileContinueBtn`) now starts `disabled`; new `updateProfileContinueState()` enables it only once `#tosCheck` is ticked. Existing `.modal-btn:disabled` CSS already covered the dimmed/not-allowed visual.
+  - **E14 fix** — `#homeLocMap` height `200px → 500px` (2.5x). Added `max-height:90vh; overflow-y:auto` to `.modal-box` as a direct consequence — without it the taller map would push the Save/Skip controls off-screen on phones with limited viewport height.
+  - **F16 fix** — "Add New Location" flow in the My Locations modal rebuilt from a "Use My Current Location" / "Enter GPS Coordinates" radio choice to a tap-to-drop-pin map (new `#addPinMap`, mirrors `initHomeLocMap()`'s pattern: draggable marker, reverse-geocoded address via Nominatim, Save button disabled until a pin is placed). New JS: `initAddPinMap()`, `_resolveAddPinAddr()`, rewritten `saveNewLocation()`; removed dead `toggleLocMethod()`, `addCurrentLocationPin()`, `addGpsLocationPin()`. Map initializes on `openPinsModal()` and tears down on `closePinsModal()` (same leak-avoidance pattern as the home-location map). `renderPinsList()` now omits the Remove button entirely when only one pin exists, and disables it (new `.pin-action-btn:disabled` CSS + tooltip) for the active pin — frontend-only guardrail; backend `DELETE /api/pins/:id` already promotes another pin to default gracefully, so no backend change was needed.
+  - Two-File sync clean after every change; all `<script>` blocks verified to parse via a Node `new Function()` smoke check (no browser available in this environment — manual click-through still needed before sign-off).
+  - **Not addressed:** the general feedback that the UAT checklist HTML doesn't persist pass/fail state across reloads — that's a separate bug in `docs/session-04-uat-checklist-Arun.html`'s own client-side logic, not app code; noted in Open Issues, not yet scheduled.
+  - **Pushed** to `origin/fix/session-04b-uat-fixes` (2026-07-08) for Nagesh/Arun retest — not yet merged to `uat` or `main`.
 
 - ✅ **Session 5 #2 — Claude-based spam/lead-qualifying check built, locally verified, and committed (2026-07-06, branch `feat/session-05-lead-scoring`, commit `cd74c99`):**
   - **Design decisions locked in with Nagesh** (all via explicit confirmation): check runs passively server-side, no separate Q&A gate; whatever the verdict, the seller email **always sends** (never silently dropped/blocked), only flagged `[Unscreened]` when not confirmed genuine; scoring criteria universal (not per-category); new additive-only migration approved.
@@ -596,6 +618,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 
+- **`fix/session-04b-uat-fixes` not yet merged to `uat`/`main`** — 🟡 Pushed to `origin` (2026-07-08, commit `5d6b932`) for Nagesh/Arun retest of A3, F17, E14 (x2), F16. Awaiting sign-off before promoting per Rule 6.
+- **UAT checklist HTML doesn't persist pass/fail state across reloads** — 🟡 Not fixed. Arun reported `docs/session-04-uat-checklist-Arun.html` resets all entered pass/fail marks and comments when reopened. This is a bug in the standalone checklist document's own client-side save logic (likely missing/broken localStorage persistence), not MapIt application code — not yet scoped or scheduled.
 - **`ANTHROPIC_API_KEY` not yet created (Session 5 #2)** — 🟡 Blocked on Arun's financial sign-off before creating the key and adding it to local `.env` + Vercel (new recurring cost, however small — Rule 11). Code is fully built, committed (`cd74c99`), and safe to leave in this state indefinitely: `scoreLead()` fails open to `unscreened` when the key is absent, so messages keep sending normally, just always flagged `[Unscreened]` until the key exists.
 - **`feat/session-05-lead-scoring` not yet pushed to `uat`** — 🟡 Pending, waiting on the Anthropic key decision before promoting (or could push as-is in its safe fail-open state if Nagesh wants `uat` testing to start regardless)
 - **Local `.env` had stale `APP_URL=http://localhost:3000`** — ✅ FIXED (2026-07-06): server actually runs on `PORT=3001` and serves the frontend itself; corrected locally to `http://localhost:3001`. Local-only file, never committed, no production impact.
@@ -788,9 +812,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 **⬅ Immediate:**
-1. **Get Arun's sign-off + create `ANTHROPIC_API_KEY`** — console.anthropic.com/settings/keys; add to local `.env` first for a real genuine/spam test, then to Vercel (Production + Preview) before promoting past `uat`
-2. **Test real classification** — with the key in place, send one genuine-sounding note and one spam-like note locally, confirm `lead_verdict` differs correctly and email wording matches
-3. **Push `feat/session-05-lead-scoring` → `uat`** for Nagesh/Arun sign-off, then merge to `main` (standard Rule 6 promotion flow)
+1. **Nagesh/Arun retest `fix/session-04b-uat-fixes`** — A3, F17, E14 (ToS-gated Continue + bigger map), F16 (Add-Location flow + Remove gating); branch pushed to `origin`, not yet on `uat`
+2. **Merge `fix/session-04b-uat-fixes` → `uat` → `main`** once retest passes (Rule 6 promotion flow)
+3. **Get Arun's sign-off + create `ANTHROPIC_API_KEY`** — console.anthropic.com/settings/keys; add to local `.env` first for a real genuine/spam test, then to Vercel (Production + Preview) before promoting past `uat`
+4. **Test real classification** — with the key in place, send one genuine-sounding note and one spam-like note locally, confirm `lead_verdict` differs correctly and email wording matches
+5. **Push `feat/session-05-lead-scoring` → `uat`** for Nagesh/Arun sign-off, then merge to `main` (standard Rule 6 promotion flow)
+
+**✅ Session 04B — Arun's follow-up UAT fixes — CODE COMPLETE, COMMITTED, PUSHED (2026-07-08):**
+- Built on `fix/session-04b-uat-fixes` (commit `5d6b932`), cut from `main`; awaiting UAT retest before promotion — see Completed section for full detail.
 
 **✅ Session 5 #2 — Claude-based spam/lead-qualifying check — CODE COMPLETE, COMMITTED, LOCALLY VERIFIED (2026-07-06):**
 - Built on `feat/session-05-lead-scoring` (commit `cd74c99`); fails open to `unscreened` — safe to leave as-is indefinitely. Only the Anthropic key + `uat`/`main` promotion remain — see Completed section for full detail.
