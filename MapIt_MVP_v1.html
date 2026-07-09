@@ -1226,9 +1226,17 @@ async function apiDelete(path){
 function goToStep(id){
   document.querySelectorAll('.modal-step').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  // Home-location map step is the tightest on vertical space (map + Skip link);
-  // hide the redundant branding header there to keep Skip for now in view without scrolling.
-  const showBrand = id !== 'step-homeloc';
+  _updateModalBrand();
+}
+
+// Home-location map step and the register (Create Account) form are the tightest
+// on vertical space; hide the redundant branding header on those to avoid a
+// scrollbar. Called on every step change and on every auth-tab switch, since
+// switching to/from the register tab doesn't re-run goToStep().
+function _updateModalBrand(){
+  const active = document.querySelector('.modal-step.active');
+  const id = active ? active.id : '';
+  const showBrand = id !== 'step-homeloc' && !(id === 'step-auth' && AUTH_MODE === 'register');
   document.getElementById('modalLogo').style.display = showBrand ? '' : 'none';
   document.getElementById('modalSub').style.display = showBrand ? '' : 'none';
 }
@@ -1249,6 +1257,7 @@ function switchAuthTab(mode){
   document.getElementById('forgotPwdRow').style.display = mode==='signin' ? 'block' : 'none';
   document.getElementById('authPassword').autocomplete = mode==='signin' ? 'current-password' : 'new-password';
   hideErr('authError');
+  _updateModalBrand();
 }
 
 function togglePwd(){
