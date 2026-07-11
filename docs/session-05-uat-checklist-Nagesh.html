@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MapIt — Session 5 UAT Checklist (Nagesh)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root{--bg:#0f1117;--card:#1a1d27;--card2:#21253a;--border:#2a2e3e;--green:#22c55e;--red:#ef4444;--orange:#f97316;--gold:#eab308;--blue:#3b82f6;--muted:#6b7280;--muted2:#9ca3af;--text:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',system-ui,sans-serif;font-size:14px;line-height:1.6;padding:0 0 80px;}
+  header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;position:sticky;top:0;z-index:100;}
+  .hd-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .logo{font-size:20px;font-weight:700;}.logo span{color:var(--orange);}
+  .hd-meta{font-size:12px;color:var(--muted);}
+  .progress-bar{height:6px;background:var(--card2);border-radius:3px;margin-top:12px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s;}
+  .progress-label{font-size:12px;color:var(--muted2);margin-top:6px;} .progress-label span{color:var(--green);font-weight:700;}
+  main{max-width:800px;margin:0 auto;padding:32px 24px;}
+  .intro-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:28px;}
+  .intro-card h2{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .intro-card p{font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .intro-card .url{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card2);padding:6px 12px;border-radius:6px;color:#93c5fd;display:block;margin-top:10px;word-break:break-all;}
+  h2.section{font-size:14px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.7px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .test-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;transition:border-color .2s;}
+  .test-card.passed{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.04);}
+  .test-card.failed{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.04);}
+  .test-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .test-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;margin-top:2px;min-width:36px;}
+  .test-title{font-size:13px;font-weight:600;flex:1;}
+  .btn-row{display:flex;gap:8px;flex-shrink:0;}
+  button.pass-btn,button.fail-btn{padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
+  button.pass-btn{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  button.pass-btn:hover{background:rgba(34,197,94,.28);}
+  button.fail-btn{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+  button.fail-btn:hover{background:rgba(239,68,68,.22);}
+  button.pass-btn.active{background:var(--green);color:#000;}
+  button.fail-btn.active{background:var(--red);color:#fff;}
+  .test-steps{font-size:12px;color:var(--muted2);margin-top:10px;line-height:1.8;}
+  .test-steps ol{padding-left:18px;}
+  .test-steps li{margin-bottom:3px;}
+  .test-steps code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--card2);padding:1px 5px;border-radius:3px;color:#93c5fd;}
+  .test-steps .expected{color:var(--green);font-weight:600;}
+  .note-area{margin-top:10px;display:none;}
+  .note-area textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;resize:vertical;min-height:56px;}
+  .note-area textarea::placeholder{color:var(--muted);}
+  .auto-badge{display:inline-block;background:rgba(59,130,246,.15);color:var(--blue);border-radius:4px;font-size:10px;font-weight:700;padding:1px 7px;margin-left:8px;vertical-align:middle;}
+  .fixed-badge{display:inline-block;background:rgba(96,165,250,.15);color:#60a5fa;border-radius:4px;font-size:10px;font-weight:700;padding:1px 7px;margin-left:8px;vertical-align:middle;}
+  .signoff{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:32px;}
+  .signoff h3{font-size:15px;font-weight:700;margin-bottom:14px;}
+  .signoff label{display:block;font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .signoff input,.signoff select,.signoff textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;margin-bottom:14px;}
+  .signoff .verdict-row{display:flex;gap:10px;margin-bottom:14px;}
+  .verdict-btn{flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;}
+  .verdict-btn.approve{border-color:rgba(34,197,94,.5);color:var(--green);}
+  .verdict-btn.approve.sel{background:var(--green);color:#000;border-color:var(--green);}
+  .verdict-btn.reject{border-color:rgba(239,68,68,.5);color:var(--red);}
+  .verdict-btn.reject.sel{background:var(--red);color:#fff;border-color:var(--red);}
+  .verdict-btn.hold{border-color:rgba(249,115,22,.5);color:var(--orange);}
+  .verdict-btn.hold.sel{background:var(--orange);color:#000;border-color:var(--orange);}
+  .submit-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+  .submit-btn:hover{background:#2563eb;}
+  .result-box{display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;margin-top:14px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-row">
+    <div>
+      <div class="logo">Map<span>It</span> &nbsp;·&nbsp; Session 5 UAT Checklist</div>
+      <div class="hd-meta">Tester: Nagesh Nagaraja Rao &nbsp;·&nbsp; Date: 2026-07-08 &nbsp;·&nbsp; Branch: feat/session-05-lead-scoring</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="progress-label">Progress: <span id="pct">0%</span> &nbsp;(<span id="doneCount">0</span> / <span id="totalCount">0</span>)</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</header>
+
+<main>
+  <div class="intro-card">
+    <h2>📋 Session 5 Manual UAT — "I'm Interested" note box + seller email</h2>
+    <p>This checklist covers the two things built in Session 5: (1) sellers now get an email the moment a buyer taps "I'm Interested" and writes a note, and (2) that note now has a small typing box instead of sending a fixed canned message. The automated checks (21 code/API/DB checks) have already passed, including one real bug that was found and fixed today — Block C below specifically re-tests that fix.</p>
+    <p><strong>Test locally:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card2);padding:2px 6px;border-radius:3px;color:#93c5fd;">npm start</code> then open <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card2);padding:2px 6px;border-radius:3px;color:#93c5fd;">http://localhost:3001</code></p>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted);">You'll need two accounts to test this properly: one to act as the <strong>buyer</strong> (view someone else's listing and tap "I'm Interested"), and access to the <strong>seller's</strong> email inbox to check what arrives. Using your own two test accounts (e.g. a listing you own, and a second account/browser to message it) works well.</p>
+    <p style="margin-top:8px;font-size:12px;color:var(--gold);">Note: No Anthropic key is set up yet (pending Arun's go-ahead on cost), so every email you receive during this test will show a small orange "unscreened" warning banner and an "[Unscreened]" tag in the subject line — that is expected and correct behaviour for now, not a bug.</p>
+  </div>
+
+  <!-- BLOCK A: PRE-CONDITIONS -->
+  <h2 class="section">Block A — Pre-conditions (already verified by Claude)</h2>
+
+  <div class="test-card" id="card-A1">
+    <div class="test-hd">
+      <div class="test-id">A1</div>
+      <div class="test-title">Database is ready to store the spam/genuine result on each message <span class="auto-badge">AUTO ✓</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">Confirmed by querying the database directly — the two new columns exist and are working. Pre-marked Pass, nothing for you to check here.</div>
+  </div>
+
+  <div class="test-card" id="card-A2">
+    <div class="test-hd">
+      <div class="test-id">A2</div>
+      <div class="test-title">A bug was found and fixed today before you started testing <span class="fixed-badge">FIXED ✓</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">Tapping "I'm Interested" on a listing you'd <strong>saved</strong> (heart icon) that wasn't currently showing in your nearby Browse list used to fail with "Listing not found." This has been fixed — Block C below asks you to specifically try this scenario to double-check it now works.</div>
+  </div>
+
+  <!-- BLOCK B: THE NOTE BOX ITSELF -->
+  <h2 class="section">Block B — The New "I'm Interested" Note Box</h2>
+
+  <div class="test-card" id="card-B1">
+    <div class="test-hd">
+      <div class="test-id">B1</div>
+      <div class="test-title">Tapping "I'm Interested" opens a small typing box, not an instant send</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Sign in and browse to any listing that <strong>isn't</strong> your own</li>
+        <li>Tap the orange <strong>🤝 I'm Interested</strong> button</li>
+        <li class="expected">Verify: a small text box appears below, with faint grey placeholder text like "Hi! I'm interested in your listing…" — nothing sends yet</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B2">
+    <div class="test-hd">
+      <div class="test-id">B2</div>
+      <div class="test-title">"Send" button stays greyed out until you actually type something</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>With the note box open, look at the <strong>Send</strong> button before typing anything</li>
+        <li class="expected">Verify: Send is greyed out / not clickable while the box is empty</li>
+        <li>Start typing a few words</li>
+        <li class="expected">Verify: Send turns solid green and becomes clickable as soon as you type</li>
+        <li>Delete everything you typed</li>
+        <li class="expected">Verify: Send greys out again when the box is empty</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B3">
+    <div class="test-hd">
+      <div class="test-id">B3</div>
+      <div class="test-title">Cancel closes the note box without sending anything</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open the note box, type something, then tap <strong>Cancel</strong></li>
+        <li class="expected">Verify: the box closes, the "I'm Interested" button is still there and untouched (no "Sent!" shown)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B3"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B4">
+    <div class="test-hd">
+      <div class="test-id">B4</div>
+      <div class="test-title">Sending a real note works and shows confirmation</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open the note box on a listing, type a short real message (e.g. "Is this still available? Can I see it this weekend?")</li>
+        <li>Tap <strong>Send</strong></li>
+        <li class="expected">Verify: a green toast appears saying the message was sent, the "I'm Interested" button changes to "✅ Sent!" in green, and it's no longer clickable</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B4"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- BLOCK C: THE BUG FIX -->
+  <h2 class="section">Block C — Re-test: "I'm Interested" from the Saved tab (today's bug fix)</h2>
+
+  <div class="test-card" id="card-C1">
+    <div class="test-hd">
+      <div class="test-id">C1</div>
+      <div class="test-title">Saving a distant listing, then messaging it from the Saved (❤) tab, works correctly</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('C1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('C1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Increase your search radius, find a listing that's far from your usual home area, and tap the heart (♡) to save it</li>
+        <li>Now set your radius back down small, or switch category, so that listing would no longer show up in your normal Browse results</li>
+        <li>Go to the <strong>❤ Saved</strong> tab and open that same listing</li>
+        <li>Tap <strong>🤝 I'm Interested</strong>, type a short note, and tap <strong>Send</strong></li>
+        <li class="expected">Verify: it sends successfully with the green "✅ Sent!" confirmation — <strong>no</strong> "Listing not found" error. (This exact scenario was broken before today's fix.)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-C1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- BLOCK D: SELLER EMAIL -->
+  <h2 class="section">Block D — Seller Notification Email</h2>
+
+  <div class="test-card" id="card-D1">
+    <div class="test-hd">
+      <div class="test-id">D1</div>
+      <div class="test-title">Seller receives an email with the buyer's actual typed note</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('D1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('D1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>As the buyer, send an "I'm Interested" note (as in B4) on a listing owned by an account whose inbox you can check</li>
+        <li>Check that seller's email inbox within a minute or two</li>
+        <li class="expected">Verify: an email arrives with subject mentioning the buyer's name and the listing title, and the body shows the <strong>exact words you typed</strong> in the note box (not the old generic canned message)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-D1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-D2">
+    <div class="test-hd">
+      <div class="test-id">D2</div>
+      <div class="test-title">Email shows the "unscreened" warning (expected, since no Anthropic key yet)</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('D2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('D2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open the email from D1</li>
+        <li class="expected">Verify: subject line starts with <code>[Unscreened]</code> and the email body shows a small orange banner saying the message hasn't been automatically verified as genuine buyer interest yet</li>
+        <li style="color:var(--gold);">This is expected/correct for now — it will go away automatically once Arun approves adding the Anthropic key and real spam-checking turns on. Not a bug.</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-D2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-D3">
+    <div class="test-hd">
+      <div class="test-id">D3</div>
+      <div class="test-title">The message also still appears normally in the seller's in-app Inbox</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('D3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('D3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Sign in as the seller in the app itself (not email)</li>
+        <li>Open the profile menu → <strong>Inbox</strong></li>
+        <li class="expected">Verify: the buyer's note shows up as a normal unread message, exactly as before — the email is an extra notification, not a replacement for in-app messaging</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-D3"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-D4">
+    <div class="test-hd">
+      <div class="test-id">D4</div>
+      <div class="test-title">Only the buyer's very first message on a listing triggers the email</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('D4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('D4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>After D1's email arrives, reply again to the same listing/seller (e.g. via the in-app chat box)</li>
+        <li class="expected">Verify: the seller does <strong>not</strong> get a second notification email for the follow-up message — only the very first "I'm Interested" note triggers it</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-D4"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- BLOCK E: LIMITS -->
+  <h2 class="section">Block E — Note Box Limits</h2>
+
+  <div class="test-card" id="card-E1">
+    <div class="test-hd">
+      <div class="test-id">E1</div>
+      <div class="test-title">Note box stops you from typing an extremely long message</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('E1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('E1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open the note box and try pasting or typing a very long message (500+ characters — e.g. paste a paragraph from a website)</li>
+        <li class="expected">Verify: typing simply stops accepting more characters around 500 — it doesn't let you keep going indefinitely, and doesn't crash or error</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-E1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- SIGN-OFF -->
+  <div class="signoff" id="signoff">
+    <h3>✍️ UAT Sign-off — Nagesh Nagaraja Rao</h3>
+    <label>Tester Name</label>
+    <input type="text" id="so-name" placeholder="Nagesh Nagaraja Rao" value="Nagesh Nagaraja Rao"/>
+    <label>Date of Testing</label>
+    <input type="date" id="so-date" value="2026-07-08"/>
+    <label>UAT URL / Environment Used</label>
+    <input type="text" id="so-url" placeholder="localhost:3001 or uat preview URL"/>
+    <label>Overall Verdict</label>
+    <div class="verdict-row">
+      <button class="verdict-btn approve" id="v-approve" onclick="setVerdict('approve')">✅ Approve</button>
+      <button class="verdict-btn hold" id="v-hold" onclick="setVerdict('hold')">⏸ Hold (minor issues)</button>
+      <button class="verdict-btn reject" id="v-reject" onclick="setVerdict('reject')">❌ Reject</button>
+    </div>
+    <label>Notes / Observations</label>
+    <textarea id="so-notes" style="min-height:80px;" placeholder="Any observations or issues found during testing…"></textarea>
+    <button class="submit-btn" onclick="submitSignoff()">📋 Generate Sign-off Summary</button>
+    <div class="result-box" id="result-box"></div>
+  </div>
+</main>
+
+<script>
+const total = document.querySelectorAll('.test-card').length;
+document.getElementById('totalCount').textContent = total;
+let _verdict = '';
+
+const STORAGE_KEY = 'mapit_uat_session05_nagesh_v1';
+const testIds = Array.from(document.querySelectorAll('.test-card')).map(el => el.id.replace('card-',''));
+
+function save(){
+  const state = {};
+  testIds.forEach(id=>{
+    const card = document.getElementById('card-'+id);
+    if(card.classList.contains('passed')) state[id]='pass';
+    else if(card.classList.contains('failed')) state[id]='fail';
+  });
+  const notes = {};
+  document.querySelectorAll('.note-area textarea').forEach(ta=>{
+    const id = ta.closest('.note-area').id.replace('note-','');
+    if(ta.value) notes[id]=ta.value;
+  });
+  const data = {
+    state, notes,
+    soName: document.getElementById('so-name').value,
+    soDate: document.getElementById('so-date').value,
+    soUrl: document.getElementById('so-url').value,
+    soNotes: document.getElementById('so-notes').value,
+    verdict: _verdict
+  };
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+}
+
+function mark(id, result){
+  const card = document.getElementById('card-'+id);
+  const noteArea = document.getElementById('note-'+id);
+  card.classList.remove('passed','failed');
+  card.classList.add(result==='pass'?'passed':'failed');
+  card.querySelector('.pass-btn').classList.toggle('active', result==='pass');
+  card.querySelector('.fail-btn').classList.toggle('active', result==='fail');
+  if(noteArea) noteArea.style.display = result==='fail' ? 'block' : 'none';
+  updateProgress();
+  save();
+}
+
+function restore(){
+  let data;
+  try{ data = JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){ data = null; }
+  if(!data) return;
+  if(data.state) Object.keys(data.state).forEach(id => mark(id, data.state[id]));
+  if(data.notes) Object.keys(data.notes).forEach(id=>{
+    const el = document.querySelector('#note-'+id+' textarea');
+    if(el) el.value = data.notes[id];
+  });
+  if(data.soName) document.getElementById('so-name').value = data.soName;
+  if(data.soDate) document.getElementById('so-date').value = data.soDate;
+  if(data.soUrl) document.getElementById('so-url').value = data.soUrl;
+  if(data.soNotes) document.getElementById('so-notes').value = data.soNotes;
+  if(data.verdict) setVerdict(data.verdict);
+}
+
+function updateProgress(){
+  const done = document.querySelectorAll('.test-card.passed, .test-card.failed').length;
+  const pct = Math.round(done/total*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('pct').textContent = pct+'%';
+  document.getElementById('doneCount').textContent = done;
+}
+
+function setVerdict(v){
+  _verdict = v;
+  ['approve','hold','reject'].forEach(x=>{
+    document.getElementById('v-'+x).classList.toggle('sel', x===v);
+  });
+  save();
+}
+
+function submitSignoff(){
+  const name = document.getElementById('so-name').value.trim() || 'Nagesh';
+  const date = document.getElementById('so-date').value || new Date().toISOString().slice(0,10);
+  const url  = document.getElementById('so-url').value.trim() || 'Not specified';
+  const notes = document.getElementById('so-notes').value.trim();
+  const passed = document.querySelectorAll('.test-card.passed').length;
+  const failed = document.querySelectorAll('.test-card.failed').length;
+  const pending = total - passed - failed;
+  const vLabel = {approve:'✅ APPROVED',hold:'⏸ HOLD — MINOR ISSUES',reject:'❌ REJECTED'}[_verdict] || '— not set —';
+  const vColor = {approve:'#22c55e',hold:'#f97316',reject:'#ef4444'}[_verdict]||'#9ca3af';
+
+  const box = document.getElementById('result-box');
+  box.style.display='block';
+  box.style.borderColor = vColor;
+  box.style.background = `rgba(${_verdict==='approve'?'34,197,94':_verdict==='hold'?'249,115,22':'239,68,68'},.06)`;
+  box.innerHTML = `
+    <div style="font-weight:700;font-size:15px;color:${vColor};margin-bottom:10px;">${vLabel}</div>
+    <div style="font-size:12px;color:#9ca3af;line-height:2;">
+      <strong>Tester:</strong> ${name}<br/>
+      <strong>Date:</strong> ${date}<br/>
+      <strong>URL:</strong> ${url}<br/>
+      <strong>Results:</strong> ${passed} passed · ${failed} failed · ${pending} not tested<br/>
+      <strong>Pass rate:</strong> ${passed+failed>0?Math.round(passed/(passed+failed)*100):0}%<br/>
+      ${notes?`<strong>Notes:</strong> ${notes}`:''}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:#6b7280;">
+      Session 5 — Seller Notification Email + Claude-based Lead Scoring · Branch feat/session-05-lead-scoring · MapIt UAT
+    </div>`;
+}
+
+// Persist free-text fields as the tester types, not just on Pass/Fail/verdict clicks
+document.getElementById('so-name').addEventListener('input', save);
+document.getElementById('so-date').addEventListener('input', save);
+document.getElementById('so-url').addEventListener('input', save);
+document.getElementById('so-notes').addEventListener('input', save);
+document.querySelectorAll('.note-area textarea').forEach(ta => ta.addEventListener('input', save));
+
+restore();
+
+// Pre-mark A1 and A2 as auto-passed (always — these are automated checks, not manual)
+mark('A1','pass');
+mark('A2','pass');
+updateProgress();
+</script>
+</body>
+</html>
