@@ -146,6 +146,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-chat-btn{background:transparent;border:none;color:#16a34a;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;text-align:center;line-height:1.3;padding:4px 2px;}
 .ld-chat-btn:hover{color:#15803d;}
 .ld-chat-btn:disabled{opacity:.5;cursor:not-allowed;}
+.ld-interest-box{padding:0 13px;display:flex;flex-direction:column;gap:6px;}
+.ld-interest-box textarea{width:100%;min-height:60px;max-height:140px;resize:vertical;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;background:var(--card);color:inherit;box-sizing:border-box;}
+.ld-interest-actions{display:flex;gap:8px;justify-content:flex-end;}
+.ld-interest-send{background:#16a34a;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+.ld-interest-send:disabled{opacity:.5;cursor:not-allowed;}
+.ld-interest-cancel{background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
+#interestBox.hide{display:none;}
+#homeLocSearchDD.hide{display:none;}
 .ld-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .ld-spec-item{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;}
 .ld-spec-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
@@ -567,22 +575,25 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
       </div>
       <div id="authError" class="modal-error" style="display:none"></div>
-      <label class="modal-label">Email</label>
-      <input class="modal-input" id="authEmail" type="email" placeholder="your@email.com" autocomplete="email"/>
-      <label class="modal-label">Password</label>
+      <div id="registerMandatoryNote" style="display:none;font-size:11px;color:var(--muted);margin:-2px 0 10px;">All fields are mandatory *</div>
+      <label class="modal-label">Email <span style="color:var(--orange);">*</span></label>
+      <input class="modal-input" id="authEmail" type="email" placeholder="your@email.com" autocomplete="email" oninput="_updateRegisterBtnState()"/>
+      <label class="modal-label">Password <span style="color:var(--orange);">*</span></label>
       <div style="position:relative;margin-bottom:14px;">
-        <input class="modal-input" id="authPassword" type="password" placeholder="••••••••" style="margin-bottom:0;padding-right:44px;" autocomplete="current-password"/>
+        <input class="modal-input" id="authPassword" type="password" placeholder="••••••••" style="margin-bottom:0;padding-right:44px;" autocomplete="current-password" oninput="_updateAuthPwdHint()"/>
         <span id="pwdToggleIcon" onclick="togglePwd()" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;opacity:.5;">👁</span>
       </div>
+      <div id="authPwdHint" style="display:none;font-size:11px;color:var(--muted);margin:-8px 0 12px;">8+ characters, 1 uppercase letter, 1 special character</div>
       <div id="confirmPwdGroup" style="display:none;">
-        <label class="modal-label">Confirm Password</label>
-        <input class="modal-input" id="authPasswordConfirm" type="password" placeholder="••••••••" autocomplete="new-password"/>
+        <label class="modal-label">Confirm Password <span style="color:var(--orange);">*</span></label>
+        <input class="modal-input" id="authPasswordConfirm" type="password" placeholder="••••••••" autocomplete="new-password" oninput="_updateRegisterBtnState()"/>
+        <div id="authPwdMatchHint" style="display:none;font-size:11px;margin:-8px 0 12px;"></div>
       </div>
       <div id="registerNameFields" style="display:none;">
-        <label class="modal-label">Full Name</label>
-        <input class="modal-input" id="authFullName" placeholder="e.g. Priya Sharma" maxlength="60" autocomplete="name"/>
-        <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(shown as your display name) *</span></label>
-        <input class="modal-input" id="authNickname" placeholder="e.g. Priya" maxlength="30"/>
+        <label class="modal-label">Full Name <span style="color:var(--orange);">*</span></label>
+        <input class="modal-input" id="authFullName" placeholder="e.g. Priya Sharma" maxlength="60" autocomplete="name" oninput="_updateRegisterBtnState()"/>
+        <label class="modal-label">Nickname <span style="color:var(--orange);">*</span> <span style="color:var(--muted);font-weight:400;font-size:11px;">(shown as your display name)</span></label>
+        <input class="modal-input" id="authNickname" placeholder="e.g. Priya" maxlength="30" oninput="_updateRegisterBtnState()"/>
       </div>
       <button class="modal-btn" id="authSubmitBtn" onclick="submitAuth()">
         <span id="authBtnLabel">Sign In</span> <span>→</span>
@@ -621,10 +632,12 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <!-- Step: Profile setup (new users only) -->
     <div class="modal-step" id="step-profile">
       <div class="modal-success">Welcome to MapIt! Let's set up your profile.</div>
-      <label class="modal-label">Your Name</label>
-      <input class="modal-input" id="nameInput" placeholder="e.g. Priya Sharma" maxlength="60"/>
-      <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(your display name) *</span></label>
-      <input class="modal-input" id="profileNicknameInput" placeholder="e.g. Priya" maxlength="30"/>
+      <div id="profileNameRow">
+        <label class="modal-label">Your Name</label>
+        <input class="modal-input" id="nameInput" placeholder="e.g. Priya Sharma" maxlength="60"/>
+        <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(your display name) *</span></label>
+        <input class="modal-input" id="profileNicknameInput" placeholder="e.g. Priya" maxlength="30"/>
+      </div>
       <label class="modal-label">Phone (optional)</label>
       <input class="modal-input" id="phoneInput" placeholder="+91 98765 43210" type="tel"/>
       <div class="tos-row">
@@ -640,6 +653,13 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="modal-step" id="step-homeloc">
       <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📍 Set your home area</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll show nearby listings first.</div>
+      <div style="position:relative;margin-bottom:4px;">
+        <input type="text" id="homeLocSearchIn" placeholder="Search area to jump there…" autocomplete="off"
+          style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;"
+          oninput="_onHomeLocSearchInput()">
+        <div id="homeLocSearchDD" class="hide" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:180px;overflow-y:auto;z-index:1200;box-shadow:0 4px 14px rgba(0,0,0,.12);"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;">Start typing at least 4 letters — search moves the map to that area, it won't place your pin.</div>
       <div id="homeLocHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop your pin</div>
       <div id="homeLocMap" style="height:min(500px, 45vh);border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-bottom:8px;cursor:crosshair;"></div>
       <div id="homeLocAddr" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
@@ -665,12 +685,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div id="newPwdError" class="modal-error" style="display:none"></div>
       <label class="modal-label">New Password</label>
       <div style="position:relative;margin-bottom:14px;">
-        <input class="modal-input" id="newPwdInput" type="password" placeholder="••••••••" style="margin-bottom:0;padding-right:44px;" autocomplete="new-password"/>
+        <input class="modal-input" id="newPwdInput" type="password" placeholder="••••••••" style="margin-bottom:0;padding-right:44px;" autocomplete="new-password" oninput="_updateNewPwdHint()"/>
         <span onclick="toggleNewPwd()" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;opacity:.5;">👁</span>
       </div>
+      <div id="newPwdHint" style="font-size:11px;color:var(--muted);margin:-8px 0 12px;">8+ characters, 1 uppercase letter, 1 special character</div>
       <label class="modal-label">Confirm New Password</label>
-      <input class="modal-input" id="newPwdConfirm" type="password" placeholder="••••••••" autocomplete="new-password"/>
-      <button class="modal-btn" id="newPwdBtn" onclick="setNewPassword()">
+      <input class="modal-input" id="newPwdConfirm" type="password" placeholder="••••••••" autocomplete="new-password" oninput="_updateNewPwdHint()"/>
+      <div id="newPwdMatchHint" style="display:none;font-size:11px;margin:-8px 0 12px;"></div>
+      <button class="modal-btn" id="newPwdBtn" onclick="setNewPassword()" disabled>
         <span>Update Password →</span>
       </button>
     </div>
@@ -1207,9 +1229,17 @@ async function apiDelete(path){
 function goToStep(id){
   document.querySelectorAll('.modal-step').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  // Home-location map step is the tightest on vertical space (map + Skip link);
-  // hide the redundant branding header there to keep Skip for now in view without scrolling.
-  const showBrand = id !== 'step-homeloc';
+  _updateModalBrand();
+}
+
+// Home-location map step and the register (Create Account) form are the tightest
+// on vertical space; hide the redundant branding header on those to avoid a
+// scrollbar. Called on every step change and on every auth-tab switch, since
+// switching to/from the register tab doesn't re-run goToStep().
+function _updateModalBrand(){
+  const active = document.querySelector('.modal-step.active');
+  const id = active ? active.id : '';
+  const showBrand = id !== 'step-homeloc' && !(id === 'step-auth' && AUTH_MODE === 'register');
   document.getElementById('modalLogo').style.display = showBrand ? '' : 'none';
   document.getElementById('modalSub').style.display = showBrand ? '' : 'none';
 }
@@ -1227,9 +1257,74 @@ function switchAuthTab(mode){
   document.getElementById('authBtnLabel').textContent = mode==='signin' ? 'Sign In' : 'Create Account';
   document.getElementById('confirmPwdGroup').style.display   = mode==='register' ? 'block' : 'none';
   document.getElementById('registerNameFields').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('registerMandatoryNote').style.display = mode==='register' ? 'block' : 'none';
   document.getElementById('forgotPwdRow').style.display = mode==='signin' ? 'block' : 'none';
   document.getElementById('authPassword').autocomplete = mode==='signin' ? 'current-password' : 'new-password';
   hideErr('authError');
+  _updateModalBrand();
+  _updateAuthPwdHint();
+}
+
+// Mirrors the backend rule in src/routes/auth.js (isStrongPassword) — kept in sync manually
+function isStrongPasswordFE(pwd){
+  return typeof pwd === 'string' && pwd.length >= 8 && /[A-Z]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd);
+}
+
+function _updateAuthPwdHint(){
+  const hint = document.getElementById('authPwdHint');
+  if(AUTH_MODE !== 'register'){ hint.style.display = 'none'; }
+  else {
+    hint.style.display = 'block';
+    const pwd = document.getElementById('authPassword').value;
+    const ok = isStrongPasswordFE(pwd);
+    hint.style.color = pwd && ok ? 'var(--green,#1a9c5c)' : (pwd ? '#d9534f' : 'var(--muted)');
+    hint.textContent = (pwd && ok ? '✓ ' : '') + '8+ characters, 1 uppercase letter, 1 special character';
+  }
+  _updateRegisterBtnState();
+}
+
+// Register tab: "Create Account" stays disabled until every field is filled and the password meets the rule
+function _updateRegisterBtnState(){
+  const btn = document.getElementById('authSubmitBtn');
+  const password = document.getElementById('authPassword').value;
+  const confirm  = document.getElementById('authPasswordConfirm').value;
+  _updatePwdMatchHint('authPwdMatchHint', password, confirm);
+  if(AUTH_MODE !== 'register'){ btn.disabled = false; return; }
+  const email    = document.getElementById('authEmail').value.trim();
+  const fullName = document.getElementById('authFullName').value.trim();
+  const nickname = document.getElementById('authNickname').value.trim();
+  const valid = email.includes('@')
+    && isStrongPasswordFE(password)
+    && confirm.length > 0 && confirm === password
+    && fullName.length > 0
+    && nickname.length > 0;
+  btn.disabled = !valid;
+}
+
+// Shared by the register form and the reset-password step — shows a ✓ once both fields match
+function _updatePwdMatchHint(elId, password, confirm){
+  const hint = document.getElementById(elId);
+  if(!confirm){ hint.style.display = 'none'; return; }
+  hint.style.display = 'block';
+  if(confirm === password){
+    hint.style.color = 'var(--green,#1a9c5c)';
+    hint.textContent = '✓ Passwords match';
+  } else {
+    hint.style.color = '#d9534f';
+    hint.textContent = 'Passwords do not match';
+  }
+}
+
+function _updateNewPwdHint(){
+  const hint = document.getElementById('newPwdHint');
+  const btn  = document.getElementById('newPwdBtn');
+  const pwd = document.getElementById('newPwdInput').value;
+  const confirm = document.getElementById('newPwdConfirm').value;
+  const ok = isStrongPasswordFE(pwd);
+  hint.style.color = pwd && ok ? 'var(--green,#1a9c5c)' : (pwd ? '#d9534f' : 'var(--muted)');
+  hint.textContent = (pwd && ok ? '✓ ' : '') + '8+ characters, 1 uppercase letter, 1 special character';
+  _updatePwdMatchHint('newPwdMatchHint', pwd, confirm);
+  btn.disabled = !(ok && confirm.length > 0 && confirm === pwd);
 }
 
 function togglePwd(){
@@ -1242,8 +1337,9 @@ async function submitAuth(){
   const password = document.getElementById('authPassword').value;
   hideErr('authError');
   if(!email || !email.includes('@')){ showErr('authError','Please enter a valid email address.'); return; }
-  if(!password || password.length < 8){ showErr('authError','Password must be at least 8 characters.'); return; }
+  if(!password){ showErr('authError','Please enter your password.'); return; }
   if(AUTH_MODE === 'register'){
+    if(!isStrongPasswordFE(password)){ showErr('authError','Password must be at least 8 characters and include an uppercase letter and a special character.'); return; }
     const confirm   = document.getElementById('authPasswordConfirm').value;
     const fullName  = document.getElementById('authFullName').value.trim();
     const nickname  = document.getElementById('authNickname').value.trim();
@@ -1279,6 +1375,8 @@ async function submitAuth(){
       if(ST._pendingNickname) document.getElementById('profileNicknameInput').value = ST._pendingNickname;
       else if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
         document.getElementById('profileNicknameInput').value = data.profile.nickname;
+      // Register form already collected Name+Nickname this session — don't ask twice
+      showProfileNameRow(!(ST._pendingFullName && ST._pendingNickname));
       goToStep('step-profile');
     } else {
       showLoadingSplash();
@@ -1350,6 +1448,7 @@ async function handleOAuthCallback(){
         document.getElementById('nameInput').value = data.profile.full_name;
       if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
         document.getElementById('profileNicknameInput').value = data.profile.nickname;
+      showProfileNameRow(true);
       document.getElementById('authModal').classList.remove('hide');
       goToStep('step-profile');
       return true;
@@ -1384,7 +1483,7 @@ async function setNewPassword(){
   const pwd     = document.getElementById('newPwdInput').value;
   const confirm = document.getElementById('newPwdConfirm').value;
   hideErr('newPwdError');
-  if(!pwd || pwd.length < 8){ showErr('newPwdError','Password must be at least 8 characters.'); return; }
+  if(!isStrongPasswordFE(pwd)){ showErr('newPwdError','Password must be at least 8 characters and include an uppercase letter and a special character.'); return; }
   if(pwd !== confirm){ showErr('newPwdError','Passwords do not match.'); return; }
   const btn = document.getElementById('newPwdBtn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
@@ -1447,6 +1546,7 @@ async function verifyOtp(){
         document.getElementById('nameInput').value = data.profile.full_name;
       if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
         document.getElementById('profileNicknameInput').value = data.profile.nickname;
+      showProfileNameRow(true);
       goToStep('step-profile');
     } else {
       showLoadingSplash();
@@ -1461,6 +1561,10 @@ async function verifyOtp(){
 }
 
 // ── Profile setup ────────────────────────────────────────────────
+function showProfileNameRow(show){
+  const row = document.getElementById('profileNameRow');
+  if(row) row.style.display = show ? '' : 'none';
+}
 function updateProfileContinueState(){
   const btn = document.getElementById('profileContinueBtn');
   const tosOk = document.getElementById('tosCheck').checked;
@@ -1497,6 +1601,10 @@ function initHomeLocMap(){
   if(_homeLocMap){ _homeLocMap.remove(); _homeLocMap = null; _homeLocMarker = null; _homeLocCoords = null; }
   document.getElementById('homeLocAddr').textContent = '';
   document.getElementById('saveHomeLocBtn').style.display = 'none';
+  document.getElementById('homeLocSearchIn').value = '';
+  document.getElementById('homeLocSearchDD').classList.add('hide');
+  document.getElementById('homeLocSearchDD').innerHTML = '';
+  _homeLocSearchResults = [];
   const center = ST.activePin ? [ST.activePin.lat, ST.activePin.lng] : [12.9716, 77.5946];
   setTimeout(()=>{
     _homeLocMap = L.map('homeLocMap', { zoomControl: true, attributionControl: false }).setView(center, 13);
@@ -1520,6 +1628,70 @@ function initHomeLocMap(){
     });
     _homeLocMap.invalidateSize();
   }, 120);
+}
+
+// Locality/city level only — excludes roads, houses, shops, and landmarks (avoids implying only those spots are searchable)
+// Photon's osm_key plays the same role Nominatim's `category` did
+const HOMELOC_SEARCH_CLASSES = new Set(['place','boundary']);
+let _homeLocSearchTimer = null;
+let _homeLocSearchResults = [];
+
+function _onHomeLocSearchInput(){
+  clearTimeout(_homeLocSearchTimer);
+  const q = document.getElementById('homeLocSearchIn').value.trim();
+  const dd = document.getElementById('homeLocSearchDD');
+  if(q.length < 4){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
+  _homeLocSearchTimer = setTimeout(()=>_runHomeLocSearch(q), 400);
+}
+
+async function _runHomeLocSearch(q){
+  const dd = document.getElementById('homeLocSearchDD');
+  try {
+    // Photon (photon.komoot.io) instead of Nominatim's /search — Nominatim needs a
+    // complete word to match ("Banash" returns nothing until "Banashankari" is fully
+    // typed), so it can't do autocomplete-as-you-type. Photon is free, no API key,
+    // built on the same OSM data, and matches on partial words from the 3rd character.
+    // bbox hard-restricts to ~40km around the city currently shown on the map (confirmed
+    // via manual testing that Photon actually excludes out-of-box results, unlike
+    // Nominatim's viewbox+bounded=0 which barely affected ranking).
+    let geoParams = '';
+    if(_homeLocMap){
+      const c = _homeLocMap.getCenter();
+      const latDelta = 0.35; // ~39km
+      const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
+      geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
+    }
+    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const { features } = await r.json();
+    _homeLocSearchResults = features
+      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
+      .map(f => {
+        const p = f.properties;
+        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
+          .filter(Boolean).join(', ');
+        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
+      });
+    if(!_homeLocSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
+    dd.innerHTML = '';
+    _homeLocSearchResults.forEach((m, i) => {
+      const row = document.createElement('div');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
+      row.onclick = () => _pickHomeLocSearchResult(i);
+      dd.appendChild(row);
+    });
+    dd.classList.remove('hide');
+  } catch(_){
+    dd.classList.add('hide'); dd.innerHTML = '';
+  }
+}
+
+function _pickHomeLocSearchResult(i){
+  const m = _homeLocSearchResults[i];
+  if(!m) return;
+  document.getElementById('homeLocSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('homeLocSearchDD').classList.add('hide');
+  if(_homeLocMap) _homeLocMap.flyTo([+m.lat, +m.lon], 15);
 }
 
 async function _resolveHomeLocAddr(lat, lng){
@@ -2023,9 +2195,16 @@ function renderSidebar(){
         <div class="ld-info-actions">
           ${ST.tab==='mine' && l.seller_id===ST.user?.id
             ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit<br>Listing</button>`
-            : `<button class="ld-chat-btn" id="interestBtn" onclick="expressInterest()">🤝 I'm<br>Interested</button>
+            : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm<br>Interested</button>
                <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
           <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Copy link to share">🔗</div>
+        </div>
+      </div>
+      <div class="ld-interest-box hide" id="interestBox">
+        <textarea id="interestNote" maxlength="500" oninput="updateInterestSendState()"></textarea>
+        <div class="ld-interest-actions">
+          <button class="ld-interest-cancel" onclick="cancelInterestNote()">Cancel</button>
+          <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote()" disabled>Send</button>
         </div>
       </div>
       ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}"/></div>`).join('')}</div>`:''}</div>
@@ -2123,23 +2302,52 @@ const CHAT_RESPONSES = [
   "Yes, I can consider a slight reduction. Let me know what works for you and we can finalise.",
 ];
 
-async function expressInterest(){
-  const l = ST.listings.find(x=>x.id===ST.selId);
+function openInterestNote(){
+  const l = ST.listings.find(x=>x.id===ST.selId) || ST.favListings.find(x=>x.id===ST.selId) || ST.myListings.find(x=>x.id===ST.selId);
   if(!l){ toast('Listing not found.'); return; }
   if(!ST.user){ toast('Please sign in first.'); return; }
   if(!l.seller_id){ toast('Seller information not available.'); return; }
-  const btn = document.getElementById('interestBtn');
-  if(btn){ btn.disabled=true; btn.innerHTML='Sending…'; }
+  const box = document.getElementById('interestBox');
+  const ta  = document.getElementById('interestNote');
+  if(!box || !ta) return;
+  ta.value = '';
+  ta.placeholder = `Hi! I'm interested in your listing "${l.title}". Please get in touch.`;
+  box.classList.remove('hide');
+  updateInterestSendState();
+  ta.focus();
+}
+
+function cancelInterestNote(){
+  const box = document.getElementById('interestBox');
+  if(box) box.classList.add('hide');
+}
+
+function updateInterestSendState(){
+  const ta  = document.getElementById('interestNote');
+  const btn = document.getElementById('interestSendBtn');
+  if(btn) btn.disabled = !(ta && ta.value.trim().length>0);
+}
+
+async function sendInterestNote(){
+  const l = ST.listings.find(x=>x.id===ST.selId) || ST.favListings.find(x=>x.id===ST.selId) || ST.myListings.find(x=>x.id===ST.selId);
+  if(!l){ toast('Listing not found.'); return; }
+  const ta = document.getElementById('interestNote');
+  const text = (ta?.value||'').trim();
+  if(!text){ toast('Please write a note before sending.'); return; }
+  const sendBtn = document.getElementById('interestSendBtn');
+  const chatBtn = document.getElementById('interestBtn');
+  if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='Sending…'; }
   try {
     await apiPost('/api/messages', {
       listing_id: l.id,
       receiver_id: l.seller_id,
-      content: `Hi! I'm interested in your listing "${l.title}". Please get in touch.`
+      content: text
     });
-    if(btn){ btn.innerHTML='✅ Sent!'; btn.style.color='#16a34a'; }
+    document.getElementById('interestBox')?.classList.add('hide');
+    if(chatBtn){ chatBtn.innerHTML='✅ Sent!'; chatBtn.style.color='#16a34a'; chatBtn.disabled=true; }
     toast(`✅ Message sent to seller — they'll see it in their Inbox.`);
   } catch(e){
-    if(btn){ btn.disabled=false; btn.innerHTML='🤝 I\'m<br>Interested'; }
+    if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='Send'; }
     toast('Could not send: '+(e.message||'Unknown error'));
   }
 }

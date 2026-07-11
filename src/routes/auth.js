@@ -12,6 +12,15 @@ const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
+// Min 8 chars, at least 1 uppercase letter, at least 1 special character
+const PASSWORD_RULE_MSG = 'Password must be at least 8 characters and include an uppercase letter and a special character';
+function isStrongPassword(password) {
+  return typeof password === 'string'
+    && password.length >= 8
+    && /[A-Z]/.test(password)
+    && /[^A-Za-z0-9]/.test(password);
+}
+
 // Strict limiter for OTP-only routes — prevents SMS/email OTP abuse.
 // All other auth routes (signin, signup, register, me) use only the global limiter.
 const otpLimiter = rateLimit({
@@ -90,8 +99,8 @@ router.post('/signin', async (req, res, next) => {
 router.post('/signup', async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password || password.length < 8) {
-      return res.status(400).json({ error: 'Valid email and password (min 8 characters) required' });
+    if (!email || !isStrongPassword(password)) {
+      return res.status(400).json({ error: PASSWORD_RULE_MSG });
     }
     // Pre-create with confirmed email so no verification email fires (MVP: immediate access)
     // If user already exists this errors silently and we fall through to signInWithPassword
@@ -184,8 +193,8 @@ router.post('/reset-password', async (req, res, next) => {
 router.put('/password', requireAuth, async (req, res, next) => {
   try {
     const { password } = req.body;
-    if (!password || password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ error: PASSWORD_RULE_MSG });
     }
     const { error } = await supabaseAdmin.auth.admin.updateUserById(req.user.id, { password });
     if (error) return next(createError(error.message));
