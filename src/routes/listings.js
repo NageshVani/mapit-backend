@@ -377,12 +377,33 @@ router.delete('/:id', requireAuth, async (req, res, next) => {
       return next(createError('You can only delete your own listings.', 403));
     }
 
+    // listing_photos rows cascade-delete with the listing (confirmed via
+    // ON DELETE CASCADE), but that only removes the DB rows — the actual
+    // Supabase Storage objects they pointed to are a separate system and are
+    // never touched by that cascade. Read the paths before deleting the
+    // listing, so we can also remove the files themselves and not leave them
+    // orphaned in Storage (see the cleanup-orphaned sweep in uploads.js for
+    // the backstop that catches anything that slips through elsewhere).
+    const { data: photos } = await supabaseAdmin
+      .from('listing_photos')
+      .select('storage_path')
+      .eq('listing_id', id);
+
     const { error } = await supabaseAdmin
       .from('listings')
       .delete()
       .eq('id', id);
 
     if (error) return next(createError(error.message));
+
+    if (photos && photos.length) {
+      const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
+      try {
+        await supabaseAdmin.storage.from(bucket).remove(photos.map(p => p.storage_path));
+      } catch (storageErr) {
+        console.error('Storage cleanup on listing delete failed:', storageErr.message);
+      }
+    }
 
     res.json({ message: 'Listing deleted successfully.' });
   } catch (err) { next(err); }

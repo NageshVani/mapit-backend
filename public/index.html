@@ -438,6 +438,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .fb-type{padding:5px 13px;border-radius:20px;border:1px solid var(--border2);font-size:11.5px;cursor:pointer;color:var(--muted);font-family:'Outfit',sans-serif;transition:all .18s;}
 .fb-type.on{background:var(--orange);border-color:var(--orange);color:#fff;}
 .fb-char{font-size:10px;color:var(--muted);text-align:right;margin-top:3px;}
+.fb-star{font-size:20px;color:var(--border2);cursor:pointer;transition:color .12s;}
+.fb-star.on{color:var(--orange);}
+.fb-star-clear{font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;}
+.fb-star-clear.hide{display:none;}
 
 /* ── MY ADS — SOLD BUTTON ── */
 .sold-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:10.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
@@ -556,6 +560,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="admin-header">
       <div style="font-size:15px;font-weight:700;">🔐 Pending Listings — Review Queue</div>
       <div class="post-close" onclick="closeAdminModal()">✕</div>
+    </div>
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <span style="font-size:11px;color:var(--muted);">Removes photo files left behind in Storage by deleted listings.</span>
+      <button class="admin-reject-btn" style="white-space:nowrap;" onclick="cleanupOrphanedPhotos()">🧹 Clean Up Orphaned Photos</button>
     </div>
     <div id="adminList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
   </div>
@@ -943,6 +951,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <span class="fb-type" data-t="bug" onclick="setFbType(this)">🐛 Bug</span>
       <span class="fb-type" data-t="praise" onclick="setFbType(this)">⭐ Praise</span>
       <span class="fb-type" data-t="complaint" onclick="setFbType(this)">⚠ Complaint</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin:10px 0 14px;">
+      <span style="font-size:12px;color:var(--muted);">Rating (optional):</span>
+      <div id="fbStars">
+        <span class="fb-star" data-r="1" onclick="setFbRating(1)">★</span>
+        <span class="fb-star" data-r="2" onclick="setFbRating(2)">★</span>
+        <span class="fb-star" data-r="3" onclick="setFbRating(3)">★</span>
+        <span class="fb-star" data-r="4" onclick="setFbRating(4)">★</span>
+        <span class="fb-star" data-r="5" onclick="setFbRating(5)">★</span>
+      </div>
+      <span id="fbStarClear" class="fb-star-clear hide" onclick="setFbRating(0)">clear</span>
     </div>
     <textarea class="form-input form-textarea" id="fbText" placeholder="Describe your feedback… (min 10 characters)" maxlength="500" oninput="updateFbChar()" style="min-height:100px;"></textarea>
     <div class="fb-char"><span id="fbCharCount">0</span> / 500</div>
@@ -3499,6 +3518,14 @@ async function openAdminModal(){
 
 function closeAdminModal(){ document.getElementById('adminModal').classList.add('hide'); }
 
+async function cleanupOrphanedPhotos(){
+  if(!confirm('Scan Storage for photo files with no matching listing and delete them? This cannot be undone.')) return;
+  try {
+    const data = await apiPost('/api/uploads/cleanup-orphaned', {});
+    toast(data.deleted_count ? `🧹 Deleted ${data.deleted_count} orphaned photo file(s).` : '✅ No orphaned photos found — Storage is clean.');
+  } catch(e){ toast('Cleanup failed: ' + e.message); }
+}
+
 async function approveAdminListing(id){
   try {
     await apiPut(`/api/listings/${id}/approve`,{});
@@ -3580,6 +3607,7 @@ function renderFeedbackView(){
     <div class="fbv-item ${f.status==='resolved'?'resolved':''}" id="fbv-card-${f.id}">
       <div class="fbv-meta">
         <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${f.type}</span>
+        ${f.rating ? `<span class="fbv-type" style="color:var(--orange);background:rgba(240,96,48,.1);">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>` : ''}
         <span class="fbv-name">👤 ${f.created_for||f.profile?.full_name||'Unknown'}</span>
         ${f.status==='resolved'?'<span class="fbv-resolved-badge">✅ Resolved</span>':''}
         <span class="fbv-time">${f.created_at?new Date(f.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span>
@@ -3644,12 +3672,14 @@ async function deleteListing(id, title){
 // FEEDBACK
 // ═══════════════════════════════════════════════
 let _fbType = 'suggestion';
+let _fbRating = 0; // 0 = no rating chosen — optional field, never required to submit
 
 function openFeedbackModal(){
   document.getElementById('uavMenu').classList.remove('open');
   document.getElementById('feedbackModal').classList.remove('hide');
   document.getElementById('fbText').value = '';
   updateFbChar();
+  setFbRating(0);
 }
 function closeFeedbackModal(){ document.getElementById('feedbackModal').classList.add('hide'); }
 
@@ -3668,13 +3698,19 @@ function updateFbChar(){
   document.getElementById('fbCharCount').textContent = len;
 }
 
+function setFbRating(r){
+  _fbRating = r;
+  document.querySelectorAll('.fb-star').forEach(e=>e.classList.toggle('on', +e.dataset.r <= r));
+  document.getElementById('fbStarClear').classList.toggle('hide', r===0);
+}
+
 async function submitFeedback(){
   const description = document.getElementById('fbText').value.trim();
   if(description.length < 10){ toast('Please write at least 10 characters.'); return; }
   const btn = document.querySelector('#feedbackModal .modal-btn');
   if(btn){ btn.disabled=true; btn.innerHTML='<div class="loading-spin" style="width:18px;height:18px;border-width:2px;"></div>'; }
   try {
-    await apiPost('/api/users/feedback/submit', { type: _fbType, description });
+    await apiPost('/api/users/feedback/submit', { type: _fbType, description, rating: _fbRating || null });
     closeFeedbackModal();
     toast('✅ Thank you! Your feedback has been received.');
   } catch(e){
