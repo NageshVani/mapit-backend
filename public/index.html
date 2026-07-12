@@ -676,6 +676,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <div id="homeLocSearchDD" class="hide" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:180px;overflow-y:auto;z-index:1200;box-shadow:0 4px 14px rgba(0,0,0,.12);"></div>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;">Start typing at least 4 letters — search moves the map to that area, it won't place your pin.</div>
+      <input type="text" id="homeLocCoordsIn" placeholder="Or paste GPS coordinates, e.g. 12.9352, 77.6245" autocomplete="off"
+        style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:4px;"
+        oninput="_onHomeLocCoordsInput()">
+      <div id="homeLocCoordsHint" style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;">Tip: open Google Maps, long-press your location and copy the coordinates shown.</div>
       <div id="homeLocHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop your pin</div>
       <div id="homeLocMap" style="height:min(500px, 45vh);border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-bottom:8px;cursor:crosshair;"></div>
       <div id="homeLocAddr" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
@@ -755,27 +759,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
           <label class="form-label">Title <span style="color:var(--muted);font-weight:400;">(max 80 chars)</span></label>
           <input class="form-input" id="postTitle" placeholder="e.g. Honda City ZX 2021 – Single Owner" maxlength="80"/>
         </div>
-      </div>
-      <!-- RIGHT column: location, photos, phone -->
-      <div class="post-col-r">
-        <!-- Location -->
-        <div class="form-group">
-          <label class="form-label">📍 Listing Location</label>
-          <select class="form-input form-select" id="postLocation" onchange="toggleManualListingLoc()"></select>
-          <div id="manualListingLocGroup" style="display:none;margin-top:10px;">
-            <div style="position:relative;margin-bottom:6px;">
-              <input type="text" class="form-input" id="postLocSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onPostLocSearchInput()"/>
-              <div id="postLocSearchDD" class="hide" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:180px;overflow-y:auto;z-index:1200;box-shadow:0 4px 14px rgba(0,0,0,.12);"></div>
-            </div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;">Start typing at least 4 letters — search moves the map to that area, it won't place your pin.</div>
-            <div id="postPickerHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop your listing's pin</div>
-            <div id="postPickerMap" style="height:220px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-top:6px;cursor:crosshair;"></div>
-            <div id="postPickerAddr" style="font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;"></div>
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:6px;">
-            Want to save this area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add to My Locations →</span>
-          </div>
-        </div>
         <!-- Photos -->
         <div class="form-group">
           <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5)</span></label>
@@ -788,6 +771,29 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
             <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="always" checked> Always</label>
             <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement"> On Agreement</label>
             <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
+          </div>
+        </div>
+      </div>
+      <!-- RIGHT column: location -->
+      <div class="post-col-r">
+        <!-- Location -->
+        <div class="form-group">
+          <label class="form-label">📍 Listing Location</label>
+          <select class="form-input form-select" id="postLocation" onchange="toggleManualListingLoc()"></select>
+          <div id="manualListingLocGroup" style="display:none;margin-top:10px;">
+            <div style="position:relative;margin-bottom:6px;">
+              <input type="text" class="form-input" id="postLocSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onPostLocSearchInput()"/>
+              <div id="postLocSearchDD" class="hide" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:180px;overflow-y:auto;z-index:1200;box-shadow:0 4px 14px rgba(0,0,0,.12);"></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;">Start typing at least 4 letters — search moves the map to that area, it won't place your pin.</div>
+            <input type="text" class="form-input" id="postLocCoordsIn" placeholder="Or paste GPS coordinates, e.g. 12.9352, 77.6245" style="margin-bottom:4px;" oninput="_onPostLocCoordsInput()"/>
+            <div id="postLocCoordsHint" style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;">Tip: open Google Maps, long-press your location and copy the coordinates shown.</div>
+            <div id="postPickerHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop your listing's pin</div>
+            <div id="postPickerMap" style="height:220px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-top:6px;cursor:crosshair;"></div>
+            <div id="postPickerAddr" style="font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;"></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+            Want to save this area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add to My Locations →</span>
           </div>
         </div>
       </div>
@@ -1625,6 +1631,8 @@ function initHomeLocMap(){
   document.getElementById('homeLocSearchIn').value = '';
   document.getElementById('homeLocSearchDD').classList.add('hide');
   document.getElementById('homeLocSearchDD').innerHTML = '';
+  document.getElementById('homeLocCoordsIn').value = '';
+  document.getElementById('homeLocCoordsHint').textContent = 'Tip: open Google Maps, long-press your location and copy the coordinates shown.';
   _homeLocSearchResults = [];
   const center = ST.activePin ? [ST.activePin.lat, ST.activePin.lng] : [12.9716, 77.5946];
   setTimeout(()=>{
@@ -1632,23 +1640,44 @@ function initHomeLocMap(){
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(_homeLocMap);
     _homeLocMap.on('click', async e=>{
       const { lat, lng } = e.latlng;
-      _homeLocCoords = { lat, lng };
-      if(_homeLocMarker) _homeLocMarker.setLatLng([lat, lng]);
-      else {
-        _homeLocMarker = L.marker([lat, lng], {draggable: true}).addTo(_homeLocMap);
-        _homeLocMarker.on('dragend', async ev => {
-          const p = ev.target.getLatLng();
-          _homeLocCoords = { lat: p.lat, lng: p.lng };
-          await _resolveHomeLocAddr(p.lat, p.lng);
-        });
-      }
-      document.getElementById('homeLocHint').textContent = '✅ Pin placed — drag to adjust';
-      document.getElementById('homeLocAddr').textContent = 'Getting address…';
-      document.getElementById('saveHomeLocBtn').style.display = 'flex';
+      _placeHomeLocPin(lat, lng);
       await _resolveHomeLocAddr(lat, lng);
     });
     _homeLocMap.invalidateSize();
   }, 120);
+}
+
+// Shared by map-click, marker-drag, and typed-GPS-coordinate entry — one pin,
+// three ways to place it (Arun/Nagesh: many users copy exact coordinates from
+// a Google Maps long-press rather than eyeballing the map).
+function _placeHomeLocPin(lat, lng){
+  _homeLocCoords = { lat, lng };
+  if(_homeLocMarker) _homeLocMarker.setLatLng([lat, lng]);
+  else {
+    _homeLocMarker = L.marker([lat, lng], {draggable: true}).addTo(_homeLocMap);
+    _homeLocMarker.on('dragend', async ev => {
+      const p = ev.target.getLatLng();
+      _homeLocCoords = { lat: p.lat, lng: p.lng };
+      await _resolveHomeLocAddr(p.lat, p.lng);
+    });
+  }
+  document.getElementById('homeLocHint').textContent = '✅ Pin placed — drag to adjust';
+  document.getElementById('homeLocAddr').textContent = 'Getting address…';
+  document.getElementById('saveHomeLocBtn').style.display = 'flex';
+}
+
+function _onHomeLocCoordsInput(){
+  const raw = document.getElementById('homeLocCoordsIn').value.trim();
+  const hint = document.getElementById('homeLocCoordsHint');
+  if(!raw){ hint.textContent = 'Tip: open Google Maps, long-press your location and copy the coordinates shown.'; return; }
+  const parts = raw.split(',').map(s=>parseFloat(s.trim()));
+  const valid = parts.length===2 && parts.every(n=>!isNaN(n)) && Math.abs(parts[0])<=90 && Math.abs(parts[1])<=180;
+  if(!valid){ hint.textContent = '⚠️ Not a valid coordinate pair yet'; return; }
+  hint.textContent = '✅ Pin moved to these coordinates';
+  const [lat,lng] = parts;
+  _placeHomeLocPin(lat, lng);
+  if(_homeLocMap) _homeLocMap.flyTo([lat,lng], 15);
+  _resolveHomeLocAddr(lat, lng);
 }
 
 // Locality/city level only — excludes roads, houses, shops, and landmarks (avoids implying only those spots are searchable)
@@ -2565,10 +2594,13 @@ function toggleManualListingLoc(){
 }
 
 // Tap-to-drop-pin location picker for the seller's listing — mirrors the
-// Add-Pin/Home-Location flow (initAddPinMap/initHomeLocMap) instead of asking
-// the seller to type raw GPS coordinates. A search box (same Photon-based
-// pattern as _onHomeLocSearchInput) pans/zooms the map to a typed area first;
-// the seller still taps to place the exact pin, which is then reverse-geocoded.
+// Add-Pin/Home-Location flow (initAddPinMap/initHomeLocMap) instead of only
+// asking the seller to type raw GPS coordinates. A search box (same
+// Photon-based pattern as _onHomeLocSearchInput) pans/zooms the map to a
+// typed area first; the seller can either tap to place the exact pin, or
+// (Arun/Nagesh: many sellers copy exact coordinates from a Google Maps
+// long-press) paste GPS coordinates directly — both converge on the same
+// pin/marker state and get reverse-geocoded.
 let _postPickerCoords = null;
 
 function initPostPickerMap(){
@@ -2578,6 +2610,8 @@ function initPostPickerMap(){
   document.getElementById('postLocSearchDD').classList.add('hide');
   document.getElementById('postLocSearchDD').innerHTML = '';
   _postLocSearchResults = [];
+  document.getElementById('postLocCoordsIn').value = '';
+  document.getElementById('postLocCoordsHint').textContent = 'Tip: open Google Maps, long-press your location and copy the coordinates shown.';
   document.getElementById('postPickerHint').textContent = "👆 Tap anywhere on the map to drop your listing's pin";
   document.getElementById('postPickerAddr').textContent = '';
   setTimeout(()=>{
@@ -2588,21 +2622,39 @@ function initPostPickerMap(){
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(_postPickerMap);
     _postPickerMap.on('click', async e=>{
       const { lat, lng } = e.latlng;
-      _postPickerCoords = { lat, lng };
-      if(_postPickerMarker) _postPickerMarker.setLatLng([lat, lng]);
-      else {
-        _postPickerMarker = L.marker([lat, lng], {draggable: true}).addTo(_postPickerMap);
-        _postPickerMarker.on('dragend', async ev => {
-          const p = ev.target.getLatLng();
-          _postPickerCoords = { lat: p.lat, lng: p.lng };
-          await _resolvePostLocAddr(p.lat, p.lng);
-        });
-      }
-      document.getElementById('postPickerHint').textContent = '✅ Pin placed — drag to adjust';
+      _placePostLocPin(lat, lng);
       await _resolvePostLocAddr(lat, lng);
     });
     _postPickerMap.invalidateSize();
   }, 120);
+}
+
+function _placePostLocPin(lat, lng){
+  _postPickerCoords = { lat, lng };
+  if(_postPickerMarker) _postPickerMarker.setLatLng([lat, lng]);
+  else {
+    _postPickerMarker = L.marker([lat, lng], {draggable: true}).addTo(_postPickerMap);
+    _postPickerMarker.on('dragend', async ev => {
+      const p = ev.target.getLatLng();
+      _postPickerCoords = { lat: p.lat, lng: p.lng };
+      await _resolvePostLocAddr(p.lat, p.lng);
+    });
+  }
+  document.getElementById('postPickerHint').textContent = '✅ Pin placed — drag to adjust';
+}
+
+function _onPostLocCoordsInput(){
+  const raw = document.getElementById('postLocCoordsIn').value.trim();
+  const hint = document.getElementById('postLocCoordsHint');
+  if(!raw){ hint.textContent = 'Tip: open Google Maps, long-press your location and copy the coordinates shown.'; return; }
+  const parts = raw.split(',').map(s=>parseFloat(s.trim()));
+  const valid = parts.length===2 && parts.every(n=>!isNaN(n)) && Math.abs(parts[0])<=90 && Math.abs(parts[1])<=180;
+  if(!valid){ hint.textContent = '⚠️ Not a valid coordinate pair yet'; return; }
+  hint.textContent = '✅ Pin moved to these coordinates';
+  const [lat,lng] = parts;
+  _placePostLocPin(lat, lng);
+  if(_postPickerMap) _postPickerMap.flyTo([lat,lng], 15);
+  _resolvePostLocAddr(lat, lng);
 }
 
 let _postLocSearchTimer = null;
