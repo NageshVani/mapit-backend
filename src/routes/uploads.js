@@ -191,4 +191,50 @@ router.put('/photo/:photo_id/order', requireAuth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── Clean up orphaned Storage objects (admin) ─────────────────
+// POST /api/uploads/cleanup-orphaned
+// Deletes files in the storage bucket that have no matching listing_photos
+// row — e.g. an upload whose listing insert failed, or a listing that was
+// deleted directly in the Supabase SQL editor (bypassing this API, so the
+// listing_photos row was never read to know what to remove from Storage).
+// The normal delete path (DELETE /api/listings/:id) removes its own photos'
+// Storage objects itself and relies on listing_photos' ON DELETE CASCADE for
+// the DB rows — this route is a backstop sweep for whatever slips through
+// that. Same admin gating as the existing pending-listings/approve routes
+// (requireAuth only, frontend hides the trigger for non-admin users).
+router.post('/cleanup-orphaned', requireAuth, async (req, res, next) => {
+  try {
+    const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
+
+    const { data: photos, error: photosErr } = await supabaseAdmin
+      .from('listing_photos')
+      .select('storage_path');
+    if (photosErr) return next(createError(photosErr.message));
+    const knownPaths = new Set(photos.map(p => p.storage_path));
+
+    // Storage layout is {user_id}/{listing_id}/{filename} — walk it two levels deep.
+    const { data: userFolders, error: rootErr } = await supabaseAdmin.storage.from(bucket).list('', { limit: 1000 });
+    if (rootErr) return next(createError(rootErr.message));
+
+    const orphanPaths = [];
+    for (const uf of userFolders || []) {
+      const { data: listingFolders } = await supabaseAdmin.storage.from(bucket).list(uf.name, { limit: 1000 });
+      for (const lf of listingFolders || []) {
+        const { data: files } = await supabaseAdmin.storage.from(bucket).list(`${uf.name}/${lf.name}`, { limit: 1000 });
+        for (const f of files || []) {
+          const path = `${uf.name}/${lf.name}/${f.name}`;
+          if (!knownPaths.has(path)) orphanPaths.push(path);
+        }
+      }
+    }
+
+    if (orphanPaths.length) {
+      const { error: removeErr } = await supabaseAdmin.storage.from(bucket).remove(orphanPaths);
+      if (removeErr) return next(createError(removeErr.message));
+    }
+
+    res.json({ deleted_count: orphanPaths.length, deleted_paths: orphanPaths });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

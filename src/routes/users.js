@@ -127,10 +127,10 @@ router.get('/:id/listings', requireAuth, async (req, res, next) => {
 
 // ── Submit feedback ───────────────────────────────────────────
 // POST /api/users/feedback
-// Body: { type, description, screenshot_url }
+// Body: { type, description, screenshot_url, rating? }
 router.post('/feedback/submit', requireAuth, async (req, res, next) => {
   try {
-    const { type, description, screenshot_url } = req.body;
+    const { type, description, screenshot_url, rating } = req.body;
 
     const validTypes = ['suggestion', 'bug', 'complaint', 'praise'];
     if (!type || !validTypes.includes(type)) {
@@ -138,6 +138,10 @@ router.post('/feedback/submit', requireAuth, async (req, res, next) => {
     }
     if (!description || description.trim().length < 10) {
       return next(createError('Description must be at least 10 characters.'));
+    }
+    // Optional — not every feedback type needs a star rating (e.g. a bug report)
+    if (rating != null && (!Number.isInteger(rating) || rating < 1 || rating > 5)) {
+      return next(createError('rating must be an integer between 1 and 5.'));
     }
 
     const { data, error } = await supabaseAdmin
@@ -147,6 +151,7 @@ router.post('/feedback/submit', requireAuth, async (req, res, next) => {
         type,
         description:    description.trim(),
         screenshot_url: screenshot_url || null,
+        rating:         rating != null ? rating : null,
       })
       .select()
       .single();
