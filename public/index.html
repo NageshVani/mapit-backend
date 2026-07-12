@@ -876,6 +876,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </div>
     <div class="uav-menu" id="uavMenu" onclick="event.stopPropagation()">
       <div class="uav-name" id="uavName">—</div>
+      <div class="uav-item" onclick="openHelpModal()">❓ Help</div>
       <div class="uav-item" onclick="changeNickname()">✏️ Change Nickname</div>
       <div class="uav-item" onclick="openPinsModal()">📍 My Locations</div>
       <div class="uav-item" id="inboxMenuItem" onclick="openInboxModal()" style="justify-content:space-between;">
@@ -949,6 +950,22 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <button class="modal-btn" onclick="submitFeedback()" style="flex:1;">Send Feedback</button>
       <button class="modal-btn" onclick="closeFeedbackModal()" style="background:var(--card);color:var(--text);border:1px solid var(--border2);flex:0 0 auto;width:80px;">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- ── HELP MODAL ── -->
+<div class="feedback-modal hide" id="helpModal">
+  <div class="feedback-box">
+    <h3>❓ How MapIt Works</h3>
+    <ul style="margin:14px 0 4px;padding-left:20px;line-height:2;font-size:13.5px;color:var(--text);">
+      <li>🗺 <b>Browse:</b> listings near you appear as pins on the map (or the list, on mobile) — tap a pin to view details, filter by category and distance in the sidebar</li>
+      <li>➕ <b>Post:</b> tap <b>Post a Listing</b> in the header to list a home, vehicle, or item</li>
+      <li>❤ <b>Save:</b> tap the heart icon on any listing to save it — find it later in the <b>Saved</b> tab</li>
+      <li>🤝 <b>Contact a seller:</b> open a listing and tap <b>I'm Interested</b> to send them a message</li>
+      <li>🗑 <b>Delete a listing:</b> open <b>My Ads</b>, select your listing, then use the delete option</li>
+      <li>📍 <b>Change your location:</b> use <b>My Locations</b> in the profile menu</li>
+    </ul>
+    <button class="modal-btn" onclick="closeHelpModal()" style="margin-top:10px;">Got it</button>
   </div>
 </div>
 
@@ -3635,6 +3652,12 @@ function openFeedbackModal(){
   updateFbChar();
 }
 function closeFeedbackModal(){ document.getElementById('feedbackModal').classList.add('hide'); }
+
+function openHelpModal(){
+  document.getElementById('uavMenu').classList.remove('open');
+  document.getElementById('helpModal').classList.remove('hide');
+}
+function closeHelpModal(){ document.getElementById('helpModal').classList.add('hide'); }
 
 function setFbType(el){
   _fbType = el.dataset.t;
