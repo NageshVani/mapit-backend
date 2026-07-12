@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 4 UAT Checklist — Arun</title>
+<style>
+  :root {
+    --orange: #F06030;
+    --orange2: #FF7A50;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --green-border: #bbf7d0;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --yellow: #d97706;
+    --yellow-light: #fffbeb;
+    --yellow-border: #fde68a;
+    --blue: #1d4ed8;
+    --blue-light: #eff6ff;
+    --blue-border: #bfdbfe;
+    --bg: #F8FAFC;
+    --panel: #FFFFFF;
+    --card: #F1F5F9;
+    --border: #E2E8F0;
+    --border2: #CBD5E1;
+    --text: #0F172A;
+    --muted: #64748B;
+    --muted2: #475569;
+  }
+  @media print {
+    body { font-size: 11pt; background: #fff; }
+    .no-print { display: none !important; }
+    .check-block { break-inside: avoid; }
+    .page-break { page-break-before: always; }
+    a { color: inherit; text-decoration: none; }
+    .print-note { display: block !important; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .doc-header {
+    background: linear-gradient(135deg, #1A1D27 0%, #2D3250 100%);
+    padding: 36px 60px 32px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(240,96,48,0.2) 0%, transparent 70%);
+  }
+  .logo { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .logo em { font-style: normal; color: var(--orange2); }
+  .doc-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .doc-subtitle { font-size: 14px; opacity: 0.65; margin-bottom: 20px; }
+  .uat-url-box {
+    background: rgba(240,96,48,0.2);
+    border: 1.5px solid rgba(240,96,48,0.5);
+    border-radius: 10px;
+    padding: 14px 20px;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  .uat-url-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.7; margin-bottom: 4px; }
+  .uat-url { font-size: 15px; font-weight: 700; font-family: monospace; color: #FFA07A; }
+  .header-meta { display: flex; gap: 32px; flex-wrap: wrap; margin-top: 8px; }
+  .meta-label { font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.55; }
+  .meta-val { font-size: 13px; font-weight: 600; opacity: 0.9; }
+  .instructions {
+    background: var(--blue-light);
+    border: 1.5px solid var(--blue-border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 28px 60px;
+  }
+  .instructions-title { font-size: 14px; font-weight: 700; color: var(--blue); margin-bottom: 10px; }
+  .instructions ol { padding-left: 20px; }
+  .instructions li { font-size: 13px; color: #1e40af; margin-bottom: 6px; line-height: 1.6; }
+  .instructions li strong { color: var(--blue); }
+  .instructions code { background: rgba(29,78,216,0.1); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+  .tester-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 0 60px 32px;
+  }
+  .tester-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+  .tester-input {
+    width: 100%; border: 2px solid var(--border2);
+    border-radius: 8px; padding: 10px 13px;
+    font-size: 13px; font-family: inherit; color: var(--text);
+    background: var(--panel); outline: none; transition: border-color 0.15s;
+  }
+  .tester-input:focus { border-color: var(--orange); }
+  .content { padding: 0 60px 60px; }
+  .check-block { margin-bottom: 36px; }
+  .block-header {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--text);
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    padding: 14px 20px;
+  }
+  .block-letter {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .block-title { font-size: 16px; font-weight: 700; }
+  .block-desc { font-size: 12px; opacity: 0.6; margin-top: 1px; }
+  .block-count {
+    margin-left: auto; font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.15); border-radius: 12px; padding: 3px 10px;
+  }
+  .block-prereq {
+    background: var(--yellow-light);
+    border: 1px solid var(--yellow-border);
+    border-top: none;
+    padding: 10px 20px;
+    font-size: 12px; color: var(--yellow);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .check-list {
+    border: 1px solid var(--border2);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: #F8FAFC; }
+  .check-item.passed { background: var(--green-light) !important; }
+  .check-item.failed { background: var(--red-light) !important; }
+  .check-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--card); border: 1.5px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: var(--muted);
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .check-item.passed .check-num { background: #DCFCE7; border-color: #86EFAC; color: var(--green); }
+  .check-item.failed .check-num { background: #FEE2E2; border-color: #FCA5A5; color: var(--red); }
+  .check-content { flex: 1; min-width: 0; }
+  .check-action { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .check-steps { font-size: 12px; color: var(--muted2); line-height: 1.7; margin-bottom: 4px; }
+  .check-steps ol { padding-left: 18px; }
+  .check-steps li { margin-bottom: 2px; }
+  .check-expect { font-size: 11.5px; color: var(--muted2); line-height: 1.5; }
+  .check-expect strong { color: var(--text); }
+  .check-warn { font-size: 11px; color: var(--yellow); margin-top: 4px; font-weight: 600; }
+  .check-note-field {
+    width: 100%; border: 1px solid var(--border2); border-radius: 5px;
+    padding: 5px 9px; font-size: 12px; font-family: inherit; color: var(--text);
+    background: #fff; resize: none; margin-top: 6px; display: none;
+  }
+  .check-item.failed .check-note-field { display: block; }
+  .check-actions { display: flex; gap: 6px; flex-shrink: 0; margin-top: 2px; }
+  .btn-pass {
+    padding: 5px 14px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
+    border: 1.5px solid var(--green-border); background: transparent;
+    color: var(--green); cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-pass:hover, .check-item.passed .btn-pass { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn-fail {
+    padding: 5px 14px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
+    border: 1.5px solid #FCA5A5; background: transparent;
+    color: var(--red); cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-fail:hover, .check-item.failed .btn-fail { background: var(--red); border-color: var(--red); color: #fff; }
+  .progress-bar-wrap {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 60px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .progress-label { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .progress-bar { flex: 1; height: 8px; background: var(--card); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--orange); border-radius: 4px; transition: width 0.3s; }
+  .progress-stats { font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .stat-pass { color: var(--green); }
+  .stat-fail { color: var(--red); }
+  .signoff {
+    background: var(--panel);
+    border: 2px solid var(--border2);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-top: 40px;
+  }
+  .signoff-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .signoff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .signoff-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .signoff-line { border-bottom: 2px solid var(--border2); height: 36px; }
+  .overall-result { margin-top: 24px; display: flex; gap: 16px; }
+  .result-btn {
+    flex: 1; padding: 16px; border-radius: 10px;
+    border: 2.5px solid var(--border2); background: transparent;
+    font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: all 0.2s; text-align: center;
+  }
+  .result-btn.approve { color: var(--green); border-color: var(--green-border); }
+  .result-btn.approve:hover, .result-btn.approve.selected { background: var(--green); border-color: var(--green); color: #fff; }
+  .result-btn.reject { color: var(--red); border-color: #FCA5A5; }
+  .result-btn.reject:hover, .result-btn.reject.selected { background: var(--red); border-color: var(--red); color: #fff; }
+  @media (max-width: 800px) {
+    .doc-header, .instructions, .tester-form, .content { padding-left: 20px; padding-right: 20px; }
+    .progress-bar-wrap { padding-left: 20px; padding-right: 20px; }
+    .tester-form { grid-template-columns: 1fr; }
+    .signoff-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="logo">Map<em>It</em></div>
+  <div class="doc-title">Session 4 — Manual UAT Checklist</div>
+  <div class="doc-subtitle">For Arun · Header Keyword Search, Explore Area Mode, flyTo Map, Home Pin UX, Photo Validation, WhatsApp Preview</div>
+  <div class="uat-url-box">
+    <div class="uat-url-label">UAT Test URL</div>
+    <div class="uat-url">https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">Session</div>
+      <div class="meta-val">MVP Session 4</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Date</div>
+      <div class="meta-val">July 2026</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Total Tests</div>
+      <div class="meta-val">19 Manual Checks</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Tester</div>
+      <div class="meta-val">Arun</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Prepared By</div>
+      <div class="meta-val">Nagesh (MapIt)</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar-wrap no-print">
+  <span class="progress-label">Progress</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <span class="progress-stats">
+    <span id="statDone">0</span>/19 done &nbsp;·&nbsp;
+    <span class="stat-pass" id="statPass">0 pass</span> &nbsp;·&nbsp;
+    <span class="stat-fail" id="statFail">0 fail</span>
+  </span>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="instructions no-print">
+  <div class="instructions-title">📋 How to Use This Checklist</div>
+  <ol>
+    <li>Open the <strong>UAT Test URL</strong> above in <strong>Google Chrome</strong> on a laptop or phone. Sign in to your MapIt account.</li>
+    <li>Before starting any block marked <strong>⚠ Reset required</strong>: clear your session by opening DevTools (F12) → Console → type <code>localStorage.clear()</code> → press Enter → reload the page.</li>
+    <li>Follow the numbered steps in each test, then click <strong>Pass ✓</strong> or <strong>Fail ✗</strong>.</li>
+    <li>If you click <strong>Fail</strong>, a notes box will appear — please describe what went wrong. A screenshot is very helpful.</li>
+    <li>When all 19 checks are done, complete the <strong>Sign-Off</strong> section at the bottom.</li>
+    <li>Share this HTML file back to Nagesh, or screenshot the sign-off section.</li>
+  </ol>
+</div>
+
+<!-- TESTER FIELDS -->
+<div class="tester-form no-print">
+  <div>
+    <div class="tester-label">Tester Name</div>
+    <input class="tester-input" type="text" value="Arun" readonly>
+  </div>
+  <div>
+    <div class="tester-label">Test Date</div>
+    <input class="tester-input" type="date" id="testDate">
+  </div>
+  <div>
+    <div class="tester-label">Device / Browser</div>
+    <input class="tester-input" type="text" id="deviceInput" placeholder="e.g. iPhone 14 / Chrome laptop">
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ── Block A: Header Keyword Search ── -->
+<div class="check-block">
+  <div class="block-header">
+    <div class="block-letter">A</div>
+    <div>
+      <div class="block-title">Header Keyword Search</div>
+      <div class="block-desc">Type a word in the top search bar to filter listings by keyword within the current map view</div>
+    </div>
+    <div class="block-count">3 checks</div>
+  </div>
+  <div class="block-prereq">⚠ Make sure you are signed in and on the Listings (Browse) tab before starting this block.</div>
+  <div class="check-list">
+
+    <div class="check-item" id="item-1">
+      <div class="check-num">1</div>
+      <div class="check-content">
+        <div class="check-action">Search bar at the top shows 🔍 icon and filters the listing panel instantly</div>
+        <div class="check-steps"><ol>
+          <li>Look at the search bar at the very top of the screen — it should show a <strong>🔍 icon</strong> and placeholder text "Search listings by keyword…"</li>
+          <li>Make sure you are on the <strong>Listings</strong> tab.</li>
+          <li>Click the search bar and type a word you expect to appear in a listing — e.g. <strong>Honda</strong>, <strong>Sofa</strong>, or <strong>2BHK</strong>.</li>
+          <li>The listing panel on the left should immediately narrow to only listings whose title or details contain that word. No page reload happens.</li>
+          <li>Delete the text — all listings should return.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Listing panel filters instantly as you type. Deleting the keyword restores all listings. The map pins do not disappear.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(1,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(1,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-2">
+      <div class="check-num">2</div>
+      <div class="check-content">
+        <div class="check-action">Keyword search respects the current map view — panning changes results</div>
+        <div class="check-steps"><ol>
+          <li>Type a broad keyword in the search bar (e.g. <strong>flat</strong> or <strong>room</strong>).</li>
+          <li>Look at the listing panel — only listings matching the keyword AND visible within the current map area should appear.</li>
+          <li>Now <strong>pan the map</strong> to a different part of Bangalore (drag the map to a new area).</li>
+          <li>The listing panel should update to show keyword-matching listings from the new map area.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Results change when you pan the map — only listings that both match the keyword and are visible in the current map view are shown. Results are not fixed to your home-pin area.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(2,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(2,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-3">
+      <div class="check-num">3</div>
+      <div class="check-content">
+        <div class="check-action">Clear (×) button resets the keyword and restores all listings</div>
+        <div class="check-steps"><ol>
+          <li>While a keyword is typed in the search bar, look for a small <strong>×</strong> button that appears at the right end of the bar.</li>
+          <li>Click the × button.</li>
+          <li>The search bar should clear and all listings near your location should reappear in the panel.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: × clears the search bar. All nearby listings are shown again without any keyword filter applied.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(3,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(3,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Block B: Explore Area Search Mode ── -->
+<div class="check-block">
+  <div class="block-header">
+    <div class="block-letter">B</div>
+    <div>
+      <div class="block-title">Explore Area Search Mode</div>
+      <div class="block-desc">Pan the map freely to search any area — no saved pin required</div>
+    </div>
+    <div class="block-count">4 checks</div>
+  </div>
+  <div class="block-prereq">⚠ Make sure you are on the Listings tab. You need to be signed in.</div>
+  <div class="check-list">
+
+    <div class="check-item" id="item-4">
+      <div class="check-num">4</div>
+      <div class="check-content">
+        <div class="check-action">Search Mode toggle appears in the Browse sidebar with "My Locations" selected by default</div>
+        <div class="check-steps"><ol>
+          <li>Make sure you are on the <strong>Listings</strong> (Browse) tab.</li>
+          <li>Look in the left sidebar, between the category filter pills and the radius buttons (3km / 5km / etc.).</li>
+          <li>You should see two buttons side-by-side: <strong>"📍 My Locations"</strong> and <strong>"🗺 Explore Area"</strong>.</li>
+          <li>"My Locations" should be the highlighted/selected one by default.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: The Search Mode toggle is visible in the Browse sidebar. "📍 My Locations" is the active button. The toggle does NOT appear on the Saved or My Ads tabs.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(4,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(4,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-5">
+      <div class="check-num">5</div>
+      <div class="check-content">
+        <div class="check-action">Switching to Explore Area places a blue dot on the map and changes the circle to blue</div>
+        <div class="check-steps"><ol>
+          <li>Click the <strong>"🗺 Explore Area"</strong> button in the sidebar.</li>
+          <li>A notification/toast should briefly appear saying something like <strong>"🗺 Explore mode — pan the map to search any area"</strong>.</li>
+          <li>Look at the map: a <strong>small blue dot</strong> should appear at the centre of the map.</li>
+          <li>The dashed radius circle should turn <strong>blue</strong> (it was orange before in My Locations mode).</li>
+          <li>The label above the radius buttons should now read <strong>"Search Radius"</strong> instead of "Proximity Radius".</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Blue dot appears at map centre, dashed circle turns blue, toast notification shown, radius label updates to "Search Radius".</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(5,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(5,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-6">
+      <div class="check-num">6</div>
+      <div class="check-content">
+        <div class="check-action">Panning the map in Explore mode reloads listings from the new area automatically</div>
+        <div class="check-steps"><ol>
+          <li>While in Explore Area mode (from test 5), <strong>drag the map</strong> to a different part of Bangalore.</li>
+          <li>While panning: watch the blue dot — it should <strong>move with the map centre</strong> in real-time. The blue circle should follow it.</li>
+          <li>Stop panning and wait about 1 second.</li>
+          <li>The listing panel should automatically reload and show listings from the new map centre area. You do not need to press any button.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Blue dot tracks the map centre as you pan. About 1 second after stopping, listings in the panel update to show results from the new location.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(6,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(6,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-7">
+      <div class="check-num">7</div>
+      <div class="check-content">
+        <div class="check-action">Explore Area toggle is greyed out on Saved and My Ads tabs; returns to active on Listings tab</div>
+        <div class="check-steps"><ol>
+          <li>While on the Listings tab (in either mode), click the <strong>❤ Saved</strong> tab.</li>
+          <li>Look at the Search Mode toggle area — the two buttons should appear <strong>faded/greyed out</strong> and cannot be clicked.</li>
+          <li>Click the <strong>📋 My Ads</strong> tab — same behaviour: toggle is greyed out.</li>
+          <li>Click back to the <strong>Listings</strong> tab — the toggle should be fully active and clickable again.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Search Mode toggle is visually dimmed on Saved and My Ads tabs (cannot switch modes). Returning to Listings tab restores the toggle as fully interactive.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(7,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(7,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Block C: flyTo Map Behaviour ── -->
+<div class="check-block">
+  <div class="block-header">
+    <div class="block-letter">C</div>
+    <div>
+      <div class="block-title">Map Fly-To Behaviour</div>
+      <div class="block-desc">When you open a listing, the map should smoothly animate to show its pin</div>
+    </div>
+    <div class="block-count">3 checks</div>
+  </div>
+  <div class="check-list">
+
+    <div class="check-item" id="item-8">
+      <div class="check-num">8</div>
+      <div class="check-content">
+        <div class="check-action">Opening a listing in Browse mode flies the map to that listing's pin</div>
+        <div class="check-steps"><ol>
+          <li>On the <strong>Listings</strong> (browse) tab, scroll the left panel to find a listing that is not near the centre of the current map view.</li>
+          <li>Click that listing in the panel.</li>
+          <li>The map should smoothly <strong>animate (fly)</strong> to show the listing's orange pin in view.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Map smoothly flies to show the selected listing's pin. The listing detail opens in the panel.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(8,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(8,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-9">
+      <div class="check-num">9</div>
+      <div class="check-content">
+        <div class="check-action">Opening your own listing in My Ads flies the map in close (zoom 16)</div>
+        <div class="check-steps"><ol>
+          <li>Open the <strong>📋 My Ads</strong> tab from the tab bar.</li>
+          <li>If you have any listings, click one.</li>
+          <li>The map should fly very close to that listing's location — street-level zoom where you can clearly see the street name.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Map zooms in very close (you can read individual street labels) to the listing's location.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(9,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(9,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-10">
+      <div class="check-num">10</div>
+      <div class="check-content">
+        <div class="check-action">Opening a saved listing flies the map in close and stays on the Saved tab</div>
+        <div class="check-steps"><ol>
+          <li>Open the <strong>❤ Saved</strong> tab.</li>
+          <li>If you have saved any listings, click one from the panel.</li>
+          <li>The map should fly in close to that listing's pin.</li>
+          <li>The panel should stay on the Saved tab — it should NOT jump to the Listings tab.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Map flies close to the saved listing's pin. You stay on the Saved tab — no tab switch happens.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(10,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(10,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Block D: Photo Validation ── -->
+<div class="check-block">
+  <div class="block-header">
+    <div class="block-letter">D</div>
+    <div>
+      <div class="block-title">Photo Validation</div>
+      <div class="block-desc">At least 1 photo must be added before a listing can be posted</div>
+    </div>
+    <div class="block-count">2 checks</div>
+  </div>
+  <div class="block-prereq">⚠ You need to be signed in. Do not submit a real listing — use test data.</div>
+  <div class="check-list">
+
+    <div class="check-item" id="item-11">
+      <div class="check-num">11</div>
+      <div class="check-content">
+        <div class="check-action">Posting a listing with no photo shows an error and blocks submission</div>
+        <div class="check-steps"><ol>
+          <li>Open the <strong>Post a Listing</strong> form (tap the + or post button).</li>
+          <li>Fill in the title, category, price, and a GPS location.</li>
+          <li><strong>Do NOT add any photos.</strong></li>
+          <li>Tap the <strong>Post Listing</strong> button.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: A small notification/toast appears saying something like "Please add at least 1 photo." The form does NOT submit and your data stays in the form.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(11,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(11,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-12">
+      <div class="check-num">12</div>
+      <div class="check-content">
+        <div class="check-action">Adding 1 photo allows the form to proceed normally</div>
+        <div class="check-steps"><ol>
+          <li>On the same form (from test 11), tap the photo upload area and select <strong>any 1 photo</strong> from your device.</li>
+          <li>You should see a thumbnail preview of the photo inside the form.</li>
+          <li>Now tap the <strong>Post Listing</strong> button.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Form submits without a photo error. You may see a "Listing posted!" confirmation (note: the listing will be in pending review status).</div>
+        <div class="check-warn">⚠ Note: This will create a real test listing. You can delete it from My Ads afterwards using the 🗑️ Del button.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(12,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(12,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Block E: Home Location Setup UX ── -->
+<div class="check-block">
+  <div class="block-header">
+    <div class="block-letter">E</div>
+    <div>
+      <div class="block-title">Home Location Setup</div>
+      <div class="block-desc">The map in the home location step should guide the user clearly</div>
+    </div>
+    <div class="block-count">3 checks</div>
+  </div>
+  <div class="block-prereq">⚠ Reset required: Open DevTools (F12) → Console → type <code>localStorage.clear()</code> → press Enter → reload the page. Then create a new account (or use a +alias email like arun.bn1+test4@gmail.com) to go through the new user flow.</div>
+  <div class="check-list">
+
+    <div class="check-item" id="item-13">
+      <div class="check-num">13</div>
+      <div class="check-content">
+        <div class="check-action">Home location step shows an orange-bordered map with a clear tap instruction</div>
+        <div class="check-steps"><ol>
+          <li>After creating a new account and filling in your profile, the app should show a step asking you to <strong>set your home location</strong>.</li>
+          <li>You should see a small map embedded in the screen.</li>
+          <li>Look for: (a) an <strong>orange border around the map</strong>, and (b) instruction text above the map saying something like "Tap anywhere on the map to drop your pin".</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Map has a visible orange border. Clear instruction text above the map. Map is interactive (cursor changes when hovering).</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(13,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(13,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-14">
+      <div class="check-num">14</div>
+      <div class="check-content">
+        <div class="check-action">Tapping the map drops a pin and the instruction changes to "drag to adjust"</div>
+        <div class="check-steps"><ol>
+          <li>On the home location map (from test 13), <strong>tap anywhere</strong> on the map.</li>
+          <li>A pin should drop at the spot you tapped.</li>
+          <li>The instruction text above the map should change to something like "✅ Pin placed — drag to adjust".</li>
+          <li>An address should appear below the map (reverse geocoded from the pin location).</li>
+          <li>The <strong>Save Location</strong> button should appear.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Pin drops, instruction updates to "drag to adjust", address appears, Save button becomes visible.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(14,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(14,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-15">
+      <div class="check-num">15</div>
+      <div class="check-content">
+        <div class="check-action">Dragging the pin to a new location updates the address</div>
+        <div class="check-steps"><ol>
+          <li>After placing a pin (from test 14), click and <strong>drag the pin</strong> to a different spot on the map.</li>
+          <li>When you release the pin, the address text below the map should update to reflect the new location.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Dragging the pin updates the displayed address. The address shown matches the new pin position.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(15,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(15,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Block F: Arun UAT Bug Fix Verification ── -->
+<div class="check-block">
+  <div class="block-header">
+    <div class="block-letter">F</div>
+    <div>
+      <div class="block-title">Previously Reported Bug Fixes</div>
+      <div class="block-desc">Verify the 3 issues you raised in Session 2 UAT are now fixed</div>
+    </div>
+    <div class="block-count">3 checks</div>
+  </div>
+  <div class="check-list">
+
+    <div class="check-item" id="item-16">
+      <div class="check-num">16</div>
+      <div class="check-content">
+        <div class="check-action">A9 Fix: Home location address shows correctly in the header (not "Koramangala")</div>
+        <div class="check-steps"><ol>
+          <li>Using the new account from Block E (or sign in to your main account if you already have a home location set).</li>
+          <li>After saving your home location, look at the header at the very top of the app.</li>
+          <li>You should see a small badge or label showing <strong>your actual saved address</strong> (e.g. "Indiranagar" or "JP Nagar").</li>
+          <li>It should NOT show "Koramangala" or be blank if you set a different area.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Header shows the actual address you saved as your home location — not a hardcoded placeholder.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(16,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(16,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-17">
+      <div class="check-num">17</div>
+      <div class="check-content">
+        <div class="check-action">C4 Fix: Password reset email links back to the UAT app, not the production site</div>
+        <div class="check-steps"><ol>
+          <li>On the sign-in page (clear localStorage first if needed, then reload), click <strong>"Forgot password?"</strong>.</li>
+          <li>Enter your email address and click <strong>Send reset link</strong>.</li>
+          <li>A confirmation screen should appear. Check your email inbox.</li>
+          <li>Open the password reset email. Click the reset link.</li>
+          <li>The link should open the <strong>UAT URL</strong> (mapit-backend-git-uat-nagesh-n-arun.vercel.app) — NOT www.mapit.co.in (the production site).</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: Clicking the reset link in the email opens the UAT test URL, not the production/live site. A "Set new password" form should appear.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(17,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(17,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-18">
+      <div class="check-num">18</div>
+      <div class="check-content">
+        <div class="check-action">I3 Fix: No sign-in screen flash when opening the app via Google OAuth link</div>
+        <div class="check-steps"><ol>
+          <li>Open an incognito/private window in Chrome.</li>
+          <li>Go to the UAT URL: <code>https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code></li>
+          <li>Click <strong>"Sign in with Google"</strong>.</li>
+          <li>Complete Google sign-in.</li>
+          <li>Watch carefully as the page loads after Google redirects back. There should be <strong>no brief flash</strong> of the sign-in screen before the app loads.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: After Google redirects back, the app loads directly — no white flash or momentary sign-in screen visible before the main map appears.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(18,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(18,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Block G: WhatsApp Share Preview ── -->
+<div class="check-block">
+  <div class="block-header">
+    <div class="block-letter">G</div>
+    <div>
+      <div class="block-title">WhatsApp / Social Share Preview</div>
+      <div class="block-desc">Sharing the MapIt link should show a rich card preview</div>
+    </div>
+    <div class="block-count">1 check</div>
+  </div>
+  <div class="check-list">
+
+    <div class="check-item" id="item-19">
+      <div class="check-num">19</div>
+      <div class="check-content">
+        <div class="check-action">Sharing https://www.mapit.co.in on WhatsApp shows a rich preview card</div>
+        <div class="check-steps"><ol>
+          <li>Open WhatsApp on your phone.</li>
+          <li>In any chat, type (do not send yet): <strong>https://www.mapit.co.in</strong></li>
+          <li>Wait 2–3 seconds. A preview card should appear above the text box showing the MapIt title and description.</li>
+          <li>Note: There is <strong>no preview image yet</strong> (the image file hasn't been created). But the title and description text should appear.</li>
+        </ol></div>
+        <div class="check-expect">✅ Expected: WhatsApp shows a link preview with the title "MapIt — Buy &amp; Sell Near You" and a description. No image is expected yet (this is a known pending item).</div>
+        <div class="check-warn">⚠ Note: WhatsApp caches previews. If you shared this link before, you may see a cached version. If in doubt, try in a fresh chat or from a different device.</div>
+        <textarea class="check-note-field" rows="2" placeholder="Describe what you saw instead…"></textarea>
+      </div>
+      <div class="check-actions">
+        <button class="btn-pass" onclick="mark(19,'pass')">Pass ✓</button>
+        <button class="btn-fail" onclick="mark(19,'fail')">Fail ✗</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SIGN-OFF -->
+<div class="signoff">
+  <div class="signoff-title">✍️ UAT Sign-Off — Session 4</div>
+  <div class="signoff-grid">
+    <div>
+      <div class="signoff-label">Tester Name</div>
+      <div class="signoff-line"></div>
+    </div>
+    <div>
+      <div class="signoff-label">Date Completed</div>
+      <div class="signoff-line"></div>
+    </div>
+    <div>
+      <div class="signoff-label">Tests Passed</div>
+      <div class="signoff-line"></div>
+    </div>
+    <div>
+      <div class="signoff-label">Tests Failed</div>
+      <div class="signoff-line"></div>
+    </div>
+    <div style="grid-column:1/-1;">
+      <div class="signoff-label">Comments / Issues Observed</div>
+      <textarea class="tester-input" rows="4" id="signoffComments" placeholder="Note any additional observations, bugs found, or suggestions here…" style="margin-top:6px;"></textarea>
+    </div>
+  </div>
+  <div class="overall-result no-print">
+    <button class="result-btn approve" onclick="setResult(this,'approved')">✅ Approved — Ready to merge to production</button>
+    <button class="result-btn reject" onclick="setResult(this,'rejected')">❌ Issues Found — Hold for fixes</button>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+  const TOTAL = 19;
+  const STORAGE_KEY = 'mapit_uat_session04_arun_v1';
+  const state = {};
+
+  // Note textareas have no ids in the markup; index them in document order
+  // (item 1's textarea is the 1st .check-note-field, etc.) so their values
+  // can be saved/restored without touching every check-item block.
+  const noteFields = document.querySelectorAll('.check-note-field');
+
+  function save() {
+    const notes = {};
+    noteFields.forEach((el, i) => { if (el.value) notes[i + 1] = el.value; });
+    const data = {
+      state,
+      notes,
+      testDate: document.getElementById('testDate').value,
+      device: document.getElementById('deviceInput').value,
+      comments: document.getElementById('signoffComments').value,
+      result: (document.querySelector('.result-btn.selected') || {}).dataset
+        ? document.querySelector('.result-btn.selected').dataset.val
+        : null
+    };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function mark(n, result) {
+    const item = document.getElementById('item-' + n);
+    item.classList.remove('passed','failed');
+    if (result === 'pass') item.classList.add('passed');
+    if (result === 'fail') item.classList.add('failed');
+    state[n] = result;
+    updateProgress();
+    save();
+  }
+
+  function updateProgress() {
+    const done = Object.keys(state).length;
+    const pass = Object.values(state).filter(v => v === 'pass').length;
+    const fail = Object.values(state).filter(v => v === 'fail').length;
+    document.getElementById('progressFill').style.width = (done / TOTAL * 100) + '%';
+    document.getElementById('statDone').textContent = done;
+    document.getElementById('statPass').textContent = pass + ' pass';
+    document.getElementById('statFail').textContent = fail + ' fail';
+  }
+
+  function setResult(btn, val) {
+    document.querySelectorAll('.result-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    btn.dataset.val = val;
+    save();
+  }
+
+  function restore() {
+    let data;
+    try { data = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) { data = null; }
+    if (!data) return;
+
+    if (data.state) {
+      Object.keys(data.state).forEach(n => mark(Number(n), data.state[n]));
+    }
+    if (data.notes) {
+      Object.keys(data.notes).forEach(n => {
+        const field = noteFields[Number(n) - 1];
+        if (field) field.value = data.notes[n];
+      });
+    }
+    if (data.testDate) document.getElementById('testDate').value = data.testDate;
+    if (data.device) document.getElementById('deviceInput').value = data.device;
+    if (data.comments) document.getElementById('signoffComments').value = data.comments;
+    if (data.result) {
+      const btn = document.querySelector('.result-btn[onclick*="\'' + data.result + '\'"]');
+      if (btn) { btn.classList.add('selected'); btn.dataset.val = data.result; }
+    }
+  }
+
+  // Persist free-text fields as the tester types, not just on Pass/Fail clicks
+  noteFields.forEach(el => el.addEventListener('input', save));
+  document.getElementById('testDate').addEventListener('input', save);
+  document.getElementById('deviceInput').addEventListener('input', save);
+  document.getElementById('signoffComments').addEventListener('input', save);
+
+  restore();
+
+  // Pre-fill today's date only if nothing was restored
+  if (!document.getElementById('testDate').value) {
+    const d = new Date();
+    document.getElementById('testDate').value = d.toISOString().split('T')[0];
+  }
+</script>
+
+</body>
+</html>
