@@ -16,18 +16,10 @@ const express         = require('express');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
+const { haversineM }  = require('../utils/geo');
+const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 
 const router = express.Router();
-
-// Haversine distance in metres between two lat/lng points
-function haversineM(lat1, lng1, lat2, lng2) {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 // Valid categories and statuses
 const VALID_CATEGORIES = ['re', 'veh', 'hh', 'furn', 'electronics']; // furn kept for legacy data
@@ -313,6 +305,10 @@ router.post('/', requireAuth, async (req, res, next) => {
       .single();
 
     if (error) return next(createError(error.message));
+
+    // Fire-and-forget: never block or fail listing creation on POI lookup errors.
+    lookupAndStoreNearbyPois(listing.id, listing.lat, listing.lng)
+      .catch(err => console.error('POI lookup pipeline failed:', err.message));
 
     res.status(201).json({ listing, message: 'Listing submitted for review. It will go live within 4 hours.' });
   } catch (err) { next(err); }

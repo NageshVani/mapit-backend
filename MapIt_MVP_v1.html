@@ -154,6 +154,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-interest-cancel{background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
 #interestBox.hide{display:none;}
 #homeLocSearchDD.hide{display:none;}
+#postLocSearchDD.hide{display:none;}
 .ld-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .ld-spec-item{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;}
 .ld-spec-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
@@ -165,6 +166,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-specs{display:flex;flex-wrap:wrap;gap:5px;}
 .ld-spec{background:var(--card);border:1px solid var(--border2);padding:3px 9px;border-radius:5px;font-size:10.5px;color:var(--muted2);}
 .ld-desc{font-size:12px;line-height:1.7;color:var(--muted);background:var(--card);border-radius:8px;border:1px solid var(--border);padding:9px 11px;}
+.ld-nearby{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 11px;display:flex;flex-direction:column;gap:4px;}
+.ld-nearby-hd{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.ld-nearby-item{font-size:12.5px;color:var(--text);}
 .seller-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;}
 .s-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
 .s-name{font-size:13px;font-weight:600;margin-bottom:2px;}
@@ -225,6 +229,18 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .hc-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px;}
 .hc-dist{display:inline-flex;align-items:center;gap:3px;background:rgba(240,96,48,.12);color:var(--orange);border:1px solid rgba(240,96,48,.25);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700;}
 .hc-tip{font-size:9.5px;color:var(--muted);margin-top:7px;padding-top:7px;border-top:1px solid var(--border);}
+
+/* ── STACKED PIN (co-located listings) ── */
+.stack-badge{position:absolute;top:-6px;right:-6px;background:var(--orange);color:#fff;font-size:10px;font-weight:800;min-width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;transform:rotate(45deg);padding:0 2px;}
+.stack-popup{min-width:220px;}
+.stack-popup-hd{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.stack-popup-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+.stack-popup-item{display:flex;align-items:center;gap:9px;padding:6px 4px;border-radius:8px;cursor:pointer;transition:background .15s;}
+.stack-popup-item:hover{background:var(--card);}
+.stack-popup-emoji{font-size:18px;flex-shrink:0;}
+.stack-popup-mid{min-width:0;}
+.stack-popup-title{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.stack-popup-price{font-size:11px;font-weight:700;color:var(--orange);}
 
 /* ── CHAT ── */
 #chatBox{flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:280px;}
@@ -747,9 +763,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
           <label class="form-label">📍 Listing Location</label>
           <select class="form-input form-select" id="postLocation" onchange="toggleManualListingLoc()"></select>
           <div id="manualListingLocGroup" style="display:none;margin-top:10px;">
-            <input class="form-input" id="manualListingCoords" placeholder='GPS coordinates, e.g. 12.9352, 77.6245' style="margin-bottom:8px;"/>
-            <input class="form-input" id="manualListingLabel" placeholder='Area label, e.g. Koramangala'/>
-            <div style="font-size:11px;color:var(--muted);margin-top:5px;">Tip: open Google Maps, long-press your location and copy the coordinates shown.</div>
+            <div style="position:relative;margin-bottom:6px;">
+              <input type="text" class="form-input" id="postLocSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onPostLocSearchInput()"/>
+              <div id="postLocSearchDD" class="hide" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:180px;overflow-y:auto;z-index:1200;box-shadow:0 4px 14px rgba(0,0,0,.12);"></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;">Start typing at least 4 letters — search moves the map to that area, it won't place your pin.</div>
+            <div id="postPickerHint" style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px;text-align:center;letter-spacing:.2px;">👆 Tap anywhere on the map to drop your listing's pin</div>
+            <div id="postPickerMap" style="height:220px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);margin-top:6px;cursor:crosshair;"></div>
+            <div id="postPickerAddr" style="font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;"></div>
           </div>
           <div style="font-size:12px;color:var(--muted);margin-top:6px;">
             Want to save this area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add to My Locations →</span>
@@ -1802,9 +1823,11 @@ document.addEventListener('click', e => {
 // ═══════════════════════════════════════════════
 // MAP
 // ═══════════════════════════════════════════════
-let map, radCircle, postPickerMap, postPickerMarker;
+let map, radCircle;
+let _postPickerMap = null, _postPickerMarker = null;
 let _exploreMarker = null, _exploreMoveTO = null;
 const mMarkers = {};
+let mStackMarkers = []; // co-located listings (identical GPS) rendered as one stacked pin — {ids:Set, group, marker}
 let hoverTO;
 
 let _userMarker = null;
@@ -1843,23 +1866,61 @@ function mkIcon(l, sel){
   });
 }
 
+function mkStackIcon(l, count, sel){
+  const col = catCol(l.category||l.cat), sz = sel?42:34;
+  return L.divIcon({
+    className:'',
+    html:`<div style="display:flex;flex-direction:column;align-items:center;transform:scale(${sel?1.2:1});transform-origin:bottom center;transition:transform .2s;cursor:pointer;">
+      <div style="width:${sz}px;height:${sz}px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${col};border:2.5px solid ${sel?'#fff':'rgba(255,255,255,.7)'};display:flex;align-items:center;justify-content:center;box-shadow:${sel?'0 4px 18px rgba(0,0,0,.7)':'0 2px 10px rgba(0,0,0,.5)'};position:relative;">
+        <span style="transform:rotate(45deg);font-size:${sel?18:14}px;line-height:1;">${listingEmoji(l)}</span>
+        <div class="stack-badge">${count}</div>
+      </div>
+      <div style="background:rgba(7,14,24,.95);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin-top:2px;white-space:nowrap;font-family:'Outfit',sans-serif;border:1px solid rgba(255,255,255,.12);box-shadow:0 2px 8px rgba(0,0,0,.5);">${count} listings here</div>
+    </div>`,
+    iconSize:[70,62],iconAnchor:[35,62],
+  });
+}
+
 function drawMarkers(){
   Object.values(mMarkers).forEach(m=>m.remove());
   for(const k in mMarkers) delete mMarkers[k];
+  mStackMarkers.forEach(s=>s.marker.remove());
+  mStackMarkers = [];
 
   const isFav = ST.tab === 'fav';
   const fl = isFav ? ST.favListings : filtered();
   document.getElementById('mapCnt').textContent = fl.length;
   if(!isFav) document.getElementById('cnt-badge').textContent = fl.length;
 
+  // Group listings by exact GPS coordinate — co-located listings (same
+  // apartment complex/bazaar) render as one stacked pin instead of fully
+  // overlapping markers where only the topmost was ever clickable.
+  const groups = {};
   fl.forEach(l=>{
-    const sel = l.id === ST.selId;
-    const m = L.marker([l.lat,l.lng],{icon:mkIcon(l,sel),zIndexOffset:sel?500:0})
-      .addTo(map)
-      .on('click',()=>selListing(l.id, isFav))
-      .on('mouseover',()=>showHoverCard(l))
-      .on('mouseout',()=>hideHoverCard());
-    mMarkers[l.id] = m;
+    const key = `${(+l.lat).toFixed(6)},${(+l.lng).toFixed(6)}`;
+    (groups[key] = groups[key] || []).push(l);
+  });
+
+  Object.values(groups).forEach(group=>{
+    if(group.length === 1){
+      const l = group[0];
+      const sel = l.id === ST.selId;
+      const m = L.marker([l.lat,l.lng],{icon:mkIcon(l,sel),zIndexOffset:sel?500:0})
+        .addTo(map)
+        .on('click',()=>selListing(l.id, isFav))
+        .on('mouseover',()=>showHoverCard(l))
+        .on('mouseout',()=>hideHoverCard());
+      mMarkers[l.id] = m;
+    } else {
+      const ids = new Set(group.map(l=>l.id));
+      const anySel = ids.has(ST.selId);
+      const m = L.marker([group[0].lat,group[0].lng],{icon:mkStackIcon(group[0],group.length,anySel),zIndexOffset:anySel?500:0})
+        .addTo(map)
+        .on('click',()=>openStackPopup(group, isFav))
+        .on('mouseover',()=>showStackHoverCard(group))
+        .on('mouseout',()=>hideHoverCard());
+      mStackMarkers.push({ids, group, marker:m});
+    }
   });
 
   // Auto-fit map to show all saved listings when none is selected
@@ -1870,6 +1931,41 @@ function drawMarkers(){
 
   // Draw user pin markers
   drawPinMarkers();
+}
+
+// Scrollable mini-list popup for a stacked pin (≥2 listings at the identical GPS point)
+function openStackPopup(group, isFav){
+  const html = `<div class="stack-popup">
+    <div class="stack-popup-hd">📍 ${group.length} listings at this location</div>
+    <div class="stack-popup-list">
+      ${group.map(l=>`<div class="stack-popup-item" onclick="closeStackPopupAndSelect('${l.id}',${isFav})">
+        <span class="stack-popup-emoji">${listingEmoji(l)}</span>
+        <div class="stack-popup-mid">
+          <div class="stack-popup-title">${l.title}</div>
+          <div class="stack-popup-price">${l.price_label||fmtPrice(l.price)}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  L.popup({maxWidth:260,closeButton:true}).setLatLng([group[0].lat,group[0].lng]).setContent(html).openOn(map);
+}
+function closeStackPopupAndSelect(id, isFav){
+  map.closePopup();
+  selListing(id, isFav);
+}
+function showStackHoverCard(group){
+  clearTimeout(hoverTO);
+  const pt = map.latLngToContainerPoint([group[0].lat,group[0].lng]);
+  const hc = document.getElementById('hoverCard');
+  const mw = document.getElementById('mapc').offsetWidth;
+  let left = pt.x + 18, top = pt.y - 60;
+  if(left+250>mw) left = pt.x-255;
+  if(top<8) top = pt.y+18;
+  hc.style.left = left+'px'; hc.style.top = top+'px';
+  document.getElementById('hcInner').innerHTML = `
+    <div class="hc-title">📍 ${group.length} listings here</div>
+    <div class="hc-tip">Click pin to see the full list →</div>`;
+  hc.classList.add('show');
 }
 
 function drawPinMarkers(){
@@ -2217,6 +2313,12 @@ function renderSidebar(){
         return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${det[f.id]}</div></div>`).join('')}</div>`;
       })()}
       ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${l.details.transaction_type}</div></div>` : '')}
+      ${(()=>{
+        const pois = l.details?.nearby_pois;
+        if(!pois || !pois.length) return '';
+        const poiIcon = {school:'🏫', mall:'🏬', supermarket:'🛒'};
+        return `<div class="ld-nearby"><div class="ld-nearby-hd">📍 Nearby</div>${pois.map(p=>`<div class="ld-nearby-item">${poiIcon[p.type]||'📍'} ${p.name} · ${p.distance_m<1000?p.distance_m+'m':(p.distance_m/1000).toFixed(1)+'km'}</div>`).join('')}</div>`;
+      })()}
       ${l.description ? `<div class="ld-desc">${l.description}</div>` : ''}
     </div>
     <div id="chatBox" class="${ST.chatOpen?'':'hide'}">
@@ -2270,6 +2372,7 @@ async function selListing(id, keepTab=false){
     const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
     mMarkers[k].setIcon(mkIcon(ml, k===id));
   });
+  mStackMarkers.forEach(s=>s.marker.setIcon(mkStackIcon(s.group[0], s.group.length, s.ids.has(id))));
   renderSidebar();
   // Fetch full detail (includes photos[] array) then re-render
   try {
@@ -2447,7 +2550,7 @@ function openPostModal(){
   // Always offer manual entry
   const manualOpt = document.createElement('option');
   manualOpt.value = '__manual__';
-  manualOpt.textContent = '📍 Enter GPS coordinates manually…';
+  manualOpt.textContent = '📍 Select location manually…';
   sel.appendChild(manualOpt);
   // If no saved pins, pre-select manual
   if(!ST.userPins.length) sel.value = '__manual__';
@@ -2457,11 +2560,124 @@ function openPostModal(){
 function toggleManualListingLoc(){
   const show = document.getElementById('postLocation').value === '__manual__';
   document.getElementById('manualListingLocGroup').style.display = show ? '' : 'none';
+  if(show) initPostPickerMap();
+  else if(_postPickerMap){ _postPickerMap.remove(); _postPickerMap = null; _postPickerMarker = null; _postPickerCoords = null; }
+}
+
+// Tap-to-drop-pin location picker for the seller's listing — mirrors the
+// Add-Pin/Home-Location flow (initAddPinMap/initHomeLocMap) instead of asking
+// the seller to type raw GPS coordinates. A search box (same Photon-based
+// pattern as _onHomeLocSearchInput) pans/zooms the map to a typed area first;
+// the seller still taps to place the exact pin, which is then reverse-geocoded.
+let _postPickerCoords = null;
+
+function initPostPickerMap(){
+  if(_postPickerMap){ _postPickerMap.remove(); _postPickerMap = null; _postPickerMarker = null; }
+  _postPickerCoords = null;
+  document.getElementById('postLocSearchIn').value = '';
+  document.getElementById('postLocSearchDD').classList.add('hide');
+  document.getElementById('postLocSearchDD').innerHTML = '';
+  _postLocSearchResults = [];
+  document.getElementById('postPickerHint').textContent = "👆 Tap anywhere on the map to drop your listing's pin";
+  document.getElementById('postPickerAddr').textContent = '';
+  setTimeout(()=>{
+    const el = document.getElementById('postPickerMap');
+    if(!el) return;
+    const loc = activeLoc();
+    _postPickerMap = L.map('postPickerMap', { zoomControl: true, attributionControl: false }).setView([loc.lat, loc.lng], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(_postPickerMap);
+    _postPickerMap.on('click', async e=>{
+      const { lat, lng } = e.latlng;
+      _postPickerCoords = { lat, lng };
+      if(_postPickerMarker) _postPickerMarker.setLatLng([lat, lng]);
+      else {
+        _postPickerMarker = L.marker([lat, lng], {draggable: true}).addTo(_postPickerMap);
+        _postPickerMarker.on('dragend', async ev => {
+          const p = ev.target.getLatLng();
+          _postPickerCoords = { lat: p.lat, lng: p.lng };
+          await _resolvePostLocAddr(p.lat, p.lng);
+        });
+      }
+      document.getElementById('postPickerHint').textContent = '✅ Pin placed — drag to adjust';
+      await _resolvePostLocAddr(lat, lng);
+    });
+    _postPickerMap.invalidateSize();
+  }, 120);
+}
+
+let _postLocSearchTimer = null;
+let _postLocSearchResults = [];
+
+function _onPostLocSearchInput(){
+  clearTimeout(_postLocSearchTimer);
+  const q = document.getElementById('postLocSearchIn').value.trim();
+  const dd = document.getElementById('postLocSearchDD');
+  if(q.length < 4){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
+  _postLocSearchTimer = setTimeout(()=>_runPostLocSearch(q), 400);
+}
+
+async function _runPostLocSearch(q){
+  const dd = document.getElementById('postLocSearchDD');
+  try {
+    // Same Photon-based locality/city search as the home-location picker (HOMELOC_SEARCH_CLASSES).
+    let geoParams = '';
+    if(_postPickerMap){
+      const c = _postPickerMap.getCenter();
+      const latDelta = 0.35; // ~39km
+      const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
+      geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
+    }
+    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const { features } = await r.json();
+    _postLocSearchResults = features
+      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
+      .map(f => {
+        const p = f.properties;
+        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
+          .filter(Boolean).join(', ');
+        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
+      });
+    if(!_postLocSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
+    dd.innerHTML = '';
+    _postLocSearchResults.forEach((m, i) => {
+      const row = document.createElement('div');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
+      row.onclick = () => _pickPostLocSearchResult(i);
+      dd.appendChild(row);
+    });
+    dd.classList.remove('hide');
+  } catch(_){
+    dd.classList.add('hide'); dd.innerHTML = '';
+  }
+}
+
+function _pickPostLocSearchResult(i){
+  const m = _postLocSearchResults[i];
+  if(!m) return;
+  document.getElementById('postLocSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('postLocSearchDD').classList.add('hide');
+  if(_postPickerMap) _postPickerMap.flyTo([+m.lat, +m.lon], 15);
+}
+
+async function _resolvePostLocAddr(lat, lng){
+  document.getElementById('postPickerAddr').textContent = 'Getting address…';
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+    const g = await r.json();
+    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    _postPickerCoords.address = addr;
+    document.getElementById('postPickerAddr').textContent = '📍 ' + addr;
+  } catch(_){
+    _postPickerCoords.address = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('postPickerAddr').textContent = '📍 ' + _postPickerCoords.address;
+  }
 }
 
 function closePostModal(){
   ST.editingId = null;
   document.getElementById('postModal').classList.add('hide');
+  if(_postPickerMap){ _postPickerMap.remove(); _postPickerMap = null; _postPickerMarker = null; _postPickerCoords = null; }
   // Always return the header to Browse-active state
   document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on', b.dataset.m==='buy'));
 }
@@ -2522,7 +2738,7 @@ async function editListing(id){
   // Manual entry
   const manualOpt = document.createElement('option');
   manualOpt.value = '__manual__';
-  manualOpt.textContent = '📍 Enter GPS coordinates manually…';
+  manualOpt.textContent = '📍 Select location manually…';
   sel.appendChild(manualOpt);
   toggleManualListingLoc();
 }
@@ -2653,16 +2869,13 @@ async function submitListing(){
     toast('Please add at least 1 photo.'); return;
   }
 
-  // Resolve location — saved pin or manual GPS entry
+  // Resolve location — saved pin or tap-to-drop pin on the map
   let locObj;
   if(locRaw === '__manual__'){
-    const raw = document.getElementById('manualListingCoords').value.trim();
-    const lbl = document.getElementById('manualListingLabel').value.trim() || 'Custom Location';
-    const parts = raw.split(',').map(s=>parseFloat(s.trim()));
-    if(parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])){
-      toast('Please enter valid GPS coordinates, e.g. 12.9352, 77.6245'); return;
+    if(!_postPickerCoords){
+      toast('Please tap the map to place a pin for your listing location.'); return;
     }
-    locObj = { lat:parts[0], lng:parts[1], label:lbl };
+    locObj = { lat:_postPickerCoords.lat, lng:_postPickerCoords.lng, label:_postPickerCoords.address || 'Custom Location' };
   } else if(locRaw){
     locObj = JSON.parse(locRaw);
   } else {
