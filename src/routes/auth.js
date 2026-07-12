@@ -392,6 +392,28 @@ router.put('/nickname', requireAuth, async (req, res, next) => {
   }
 });
 
+// ── Update Default View (map vs list) ─────────────────────────
+// PUT /api/auth/default-view
+// Body: { default_view: 'map' | 'list' }
+router.put('/default-view', requireAuth, async (req, res, next) => {
+  try {
+    const { default_view } = req.body;
+    if (!['map', 'list'].includes(default_view)) {
+      return res.status(400).json({ error: "default_view must be 'map' or 'list'" });
+    }
+    const { data: profile, error } = await supabaseAdmin
+      .from('profiles')
+      .update({ default_view })
+      .eq('id', req.user.id)
+      .select()
+      .single();
+    if (error) return next(createError(error.message));
+    res.json({ profile });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── Logout ────────────────────────────────────────────────────
 // POST /api/auth/logout — no auth required; token may already be expired
 router.post('/logout', async (req, res) => {

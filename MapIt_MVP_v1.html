@@ -219,6 +219,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .cnt-mini{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(255,255,255,.92);border:1px solid var(--border2);backdrop-filter:blur(8px);border-radius:20px;padding:5px 16px;font-size:11px;color:var(--muted);white-space:nowrap;}
 .cnt-mini b{color:var(--orange);}
 
+/* ── MOBILE MAP/LIST VIEW TOGGLE (Session 5 item 6, Tester-3a) ──
+   Desktop keeps the existing always-both-panes layout untouched;
+   only narrow screens get a single-pane mode + a toggle to switch it. */
+#viewToggle{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:900;}
+@media(max-width:768px){
+  #viewToggle{display:flex;}
+  #sb{width:100%;}
+  #main.view-list #mapc{display:none;}
+  #main.view-map #sb{display:none;}
+}
+
 /* ── HOVER CARD ── */
 #hoverCard{position:absolute;z-index:700;pointer-events:none;opacity:0;transform:translateY(4px) scale(.97);transition:opacity .15s,transform .15s;min-width:210px;max-width:240px;}
 #hoverCard.show{opacity:1;transform:translateY(0) scale(1);}
@@ -916,6 +927,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="cnt-mini"><b id="mapCnt">0</b> pins visible</div>
     <div id="hoverCard"><div class="hc-inner" id="hcInner"></div></div>
   </div>
+  <div id="viewToggle" class="vtog">
+    <button class="vbtn" id="vbtnList" onclick="setViewMode('list')">☰ List</button>
+    <button class="vbtn" id="vbtnMap" onclick="setViewMode('map')">🗺 Map</button>
+  </div>
 </div>
 <!-- ── FEEDBACK MODAL ── -->
 <div class="feedback-modal hide" id="feedbackModal">
@@ -1171,7 +1186,7 @@ function listingRow(l){
 // ═══════════════════════════════════════════════
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
-  cat:'all', sub:null, rad:5, q:'', exploreMode:false,
+  cat:'all', sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
   selId:null, tab:'browse', editingId:null,
   chatOpen:false, chatMsgs:[], chatIdx:0,
   listings:[],          // from API (browse — excludes the current user's own listings)
@@ -3173,6 +3188,22 @@ function setMode(btn){
   if(btn.dataset.m==='post') openPostModal();
   else { switchTab('browse'); if(ST.selId) closeDetail(); }
 }
+// Mobile map/list single-pane view toggle (Session 5 item 6, Tester-3a).
+// Only visually meaningful on narrow screens (see #main.view-map/.view-list
+// CSS) — harmless no-op on desktop, which always shows both panes.
+function setViewMode(mode, persist=true){
+  ST.viewMode = mode;
+  document.getElementById('main').classList.toggle('view-map', mode==='map');
+  document.getElementById('main').classList.toggle('view-list', mode==='list');
+  document.getElementById('vbtnList').classList.toggle('on', mode==='list');
+  document.getElementById('vbtnMap').classList.toggle('on', mode==='map');
+  // Leaflet sizes itself off its container at init time — if the map started
+  // out hidden behind display:none (list-mode default), switching back to
+  // map mode needs an explicit resize or the tiles render at 0x0.
+  if(mode==='map' && map) setTimeout(()=>map.invalidateSize(), 50);
+  if(persist) apiPut('/api/auth/default-view', { default_view: mode }).catch(()=>{});
+}
+
 function switchTab(tab){
   ST.tab=tab;
   ST.selId=null; // clear stale selection so a previously-viewed listing can't leak into another tab's detail view
@@ -3272,6 +3303,11 @@ async function initApp(){
       document.getElementById('activePinLabel').textContent = def.label;
     }
   } catch(_){}
+
+  // Apply the seller's saved map/list view preference (mobile-only single-pane
+  // layout — desktop always shows both panes, so this is a no-op there). Not
+  // persisted here since it's just applying an already-saved value.
+  setViewMode(ST.profile?.default_view === 'list' ? 'list' : 'map', false);
 
   // Init map + listings
   renderCats();
