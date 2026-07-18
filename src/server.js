@@ -27,12 +27,13 @@ const helmet     = require('helmet');
 const morgan     = require('morgan');
 const rateLimit  = require('express-rate-limit');
 
-const authRoutes     = require('./routes/auth');
-const listingRoutes  = require('./routes/listings');
-const pinRoutes      = require('./routes/pins');
-const messageRoutes  = require('./routes/messages');
-const userRoutes     = require('./routes/users');
-const uploadRoutes   = require('./routes/uploads');
+const authRoutes         = require('./routes/auth');
+const listingRoutes      = require('./routes/listings');
+const pinRoutes          = require('./routes/pins');
+const messageRoutes      = require('./routes/messages');
+const conversationRoutes = require('./routes/conversations');
+const userRoutes         = require('./routes/users');
+const uploadRoutes       = require('./routes/uploads');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app  = express();
@@ -92,13 +93,25 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ── Public runtime config ────────────────────────────────────
+// Frontend needs the Supabase URL + anon key to open a Realtime connection
+// for live chat. The anon key is meant to be public (RLS is the real
+// boundary) — never expose SUPABASE_SERVICE_ROLE_KEY here.
+app.get('/api/config', (req, res) => {
+  res.json({
+    supabaseUrl:      process.env.SUPABASE_URL,
+    supabaseAnonKey:  process.env.SUPABASE_ANON_KEY,
+  });
+});
+
 // ── Routes ───────────────────────────────────────────────────
-app.use('/api/auth',     authRoutes);
-app.use('/api/listings', listingRoutes);
-app.use('/api/pins',     pinRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/users',    userRoutes);
-app.use('/api/uploads',  uploadRoutes);
+app.use('/api/auth',          authRoutes);
+app.use('/api/listings',      listingRoutes);
+app.use('/api/pins',          pinRoutes);
+app.use('/api/messages',      messageRoutes);
+app.use('/api/conversations', conversationRoutes);
+app.use('/api/users',         userRoutes);
+app.use('/api/uploads',       uploadRoutes);
 
 // ── Frontend static files ─────────────────────────────────────
 // Serves public/index.html at mapit.co.in (API routes above take priority)

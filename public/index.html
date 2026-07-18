@@ -259,9 +259,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #chatBox{flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:280px;}
 #chatBox.hide{display:none;}
 .ch-hd{padding:8px 13px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.online-dot{width:7px;height:7px;background:#22C55E;border-radius:50%;}
 .ch-hd-name{font-size:12px;font-weight:600;}
-.ch-hd-sub{font-size:10.5px;color:var(--muted);}
 .ch-hd-close{margin-left:auto;cursor:pointer;font-size:13px;color:var(--muted);width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;}
 .ch-hd-close:hover{background:var(--card2);color:var(--text);}
 .cmsgs{flex:1;overflow-y:auto;padding:9px 11px;display:flex;flex-direction:column;gap:6px;}
@@ -923,7 +921,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="tab-bar">
       <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse')">📍 Listings <span class="tab-count" id="cnt-badge">0</span></button>
       <button class="tab-btn" id="tab-fav" onclick="switchTab('fav')">❤ Saved <span class="tab-count" id="fav-badge">0</span></button>
-      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📋 My Ads</button>
+      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📋 My Ads <span class="tab-count" id="mine-badge">0</span></button>
     </div>
     <div id="sb-content"></div>
     <div class="feedback-strip">
@@ -1002,6 +1000,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ═══════════════════════════════════════════════
 // API_URL auto-detects environment — no manual changes needed
@@ -1012,6 +1011,22 @@ const API_URL = (() => {
   if (h === 'www.mapit.co.in' || h === 'mapit.co.in') return 'https://api.mapit.co.in';
   return ''; // UAT / Vercel preview → same-origin API
 })();
+
+// ═══════════════════════════════════════════════
+// SUPABASE CLIENT — Realtime chat only (all writes still go through the
+// backend REST API above). Anon key is safe to expose — RLS is the boundary.
+// ═══════════════════════════════════════════════
+let sbClient = null;
+let sbClientPromise = null;
+function getSbClient(){
+  if(sbClient) return Promise.resolve(sbClient);
+  if(sbClientPromise) return sbClientPromise;
+  sbClientPromise = fetch(`${API_URL}/api/config`).then(r=>r.json()).then(cfg=>{
+    sbClient = supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+    return sbClient;
+  });
+  return sbClientPromise;
+}
 
 // ═══════════════════════════════════════════════
 // CATEGORY DEFINITIONS
@@ -1224,7 +1239,9 @@ const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
   cat:'all', sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
   selId:null, tab:'browse', editingId:null,
-  chatOpen:false, chatMsgs:[], chatIdx:0,
+  chatOpen:false, chatMsgs:[], chatConvId:null, chatChannel:null,
+  conversationsByListing: new Map(), // listing_id -> conversation, buyer's own conversations only
+  allConversations: new Map(),       // conversation_id -> conversation, every conversation (buyer or seller side)
   listings:[],          // from API (browse — excludes the current user's own listings)
   myListings:[],        // from /api/listings/mine/all — only the current user's own listings
   favListings:[],       // from /api/listings/saved/all — saved listings with lat/lng for map display
@@ -1990,9 +2007,14 @@ function drawMarkers(){
   document.getElementById('hoverCard').classList.remove('show','tap-mode');
 
   const isFav = ST.tab === 'fav';
-  const fl = isFav ? ST.favListings : filtered();
+  const isMine = ST.tab === 'mine';
+  // My Ads: show only the seller's own listing pins (matches the sidebar
+  // list exactly, same as Saved) — not leftover Browse-tab radius/category
+  // pins, which were confusing since they had nothing to do with "my ads".
+  const fl = isFav ? ST.favListings : isMine ? ST.myListings : filtered();
+  const keepTab = isFav || isMine; // passed through to selListing() so clicking a pin doesn't reset the active tab
   document.getElementById('mapCnt').textContent = fl.length;
-  if(!isFav) document.getElementById('cnt-badge').textContent = fl.length;
+  if(!isFav && !isMine) document.getElementById('cnt-badge').textContent = fl.length;
 
   // Group listings by exact GPS coordinate — co-located listings (same
   // apartment complex/bazaar) render as one stacked pin instead of fully
@@ -2010,16 +2032,16 @@ function drawMarkers(){
       const m = L.marker([l.lat,l.lng],{icon:mkIcon(l,sel),zIndexOffset:sel?500:0})
         .addTo(map)
         .on('click',()=>{
-          if(!_isTouchDevice()){ selListing(l.id, isFav); return; }
+          if(!_isTouchDevice()){ selListing(l.id, keepTab); return; }
           // Mobile scan UX (Tester-7): first tap previews in a tooltip, second
           // tap on the same pin (or its "View" button) opens the full detail.
           if(_tapPreviewId === l.id){
             _tapPreviewId = null;
             document.getElementById('hoverCard').classList.remove('show','tap-mode');
-            selListing(l.id, isFav);
+            selListing(l.id, keepTab);
           } else {
             _tapPreviewId = l.id;
-            showHoverCard(l, isFav, true);
+            showHoverCard(l, keepTab, true);
           }
         })
         .on('mouseover',()=>{ if(!_isTouchDevice()) showHoverCard(l); })
@@ -2030,15 +2052,15 @@ function drawMarkers(){
       const anySel = ids.has(ST.selId);
       const m = L.marker([group[0].lat,group[0].lng],{icon:mkStackIcon(group[0],group.length,anySel),zIndexOffset:anySel?500:0})
         .addTo(map)
-        .on('click',()=>openStackPopup(group, isFav))
+        .on('click',()=>openStackPopup(group, keepTab))
         .on('mouseover',()=>showStackHoverCard(group))
         .on('mouseout',()=>hideHoverCard());
       mStackMarkers.push({ids, group, marker:m});
     }
   });
 
-  // Auto-fit map to show all saved listings when none is selected
-  if(isFav && fl.length > 0 && !ST.selId){
+  // Auto-fit map to show all saved/own listings when none is selected
+  if(keepTab && fl.length > 0 && !ST.selId){
     const bounds = L.latLngBounds(fl.map(l=>[l.lat,l.lng]));
     map.fitBounds(bounds, {padding:[50,50], animate:true, maxZoom:14});
   }
@@ -2219,6 +2241,19 @@ async function loadSaved(){
   } catch(_){}
 }
 
+function updateMineBadge(){
+  const b = document.getElementById('mine-badge');
+  if(b) b.textContent = ST.myListings.length;
+}
+
+async function loadMyAdsCount(){
+  try {
+    const data = await apiGet('/api/listings/mine/all');
+    ST.myListings = data.listings || [];
+    updateMineBadge();
+  } catch(_){}
+}
+
 async function toggleFav(id){
   try {
     const data = await apiPost(`/api/listings/${id}/save`, {});
@@ -2278,6 +2313,7 @@ async function renderMyAds(el){
     const data = await apiGet('/api/listings/mine/all');
     const listings = data.listings || [];
     ST.myListings = listings;
+    updateMineBadge();
     if(!listings.length){
       el.innerHTML = `<div class="sb-empty">
         <div class="sb-empty-ico">📋</div>
@@ -2412,8 +2448,13 @@ function renderSidebar(){
         <div class="ld-info-actions">
           ${ST.tab==='mine' && l.seller_id===ST.user?.id
             ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit<br>Listing</button>`
-            : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm<br>Interested</button>
-               <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
+            : (()=>{
+                const conv = ST.conversationsByListing.get(l.id);
+                return conv
+                  ? `<button class="ld-chat-btn" id="interestBtn" onclick="openChat('${conv.id}')">💬<br>Chat</button>`
+                  : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm<br>Interested</button>`;
+              })()
+              + `<div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
           <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Copy link to share">🔗</div>
         </div>
       </div>
@@ -2421,7 +2462,7 @@ function renderSidebar(){
         <textarea id="interestNote" maxlength="500" oninput="updateInterestSendState()"></textarea>
         <div class="ld-interest-actions">
           <button class="ld-interest-cancel" onclick="cancelInterestNote()">Cancel</button>
-          <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote()" disabled>Send</button>
+          <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote('${l.id}')" disabled>Send</button>
         </div>
       </div>
       ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}"/></div>`).join('')}</div>`:''}</div>
@@ -2444,9 +2485,10 @@ function renderSidebar(){
     </div>
     <div id="chatBox" class="${ST.chatOpen?'':'hide'}">
       <div class="ch-hd">
-        <div class="online-dot"></div>
-        <span class="ch-hd-name">${seller.full_name||'Seller'}</span>
-        <span class="ch-hd-sub">is online</span>
+        <span class="ch-hd-name">${(()=>{
+          const openConv = ST.chatOpen ? ST.allConversations.get(ST.chatConvId) : null;
+          return openConv?.other_user?.nickname || openConv?.other_user?.full_name || seller.full_name || 'Chat';
+        })()}</span>
         <div class="ch-hd-close" onclick="closeChat()">✕</div>
       </div>
       <div class="cmsgs" id="cmsgs"></div>
@@ -2479,7 +2521,7 @@ function renderSidebar(){
 // LISTING SELECTION
 // ═══════════════════════════════════════════════
 async function selListing(id, keepTab=false){
-  ST.selId=id; ST.chatOpen=false; ST.chatMsgs=[]; ST.chatIdx=0;
+  ST.selId=id; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatMsgs=[]; ST.chatConvId=null;
   if(!keepTab){
     ST.tab='browse';
     document.getElementById('tab-browse').classList.add('on');
@@ -2512,20 +2554,17 @@ async function selListing(id, keepTab=false){
 }
 
 function closeDetail(){
-  ST.selId=null; ST.chatOpen=false;
+  ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
 }
 
 // ═══════════════════════════════════════════════
-// CHAT (simulated for prototype — real in Session 4)
+// CHAT — real, backed by conversations/chat_messages + Supabase Realtime
 // ═══════════════════════════════════════════════
-const CHAT_RESPONSES = [
-  "Hi! Thanks for your interest. The item is still available — in excellent condition.",
-  "The price has some flexibility for serious buyers. When would you like to view it?",
-  "I can arrange a viewing any evening this week. The item is located close to you on the map!",
-  "Yes, I can consider a slight reduction. Let me know what works for you and we can finalise.",
-];
 
+// First contact still goes through the note box (buyer/seller are rarely
+// online at the same time — the note + seller-notification email is the
+// reliable channel; once it's sent, the real chat thread is unlocked).
 function openInterestNote(){
   const l = ST.listings.find(x=>x.id===ST.selId) || ST.favListings.find(x=>x.id===ST.selId) || ST.myListings.find(x=>x.id===ST.selId);
   if(!l){ toast('Listing not found.'); return; }
@@ -2552,34 +2591,88 @@ function updateInterestSendState(){
   if(btn) btn.disabled = !(ta && ta.value.trim().length>0);
 }
 
-async function sendInterestNote(){
-  const l = ST.listings.find(x=>x.id===ST.selId) || ST.favListings.find(x=>x.id===ST.selId) || ST.myListings.find(x=>x.id===ST.selId);
+async function sendInterestNote(listingId){
+  const l = ST.listings.find(x=>x.id===listingId) || ST.favListings.find(x=>x.id===listingId) || ST.myListings.find(x=>x.id===listingId);
   if(!l){ toast('Listing not found.'); return; }
   const ta = document.getElementById('interestNote');
   const text = (ta?.value||'').trim();
   if(!text){ toast('Please write a note before sending.'); return; }
   const sendBtn = document.getElementById('interestSendBtn');
-  const chatBtn = document.getElementById('interestBtn');
   if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='Sending…'; }
   try {
-    await apiPost('/api/messages', {
-      listing_id: l.id,
-      receiver_id: l.seller_id,
-      content: text
-    });
+    const { conversation } = await apiPost('/api/conversations', { listing_id: l.id });
+    await apiPost(`/api/conversations/${conversation.id}/messages`, { content: text });
+    // Fill in enough to render the chat header/button immediately — the next
+    // /api/conversations refresh (on next app load) fills in the rest (nickname etc).
+    conversation.other_user = conversation.other_user || { id: l.seller_id, full_name: l.seller?.full_name };
+    ST.conversationsByListing.set(l.id, conversation);
+    ST.allConversations.set(conversation.id, conversation);
     document.getElementById('interestBox')?.classList.add('hide');
-    if(chatBtn){ chatBtn.innerHTML='✅ Sent!'; chatBtn.style.color='#16a34a'; chatBtn.disabled=true; }
     toast(`✅ Message sent to seller — they'll see it in their Inbox.`);
+    openChat(conversation.id);
   } catch(e){
     if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='Send'; }
     toast('Could not send: '+(e.message||'Unknown error'));
   }
 }
 
-function closeChat(){ ST.chatOpen=false; const cb=document.getElementById('chatBox'); if(cb) cb.classList.add('hide'); }
+// ── Open a real conversation thread ─────────────────────────────
+async function openChat(conversationId){
+  if(!ST.user){ toast('Please sign in first.'); return; }
+  unsubscribeChatChannel();
+  ST.chatConvId = conversationId;
+  ST.chatOpen = true;
+  ST.chatMsgs = [];
+  renderSidebar();
+  try {
+    const data = await apiGet(`/api/conversations/${conversationId}/messages`);
+    ST.chatMsgs = (data.messages||[]).map(m=>({
+      type: m.sender_id===ST.user.id ? 'sent' : 'recv',
+      text: m.content,
+      t: fmtMsgTime(m.sent_at),
+    }));
+    renderChatMsgs(); scrollChat(); showQM();
+  } catch(e){
+    toast('Could not load chat: '+(e.message||'Unknown error'));
+  }
+  subscribeChatChannel(conversationId);
+}
 
-function addMsg(type,text){
-  ST.chatMsgs.push({type,text,t:nowStr()});
+function closeChat(){
+  unsubscribeChatChannel();
+  ST.chatOpen=false; ST.chatConvId=null;
+  const cb=document.getElementById('chatBox'); if(cb) cb.classList.add('hide');
+}
+
+// ── Realtime — receive-only. All writes go through the backend REST routes above. ──
+async function subscribeChatChannel(conversationId){
+  const client = await getSbClient();
+  if(ST.session?.access_token) client.realtime.setAuth(ST.session.access_token);
+  const channel = client.channel(`chat-${conversationId}`)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'chat_messages',
+      filter: `conversation_id=eq.${conversationId}`,
+    }, payload => {
+      const m = payload.new;
+      // Own messages are already appended optimistically by sendMsg() — avoid a duplicate bubble.
+      if(!m || m.sender_id === ST.user?.id) return;
+      addMsg('recv', m.content, m.sent_at);
+    })
+    .subscribe();
+  ST.chatChannel = channel;
+}
+
+function unsubscribeChatChannel(){
+  if(ST.chatChannel && sbClient) sbClient.removeChannel(ST.chatChannel);
+  ST.chatChannel = null;
+}
+
+function fmtMsgTime(iso){
+  return new Date(iso||Date.now()).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+
+function addMsg(type,text,sentAtIso){
+  ST.chatMsgs.push({type,text,t:fmtMsgTime(sentAtIso)});
   renderChatMsgs(); scrollChat();
 }
 
@@ -2592,8 +2685,6 @@ function renderChatMsgs(){
     </div>`).join('');
 }
 
-function showTyping(){ const el=document.getElementById('cmsgs'); if(!el) return; const d=document.createElement('div'); d.id='typ';d.className='qdots';d.innerHTML='<div class="qdot"></div><div class="qdot"></div><div class="qdot"></div>';el.appendChild(d);scrollChat(); }
-function hideTyping(){ const e=document.getElementById('typ');if(e)e.remove(); }
 function scrollChat(){ const el=document.getElementById('cmsgs');if(el)el.scrollTop=el.scrollHeight; }
 function showQM(){
   const el=document.getElementById('qmsgs'); if(!el) return;
@@ -2601,18 +2692,17 @@ function showQM(){
   el.innerHTML=qs.map(q=>`<span class="qm" onclick="sendQM('${q.replace(/'/g,"\\'")}')"> ${q}</span>`).join('');
 }
 function sendQM(t){ const ci=document.getElementById('cinput'); if(ci)ci.value=t; sendMsg(); }
-function sendMsg(){
+async function sendMsg(){
   const inp=document.getElementById('cinput'); if(!inp)return;
-  const txt=inp.value.trim(); if(!txt)return;
+  const txt=inp.value.trim(); if(!txt||!ST.chatConvId)return;
   inp.value='';
   const el=document.getElementById('qmsgs'); if(el)el.innerHTML='';
   addMsg('sent',txt);
-  showTyping();
-  setTimeout(()=>{
-    hideTyping();
-    addMsg('recv',CHAT_RESPONSES[ST.chatIdx % CHAT_RESPONSES.length]);
-    ST.chatIdx++;
-  },800+Math.random()*600);
+  try {
+    await apiPost(`/api/conversations/${ST.chatConvId}/messages`, { content: txt });
+  } catch(e){
+    toast('Could not send: '+(e.message||'Unknown error'));
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -3350,12 +3440,28 @@ async function initApp(){
   initMap();
   await loadListings();
   await loadSaved();
+  loadMyAdsCount();
   checkShareUrl();
-  // Load inbox unread badge count
-  apiGet('/api/messages/inbox').then(d=>{
-    const unread = (d.conversations||[]).reduce((n,c)=>n+(c.unread_count||0),0);
+  // Load conversations — builds the unread badge count, the listing_id →
+  // conversation map (buyer's own conversation per listing — drives the
+  // "I'm Interested" vs "💬 Chat" button branch), and the full id →
+  // conversation map (every conversation, buyer or seller side — used by
+  // the inbox to open the right thread with the right "other party" name).
+  apiGet('/api/conversations').then(d=>{
+    const convs = d.conversations||[];
+    ST.allConversations = new Map(convs.map(c=>[c.id, c]));
+    // Only conversations where the current user is the buyer — a listing_id
+    // can have multiple conversations (one per interested buyer), so this map
+    // is only safe to key by listing_id from the buyer's own point of view.
+    ST.conversationsByListing = new Map(
+      convs.filter(c=>c.buyer_id===ST.user?.id).map(c=>[c.listing_id, c])
+    );
+    const unread = convs.reduce((n,c)=>n+(c.unread_count||0),0);
     const badge = document.getElementById('inboxBadge');
-    if(badge && unread>0){ badge.textContent=unread; badge.style.display='inline'; }
+    if(badge){
+      if(unread>0){ badge.textContent=unread; badge.style.display='inline'; }
+      else badge.style.display='none';
+    }
   }).catch(()=>{});
 
   // Splash end logic — per-user flag so onboarding shows only at first-time registration
@@ -3730,17 +3836,21 @@ async function openInboxModal(){
   if(badge){ badge.textContent=''; badge.style.display='none'; }
   document.getElementById('inboxList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
   try {
-    const data = await apiGet('/api/messages/inbox');
+    const data = await apiGet('/api/conversations');
     const convs = data.conversations || [];
+    ST.allConversations = new Map(convs.map(c=>[c.id, c]));
+    ST.conversationsByListing = new Map(
+      convs.filter(c=>c.buyer_id===ST.user?.id).map(c=>[c.listing_id, c])
+    );
     if(!convs.length){
       document.getElementById('inboxList').innerHTML =
-        '<div style="padding:30px;text-align:center;color:var(--muted);">No messages yet.<br><span style="font-size:11px;">Replies from Nagesh or Arun will appear here.</span></div>';
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No messages yet.<br><span style="font-size:11px;">Tap "I\'m Interested" on a listing to start a conversation.</span></div>';
       return;
     }
     document.getElementById('inboxList').innerHTML = convs.map(c=>{
       const other = c.other_user || {};
       const col = other.avatar_color || 'var(--orange)';
-      const initials = getInitials(other.full_name || '?');
+      const initials = getInitials(other.nickname || other.full_name || '?');
       const listing = c.listing || {};
       const unread = (c.unread_count||0) > 0;
       const timeStr = c.last_message?.sent_at
@@ -3748,24 +3858,64 @@ async function openInboxModal(){
         : '';
       const context = listing.title
         ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${listing.title}</span>`
-        : `<span style="font-size:10px;color:var(--orange);font-weight:400;"> · admin reply</span>`;
-      return `<div class="inbox-item ${unread?'unread':''}">
+        : '';
+      return `<div class="inbox-item ${unread?'unread':''}" style="cursor:pointer" onclick="openConversationFromInbox('${c.id}','${c.listing_id}')">
         <div class="inbox-av" style="background:${col}">${initials}</div>
         <div class="inbox-meta">
-          <div class="inbox-name">${other.full_name||'Admin'}${context}</div>
+          <div class="inbox-name">${other.nickname||other.full_name||'User'}${context}</div>
           <div class="inbox-preview">${c.last_message?.content||''}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
         </div>
         ${unread?'<div class="inbox-unread-dot"></div>':''}
       </div>`;
     }).join('');
-    // Mark all received messages as read in the background
-    apiPut('/api/messages/mark-all-read', {}).catch(()=>{});
   } catch(e){
     document.getElementById('inboxList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
   }
 }
 function closeInboxModal(){ document.getElementById('inboxModal').classList.add('hide'); }
+
+// Tapping an inbox conversation navigates to its listing (so the buyer/seller
+// sees the listing context) and opens the real chat thread directly.
+async function openConversationFromInbox(conversationId, listingId){
+  closeInboxModal();
+  // If the current user is the seller on this conversation, the listing is
+  // one of their own — it lives in My Ads, not Browse. Selecting it under
+  // the wrong tab both mis-highlights the tab bar and (since selListing's
+  // fetch-and-merge targets whichever array matches ST.tab) leaks the
+  // seller's own listing into the Browse array/pins.
+  const conv = ST.allConversations.get(conversationId);
+  const isSeller = conv && conv.buyer_id !== ST.user?.id;
+  if(isSeller){
+    // Deliberately NOT calling switchTab('mine') here: with ST.selId still
+    // null at that point, switchTab's own renderSidebar() call kicks off an
+    // *unawaited* renderMyAds() fetch — that fetch can resolve after
+    // openChat() below has already rendered the listing detail + chat box,
+    // silently overwriting it back to the plain My Ads list. So the tab
+    // button/state is set directly here, ST.myListings is loaded and
+    // awaited, and renderSidebar() is only triggered once (inside
+    // selListing, below) — by which point ST.selId is already set, so it
+    // renders the listing detail instead of the list.
+    ST.tab = 'mine';
+    ST.selId = null;
+    document.getElementById('tab-browse').classList.remove('on');
+    document.getElementById('tab-fav').classList.remove('on');
+    document.getElementById('tab-mine').classList.add('on');
+    document.querySelector('.rad-box').classList.add('disabled');
+    const smBox = document.getElementById('searchModeBox');
+    if(smBox) smBox.classList.add('disabled');
+    try {
+      const data = await apiGet('/api/listings/mine/all');
+      ST.myListings = data.listings || [];
+      updateMineBadge();
+    } catch(_){}
+    drawMarkers();
+    await selListing(listingId, true);
+  } else {
+    await selListing(listingId);
+  }
+  await openChat(conversationId);
+}
 
 // ═══════════════════════════════════════════════
 // KEYWORD SEARCH

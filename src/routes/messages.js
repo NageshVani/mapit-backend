@@ -9,66 +9,9 @@ const express         = require('express');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
-const { sendEmail, escapeHtml } = require('../utils/email');
-const { scoreLead } = require('../utils/leadScoring');
+const { scoreAndNotify } = require('../utils/notifySeller');
 
 const router = express.Router();
-
-// ── Notify seller by email on a buyer's first message on a listing ────
-// Fire-and-forget: called without await from scoreAndNotify() below. A Resend
-// outage or missing RESEND_API_KEY must never fail the message send.
-// `verdict` only changes cosmetic wording — the email always sends regardless.
-async function notifySellerOfInterest(listing, buyerId, messageContent, verdict = 'unscreened') {
-  const [{ data: sellerAuth }, { data: buyerProfile }] = await Promise.all([
-    supabaseAdmin.auth.admin.getUserById(listing.seller_id),
-    supabaseAdmin.from('profiles').select('nickname').eq('id', buyerId).single(),
-  ]);
-
-  const sellerEmail = sellerAuth?.user?.email;
-  if (!sellerEmail) return;
-
-  const buyerName = escapeHtml(buyerProfile?.nickname || 'A buyer');
-  const title     = escapeHtml(listing.title);
-
-  const flagBanner = verdict === 'genuine'
-    ? ''
-    : `<p style="margin:0 0 8px;padding:6px 10px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;color:#9a3412;font-size:12px;">⚠️ This message hasn't been automatically verified as genuine buyer interest — review before sharing personal details.</p>`;
-  const subjectPrefix = verdict === 'genuine' ? '' : '[Unscreened] ';
-
-  await sendEmail({
-    to:      sellerEmail,
-    subject: `${subjectPrefix}${buyerName} is interested in your listing "${title}"`,
-    html: `
-      <p>Hi,</p>
-      ${flagBanner}
-      <p><strong>${buyerName}</strong> is interested in your MapIt listing <strong>"${title}"</strong>:</p>
-      <blockquote style="margin:12px 0;padding:8px 12px;border-left:3px solid #f06030;color:#444;">${escapeHtml(messageContent)}</blockquote>
-      <p><a href="https://www.mapit.co.in">Open MapIt</a> to reply.</p>
-      <p style="color:#888;font-size:12px;">You're receiving this because someone messaged you about your listing on MapIt.</p>
-    `,
-  });
-}
-
-// ── Score a buyer's note for spam/genuine, persist the verdict, then notify ──
-// Fire-and-forget: called without await from POST / below. Never throws —
-// a scoring/DB/email hiccup here must never surface to the buyer's request.
-async function scoreAndNotify(message, listing, buyerId, messageContent) {
-  const { verdict } = await scoreLead(messageContent);
-
-  // Single awaited update inside try/catch — NOT a chained .catch() on the
-  // Supabase builder (that anti-pattern crashed every buyer's first message
-  // in the bug fixed at commit 64cfdff; builders only implement .then()).
-  try {
-    await supabaseAdmin
-      .from('messages')
-      .update({ lead_verdict: verdict, lead_scored_at: new Date().toISOString() })
-      .eq('id', message.id);
-  } catch (err) {
-    console.error('Lead verdict persist failed:', err.message);
-  }
-
-  await notifySellerOfInterest(listing, buyerId, messageContent, verdict);
-}
 
 // ── Get inbox (all conversations) ────────────────────────────
 // GET /api/messages/inbox
@@ -229,7 +172,11 @@ router.post('/', requireAuth, async (req, res, next) => {
 
     // Fire-and-forget: never block or fail the response on scoring/email errors.
     if (isFirstMessageFromBuyer && listing) {
-      scoreAndNotify(message, listing, req.user.id, content.trim())
+      const persistVerdict = (verdict) => supabaseAdmin
+        .from('messages')
+        .update({ lead_verdict: verdict, lead_scored_at: new Date().toISOString() })
+        .eq('id', message.id);
+      scoreAndNotify(listing, req.user.id, content.trim(), persistVerdict)
         .catch(err => console.error('Lead scoring/notification pipeline failed:', err.message));
     }
 
