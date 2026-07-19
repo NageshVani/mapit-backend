@@ -529,6 +529,12 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .admin-approve-btn{padding:6px 16px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
 .admin-reject-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
 .admin-reject-btn:hover{border-color:var(--red);color:var(--red);}
+#adminPendingSection.hide,#adminReportsSection.hide{display:none;}
+.admin-reason-sel{font-size:11px;font-family:'Outfit',sans-serif;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--deep);color:var(--text);margin-left:6px;}
+.admin-suspend-btn{padding:6px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
+.admin-suspend-btn:hover{background:var(--red);color:#fff;}
+.admin-dismiss-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
+.admin-dismiss-btn:hover{border-color:var(--green);color:var(--green);}
 </style>
 </head>
 <body>
@@ -563,14 +569,23 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="admin-modal hide" id="adminModal">
   <div class="admin-box">
     <div class="admin-header">
-      <div style="font-size:15px;font-weight:700;">🔐 Pending Listings — Review Queue</div>
+      <div style="font-size:15px;font-weight:700;">🔐 Admin Moderation</div>
       <div class="post-close" onclick="closeAdminModal()">✕</div>
     </div>
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <span style="font-size:11px;color:var(--muted);">Removes photo files left behind in Storage by deleted listings.</span>
-      <button class="admin-reject-btn" style="white-space:nowrap;" onclick="cleanupOrphanedPhotos()">🧹 Clean Up Orphaned Photos</button>
+    <div class="fbv-filters">
+      <button class="fbv-filter on" id="adminTabPending" onclick="switchAdminTab('pending')">📋 Pending Listings</button>
+      <button class="fbv-filter" id="adminTabReports" onclick="switchAdminTab('reports')">🚩 Reported Listings</button>
     </div>
-    <div id="adminList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+    <div id="adminPendingSection">
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <span style="font-size:11px;color:var(--muted);">Removes photo files left behind in Storage by deleted listings.</span>
+        <button class="admin-reject-btn" style="white-space:nowrap;" onclick="cleanupOrphanedPhotos()">🧹 Clean Up Orphaned Photos</button>
+      </div>
+      <div id="adminList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+    </div>
+    <div id="adminReportsSection" class="hide">
+      <div id="adminReportsList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+    </div>
   </div>
 </div>
 
@@ -3617,6 +3632,7 @@ function signInAsSomeoneElse(){
 // ═══════════════════════════════════════════════
 async function openAdminModal(){
   document.getElementById('adminModal').classList.remove('hide');
+  switchAdminTab('pending');
   document.getElementById('adminList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
   try {
     const data = await apiGet('/api/listings/pending/all');
@@ -3646,6 +3662,73 @@ async function openAdminModal(){
 }
 
 function closeAdminModal(){ document.getElementById('adminModal').classList.add('hide'); }
+
+function switchAdminTab(tab){
+  document.getElementById('adminTabPending').classList.toggle('on', tab==='pending');
+  document.getElementById('adminTabReports').classList.toggle('on', tab==='reports');
+  document.getElementById('adminPendingSection').classList.toggle('hide', tab!=='pending');
+  document.getElementById('adminReportsSection').classList.toggle('hide', tab!=='reports');
+  if(tab==='reports') loadReportsQueue();
+}
+
+async function loadReportsQueue(){
+  document.getElementById('adminReportsList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/listings/reports/queue');
+    const list = data.reports||[];
+    if(!list.length){
+      document.getElementById('adminReportsList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No open reports — all clear! ✅</div>';
+      return;
+    }
+    document.getElementById('adminReportsList').innerHTML = list.map(r=>{
+      const listing = r.listings;
+      const reporter = r.profiles;
+      const reasonOpts = REPORT_REASONS.map(rr=>
+        `<option value="${rr.id}" ${rr.id===r.reason?'selected':''}>${rr.label}</option>`).join('');
+      return `
+      <div class="admin-item" id="report-item-${r.id}">
+        <div class="admin-item-title">🚩 ${listing ? listing.title : '(listing deleted)'}</div>
+        <div class="admin-item-meta">
+          <span>Reason: ${(REPORT_REASONS.find(rr=>rr.id===r.reason)||{}).label||r.reason}</span>
+          <span>👤 Reported by ${reporter ? (reporter.nickname||reporter.full_name||'Unknown') : 'Unknown'}</span>
+          <span style="color:var(--muted);">${new Date(r.created_at).toLocaleDateString('en-IN')}</span>
+        </div>
+        ${r.note?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">"${r.note}"</div>`:''}
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
+          <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>
+          <select class="admin-reason-sel" id="report-reason-${r.id}">${reasonOpts}</select>
+          <button class="admin-reject-btn" onclick="resolveReport('${r.id}','remove_listing')" ${listing?'':'disabled'}>🗑 Remove Listing</button>
+          <button class="admin-suspend-btn" onclick="suspendReportedSeller('${listing?.seller_id||''}')" ${listing&&listing.seller_id?'':'disabled'}>⛔ Suspend Seller</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ document.getElementById('adminReportsList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
+}
+
+async function resolveReport(reportId, action){
+  if(action==='remove_listing' && !confirm('Remove this listing permanently? This cannot be undone.')) return;
+  const reasonEl = document.getElementById('report-reason-'+reportId);
+  const reason = reasonEl ? reasonEl.value : undefined;
+  try {
+    await apiPut(`/api/listings/reports/${reportId}/resolve`, { action, reason });
+    document.getElementById('report-item-'+reportId).remove();
+    toast(action==='dismiss' ? 'Report dismissed.' : 'Listing removed.');
+    if(!document.querySelector('#adminReportsList .admin-item')){
+      document.getElementById('adminReportsList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No open reports — all clear! ✅</div>';
+    }
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function suspendReportedSeller(sellerId){
+  if(!sellerId) return;
+  if(!confirm('Suspend this seller? (This only flags the account for now — it does not yet block their access. Case-by-case admin call.)')) return;
+  try {
+    await apiPut(`/api/users/${sellerId}/suspend`, { suspended: true });
+    toast('⛔ Seller flagged as suspended.');
+  } catch(e){ toast('Error: '+e.message); }
+}
 
 async function cleanupOrphanedPhotos(){
   if(!confirm('Scan Storage for photo files with no matching listing and delete them? This cannot be undone.')) return;

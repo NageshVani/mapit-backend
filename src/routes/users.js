@@ -61,6 +61,34 @@ router.get('/feedback/all', requireAuth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── Suspend / unsuspend a user (admin) ───────────────────────
+// PUT /api/users/:id/suspend
+// Body: { suspended: boolean }
+// Flag only — see database/migrations/007-user-suspension.sql for the
+// deliberate scope note: nothing currently checks this flag anywhere else
+// in the app (no login block, no route guard). Enforcement is a separate,
+// not-yet-scoped follow-on.
+router.put('/:id/suspend', requireAuth, async (req, res, next) => {
+  try {
+    const { suspended } = req.body;
+    if (typeof suspended !== 'boolean') {
+      return next(createError('suspended must be true or false.'));
+    }
+
+    const { data: profile, error } = await supabaseAdmin
+      .from('profiles')
+      .update({ suspended })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) return next(createError(error.message));
+    if (!profile) return next(createError('User not found.', 404));
+
+    res.json({ profile });
+  } catch (err) { next(err); }
+});
+
 // ── Get public profile ────────────────────────────────────────
 // GET /api/users/:id
 router.get('/:id', requireAuth, async (req, res, next) => {

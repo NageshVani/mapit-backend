@@ -63,6 +63,89 @@ router.put('/:id/approve', requireAuth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── GET reported-listings queue (admin) ───────────────────────
+// GET /api/listings/reports/queue
+// Returns open (unresolved) listing_reports, joined with the reported
+// listing's title/status and the reporter's nickname, newest first.
+router.get('/reports/queue', requireAuth, async (req, res, next) => {
+  try {
+    const { data: reports, error } = await supabaseAdmin
+      .from('listing_reports')
+      .select('*, listings(id, title, status, seller_id), profiles!reporter_id(nickname, full_name)')
+      .eq('status', 'open')
+      .order('created_at', { ascending: false });
+
+    if (error) return next(createError(error.message));
+    res.json({ reports: reports || [] });
+  } catch (err) { next(err); }
+});
+
+// ── Resolve a report (admin) ──────────────────────────────────
+// PUT /api/listings/reports/:reportId/resolve
+// Body: { action: 'dismiss' | 'remove_listing', reason? }
+//   dismiss        — marks the report resolved, listing untouched
+//   remove_listing — deletes the reported listing (+ its Storage photos,
+//                    same cleanup as the seller's own DELETE /:id) and
+//                    marks the report resolved; `reason` (one of the 5
+//                    report reason codes) overwrites the report's stored
+//                    reason if the admin picked a different one than the
+//                    reporter did
+router.put('/reports/:reportId/resolve', requireAuth, async (req, res, next) => {
+  try {
+    const { reportId } = req.params;
+    const { action, reason } = req.body;
+
+    if (!['dismiss', 'remove_listing'].includes(action)) {
+      return next(createError("action must be 'dismiss' or 'remove_listing'."));
+    }
+    if (reason && !VALID_REPORT_REASONS.includes(reason)) {
+      return next(createError(`reason must be one of: ${VALID_REPORT_REASONS.join(', ')}`));
+    }
+
+    const { data: report } = await supabaseAdmin
+      .from('listing_reports')
+      .select('id, listing_id')
+      .eq('id', reportId)
+      .single();
+    if (!report) return next(createError('Report not found.', 404));
+
+    if (action === 'remove_listing') {
+      const { data: photos } = await supabaseAdmin
+        .from('listing_photos')
+        .select('storage_path')
+        .eq('listing_id', report.listing_id);
+
+      const { error: delErr } = await supabaseAdmin
+        .from('listings')
+        .delete()
+        .eq('id', report.listing_id);
+      if (delErr) return next(createError(delErr.message));
+
+      if (photos && photos.length) {
+        const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
+        try {
+          await supabaseAdmin.storage.from(bucket).remove(photos.map(p => p.storage_path));
+        } catch (storageErr) {
+          console.error('Storage cleanup on admin listing removal failed:', storageErr.message);
+        }
+      }
+    }
+
+    const updates = { status: 'resolved' };
+    if (reason) updates.reason = reason;
+
+    const { data: updated, error } = await supabaseAdmin
+      .from('listing_reports')
+      .update(updates)
+      .eq('id', reportId)
+      .select()
+      .single();
+    if (error) return next(createError(error.message));
+
+    res.json({ report: updated });
+  } catch (err) { next(err); }
+});
+
 // ── GET listings with radius filter ──────────────────────────
 // GET /api/listings?lat=12.93&lng=77.62&radius=5000&category=re&subcategory=Buy&q=flat
 router.get('/', requireAuth, async (req, res, next) => {
