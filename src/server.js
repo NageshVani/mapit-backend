@@ -20,6 +20,17 @@ if (!globalThis.WebSocket) {
 }
 
 require('dotenv').config();
+const Sentry = require('@sentry/node');
+
+// Sentry must init before the rest of the app so it can instrument everything
+// that follows. Without SENTRY_DSN (e.g. local dev) the SDK no-ops silently —
+// same fail-open pattern as the other optional integrations in this app.
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV || 'development',
+  sendDefaultPii: false, // Rule 8: never send PII (emails, phone numbers, cookies) to a third party
+});
+
 const path       = require('path');
 const express    = require('express');
 const cors       = require('cors');
@@ -123,6 +134,9 @@ app.use((req, res) => {
 });
 
 // ── Error handler ────────────────────────────────────────────
+// Sentry's handler reports the error upstream, then re-throws to our own
+// handler below so the JSON response shape to clients is unchanged.
+Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
 // ── Start server (local dev only — Vercel uses module.exports) ─
