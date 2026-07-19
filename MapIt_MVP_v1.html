@@ -2726,7 +2726,11 @@ function renderChatMsgs(){
 function scrollChat(){ const el=document.getElementById('cmsgs');if(el)el.scrollTop=el.scrollHeight; }
 function showQM(){
   const el=document.getElementById('qmsgs'); if(!el) return;
-  const qs=['Is this still available?','Best price?','Can I visit today?','Any defects?'];
+  const conv=ST.allConversations.get(ST.chatConvId);
+  const isSeller=conv && conv.buyer_id!==ST.user?.id;
+  const qs=isSeller
+    ? ['Yes, still available','Price is negotiable','Yes, you can visit today','No defects, great condition']
+    : ['Is this still available?','Best price?','Can I visit today?','Any defects?'];
   el.innerHTML=qs.map(q=>`<span class="qm" onclick="sendQM('${q.replace(/'/g,"\\'")}')"> ${q}</span>`).join('');
 }
 function sendQM(t){ const ci=document.getElementById('cinput'); if(ci)ci.value=t; sendMsg(); }
