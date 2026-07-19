@@ -51,8 +51,35 @@ const app  = express();
 const PORT = process.env.PORT || 3001;
 
 // ── Security & logging ───────────────────────────────────────
-// CSP disabled: frontend uses inline scripts + external CDNs (Leaflet, Font Awesome, Google Fonts)
-app.use(helmet({ contentSecurityPolicy: false }));
+// CSP allowlist built from an audit of MapIt_MVP_v1.html's actual external
+// resources (Leaflet CDN, Supabase JS CDN, Google Fonts, CartoDB tiles,
+// Nominatim/Photon geocoding, Supabase Realtime for chat). script-src and
+// style-src keep 'unsafe-inline' as a deliberate, documented gap — the
+// frontend has 118 inline onclick= handlers and 168 inline style=
+// attributes; removing them for a nonce-based CSP is a separate, larger
+// refactor (tracked in CONTEXT.md), not part of this pass. Every other
+// directive is a real allowlist, not a wildcard.
+const supabaseHost = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).host : '';
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:  ["'self'"],
+      scriptSrc:   ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
+      // Helmet defaults script-src-attr to 'none', which governs inline onclick=
+      // handlers *separately* from script-src as of CSP3 — without this override,
+      // every one of the app's 118 onclick= handlers would silently stop firing.
+      scriptSrcAttr: ["'unsafe-inline'"],
+      styleSrc:    ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
+      fontSrc:     ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+      imgSrc:      ["'self'", 'data:', 'https://*.basemaps.cartocdn.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
+      connectSrc:  ["'self'", 'https://nominatim.openstreetmap.org', 'https://photon.komoot.io', ...(supabaseHost ? [`https://${supabaseHost}`, `wss://${supabaseHost}`] : [])],
+      objectSrc:   ["'none'"],
+      baseUri:     ["'self'"],
+      frameAncestors: ["'none'"],
+      formAction:  ["'self'"],
+    },
+  },
+}));
 app.use(morgan('dev'));
 
 // ── CORS ─────────────────────────────────────────────────────
