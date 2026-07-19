@@ -1,8 +1,15 @@
 // ============================================================
-// Messages Routes — Chat between buyers and sellers
-// GET  /api/messages/inbox        — all conversations for user
-// GET  /api/messages/:listing_id/:other_user_id — get thread
-// POST /api/messages              — send a message
+// Messages Routes — legacy buyer/seller chat table (messages_legacy)
+// Superseded by src/routes/conversations.js for real buyer↔seller chat
+// (Session 6) — this table and route now exist for exactly one live
+// purpose: admin replies to feedback (POST / with no listing_id, and the
+// GET /legacy/mine read-back below). Table renamed messages→messages_legacy
+// 2026-07-19; every query below updated to match.
+// GET  /api/messages/inbox        — all conversations for user (legacy, unused by frontend)
+// GET  /api/messages/legacy/mine  — feedback replies addressed to me (listing_id IS NULL)
+// GET  /api/messages/:listing_id/:other_user_id — get thread (legacy, unused by frontend)
+// POST /api/messages              — send a message (still live: admin feedback replies)
+// PUT  /api/messages/mark-all-read
 // PUT  /api/messages/:id/read     — mark message as read
 // ============================================================
 const express         = require('express');
@@ -21,7 +28,7 @@ router.get('/inbox', requireAuth, async (req, res, next) => {
 
     // Get the latest message per (listing_id, other_user) conversation
     const { data: messages, error } = await supabaseAdmin
-      .from('messages')
+      .from('messages_legacy')
       .select(`
         id, listing_id, sender_id, receiver_id, content, is_read, sent_at,
         listings(id, title, price_label, category, status),
@@ -54,6 +61,25 @@ router.get('/inbox', requireAuth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── Get replies from MapIt Team (admin feedback replies) ──────
+// GET /api/messages/legacy/mine
+// listing_id IS NULL is what distinguishes an admin feedback reply from a
+// legacy buyer/seller chat message in this table — see POST / below, which
+// only omits listing_id on the feedback-reply path.
+router.get('/legacy/mine', requireAuth, async (req, res, next) => {
+  try {
+    const { data: messages, error } = await supabaseAdmin
+      .from('messages_legacy')
+      .select('id, content, sent_at, is_read')
+      .eq('receiver_id', req.user.id)
+      .is('listing_id', null)
+      .order('sent_at', { ascending: false });
+
+    if (error) return next(createError(error.message));
+    res.json({ messages: messages || [] });
+  } catch (err) { next(err); }
+});
+
 // ── Get message thread ────────────────────────────────────────
 // GET /api/messages/:listing_id/:other_user_id
 router.get('/:listing_id/:other_user_id', requireAuth, async (req, res, next) => {
@@ -62,7 +88,7 @@ router.get('/:listing_id/:other_user_id', requireAuth, async (req, res, next) =>
     const userId = req.user.id;
 
     const { data: messages, error } = await supabaseAdmin
-      .from('messages')
+      .from('messages_legacy')
       .select('*')
       .eq('listing_id', listing_id)
       .or(
@@ -80,7 +106,7 @@ router.get('/:listing_id/:other_user_id', requireAuth, async (req, res, next) =>
 
     if (unreadIds.length > 0) {
       await supabaseAdmin
-        .from('messages')
+        .from('messages_legacy')
         .update({ is_read: true })
         .in('id', unreadIds);
     }
@@ -130,7 +156,7 @@ router.post('/', requireAuth, async (req, res, next) => {
       // Increment inquiry count for first message from buyer
       if (req.user.id !== listing.seller_id) {
         const { count } = await supabaseAdmin
-          .from('messages')
+          .from('messages_legacy')
           .select('*', { count: 'exact', head: true })
           .eq('listing_id', listing_id)
           .eq('sender_id', req.user.id);
@@ -158,7 +184,7 @@ router.post('/', requireAuth, async (req, res, next) => {
     }
 
     const { data: message, error } = await supabaseAdmin
-      .from('messages')
+      .from('messages_legacy')
       .insert({
         listing_id,
         sender_id:   req.user.id,
@@ -173,7 +199,7 @@ router.post('/', requireAuth, async (req, res, next) => {
     // Fire-and-forget: never block or fail the response on scoring/email errors.
     if (isFirstMessageFromBuyer && listing) {
       const persistVerdict = (verdict) => supabaseAdmin
-        .from('messages')
+        .from('messages_legacy')
         .update({ lead_verdict: verdict, lead_scored_at: new Date().toISOString() })
         .eq('id', message.id);
       scoreAndNotify(listing, req.user.id, content.trim(), persistVerdict)
@@ -189,7 +215,7 @@ router.post('/', requireAuth, async (req, res, next) => {
 router.put('/mark-all-read', requireAuth, async (req, res, next) => {
   try {
     await supabaseAdmin
-      .from('messages')
+      .from('messages_legacy')
       .update({ is_read: true })
       .eq('receiver_id', req.user.id)
       .eq('is_read', false);
@@ -203,7 +229,7 @@ router.put('/:id/read', requireAuth, async (req, res, next) => {
     const { id } = req.params;
 
     const { data: msg } = await supabaseAdmin
-      .from('messages')
+      .from('messages_legacy')
       .select('receiver_id')
       .eq('id', id)
       .single();
@@ -214,7 +240,7 @@ router.put('/:id/read', requireAuth, async (req, res, next) => {
     }
 
     await supabaseAdmin
-      .from('messages')
+      .from('messages_legacy')
       .update({ is_read: true })
       .eq('id', id);
 

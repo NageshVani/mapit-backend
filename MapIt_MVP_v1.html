@@ -3495,11 +3495,23 @@ async function initApp(){
       convs.filter(c=>c.buyer_id===ST.user?.id).map(c=>[c.listing_id, c])
     );
     const unread = convs.reduce((n,c)=>n+(c.unread_count||0),0);
-    const badge = document.getElementById('inboxBadge');
-    if(badge){
-      if(unread>0){ badge.textContent=unread; badge.style.display='inline'; }
-      else badge.style.display='none';
-    }
+    // Also fold in unread admin feedback-reply count (see openInboxModal —
+    // these live in messages_legacy, a separate table from real chat).
+    apiGet('/api/messages/legacy/mine').then(td=>{
+      const teamUnread = (td.messages||[]).filter(m=>!m.is_read).length;
+      const badge = document.getElementById('inboxBadge');
+      const total = unread + teamUnread;
+      if(badge){
+        if(total>0){ badge.textContent=total; badge.style.display='inline'; }
+        else badge.style.display='none';
+      }
+    }).catch(()=>{
+      const badge = document.getElementById('inboxBadge');
+      if(badge){
+        if(unread>0){ badge.textContent=unread; badge.style.display='inline'; }
+        else badge.style.display='none';
+      }
+    });
   }).catch(()=>{});
 
   // Splash end logic — per-user flag so onboarding shows only at first-time registration
@@ -3994,39 +4006,67 @@ async function openInboxModal(){
   if(badge){ badge.textContent=''; badge.style.display='none'; }
   document.getElementById('inboxList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
   try {
-    const data = await apiGet('/api/conversations');
-    const convs = data.conversations || [];
+    const [convData, teamData] = await Promise.all([
+      apiGet('/api/conversations'),
+      apiGet('/api/messages/legacy/mine').catch(()=>({messages:[]})),
+    ]);
+    const convs = convData.conversations || [];
+    const teamMsgs = teamData.messages || [];
     ST.allConversations = new Map(convs.map(c=>[c.id, c]));
     ST.conversationsByListing = new Map(
       convs.filter(c=>c.buyer_id===ST.user?.id).map(c=>[c.listing_id, c])
     );
-    if(!convs.length){
-      document.getElementById('inboxList').innerHTML =
-        '<div style="padding:30px;text-align:center;color:var(--muted);">No messages yet.<br><span style="font-size:11px;">Tap "I\'m Interested" on a listing to start a conversation.</span></div>';
-      return;
-    }
-    document.getElementById('inboxList').innerHTML = convs.map(c=>{
-      const other = c.other_user || {};
-      const col = other.avatar_color || 'var(--orange)';
-      const initials = getInitials(other.nickname || other.full_name || '?');
-      const listing = c.listing || {};
-      const unread = (c.unread_count||0) > 0;
-      const timeStr = c.last_message?.sent_at
-        ? new Date(c.last_message.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+
+    // Team-reply cards (read-only, one-way admin→user, see openInboxModal
+    // comment history/Context.md for why these live in a separate legacy
+    // table rather than the real chat system) render above conversations.
+    const teamHtml = teamMsgs.map(m=>{
+      const timeStr = m.sent_at
+        ? new Date(m.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
         : '';
-      const context = listing.title
-        ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${listing.title}</span>`
-        : '';
-      return `<div class="inbox-item ${unread?'unread':''}" style="cursor:pointer" onclick="openConversationFromInbox('${c.id}','${c.listing_id}')">
-        <div class="inbox-av" style="background:${col}">${initials}</div>
+      return `<div class="inbox-item ${m.is_read?'':'unread'}">
+        <div class="inbox-av" style="background:var(--orange)">📢</div>
         <div class="inbox-meta">
-          <div class="inbox-name">${other.nickname||other.full_name||'User'}${context}</div>
-          <div class="inbox-preview">${c.last_message?.content||''}</div>
+          <div class="inbox-name">MapIt Team</div>
+          <div class="inbox-preview">${m.content}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
         </div>
-        ${unread?'<div class="inbox-unread-dot"></div>':''}
+        ${m.is_read?'':'<div class="inbox-unread-dot"></div>'}
       </div>`;
     }).join('');
+
+    if(!convs.length && !teamMsgs.length){
+      document.getElementById('inboxList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No messages yet.<br><span style="font-size:11px;">Tap "I\'m Interested" on a listing to start a conversation.</span></div>';
+    } else {
+      const convHtml = convs.map(c=>{
+        const other = c.other_user || {};
+        const col = other.avatar_color || 'var(--orange)';
+        const initials = getInitials(other.nickname || other.full_name || '?');
+        const listing = c.listing || {};
+        const unread = (c.unread_count||0) > 0;
+        const timeStr = c.last_message?.sent_at
+          ? new Date(c.last_message.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+          : '';
+        const context = listing.title
+          ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${listing.title}</span>`
+          : '';
+        return `<div class="inbox-item ${unread?'unread':''}" style="cursor:pointer" onclick="openConversationFromInbox('${c.id}','${c.listing_id}')">
+          <div class="inbox-av" style="background:${col}">${initials}</div>
+          <div class="inbox-meta">
+            <div class="inbox-name">${other.nickname||other.full_name||'User'}${context}</div>
+            <div class="inbox-preview">${c.last_message?.content||''}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
+          </div>
+          ${unread?'<div class="inbox-unread-dot"></div>':''}
+        </div>`;
+      }).join('');
+      document.getElementById('inboxList').innerHTML = teamHtml + convHtml;
+    }
+
+    // Mark team replies read now that they've been shown (matches the
+    // existing pattern in openConversationFromInbox — reading = marking read).
+    if(teamMsgs.some(m=>!m.is_read)) apiPut('/api/messages/mark-all-read', {}).catch(()=>{});
   } catch(e){
     document.getElementById('inboxList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
   }
