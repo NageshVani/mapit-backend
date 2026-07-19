@@ -1198,9 +1198,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ## 🔜 Next Steps (Queued)
 
 **⬅ Immediate:**
-1. **Session 7 (Security Hardening) now underway** — starting with Sentry error monitoring (item 1, free tier, ~30 min), per CONTEXT.md's own "do first" recommendation.
-2. **Cosmetic fix (not Session 6 scope, small):** the price-spec-box / "negotiable" pill overlap in listing detail — pre-existing, not yet root-caused. Pick up whenever convenient.
-3. **listing_reports RLS puzzle** — parked, non-blocking (see Open Issues for full diagnostic trail). Revisit only if a similar RLS failure recurs on a future table, or if direct Postgres session access becomes available to dig deeper.
+1. ✅ **Session 7 item 1 — Sentry error monitoring — CODE COMPLETE, LIVE-VERIFIED (2026-07-19).** Built on `feat/session-07-security-hardening` (commit `ca504b6`). `Sentry.init()` runs first in `src/server.js`, before app creation, so it instruments the whole app; `Sentry.setupExpressErrorHandler(app)` sits ahead of the existing `errorHandler` — verified locally that the JSON error response shape to clients is unchanged. `sendDefaultPii: false` per Rule 8. Fails open with no `SENTRY_DSN` set (local dev no-ops silently). End-to-end verified against Nagesh's real Sentry project (org `mapit-bq`, project `node`, DSN ending `...4511760659382272`) — test error appeared in Sentry Issues feed within seconds. **Remaining (external, Nagesh):** add `SENTRY_DSN` to local `.env` and to Vercel Production + Preview env vars (blocked for Claude by the `.env.*` deny permission rule — working as intended); optionally clean up the accidentally-created empty `javascript-nextjs` Sentry project.
+2. **Next Session 7 item to pick up:** Legal pages (Privacy/Terms routes) or Helmet CSP re-enablement — not yet started.
+3. **Cosmetic fix (not Session 6 scope, small):** the price-spec-box / "negotiable" pill overlap in listing detail — pre-existing, not yet root-caused. Pick up whenever convenient.
+4. **listing_reports RLS puzzle** — parked, non-blocking (see Open Issues for full diagnostic trail). Revisit only if a similar RLS failure recurs on a future table, or if direct Postgres session access becomes available to dig deeper.
 
 **✅ Session 6 — FULLY COMPLETE, SIGNED OFF (2026-07-18 → 2026-07-19):**
 1. ~~Commit Report Listing work to git~~ — ✅ DONE (`d7705c5`)
