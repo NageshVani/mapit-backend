@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MapIt — Session 6 UAT Checklist (Nagesh)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root{--bg:#0f1117;--card:#1a1d27;--card2:#21253a;--border:#2a2e3e;--green:#22c55e;--red:#ef4444;--orange:#f97316;--gold:#eab308;--blue:#3b82f6;--muted:#6b7280;--muted2:#9ca3af;--text:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',system-ui,sans-serif;font-size:14px;line-height:1.6;padding:0 0 80px;}
+  header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;position:sticky;top:0;z-index:100;}
+  .hd-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .logo{font-size:20px;font-weight:700;}.logo span{color:var(--orange);}
+  .hd-meta{font-size:12px;color:var(--muted);}
+  .progress-bar{height:6px;background:var(--card2);border-radius:3px;margin-top:12px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s;}
+  .progress-label{font-size:12px;color:var(--muted2);margin-top:6px;} .progress-label span{color:var(--green);font-weight:700;}
+  main{max-width:820px;margin:0 auto;padding:32px 24px;}
+  .intro-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:28px;}
+  .intro-card h2{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .intro-card p{font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .intro-card code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card2);padding:2px 6px;border-radius:3px;color:#93c5fd;}
+  h2.section{font-size:14px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.7px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  h2.section .item-num{color:var(--orange);margin-right:6px;}
+  .test-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;transition:border-color .2s;}
+  .test-card.passed{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.04);}
+  .test-card.failed{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.04);}
+  .test-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .test-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;margin-top:2px;min-width:36px;}
+  .test-title{font-size:13px;font-weight:600;flex:1;}
+  .btn-row{display:flex;gap:8px;flex-shrink:0;}
+  button.pass-btn,button.fail-btn{padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
+  button.pass-btn{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  button.pass-btn:hover{background:rgba(34,197,94,.28);}
+  button.fail-btn{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+  button.fail-btn:hover{background:rgba(239,68,68,.22);}
+  button.pass-btn.active{background:var(--green);color:#000;}
+  button.fail-btn.active{background:var(--red);color:#fff;}
+  .test-steps{font-size:12px;color:var(--muted2);margin-top:10px;line-height:1.8;}
+  .test-steps ol{padding-left:18px;}
+  .test-steps li{margin-bottom:3px;}
+  .test-steps code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--card2);padding:1px 5px;border-radius:3px;color:#93c5fd;}
+  .test-steps .expected{color:var(--green);font-weight:600;}
+  .note-area{margin-top:10px;display:none;}
+  .note-area textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;resize:vertical;min-height:56px;}
+  .note-area textarea::placeholder{color:var(--muted);}
+  .auto-badge{display:inline-block;background:rgba(59,130,246,.15);color:var(--blue);border-radius:4px;font-size:10px;font-weight:700;padding:1px 7px;margin-left:8px;vertical-align:middle;}
+  .signoff{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:32px;}
+  .signoff h3{font-size:15px;font-weight:700;margin-bottom:14px;}
+  .signoff label{display:block;font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .signoff input,.signoff select,.signoff textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;margin-bottom:14px;}
+  .signoff .verdict-row{display:flex;gap:10px;margin-bottom:14px;}
+  .verdict-btn{flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;}
+  .verdict-btn.approve{border-color:rgba(34,197,94,.5);color:var(--green);}
+  .verdict-btn.approve.sel{background:var(--green);color:#000;border-color:var(--green);}
+  .verdict-btn.reject{border-color:rgba(239,68,68,.5);color:var(--red);}
+  .verdict-btn.reject.sel{background:var(--red);color:#fff;border-color:var(--red);}
+  .verdict-btn.hold{border-color:rgba(249,115,22,.5);color:var(--orange);}
+  .verdict-btn.hold.sel{background:var(--orange);color:#000;border-color:var(--orange);}
+  .submit-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+  .submit-btn:hover{background:#2563eb;}
+  .result-box{display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;margin-top:14px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-row">
+    <div>
+      <div class="logo">Map<span>It</span> &nbsp;·&nbsp; Session 6 UAT Checklist</div>
+      <div class="hd-meta">Tester: Nagesh Nagaraja Rao &nbsp;·&nbsp; Date: 2026-07-19 &nbsp;·&nbsp; Branch: feat/session-05-lead-scoring</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="progress-label">Progress: <span id="pct">0%</span> &nbsp;(<span id="doneCount">0</span> / <span id="totalCount">0</span>)</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</header>
+
+<main>
+  <div class="intro-card">
+    <h2>📋 Session 6 Manual UAT — Real-Time Chat + Content Moderation Layer</h2>
+    <p>This checklist covers everything built in Session 6: buyer↔seller real-time chat, Report Listing, the admin moderation queue (Reported Listings tab), and the <code>messages</code>→<code>messages_legacy</code> rename plus the feedback-reply visibility fix. Claude has already run an automated pass (code review, live API calls with no auth token, syntax/two-file checks) — see <code>session-06-report.html</code> for that report. Several items below you already click-tested live during the build itself (chat isolation, Report Listing, the moderation queue, the feedback-reply fix) — those are pre-marked Pass below, since you already confirmed them; feel free to re-check any of them if you want a second look.</p>
+    <p><strong>Test locally:</strong> <code>npm start</code> then open <code>http://localhost:3001</code> — or on the <code>uat</code> preview once this branch is promoted.</p>
+    <p style="margin-top:8px;font-size:12px;color:var(--gold);">Note: to properly test chat, Report Listing self-report blocking, and the seller-suspend visibility, you'll need at least two different logged-in accounts (or two browser profiles/incognito windows) — one acting as buyer, one as seller.</p>
+  </div>
+
+  <!-- BLOCK A: PRE-VERIFIED -->
+  <h2 class="section"><span class="item-num">·</span>Pre-verified by Claude or already confirmed by you (no action needed)</h2>
+
+  <div class="test-card" id="card-A1">
+    <div class="test-hd">
+      <div class="test-id">A1</div>
+      <div class="test-title">All new/changed API routes correctly reject requests with no login token <span class="auto-badge">AUTO ✓</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">Confirmed by calling every new/changed Session 6 route directly with no auth header — all 9 correctly return 401. Pre-marked Pass, nothing for you to check here.</div>
+  </div>
+
+  <div class="test-card" id="card-A2">
+    <div class="test-hd">
+      <div class="test-id">A2</div>
+      <div class="test-title">Chat security isolation — a third party cannot read someone else's conversation <span class="auto-badge">AUTO ✓</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">Already confirmed during the build (2026-07-18) with a real backend 403 test using two real accounts, plus your own three-account click-test (an unrelated third account sees "I'm Interested", not the chat). Pre-marked Pass.</div>
+  </div>
+
+  <div class="test-card" id="card-A3">
+    <div class="test-hd">
+      <div class="test-id">A3</div>
+      <div class="test-title">Admin moderation queue — dismiss / remove listing / suspend seller <span class="auto-badge">AUTO ✓</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">You already confirmed this working directly ("Yes, it is working"). Pre-marked Pass.</div>
+  </div>
+
+  <div class="test-card" id="card-A4">
+    <div class="test-hd">
+      <div class="test-id">A4</div>
+      <div class="test-title">Feedback-reply visibility fix — "📢 MapIt Team" shows up in the recipient's Inbox <span class="auto-badge">AUTO ✓</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">You already click-tested this directly (Feedback Viewer → reply → confirmed "📢 MapIt Team" shows the reply in the recipient's Inbox). Pre-marked Pass.</div>
+  </div>
+
+  <!-- BLOCK B: REAL-TIME CHAT -->
+  <h2 class="section"><span class="item-num">1</span>Real-Time Chat</h2>
+
+  <div class="test-card" id="card-B1">
+    <div class="test-hd">
+      <div class="test-id">B1</div>
+      <div class="test-title">Tapping "I'm Interested" and sending a note starts a real chat thread</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>As a buyer account, open a listing that belongs to a different (seller) account</li>
+        <li>Tap "I'm Interested", type a short note, send it</li>
+        <li class="expected">Verify: the note sends successfully and the button/UI now shows a way to continue the conversation (not a dead end)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B2">
+    <div class="test-hd">
+      <div class="test-id">B2</div>
+      <div class="test-title">Returning to that listing shows "💬 Chat" instead of "I'm Interested" again</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>As the same buyer, leave the listing and come back to it (or reload the app)</li>
+        <li class="expected">Verify: the button now says "💬 Chat" (not "I'm Interested" again) and opens the existing thread with your original note as the first message</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B3">
+    <div class="test-hd">
+      <div class="test-id">B3</div>
+      <div class="test-title">Seller sees the new conversation in their Inbox and can reply</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Log in as the seller account (or switch accounts)</li>
+        <li>Open Inbox</li>
+        <li class="expected">Verify: the new conversation appears with the buyer's note as the last message, tapping it opens the thread, and you can type + send a reply</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B3"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B4">
+    <div class="test-hd">
+      <div class="test-id">B4</div>
+      <div class="test-title">Messages arrive live without refreshing (Realtime)</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open the same conversation on two devices/browsers at once — one as buyer, one as seller</li>
+        <li>Send a message from one side</li>
+        <li class="expected">Verify: the message appears on the other side within a second or two, without needing to reload the page</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B4"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B5">
+    <div class="test-hd">
+      <div class="test-id">B5</div>
+      <div class="test-title">Seller notification email still arrives on the first buyer message</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B5','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B5','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Using a fresh listing/buyer pair (not one already messaged before), send the first "I'm Interested" note</li>
+        <li class="expected">Verify: the seller receives the existing notification email, same as before Session 6 — the note-first UX didn't break this</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B5"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- BLOCK C: REPORT LISTING -->
+  <h2 class="section"><span class="item-num">2</span>Report Listing</h2>
+
+  <div class="test-card" id="card-C1">
+    <div class="test-hd">
+      <div class="test-id">C1</div>
+      <div class="test-title">Flag icon is visible on someone else's listing, and the report modal works</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('C1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('C1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open a listing that belongs to a different account</li>
+        <li>Tap the flag/report icon</li>
+        <li class="expected">Verify: a modal opens with reason chips (Fake / Wrong price / Spam / Offensive / Other) and an optional note field</li>
+        <li>Pick a reason, optionally add a note, submit</li>
+        <li class="expected">Verify: a confirmation toast appears and the modal closes</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-C1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-C2">
+    <div class="test-hd">
+      <div class="test-id">C2</div>
+      <div class="test-title">You cannot report your own listing</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('C2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('C2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open one of your own listings</li>
+        <li class="expected">Verify: either the flag icon is hidden, or attempting to report it shows a clear "you cannot report your own listing" error</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-C2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-C3">
+    <div class="test-hd">
+      <div class="test-id">C3</div>
+      <div class="test-title">Reporting the same listing twice updates your report instead of duplicating it</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('C3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('C3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Report the same listing again with a different reason</li>
+        <li class="expected">Verify: it submits successfully with no error (this updates your existing report rather than creating a second one — you won't see this directly, but it should not error out)</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-C3"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- BLOCK D: ADMIN MODERATION QUEUE -->
+  <h2 class="section"><span class="item-num">3</span>Admin Moderation Queue (re-check, optional)</h2>
+
+  <div class="test-card" id="card-D1">
+    <div class="test-hd">
+      <div class="test-id">D1</div>
+      <div class="test-title">Pending Listings tab still works exactly as before</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('D1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('D1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>As admin, open Admin modal — it should default to the "📋 Pending Listings" tab</li>
+        <li class="expected">Verify: Approve/Reject on a pending listing still works as it did before the new Reported Listings tab was added</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-D1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-D2">
+    <div class="test-hd">
+      <div class="test-id">D2</div>
+      <div class="test-title">Suspend Seller doesn't visibly change what that seller can do (expected — flag-only for now)</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('D2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('D2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Suspend a test seller account from the Reported Listings tab</li>
+        <li>Log in as that seller (or use their session)</li>
+        <li class="expected">Verify: this is <strong>expected to pass</strong> if the suspended seller can still post, browse, and message normally — suspension is deliberately just a flag for now (no enforcement yet, by design). This card is really checking "did anything break," not "did it block them."</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-D2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- BLOCK E: REGRESSION -->
+  <h2 class="section"><span class="item-num">4</span>Regression — unrelated features still work</h2>
+
+  <div class="test-card" id="card-E1">
+    <div class="test-hd">
+      <div class="test-id">E1</div>
+      <div class="test-title">Browsing, posting, and saving listings all still work normally</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('E1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('E1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Browse listings on the map, post a new test listing, save/unsave a listing</li>
+        <li class="expected">Verify: all of this still works exactly as before — none of Session 6's chat/report/moderation changes should have touched these flows</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-E1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-E2">
+    <div class="test-hd">
+      <div class="test-id">E2</div>
+      <div class="test-title">Regular (non-admin) feedback submission still works</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('E2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('E2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Submit a piece of feedback (any category, with or without a star rating) as a regular user</li>
+        <li class="expected">Verify: it submits successfully — this is a separate path from the admin reply feature that was fixed this session, so it shouldn't have been affected, but worth a quick check</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-E2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-E3">
+    <div class="test-hd">
+      <div class="test-id">E3</div>
+      <div class="test-title">Inbox unread badge count looks right</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('E3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('E3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>With at least one unread chat message and/or one unread "📢 MapIt Team" reply pending, load the app</li>
+        <li class="expected">Verify: the Inbox badge number matches the total of both (e.g. 1 unread chat + 1 unread team reply shows "2"), and clears to 0 after opening the Inbox</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-E3"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- SIGN-OFF -->
+  <div class="signoff" id="signoff">
+    <h3>✍️ UAT Sign-off — Nagesh Nagaraja Rao</h3>
+    <label>Tester Name</label>
+    <input type="text" id="so-name" placeholder="Nagesh Nagaraja Rao" value="Nagesh Nagaraja Rao"/>
+    <label>Date of Testing</label>
+    <input type="date" id="so-date" value="2026-07-19"/>
+    <label>UAT URL / Environment Used</label>
+    <input type="text" id="so-url" placeholder="localhost:3001 or the uat preview URL"/>
+    <label>Overall Verdict</label>
+    <div class="verdict-row">
+      <button class="verdict-btn approve" id="v-approve" onclick="setVerdict('approve')">✅ Approve</button>
+      <button class="verdict-btn hold" id="v-hold" onclick="setVerdict('hold')">⏸ Hold (minor issues)</button>
+      <button class="verdict-btn reject" id="v-reject" onclick="setVerdict('reject')">❌ Reject</button>
+    </div>
+    <label>Notes / Observations</label>
+    <textarea id="so-notes" style="min-height:80px;" placeholder="Any observations or issues found during testing…"></textarea>
+    <button class="submit-btn" onclick="submitSignoff()">📋 Generate Sign-off Summary</button>
+    <div class="result-box" id="result-box"></div>
+  </div>
+</main>
+
+<script>
+const total = document.querySelectorAll('.test-card').length;
+document.getElementById('totalCount').textContent = total;
+let _verdict = '';
+
+const STORAGE_KEY = 'mapit_uat_session06_nagesh_v1';
+const testIds = Array.from(document.querySelectorAll('.test-card')).map(el => el.id.replace('card-',''));
+
+function save(){
+  const state = {};
+  testIds.forEach(id=>{
+    const card = document.getElementById('card-'+id);
+    if(card.classList.contains('passed')) state[id]='pass';
+    else if(card.classList.contains('failed')) state[id]='fail';
+  });
+  const notes = {};
+  document.querySelectorAll('.note-area textarea').forEach(ta=>{
+    const id = ta.closest('.note-area').id.replace('note-','');
+    if(ta.value) notes[id]=ta.value;
+  });
+  const data = {
+    state, notes,
+    soName: document.getElementById('so-name').value,
+    soDate: document.getElementById('so-date').value,
+    soUrl: document.getElementById('so-url').value,
+    soNotes: document.getElementById('so-notes').value,
+    verdict: _verdict
+  };
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+}
+
+function mark(id, result){
+  const card = document.getElementById('card-'+id);
+  const noteArea = document.getElementById('note-'+id);
+  card.classList.remove('passed','failed');
+  card.classList.add(result==='pass'?'passed':'failed');
+  card.querySelector('.pass-btn').classList.toggle('active', result==='pass');
+  card.querySelector('.fail-btn').classList.toggle('active', result==='fail');
+  if(noteArea) noteArea.style.display = result==='fail' ? 'block' : 'none';
+  updateProgress();
+  save();
+}
+
+function restore(){
+  let data;
+  try{ data = JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){ data = null; }
+  if(!data) return;
+  if(data.state) Object.keys(data.state).forEach(id => mark(id, data.state[id]));
+  if(data.notes) Object.keys(data.notes).forEach(id=>{
+    const el = document.querySelector('#note-'+id+' textarea');
+    if(el) el.value = data.notes[id];
+  });
+  if(data.soName) document.getElementById('so-name').value = data.soName;
+  if(data.soDate) document.getElementById('so-date').value = data.soDate;
+  if(data.soUrl) document.getElementById('so-url').value = data.soUrl;
+  if(data.soNotes) document.getElementById('so-notes').value = data.soNotes;
+  if(data.verdict) setVerdict(data.verdict);
+}
+
+function updateProgress(){
+  const done = document.querySelectorAll('.test-card.passed, .test-card.failed').length;
+  const pct = Math.round(done/total*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('pct').textContent = pct+'%';
+  document.getElementById('doneCount').textContent = done;
+}
+
+function setVerdict(v){
+  _verdict = v;
+  ['approve','hold','reject'].forEach(x=>{
+    document.getElementById('v-'+x).classList.toggle('sel', x===v);
+  });
+  save();
+}
+
+function submitSignoff(){
+  const name = document.getElementById('so-name').value.trim() || 'Nagesh';
+  const date = document.getElementById('so-date').value || new Date().toISOString().slice(0,10);
+  const url  = document.getElementById('so-url').value.trim() || 'Not specified';
+  const notes = document.getElementById('so-notes').value.trim();
+  const passed = document.querySelectorAll('.test-card.passed').length;
+  const failed = document.querySelectorAll('.test-card.failed').length;
+  const pending = total - passed - failed;
+  const vLabel = {approve:'✅ APPROVED',hold:'⏸ HOLD — MINOR ISSUES',reject:'❌ REJECTED'}[_verdict] || '— not set —';
+  const vColor = {approve:'#22c55e',hold:'#f97316',reject:'#ef4444'}[_verdict]||'#9ca3af';
+
+  const box = document.getElementById('result-box');
+  box.style.display='block';
+  box.style.borderColor = vColor;
+  box.style.background = `rgba(${_verdict==='approve'?'34,197,94':_verdict==='hold'?'249,115,22':'239,68,68'},.06)`;
+  box.innerHTML = `
+    <div style="font-weight:700;font-size:15px;color:${vColor};margin-bottom:10px;">${vLabel}</div>
+    <div style="font-size:12px;color:#9ca3af;line-height:2;">
+      <strong>Tester:</strong> ${name}<br/>
+      <strong>Date:</strong> ${date}<br/>
+      <strong>URL:</strong> ${url}<br/>
+      <strong>Results:</strong> ${passed} passed · ${failed} failed · ${pending} not tested<br/>
+      <strong>Pass rate:</strong> ${passed+failed>0?Math.round(passed/(passed+failed)*100):0}%<br/>
+      ${notes?`<strong>Notes:</strong> ${notes}`:''}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:#6b7280;">
+      Session 6 — Real-Time Chat + Content Moderation Layer · Branch feat/session-05-lead-scoring · MapIt UAT
+    </div>`;
+}
+
+// Persist free-text fields as the tester types, not just on Pass/Fail/verdict clicks
+document.getElementById('so-name').addEventListener('input', save);
+document.getElementById('so-date').addEventListener('input', save);
+document.getElementById('so-url').addEventListener('input', save);
+document.getElementById('so-notes').addEventListener('input', save);
+document.querySelectorAll('.note-area textarea').forEach(ta => ta.addEventListener('input', save));
+
+restore();
+
+// Pre-mark A1-A4 as auto/already-confirmed pass — these are automated checks
+// or things Nagesh already click-tested live earlier in this session, not
+// untested manual items.
+mark('A1','pass');
+mark('A2','pass');
+mark('A3','pass');
+mark('A4','pass');
+updateProgress();
+</script>
+</body>
+</html>
