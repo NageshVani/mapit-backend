@@ -504,4 +504,48 @@ router.post('/:id/view', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── Report a listing ────────────────────────────────────────────
+// POST /api/listings/:id/report
+// Body: { reason: 'fake'|'wrong_price'|'spam'|'offensive'|'other', note? }
+// One report per (listing, reporter) — a second report from the same user
+// updates their existing row (new reason/note) rather than duplicating.
+const VALID_REPORT_REASONS = ['fake', 'wrong_price', 'spam', 'offensive', 'other'];
+router.post('/:id/report', requireAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { reason, note } = req.body;
+
+    if (!VALID_REPORT_REASONS.includes(reason)) {
+      return next(createError(`reason must be one of: ${VALID_REPORT_REASONS.join(', ')}`));
+    }
+    if (note && note.length > 500) {
+      return next(createError('Note must be 500 characters or less.'));
+    }
+
+    const { data: listing } = await supabaseAdmin
+      .from('listings')
+      .select('id, seller_id')
+      .eq('id', id)
+      .single();
+
+    if (!listing) return next(createError('Listing not found.', 404));
+    if (listing.seller_id === req.user.id) {
+      return next(createError('You cannot report your own listing.'));
+    }
+
+    const { data: report, error } = await supabaseAdmin
+      .from('listing_reports')
+      .upsert(
+        { listing_id: id, reporter_id: req.user.id, reason, note: note?.trim() || null, status: 'open' },
+        { onConflict: 'listing_id,reporter_id' }
+      )
+      .select()
+      .single();
+
+    if (error) return next(createError(error.message));
+
+    res.status(201).json({ report });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

@@ -153,6 +153,13 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-interest-send:disabled{opacity:.5;cursor:not-allowed;}
 .ld-interest-cancel{background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
 #interestBox.hide{display:none;}
+.report-body{padding:16px 22px 22px;display:flex;flex-direction:column;gap:12px;}
+.report-reasons{display:flex;flex-wrap:wrap;gap:7px;}
+.report-reason{padding:6px 13px;background:var(--card);border:1px solid var(--border2);border-radius:16px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;}
+.report-reason.sel{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08);}
+.report-body textarea{width:100%;min-height:60px;max-height:140px;resize:vertical;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;background:var(--card);color:inherit;box-sizing:border-box;}
+.report-submit{background:var(--red);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;}
+.report-submit:disabled{opacity:.5;cursor:not-allowed;}
 #homeLocSearchDD.hide{display:none;}
 #postLocSearchDD.hide{display:none;}
 .ld-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
@@ -994,6 +1001,21 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="post-close" onclick="closeInboxModal()">✕</div>
     </div>
     <div id="inboxList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ── REPORT LISTING MODAL ── -->
+<div class="inbox-modal hide" id="reportModal">
+  <div class="inbox-box" style="max-width:380px;">
+    <div class="pins-header">
+      <div style="font-size:15px;font-weight:700;">🚩 Report this listing</div>
+      <div class="post-close" onclick="closeReportModal()">✕</div>
+    </div>
+    <div class="report-body">
+      <div class="report-reasons" id="reportReasons"></div>
+      <textarea id="reportNote" maxlength="500" placeholder="Optional — add any detail that would help us review this…"></textarea>
+      <button class="report-submit" id="reportSubmitBtn" onclick="submitReport()" disabled>Submit Report</button>
+    </div>
   </div>
 </div>
 
@@ -2454,7 +2476,8 @@ function renderSidebar(){
                   ? `<button class="ld-chat-btn" id="interestBtn" onclick="openChat('${conv.id}')">💬<br>Chat</button>`
                   : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm<br>Interested</button>`;
               })()
-              + `<div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
+              + `<div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`
+              + `<div class="btn-icon" onclick="openReportModal('${l.id}')" title="Report this listing">🚩</div>`}
           <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Copy link to share">🔗</div>
         </div>
       </div>
@@ -3822,6 +3845,58 @@ async function submitFeedback(){
   } catch(e){
     toast('Could not send feedback: '+e.message);
     if(btn){ btn.disabled=false; btn.textContent='Send Feedback'; }
+  }
+}
+
+// ═══════════════════════════════════════════════
+// REPORT LISTING
+// ═══════════════════════════════════════════════
+const REPORT_REASONS = [
+  { id:'fake',        label:'Fake' },
+  { id:'wrong_price',  label:'Wrong price' },
+  { id:'spam',         label:'Spam' },
+  { id:'offensive',    label:'Offensive' },
+  { id:'other',        label:'Other' },
+];
+let _reportListingId = null;
+let _reportReason = null;
+
+function openReportModal(listingId){
+  if(!ST.user){ toast('Please sign in first.'); return; }
+  _reportListingId = listingId;
+  _reportReason = null;
+  document.getElementById('reportNote').value = '';
+  document.getElementById('reportReasons').innerHTML = REPORT_REASONS.map(r=>
+    `<span class="report-reason" data-reason="${r.id}" onclick="selectReportReason('${r.id}')">${r.label}</span>`
+  ).join('');
+  updateReportSubmitState();
+  document.getElementById('reportModal').classList.remove('hide');
+}
+function closeReportModal(){ document.getElementById('reportModal').classList.add('hide'); }
+function selectReportReason(reason){
+  _reportReason = reason;
+  document.querySelectorAll('#reportReasons .report-reason').forEach(el=>{
+    el.classList.toggle('sel', el.dataset.reason===reason);
+  });
+  updateReportSubmitState();
+}
+function updateReportSubmitState(){
+  const btn = document.getElementById('reportSubmitBtn');
+  if(btn) btn.disabled = !_reportReason;
+}
+async function submitReport(){
+  if(!_reportListingId || !_reportReason) return;
+  const btn = document.getElementById('reportSubmitBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Submitting…'; }
+  try {
+    const note = document.getElementById('reportNote').value.trim();
+    await apiPost(`/api/listings/${_reportListingId}/report`, { reason:_reportReason, note: note||undefined });
+    closeReportModal();
+    toast('🚩 Report submitted — thanks for flagging this.');
+  } catch(e){
+    toast('Could not submit report: '+(e.message||'Unknown error'));
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='Submit Report'; }
   }
 }
 
