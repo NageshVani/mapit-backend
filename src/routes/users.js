@@ -44,7 +44,7 @@ router.get('/feedback/all', requireAuth, requireAdmin, async (req, res, next) =>
     let inviteNameMap = {};
     if (userIds.length > 0) {
       const [{ data: profiles }, { data: inviteCodes }] = await Promise.all([
-        supabaseAdmin.from('profiles').select('id, full_name, avatar_color').in('id', userIds),
+        supabaseAdmin.from('profiles').select('id, full_name, avatar_color, suspended').in('id', userIds),
         supabaseAdmin.from('invite_codes').select('used_by, created_for').in('used_by', userIds),
       ]);
       (profiles || []).forEach(p => { profilesMap[p.id] = p; });
@@ -64,10 +64,9 @@ router.get('/feedback/all', requireAuth, requireAdmin, async (req, res, next) =>
 // ── Suspend / unsuspend a user (admin) ───────────────────────
 // PUT /api/users/:id/suspend
 // Body: { suspended: boolean }
-// Flag only — see database/migrations/007-user-suspension.sql for the
-// deliberate scope note: nothing currently checks this flag anywhere else
-// in the app (no login block, no route guard). Enforcement is a separate,
-// not-yet-scoped follow-on.
+// Enforced in src/middleware/auth.js's requireAuth — every authenticated
+// request checks this flag live, so a suspended user is rejected on their
+// very next API call, not just kept out of future sign-ins.
 router.put('/:id/suspend', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { suspended } = req.body;

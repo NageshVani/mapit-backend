@@ -4,6 +4,7 @@
 // Attaches req.user and req.supabaseClient to the request.
 // ============================================================
 const { createClient } = require('@supabase/supabase-js');
+const { supabaseAdmin } = require('../config/supabase');
 
 async function requireAuth(req, res, next) {
   try {
@@ -37,6 +38,23 @@ async function requireAuth(req, res, next) {
 
     if (error || !user) {
       return res.status(401).json({ error: 'Invalid or expired session. Please log in again.' });
+    }
+
+    // Suspension check — real-time, not just at login: an already-signed-in
+    // suspended user is rejected on their very next request, not just kept
+    // out of future sign-ins. Fail-open on a missing profile row — a brand
+    // new user's row doesn't exist yet at the moment POST /api/auth/register
+    // (itself requireAuth-gated) runs.
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('suspended')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profile?.suspended) {
+      return res.status(403).json({
+        error: 'Your account has been suspended. Contact MapIt support if you believe this is a mistake.',
+        suspended: true,
+      });
     }
 
     // Attach to request for use in route handlers

@@ -1259,8 +1259,30 @@ async function api(path, options = {}){
   if(token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
+  if(res.status === 403 && data.suspended){
+    // A suspended user can hit this from any random action — force a clean
+    // sign-out with one clear message instead of letting scattered generic
+    // "Error: ..." toasts fire across whatever they happen to click next.
+    forceSuspendedSignOut();
+    throw new Error(data.error || 'Your account has been suspended.');
+  }
   if(!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
+}
+
+let _suspendedSignoutInProgress = false;
+function forceSuspendedSignOut(){
+  if(_suspendedSignoutInProgress) return;
+  _suspendedSignoutInProgress = true;
+  try { apiPost('/api/auth/logout', {}).catch(()=>{}); } catch(_){}
+  localStorage.removeItem('mapit_invite');
+  localStorage.removeItem('mapit_created_for');
+  ST.session = null; ST.user = null; ST.profile = null;
+  ST.inviteCode = ''; ST.createdFor = ''; ST.authProvider = null;
+  ST.userPins = []; ST.activePin = null;
+  ST.listings = []; ST.savedIds = new Set();
+  toast('⛔ Your account has been suspended. Contact support if you believe this is a mistake.');
+  setTimeout(()=>location.reload(), 2200);
 }
 
 async function apiGet(path){ return api(path); }

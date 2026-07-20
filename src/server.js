@@ -71,7 +71,12 @@ app.use(helmet({
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc:    ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
       fontSrc:     ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
-      imgSrc:      ["'self'", 'data:', 'https://*.basemaps.cartocdn.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
+      // cdnjs.cloudflare.com: Leaflet's default marker icon (home-location
+      // and post-listing pickers use L.marker() with no custom icon, unlike
+      // the emoji divIcons the main map's listing pins use) — missed in the
+      // original Session 7 CSP audit since it only showed up as a broken
+      // image, not a console error.
+      imgSrc:      ["'self'", 'data:', 'https://*.basemaps.cartocdn.com', 'https://cdnjs.cloudflare.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
       connectSrc:  ["'self'", 'https://nominatim.openstreetmap.org', 'https://photon.komoot.io', ...(supabaseHost ? [`https://${supabaseHost}`, `wss://${supabaseHost}`] : [])],
       objectSrc:   ["'none'"],
       baseUri:     ["'self'"],

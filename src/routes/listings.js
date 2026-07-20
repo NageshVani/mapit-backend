@@ -39,7 +39,7 @@ router.get('/pending/all', requireAuth, requireAdmin, async (req, res, next) => 
   try {
     const { data: listings, error } = await supabaseAdmin
       .from('listings')
-      .select('*, profiles(full_name, avatar_color)')
+      .select('*, profiles(full_name, avatar_color, suspended)')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
     if (error) return next(createError(error.message));
@@ -71,7 +71,7 @@ router.get('/reports/queue', requireAuth, requireAdmin, async (req, res, next) =
   try {
     const { data: reports, error } = await supabaseAdmin
       .from('listing_reports')
-      .select('*, listings(id, title, status, seller_id), profiles!reporter_id(nickname, full_name)')
+      .select('*, listings(id, title, status, seller_id, profiles(suspended)), profiles!reporter_id(nickname, full_name)')
       .eq('status', 'open')
       .order('created_at', { ascending: false });
 

@@ -83,6 +83,12 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .admin-reason-sel{font-size:11px;font-family:'Outfit',sans-serif;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--deep);color:var(--text);margin-left:6px;}
 .admin-suspend-btn{padding:6px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
 .admin-suspend-btn:hover{background:var(--red);color:#fff;}
+.admin-suspend-btn.reinstate{border-color:var(--green);color:var(--green);}
+.admin-suspend-btn.reinstate:hover{background:var(--green);color:#fff;}
+.admin-suspend-btn:disabled{opacity:.4;cursor:default;}
+.admin-suspend-btn:disabled:hover{background:transparent;color:var(--red);}
+.admin-suspend-reveal{display:block;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border2);font-size:10.5px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;user-select:none;}
+.admin-suspend-reveal:hover{color:var(--text);}
 .admin-dismiss-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
 .admin-dismiss-btn:hover{border-color:var(--green);color:var(--green);}
 
@@ -280,6 +286,43 @@ function switchAdmSection(section){
 }
 
 // ═══════════════════════════════════════════════
+// SUSPEND / REINSTATE — shared across Pending, Reported, and Feedback
+// ═══════════════════════════════════════════════
+function suspendBtnHtml(userId, isSuspended){
+  // Deliberately NOT a one-click button sitting next to Approve/Reject/Dismiss
+  // — this reveals the real Suspend/Reinstate button on a separate click first,
+  // so an accidental tap near the other action buttons can't fire it directly.
+  if(!userId) return `<span class="admin-suspend-reveal" style="opacity:.35;pointer-events:none;">⚙ Account access</span>`;
+  return `<span class="admin-suspend-reveal" data-uid="${userId}" data-suspended="${!!isSuspended}" onclick="revealSuspendBtn(this)">⚙ Account access</span>`;
+}
+
+function revealSuspendBtn(el){
+  const userId = el.dataset.uid;
+  const isSuspended = el.dataset.suspended === 'true';
+  const btn = document.createElement('button');
+  btn.className = 'admin-suspend-btn' + (isSuspended ? ' reinstate' : '');
+  btn.textContent = isSuspended ? '✅ Reinstate' : '⛔ Suspend';
+  btn.onclick = () => toggleUserSuspension(userId, isSuspended, btn);
+  el.replaceWith(btn);
+}
+
+async function toggleUserSuspension(userId, currentlySuspended, btnEl){
+  const willSuspend = !currentlySuspended;
+  const msg = willSuspend
+    ? 'This will prevent this user from signing in. You can reinstate them anytime.'
+    : "This will restore this user's access immediately.";
+  if(!confirm(msg)) return;
+  try {
+    await apiPut(`/api/users/${userId}/suspend`, { suspended: willSuspend });
+    toast(willSuspend ? '⛔ User suspended.' : '✅ User reinstated.');
+    // Flip the button in place rather than re-fetching the whole list
+    btnEl.textContent = willSuspend ? '✅ Reinstate' : '⛔ Suspend';
+    btnEl.classList.toggle('reinstate', willSuspend);
+    btnEl.setAttribute('onclick', `toggleUserSuspension('${userId}', ${willSuspend}, this)`);
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════
 // PENDING LISTINGS
 // ═══════════════════════════════════════════════
 function setBlockCount(id, n){
@@ -311,6 +354,7 @@ async function loadPendingListings(){
         <div>
           <button class="admin-approve-btn" onclick="approveAdminListing('${l.id}')">✅ Approve & Go Live</button>
           <button class="admin-reject-btn" onclick="rejectAdminListing('${l.id}')">🗑 Remove</button>
+          ${suspendBtnHtml(l.seller_id, l.profiles?.suspended)}
         </div>
       </div>`).join('');
   } catch(e){ document.getElementById('adminList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
@@ -385,7 +429,7 @@ async function loadReportsQueue(){
           <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>
           <select class="admin-reason-sel" id="report-reason-${r.id}">${reasonOpts}</select>
           <button class="admin-reject-btn" onclick="resolveReport('${r.id}','remove_listing')" ${listing?'':'disabled'}>🗑 Remove Listing</button>
-          <button class="admin-suspend-btn" onclick="suspendReportedSeller('${listing?.seller_id||''}')" ${listing&&listing.seller_id?'':'disabled'}>⛔ Suspend Seller</button>
+          ${suspendBtnHtml(listing?.seller_id, listing?.profiles?.suspended)}
         </div>
       </div>`;
     }).join('');
@@ -404,15 +448,6 @@ async function resolveReport(reportId, action){
       document.getElementById('adminReportsList').innerHTML =
         '<div style="padding:30px;text-align:center;color:var(--muted);">No open reports — all clear! ✅</div>';
     }
-  } catch(e){ toast('Error: '+e.message); }
-}
-
-async function suspendReportedSeller(sellerId){
-  if(!sellerId) return;
-  if(!confirm('Suspend this seller? (This only flags the account for now — it does not yet block their access. Case-by-case admin call.)')) return;
-  try {
-    await apiPut(`/api/users/${sellerId}/suspend`, { suspended: true });
-    toast('⛔ Seller flagged as suspended.');
   } catch(e){ toast('Error: '+e.message); }
 }
 
@@ -482,9 +517,10 @@ function renderFeedbackView(){
         <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.created_for||f.profile?.full_name||'this user'}…"></textarea>
         <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${((f.created_for||f.profile?.full_name||'Someone').replace(/'/g,"\\'"))}')">💬 Send Reply</button>
       </div>
-      ${f.status !== 'resolved' ? `<div class="fbv-actions">
-        <button class="fbv-resolve-btn" onclick="resolveFeedback('${f.id}')">✅ Mark as Resolved</button>
-      </div>` : ''}
+      <div class="fbv-actions">
+        ${f.status !== 'resolved' ? `<button class="fbv-resolve-btn" onclick="resolveFeedback('${f.id}')">✅ Mark as Resolved</button>` : ''}
+        ${suspendBtnHtml(f.user_id, f.profile?.suspended)}
+      </div>
     </div>`).join('');
 }
 
