@@ -34,17 +34,17 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .adm-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
 
 /* ── SECTION-PICKER BLOCKS ── */
-.adm-block-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
-.adm-block{background:var(--panel);border:2px solid var(--border2);border-radius:16px;padding:22px 12px;text-align:center;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;box-shadow:var(--shadow);}
+.adm-block-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.adm-block{background:var(--panel);border:2px solid var(--border2);border-radius:16px;padding:22px 10px;text-align:center;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;box-shadow:var(--shadow);}
 .adm-block:hover{border-color:var(--orange);transform:translateY(-1px);}
 .adm-block-ico{font-size:26px;margin-bottom:8px;display:block;}
-.adm-block-label{font-size:13px;font-weight:700;color:var(--text);}
+.adm-block-label{font-size:12.5px;font-weight:700;color:var(--text);}
 .adm-block-count{font-size:10.5px;font-weight:600;color:var(--muted);margin-top:3px;}
 .adm-block.on{background:var(--orange);border-color:var(--orange);}
 .adm-block.on .adm-block-label{color:#fff;}
 .adm-block.on .adm-block-count{color:rgba(255,255,255,.85);}
-@media (max-width:520px){
-  .adm-block-row{grid-template-columns:1fr;}
+@media (max-width:640px){
+  .adm-block-row{grid-template-columns:repeat(2,1fr);}
 }
 
 /* ── FEEDBACK / TAB PILLS (shared with admin sections) ── */
@@ -87,10 +87,23 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .admin-suspend-btn.reinstate:hover{background:var(--green);color:#fff;}
 .admin-suspend-btn:disabled{opacity:.4;cursor:default;}
 .admin-suspend-btn:disabled:hover{background:transparent;color:var(--red);}
-.admin-suspend-reveal{display:block;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border2);font-size:10.5px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;user-select:none;}
+.admin-suspend-wrap{display:block;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border2);}
+.admin-suspend-reveal{font-size:10.5px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;user-select:none;}
 .admin-suspend-reveal:hover{color:var(--text);}
+.admin-suspend-cancel{font-size:10.5px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;margin-left:8px;user-select:none;}
+.admin-suspend-cancel:hover{color:var(--red);}
 .admin-dismiss-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
 .admin-dismiss-btn:hover{border-color:var(--green);color:var(--green);}
+
+/* ── GRIEVANCE LOG ── */
+.grv-input{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:12.5px;color:var(--text);font-family:'Outfit',sans-serif;outline:none;width:100%;}
+.grv-input:focus{border-color:var(--orange);}
+.grv-badges{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
+.grv-badge{font-size:11.5px;font-weight:600;}
+.grv-badge.ok{color:var(--green);}
+.grv-badge.warn{color:var(--gold);}
+.grv-badge.late{color:var(--red);}
+.grv-badge.neutral{color:var(--muted2);}
 
 .adm-deny, .adm-loading{max-width:420px;min-height:100vh;margin:0 auto;text-align:center;padding:0 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .adm-deny h2{font-size:18px;margin-bottom:10px;}
@@ -149,6 +162,11 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
         <div class="adm-block-label">Feedback</div>
         <div class="adm-block-count" id="admCountFeedback">&nbsp;</div>
       </div>
+      <div class="adm-block" id="admTabGrievances" onclick="switchAdmSection('grievances')">
+        <span class="adm-block-ico">⚖️</span>
+        <div class="adm-block-label">Grievances</div>
+        <div class="adm-block-count" id="admCountGrievances">&nbsp;</div>
+      </div>
     </div>
 
     <div class="adm-box">
@@ -167,6 +185,27 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
       <div id="admSectionFeedback" class="adm-section hide">
         <div class="fbv-filters" id="fbvFilters"></div>
         <div id="feedbackViewList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+
+      <div id="admSectionGrievances" class="adm-section hide">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+          <button class="admin-reject-btn" id="grvNewToggleBtn" style="white-space:nowrap;" onclick="toggleGrievanceForm()">+ Log New Grievance</button>
+          <div class="hide" id="grvNewForm" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+            <input class="grv-input" id="grvName" placeholder="Complainant's name *">
+            <input class="grv-input" id="grvContact" placeholder="Their email or phone (optional, so Arun can reply)">
+            <textarea class="grv-input" id="grvNote" placeholder="What's the grievance? *" style="height:64px;resize:vertical;"></textarea>
+            <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;">
+              Received on
+              <input type="date" class="grv-input" id="grvReceivedAt" style="width:auto;padding:5px 8px;">
+              <span style="color:var(--muted);">(defaults to today — backdate if you're logging it late)</span>
+            </label>
+            <div>
+              <button class="admin-approve-btn" onclick="submitGrievance()">Save Grievance</button>
+              <button class="admin-reject-btn" onclick="toggleGrievanceForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <div id="grievanceList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
       </div>
     </div>
   </div>
@@ -265,10 +304,11 @@ function showDashboard(){
   document.getElementById('admLoading').classList.add('hide');
   document.getElementById('admDashboard').classList.remove('hide');
   loadPendingListings();
-  // Also warm the other two counts in the background so all three blocks
-  // show a number right away, not just the one currently open.
+  // Also warm the other counts in the background so every block shows a
+  // number right away, not just the one currently open.
   loadReportsQueue();
   loadFeedbackView();
+  loadGrievances();
 }
 
 // ═══════════════════════════════════════════════
@@ -278,32 +318,56 @@ function switchAdmSection(section){
   document.getElementById('admTabPending').classList.toggle('on', section==='pending');
   document.getElementById('admTabReports').classList.toggle('on', section==='reports');
   document.getElementById('admTabFeedback').classList.toggle('on', section==='feedback');
+  document.getElementById('admTabGrievances').classList.toggle('on', section==='grievances');
   document.getElementById('admSectionPending').classList.toggle('hide', section!=='pending');
   document.getElementById('admSectionReports').classList.toggle('hide', section!=='reports');
   document.getElementById('admSectionFeedback').classList.toggle('hide', section!=='feedback');
+  document.getElementById('admSectionGrievances').classList.toggle('hide', section!=='grievances');
   if(section==='reports') loadReportsQueue();
   if(section==='feedback') loadFeedbackView();
+  if(section==='grievances') loadGrievances();
 }
 
 // ═══════════════════════════════════════════════
 // SUSPEND / REINSTATE — shared across Pending, Reported, and Feedback
 // ═══════════════════════════════════════════════
+// Deliberately NOT a one-click button sitting next to Approve/Reject/Dismiss:
+// clicking "⚙ Account access" reveals the real Suspend/Reinstate button (plus
+// a "✕ cancel" to back out without acting), so an accidental tap near the
+// other action buttons can't fire it directly. Only one item's controls can
+// be expanded anywhere on the page at a time (collapseAllSuspendReveals()),
+// and a successful action auto-collapses back to the muted state — so the
+// dangerous buttons are never left lying around exposed.
 function suspendBtnHtml(userId, isSuspended){
-  // Deliberately NOT a one-click button sitting next to Approve/Reject/Dismiss
-  // — this reveals the real Suspend/Reinstate button on a separate click first,
-  // so an accidental tap near the other action buttons can't fire it directly.
-  if(!userId) return `<span class="admin-suspend-reveal" style="opacity:.35;pointer-events:none;">⚙ Account access</span>`;
-  return `<span class="admin-suspend-reveal" data-uid="${userId}" data-suspended="${!!isSuspended}" onclick="revealSuspendBtn(this)">⚙ Account access</span>`;
+  if(!userId) return `<span class="admin-suspend-wrap"><span class="admin-suspend-reveal" style="opacity:.35;pointer-events:none;">⚙ Account access</span></span>`;
+  return `<span class="admin-suspend-wrap" data-uid="${userId}" data-suspended="${!!isSuspended}" data-expanded="false">${suspendCollapsedHtml()}</span>`;
 }
 
-function revealSuspendBtn(el){
-  const userId = el.dataset.uid;
-  const isSuspended = el.dataset.suspended === 'true';
-  const btn = document.createElement('button');
-  btn.className = 'admin-suspend-btn' + (isSuspended ? ' reinstate' : '');
-  btn.textContent = isSuspended ? '✅ Reinstate' : '⛔ Suspend';
-  btn.onclick = () => toggleUserSuspension(userId, isSuspended, btn);
-  el.replaceWith(btn);
+function suspendCollapsedHtml(){
+  return `<span class="admin-suspend-reveal" onclick="toggleSuspendReveal(this.parentElement)">⚙ Account access</span>`;
+}
+
+function suspendExpandedHtml(userId, isSuspended){
+  const label = isSuspended ? '✅ Reinstate' : '⛔ Suspend';
+  const cls   = 'admin-suspend-btn' + (isSuspended ? ' reinstate' : '');
+  return `<button class="${cls}" onclick="toggleUserSuspension('${userId}', ${isSuspended}, this)">${label}</button>
+    <span class="admin-suspend-cancel" onclick="toggleSuspendReveal(this.parentElement)">✕ cancel</span>`;
+}
+
+function collapseAllSuspendReveals(){
+  document.querySelectorAll('.admin-suspend-wrap[data-expanded="true"]').forEach(el=>{
+    el.dataset.expanded = 'false';
+    el.innerHTML = suspendCollapsedHtml();
+  });
+}
+
+function toggleSuspendReveal(wrapEl){
+  const wasExpanded = wrapEl.dataset.expanded === 'true';
+  collapseAllSuspendReveals(); // only one expanded at a time, across the whole page
+  if(!wasExpanded){
+    wrapEl.dataset.expanded = 'true';
+    wrapEl.innerHTML = suspendExpandedHtml(wrapEl.dataset.uid, wrapEl.dataset.suspended === 'true');
+  }
 }
 
 async function toggleUserSuspension(userId, currentlySuspended, btnEl){
@@ -312,13 +376,15 @@ async function toggleUserSuspension(userId, currentlySuspended, btnEl){
     ? 'This will prevent this user from signing in. You can reinstate them anytime.'
     : "This will restore this user's access immediately.";
   if(!confirm(msg)) return;
+  const wrapEl = btnEl.closest('.admin-suspend-wrap');
   try {
     await apiPut(`/api/users/${userId}/suspend`, { suspended: willSuspend });
     toast(willSuspend ? '⛔ User suspended.' : '✅ User reinstated.');
-    // Flip the button in place rather than re-fetching the whole list
-    btnEl.textContent = willSuspend ? '✅ Reinstate' : '⛔ Suspend';
-    btnEl.classList.toggle('reinstate', willSuspend);
-    btnEl.setAttribute('onclick', `toggleUserSuspension('${userId}', ${willSuspend}, this)`);
+    if(wrapEl){
+      wrapEl.dataset.suspended = willSuspend;
+      wrapEl.dataset.expanded = 'false';
+      wrapEl.innerHTML = suspendCollapsedHtml();
+    }
   } catch(e){ toast('Error: '+e.message); }
 }
 
@@ -543,6 +609,122 @@ async function resolveFeedback(id){
     renderFeedbackFilters();
     renderFeedbackView();
     toast('✅ Marked as resolved.');
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// GRIEVANCE LOG — IT Rules 2021 Rule 3(2): acknowledge within 24h,
+// resolve within 15 days. Both deadlines are computed here from
+// received_at, never stored, so they can't drift out of sync.
+// ═══════════════════════════════════════════════
+function grvBadges(g){
+  const now = new Date();
+  const received = new Date(g.received_at);
+  const ackDeadline = new Date(received.getTime() + 24*60*60*1000);
+  const resolveDeadline = new Date(received.getTime() + 15*24*60*60*1000);
+  const badges = [];
+
+  if(g.acknowledged_at){
+    const ackAt = new Date(g.acknowledged_at);
+    const onTime = ackAt <= ackDeadline;
+    badges.push(`<div class="grv-badge ${onTime?'ok':'late'}">${onTime?'✅':'⚠'} Acknowledged ${ackAt.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>`);
+  } else if(now > ackDeadline){
+    badges.push(`<div class="grv-badge late">⚠ Not acknowledged — past 24h limit</div>`);
+  } else {
+    const hrsLeft = Math.max(0, Math.round((ackDeadline-now)/3600000));
+    badges.push(`<div class="grv-badge warn">⏳ Acknowledge within ${hrsLeft}h</div>`);
+  }
+
+  if(g.status === 'resolved'){
+    badges.push(`<div class="grv-badge ok">✅ Resolved</div>`);
+  } else {
+    const daysLeft = Math.floor((resolveDeadline-now)/86400000);
+    if(daysLeft < 0) badges.push(`<div class="grv-badge late">🔴 Overdue by ${Math.abs(daysLeft)}d (15-day limit)</div>`);
+    else if(daysLeft <= 3) badges.push(`<div class="grv-badge warn">🟠 Due in ${daysLeft}d</div>`);
+    else badges.push(`<div class="grv-badge ok">🟢 ${daysLeft}d remaining</div>`);
+  }
+
+  return badges.join('');
+}
+
+async function loadGrievances(){
+  document.getElementById('grievanceList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/grievances');
+    const list = data.grievances || [];
+    setBlockCount('admCountGrievances', list.filter(g=>g.status!=='resolved').length);
+    if(!list.length){
+      document.getElementById('grievanceList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No grievances logged yet.</div>';
+      return;
+    }
+    document.getElementById('grievanceList').innerHTML = list.map(g=>`
+      <div class="admin-item" id="grv-item-${g.id}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div>
+            <div class="admin-item-title">${g.complainant_name}${g.complainant_contact?` · ${g.complainant_contact}`:''}</div>
+            <div class="admin-item-meta">
+              <span>Received ${new Date(g.received_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span>
+            </div>
+          </div>
+          <div class="grv-badges" style="text-align:right;margin-bottom:0;flex-shrink:0;">${grvBadges(g)}</div>
+        </div>
+        <div style="font-size:11.5px;color:var(--text);line-height:1.6;margin-bottom:8px;">"${g.note}"</div>
+        <div>
+          ${!g.acknowledged_at ? `<button class="admin-dismiss-btn" onclick="acknowledgeGrievance('${g.id}')">✓ Mark Acknowledged</button>` : ''}
+          ${g.status!=='resolved' ? `<button class="fbv-resolve-btn" onclick="resolveGrievanceEntry('${g.id}')">✅ Mark Resolved</button>` : ''}
+        </div>
+      </div>`).join('');
+  } catch(e){ document.getElementById('grievanceList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
+}
+
+function toggleGrievanceForm(){
+  const form = document.getElementById('grvNewForm');
+  const isHidden = form.classList.contains('hide');
+  form.classList.toggle('hide');
+  document.getElementById('grvNewToggleBtn').textContent = isHidden ? '− Cancel' : '+ Log New Grievance';
+  if(isHidden){
+    document.getElementById('grvName').value = '';
+    document.getElementById('grvContact').value = '';
+    document.getElementById('grvNote').value = '';
+    document.getElementById('grvReceivedAt').value = new Date().toISOString().slice(0,10);
+  }
+}
+
+async function submitGrievance(){
+  const name = document.getElementById('grvName').value.trim();
+  const contact = document.getElementById('grvContact').value.trim();
+  const note = document.getElementById('grvNote').value.trim();
+  const receivedAt = document.getElementById('grvReceivedAt').value;
+  if(!name){ toast('Complainant name is required.'); return; }
+  if(!note){ toast('A short note is required.'); return; }
+  try {
+    await apiPost('/api/grievances', {
+      complainant_name: name,
+      complainant_contact: contact || undefined,
+      note,
+      received_at: receivedAt || undefined,
+    });
+    toast('✅ Grievance logged.');
+    toggleGrievanceForm();
+    loadGrievances();
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function acknowledgeGrievance(id){
+  try {
+    await apiPut(`/api/grievances/${id}/acknowledge`, {});
+    toast('✓ Marked acknowledged.');
+    loadGrievances();
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function resolveGrievanceEntry(id){
+  if(!confirm('Mark this grievance as resolved?')) return;
+  try {
+    await apiPut(`/api/grievances/${id}/resolve`, {});
+    toast('✅ Grievance resolved.');
+    loadGrievances();
   } catch(e){ toast('Error: '+e.message); }
 }
 
