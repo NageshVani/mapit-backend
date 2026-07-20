@@ -46,6 +46,7 @@ const conversationRoutes = require('./routes/conversations');
 const userRoutes         = require('./routes/users');
 const uploadRoutes       = require('./routes/uploads');
 const grievanceRoutes    = require('./routes/grievances');
+const adminRoutes        = require('./routes/admin');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app  = express();
@@ -157,6 +158,7 @@ app.use('/api/conversations', conversationRoutes);
 app.use('/api/users',         userRoutes);
 app.use('/api/uploads',       uploadRoutes);
 app.use('/api/grievances',    grievanceRoutes);
+app.use('/api/admin',         adminRoutes);
 
 // ── Admin dashboard (clean URL) ─────────────────────────────────
 // Client-side check inside admin.html is just a friendly front door —

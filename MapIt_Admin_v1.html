@@ -34,7 +34,7 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .adm-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
 
 /* ── SECTION-PICKER BLOCKS ── */
-.adm-block-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.adm-block-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}
 .adm-block{background:var(--panel);border:2px solid var(--border2);border-radius:16px;padding:22px 10px;text-align:center;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;box-shadow:var(--shadow);}
 .adm-block:hover{border-color:var(--orange);transform:translateY(-1px);}
 .adm-block-ico{font-size:26px;margin-bottom:8px;display:block;}
@@ -43,7 +43,10 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .adm-block.on{background:var(--orange);border-color:var(--orange);}
 .adm-block.on .adm-block-label{color:#fff;}
 .adm-block.on .adm-block-count{color:rgba(255,255,255,.85);}
-@media (max-width:640px){
+@media (max-width:760px){
+  .adm-block-row{grid-template-columns:repeat(3,1fr);}
+}
+@media (max-width:520px){
   .adm-block-row{grid-template-columns:repeat(2,1fr);}
 }
 
@@ -105,6 +108,19 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .grv-badge.late{color:var(--red);}
 .grv-badge.neutral{color:var(--muted2);}
 
+/* ── OVERVIEW ── */
+.ov-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px;}
+.ov-tile{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;}
+.ov-tile-num{font-size:26px;font-weight:800;color:var(--text);}
+.ov-tile-label{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;}
+.ov-chart-wrap{padding:8px 16px 20px;border-top:1px solid var(--border);}
+.ov-chart-title{font-size:12.5px;font-weight:700;color:var(--text);margin:12px 0 14px;}
+.ov-chart-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.ov-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:160px;}
+.ov-legend-item{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text);}
+.ov-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.ov-legend-count{margin-left:auto;color:var(--muted);font-weight:600;}
+
 .adm-deny, .adm-loading{max-width:420px;min-height:100vh;margin:0 auto;text-align:center;padding:0 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .adm-deny h2{font-size:18px;margin-bottom:10px;}
 .adm-deny p{font-size:13.5px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
@@ -147,7 +163,12 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 
   <div class="adm-wrap">
     <div class="adm-block-row">
-      <div class="adm-block on" id="admTabPending" onclick="switchAdmSection('pending')">
+      <div class="adm-block on" id="admTabOverview" onclick="switchAdmSection('overview')">
+        <span class="adm-block-ico">📊</span>
+        <div class="adm-block-label">Overview</div>
+        <div class="adm-block-count">&nbsp;</div>
+      </div>
+      <div class="adm-block" id="admTabPending" onclick="switchAdmSection('pending')">
         <span class="adm-block-ico">📋</span>
         <div class="adm-block-label">Pending Listings</div>
         <div class="adm-block-count" id="admCountPending">&nbsp;</div>
@@ -170,7 +191,20 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
     </div>
 
     <div class="adm-box">
-      <div id="admSectionPending" class="adm-section">
+      <div id="admSectionOverview" class="adm-section">
+        <div class="ov-tiles">
+          <div class="ov-tile"><div class="ov-tile-num" id="ovTotalUsers">–</div><div class="ov-tile-label">Total Users</div></div>
+          <div class="ov-tile"><div class="ov-tile-num" id="ovActiveUsers">–</div><div class="ov-tile-label">Active Users (30d)</div></div>
+        </div>
+        <div class="ov-chart-wrap">
+          <div class="ov-chart-title">📍 Listings by Area</div>
+          <div class="ov-chart-row" id="ovChartRow">
+            <div style="padding:20px;text-align:center;color:var(--muted);">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="admSectionPending" class="adm-section hide">
         <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
           <span style="font-size:11px;color:var(--muted);">Removes photo files left behind in Storage by deleted listings.</span>
           <button class="admin-reject-btn" style="white-space:nowrap;" onclick="cleanupOrphanedPhotos()">🧹 Clean Up Orphaned Photos</button>
@@ -303,9 +337,10 @@ function showDeny(reason){
 function showDashboard(){
   document.getElementById('admLoading').classList.add('hide');
   document.getElementById('admDashboard').classList.remove('hide');
-  loadPendingListings();
+  loadOverview();
   // Also warm the other counts in the background so every block shows a
   // number right away, not just the one currently open.
+  loadPendingListings();
   loadReportsQueue();
   loadFeedbackView();
   loadGrievances();
@@ -315,17 +350,69 @@ function showDashboard(){
 // SECTION SWITCHING
 // ═══════════════════════════════════════════════
 function switchAdmSection(section){
+  document.getElementById('admTabOverview').classList.toggle('on', section==='overview');
   document.getElementById('admTabPending').classList.toggle('on', section==='pending');
   document.getElementById('admTabReports').classList.toggle('on', section==='reports');
   document.getElementById('admTabFeedback').classList.toggle('on', section==='feedback');
   document.getElementById('admTabGrievances').classList.toggle('on', section==='grievances');
+  document.getElementById('admSectionOverview').classList.toggle('hide', section!=='overview');
   document.getElementById('admSectionPending').classList.toggle('hide', section!=='pending');
   document.getElementById('admSectionReports').classList.toggle('hide', section!=='reports');
   document.getElementById('admSectionFeedback').classList.toggle('hide', section!=='feedback');
   document.getElementById('admSectionGrievances').classList.toggle('hide', section!=='grievances');
+  if(section==='overview') loadOverview();
   if(section==='reports') loadReportsQueue();
   if(section==='feedback') loadFeedbackView();
   if(section==='grievances') loadGrievances();
+}
+
+// ═══════════════════════════════════════════════
+// OVERVIEW — total/active users + region-wise listing breakdown.
+// Chart is a hand-rolled SVG donut (stroke-dasharray technique) — no
+// chart library dependency, consistent with the rest of the app.
+// ═══════════════════════════════════════════════
+let _ovLoaded = false;
+const OV_COLORS = ['#F06030','#3B82F6','#22C55E','#F59E0B','#EF4444','#8B5CF6','#6B7280'];
+
+async function loadOverview(){
+  if(_ovLoaded) return;
+  try {
+    const data = await apiGet('/api/admin/overview');
+    _ovLoaded = true;
+    document.getElementById('ovTotalUsers').textContent = data.total_users;
+    document.getElementById('ovActiveUsers').textContent = data.active_users;
+    renderRegionDonut(data.regions || []);
+  } catch(e){
+    document.getElementById('ovChartRow').innerHTML = `<div style="padding:20px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+function renderRegionDonut(regions){
+  const row = document.getElementById('ovChartRow');
+  if(!regions.length){
+    row.innerHTML = '<div style="padding:20px;color:var(--muted);">No listings yet.</div>';
+    return;
+  }
+  const total = regions.reduce((s,r)=>s+r.count,0);
+  const size = 160, radius = 60, cx = size/2, cy = size/2;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+  const circles = regions.map((reg, i)=>{
+    const len = (reg.count / total) * circumference;
+    const dashoffset = -offset;
+    offset += len;
+    const color = OV_COLORS[i % OV_COLORS.length];
+    return `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${color}" stroke-width="24" stroke-dasharray="${len} ${circumference-len}" stroke-dashoffset="${dashoffset}" transform="rotate(-90 ${cx} ${cy})"></circle>`;
+  }).join('');
+  const legend = regions.map((reg,i)=>`
+    <div class="ov-legend-item">
+      <span class="ov-legend-dot" style="background:${OV_COLORS[i % OV_COLORS.length]};"></span>
+      <span>${reg.name}</span>
+      <span class="ov-legend-count">${reg.count}</span>
+    </div>`).join('');
+  row.innerHTML = `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0;">${circles}</svg>
+    <div class="ov-legend">${legend}</div>`;
 }
 
 // ═══════════════════════════════════════════════
