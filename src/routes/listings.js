@@ -14,7 +14,7 @@
 // ============================================================
 const express         = require('express');
 const { supabaseAdmin } = require('../config/supabase');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 const { haversineM }  = require('../utils/geo');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
@@ -35,7 +35,7 @@ function generateRefCode() {
 
 // ── GET pending listings (admin review) ──────────────────────
 // GET /api/listings/pending/all
-router.get('/pending/all', requireAuth, async (req, res, next) => {
+router.get('/pending/all', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { data: listings, error } = await supabaseAdmin
       .from('listings')
@@ -49,7 +49,7 @@ router.get('/pending/all', requireAuth, async (req, res, next) => {
 
 // ── Approve listing (admin) ───────────────────────────────────
 // PUT /api/listings/:id/approve
-router.put('/:id/approve', requireAuth, async (req, res, next) => {
+router.put('/:id/approve', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { id } = req.params;
     const { data: listing, error } = await supabaseAdmin
@@ -67,7 +67,7 @@ router.put('/:id/approve', requireAuth, async (req, res, next) => {
 // GET /api/listings/reports/queue
 // Returns open (unresolved) listing_reports, joined with the reported
 // listing's title/status and the reporter's nickname, newest first.
-router.get('/reports/queue', requireAuth, async (req, res, next) => {
+router.get('/reports/queue', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { data: reports, error } = await supabaseAdmin
       .from('listing_reports')
@@ -90,7 +90,7 @@ router.get('/reports/queue', requireAuth, async (req, res, next) => {
 //                    report reason codes) overwrites the report's stored
 //                    reason if the admin picked a different one than the
 //                    reporter did
-router.put('/reports/:reportId/resolve', requireAuth, async (req, res, next) => {
+router.put('/reports/:reportId/resolve', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { reportId } = req.params;
     const { action, reason } = req.body;
@@ -456,7 +456,9 @@ router.delete('/:id', requireAuth, async (req, res, next) => {
       .single();
 
     if (!existing) return next(createError('Listing not found.', 404));
-    if (existing.seller_id !== req.user.id) {
+    // Owners can delete their own listings; admins can also delete any
+    // listing (used by the admin Reject-pending-listing action).
+    if (existing.seller_id !== req.user.id && !isAdminEmail(req.user.email)) {
       return next(createError('You can only delete your own listings.', 403));
     }
 

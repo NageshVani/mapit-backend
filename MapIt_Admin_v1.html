@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>MapIt Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#F7F9FC;--deep:#EDF0F5;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
+  --orange:#F06030;--orange2:#FF7A50;
+  --blue:#3B82F6;--green:#22C55E;--gold:#F59E0B;--red:#EF4444;
+  --text:#111827;--muted:#6B7280;--muted2:#4B5563;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --shadow:0 8px 32px rgba(0,0,0,0.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);color:var(--text);font-size:15px;}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-track{background:var(--card);}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.28);border-radius:4px;}
+
+.adm-header{background:var(--panel);border-bottom:1px solid var(--border);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.adm-logo{font-size:19px;font-weight:800;}
+.adm-logo em{font-style:normal;color:var(--orange);}
+.adm-logo-tag{font-size:12px;color:var(--muted);font-weight:600;margin-left:8px;}
+.adm-back{font-size:12.5px;color:var(--muted);text-decoration:none;font-weight:600;}
+.adm-back:hover{color:var(--orange);}
+
+.adm-wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px;}
+.adm-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
+
+/* ── SECTION-PICKER BLOCKS ── */
+.adm-block-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.adm-block{background:var(--panel);border:2px solid var(--border2);border-radius:16px;padding:22px 12px;text-align:center;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;box-shadow:var(--shadow);}
+.adm-block:hover{border-color:var(--orange);transform:translateY(-1px);}
+.adm-block-ico{font-size:26px;margin-bottom:8px;display:block;}
+.adm-block-label{font-size:13px;font-weight:700;color:var(--text);}
+.adm-block-count{font-size:10.5px;font-weight:600;color:var(--muted);margin-top:3px;}
+.adm-block.on{background:var(--orange);border-color:var(--orange);}
+.adm-block.on .adm-block-label{color:#fff;}
+.adm-block.on .adm-block-count{color:rgba(255,255,255,.85);}
+@media (max-width:520px){
+  .adm-block-row{grid-template-columns:1fr;}
+}
+
+/* ── FEEDBACK / TAB PILLS (shared with admin sections) ── */
+.fbv-filters{display:flex;gap:5px;padding:12px 16px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--deep);}
+.fbv-filter{padding:4px 12px;border-radius:20px;border:1px solid var(--border2);font-size:11.5px;font-weight:600;cursor:pointer;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
+.fbv-filter:hover{background:var(--card);color:var(--text);}
+.fbv-filter.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+.fbv-filter.resolved-tog{border-color:var(--green);color:var(--green);}
+.fbv-filter.resolved-tog.on{background:var(--green);}
+.fbv-item{padding:14px 22px;border-bottom:1px solid var(--border);transition:opacity .2s;}
+.fbv-item.resolved{opacity:.45;}
+.fbv-item:last-child{border-bottom:none;}
+.fbv-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.fbv-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:4px;background:var(--card2);color:var(--muted2);}
+.fbv-name{font-size:11.5px;font-weight:600;color:var(--text);}
+.fbv-time{font-size:10.5px;color:var(--muted);margin-left:auto;}
+.fbv-resolved-badge{font-size:10px;font-weight:700;color:var(--green);padding:2px 8px;border-radius:4px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);}
+.fbv-text{font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:8px;}
+.fbv-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.fbv-reply-row{display:flex;gap:6px;margin-top:8px;}
+.fbv-reply-input{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text);font-family:'Outfit',sans-serif;outline:none;resize:none;height:60px;}
+.fbv-reply-input:focus{border-color:var(--orange);}
+.fbv-send-btn{padding:7px 14px;background:var(--orange);color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;white-space:nowrap;}
+.fbv-send-btn:hover{background:var(--orange2);}
+.fbv-resolve-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.07);color:var(--green);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.fbv-resolve-btn:hover{background:rgba(34,197,94,.18);}
+
+/* ── ADMIN ITEMS ── */
+.admin-item{padding:14px 22px;border-bottom:1px solid var(--border);}
+.admin-item:last-child{border-bottom:none;}
+.admin-item-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.admin-item-meta{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.admin-approve-btn{padding:6px 16px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.admin-reject-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
+.admin-reject-btn:hover{border-color:var(--red);color:var(--red);}
+.admin-reason-sel{font-size:11px;font-family:'Outfit',sans-serif;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--deep);color:var(--text);margin-left:6px;}
+.admin-suspend-btn{padding:6px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
+.admin-suspend-btn:hover{background:var(--red);color:#fff;}
+.admin-dismiss-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
+.admin-dismiss-btn:hover{border-color:var(--green);color:var(--green);}
+
+.adm-deny, .adm-loading{max-width:420px;min-height:100vh;margin:0 auto;text-align:center;padding:0 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.adm-deny h2{font-size:18px;margin-bottom:10px;}
+.adm-deny p{font-size:13.5px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+.adm-deny a{color:#fff;background:var(--orange);text-decoration:none;padding:10px 22px;border-radius:8px;font-size:13.5px;font-weight:600;display:inline-block;}
+.adm-spinner{width:26px;height:26px;border:3px solid var(--card2);border-top-color:var(--orange);border-radius:50%;margin:18px auto 0;animation:adm-spin .7s linear infinite;}
+@keyframes adm-spin{to{transform:rotate(360deg);}}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--card2);border:1px solid var(--border2);padding:9px 20px;border-radius:24px;font-size:12px;font-weight:600;color:var(--text);z-index:9999;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 4px 16px rgba(0,0,0,.14);white-space:nowrap;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* Must stay last: a utility class needs to win every display-property tie
+   regardless of what else in this stylesheet also sets display on the
+   same element (equal specificity resolves by source order, not intent). */
+.hide{display:none !important;}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="adm-loading" id="admLoading">
+  <div class="adm-logo">Map<em>It</em> <span class="adm-logo-tag">Admin</span></div>
+  <p style="margin-top:14px;color:var(--muted);font-size:13px;">Checking your access…</p>
+  <div class="adm-spinner"></div>
+</div>
+
+<div class="adm-deny hide" id="admDeny">
+  <div class="adm-logo" style="margin-bottom:14px;">Map<em>It</em> <span class="adm-logo-tag">Admin</span></div>
+  <h2>You need to sign in as an admin first</h2>
+  <p>Open MapIt in this browser, sign in with your admin account, then come back to this page.</p>
+  <p class="hide" id="admDenyReason" style="font-size:11.5px;color:var(--red);margin-top:-8px;"></p>
+  <a href="/">Go to MapIt</a>
+</div>
+
+<div class="hide" id="admDashboard">
+  <div class="adm-header">
+    <div class="adm-logo">Map<em>It</em> <span class="adm-logo-tag">Admin</span></div>
+    <a class="adm-back" href="/">← Back to MapIt</a>
+  </div>
+
+  <div class="adm-wrap">
+    <div class="adm-block-row">
+      <div class="adm-block on" id="admTabPending" onclick="switchAdmSection('pending')">
+        <span class="adm-block-ico">📋</span>
+        <div class="adm-block-label">Pending Listings</div>
+        <div class="adm-block-count" id="admCountPending">&nbsp;</div>
+      </div>
+      <div class="adm-block" id="admTabReports" onclick="switchAdmSection('reports')">
+        <span class="adm-block-ico">🚩</span>
+        <div class="adm-block-label">Reported Listings</div>
+        <div class="adm-block-count" id="admCountReports">&nbsp;</div>
+      </div>
+      <div class="adm-block" id="admTabFeedback" onclick="switchAdmSection('feedback')">
+        <span class="adm-block-ico">💬</span>
+        <div class="adm-block-label">Feedback</div>
+        <div class="adm-block-count" id="admCountFeedback">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="adm-box">
+      <div id="admSectionPending" class="adm-section">
+        <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span style="font-size:11px;color:var(--muted);">Removes photo files left behind in Storage by deleted listings.</span>
+          <button class="admin-reject-btn" style="white-space:nowrap;" onclick="cleanupOrphanedPhotos()">🧹 Clean Up Orphaned Photos</button>
+        </div>
+        <div id="adminList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+
+      <div id="admSectionReports" class="adm-section hide">
+        <div id="adminReportsList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+
+      <div id="admSectionFeedback" class="adm-section hide">
+        <div class="fbv-filters" id="fbvFilters"></div>
+        <div id="feedbackViewList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// API SERVICE — same pattern as MapIt_MVP_v1.html
+// ═══════════════════════════════════════════════
+const API_URL = (() => {
+  const h = window.location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3001';
+  if (h === 'www.mapit.co.in' || h === 'mapit.co.in') return 'https://api.mapit.co.in';
+  return '';
+})();
+
+let ST = { session: null, user: null };
+
+async function api(path, options = {}){
+  const token = ST.session?.access_token;
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  if(token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+async function apiGet(path){ return api(path); }
+async function apiPost(path, body){ return api(path, { method:'POST', body: JSON.stringify(body) }); }
+async function apiPut(path, body){ return api(path, { method:'PUT', body: JSON.stringify(body) }); }
+async function apiDelete(path){ return api(path, { method:'DELETE' }); }
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+const CAT_EMOJI = { re:'🏠', veh:'🚗', hh:'🏡' };
+const SUBCAT_EMOJI = {
+  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬',
+  'Cars':'🚗','2 Wheelers':'🛵','Cycles':'🚲','Trucks & Commercial':'🚛',
+  'Electronic Appliances':'📺','Furniture':'🛋️','Home Decor':'🎨',
+};
+function fmtPrice(p){
+  if(p>=10000000) return `₹${(p/10000000).toFixed(2)}Cr`;
+  if(p>=100000)   return `₹${(p/100000).toFixed(1)}L`;
+  if(p>=1000)     return `₹${(p/1000).toFixed(0)}K`;
+  return `₹${p}`;
+}
+
+// ═══════════════════════════════════════════════
+// ACCESS CHECK — reuses the same mapit_sessions (shared-device) store the
+// main app writes to via saveToMultiSessions(). Assumes the operator is
+// already signed in to MapIt in this browser; this is a friendly front
+// door only — every route below is independently gated by requireAdmin.
+// ═══════════════════════════════════════════════
+function getMultiSessions(){
+  try { return JSON.parse(localStorage.getItem('mapit_sessions') || '{}'); } catch(_){ return {}; }
+}
+
+async function checkAdminAccess(){
+  const all = getMultiSessions();
+  const entries = Object.entries(all).sort((a,b)=>new Date(b[1].last_login||0)-new Date(a[1].last_login||0));
+  const latest = entries[0]?.[1];
+
+  if(!latest?.session){ return showDeny(); }
+
+  ST.session = latest.session;
+  try {
+    // Hard timeout so a slow/unreachable API can never leave this screen
+    // stuck on "Checking your access…" forever — surfaces a clear error
+    // instead of an infinite spinner.
+    const data = await Promise.race([
+      apiGet('/api/auth/me'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timed out contacting the server.')), 10000)),
+    ]);
+    if(!data.is_admin){ return showDeny('This account is not an admin.'); }
+    ST.user = data.user;
+    showDashboard();
+  } catch(e){
+    showDeny(e.message);
+  }
+}
+
+function showDeny(reason){
+  document.getElementById('admLoading').classList.add('hide');
+  const denyEl = document.getElementById('admDeny');
+  denyEl.classList.remove('hide');
+  if(reason){
+    document.getElementById('admDenyReason').textContent = reason;
+    document.getElementById('admDenyReason').classList.remove('hide');
+  }
+}
+
+function showDashboard(){
+  document.getElementById('admLoading').classList.add('hide');
+  document.getElementById('admDashboard').classList.remove('hide');
+  loadPendingListings();
+  // Also warm the other two counts in the background so all three blocks
+  // show a number right away, not just the one currently open.
+  loadReportsQueue();
+  loadFeedbackView();
+}
+
+// ═══════════════════════════════════════════════
+// SECTION SWITCHING
+// ═══════════════════════════════════════════════
+function switchAdmSection(section){
+  document.getElementById('admTabPending').classList.toggle('on', section==='pending');
+  document.getElementById('admTabReports').classList.toggle('on', section==='reports');
+  document.getElementById('admTabFeedback').classList.toggle('on', section==='feedback');
+  document.getElementById('admSectionPending').classList.toggle('hide', section!=='pending');
+  document.getElementById('admSectionReports').classList.toggle('hide', section!=='reports');
+  document.getElementById('admSectionFeedback').classList.toggle('hide', section!=='feedback');
+  if(section==='reports') loadReportsQueue();
+  if(section==='feedback') loadFeedbackView();
+}
+
+// ═══════════════════════════════════════════════
+// PENDING LISTINGS
+// ═══════════════════════════════════════════════
+function setBlockCount(id, n){
+  document.getElementById(id).textContent = n===1 ? '1 item' : `${n} items`;
+}
+
+async function loadPendingListings(){
+  document.getElementById('adminList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/listings/pending/all');
+    const list = data.listings||[];
+    setBlockCount('admCountPending', list.length);
+    if(!list.length){
+      document.getElementById('adminList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No pending listings — all clear! ✅</div>';
+      return;
+    }
+    document.getElementById('adminList').innerHTML = list.map(l=>`
+      <div class="admin-item" id="admin-item-${l.id}">
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
+        <div class="admin-item-meta">
+          <span>${l.subcategory||l.category}</span>
+          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
+          <span>👤 ${l.seller?.full_name||l.profiles?.full_name||'Unknown'}</span>
+          <span>📍 ${l.address||'No address'}</span>
+          <span style="color:var(--muted);">${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
+        </div>
+        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${l.description.slice(0,120)}${l.description.length>120?'…':''}</div>`:''}
+        <div>
+          <button class="admin-approve-btn" onclick="approveAdminListing('${l.id}')">✅ Approve & Go Live</button>
+          <button class="admin-reject-btn" onclick="rejectAdminListing('${l.id}')">🗑 Remove</button>
+        </div>
+      </div>`).join('');
+  } catch(e){ document.getElementById('adminList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
+}
+
+async function approveAdminListing(id){
+  try {
+    await apiPut(`/api/listings/${id}/approve`,{});
+    document.getElementById('admin-item-'+id).remove();
+    toast('✅ Listing approved and is now live!');
+    if(!document.querySelector('#adminList .admin-item')){
+      document.getElementById('adminList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No pending listings — all clear! ✅</div>';
+    }
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function rejectAdminListing(id){
+  if(!confirm('Remove this listing permanently?')) return;
+  try {
+    await apiDelete(`/api/listings/${id}`);
+    document.getElementById('admin-item-'+id).remove();
+    toast('Listing removed.');
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function cleanupOrphanedPhotos(){
+  if(!confirm('Scan Storage for photo files with no matching listing and delete them? This cannot be undone.')) return;
+  try {
+    const data = await apiPost('/api/uploads/cleanup-orphaned', {});
+    toast(data.deleted_count ? `🧹 Deleted ${data.deleted_count} orphaned photo file(s).` : '✅ No orphaned photos found — Storage is clean.');
+  } catch(e){ toast('Cleanup failed: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// REPORTED LISTINGS
+// ═══════════════════════════════════════════════
+const REPORT_REASONS = [
+  { id:'fake',        label:'Fake' },
+  { id:'wrong_price',  label:'Wrong price' },
+  { id:'spam',         label:'Spam' },
+  { id:'offensive',    label:'Offensive' },
+  { id:'other',        label:'Other' },
+];
+
+async function loadReportsQueue(){
+  document.getElementById('adminReportsList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/listings/reports/queue');
+    const list = data.reports||[];
+    setBlockCount('admCountReports', list.length);
+    if(!list.length){
+      document.getElementById('adminReportsList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No open reports — all clear! ✅</div>';
+      return;
+    }
+    document.getElementById('adminReportsList').innerHTML = list.map(r=>{
+      const listing = r.listings;
+      const reporter = r.profiles;
+      const reasonOpts = REPORT_REASONS.map(rr=>
+        `<option value="${rr.id}" ${rr.id===r.reason?'selected':''}>${rr.label}</option>`).join('');
+      return `
+      <div class="admin-item" id="report-item-${r.id}">
+        <div class="admin-item-title">🚩 ${listing ? listing.title : '(listing deleted)'}</div>
+        <div class="admin-item-meta">
+          <span>Reason: ${(REPORT_REASONS.find(rr=>rr.id===r.reason)||{}).label||r.reason}</span>
+          <span>👤 Reported by ${reporter ? (reporter.nickname||reporter.full_name||'Unknown') : 'Unknown'}</span>
+          <span style="color:var(--muted);">${new Date(r.created_at).toLocaleDateString('en-IN')}</span>
+        </div>
+        ${r.note?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">"${r.note}"</div>`:''}
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
+          <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>
+          <select class="admin-reason-sel" id="report-reason-${r.id}">${reasonOpts}</select>
+          <button class="admin-reject-btn" onclick="resolveReport('${r.id}','remove_listing')" ${listing?'':'disabled'}>🗑 Remove Listing</button>
+          <button class="admin-suspend-btn" onclick="suspendReportedSeller('${listing?.seller_id||''}')" ${listing&&listing.seller_id?'':'disabled'}>⛔ Suspend Seller</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ document.getElementById('adminReportsList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
+}
+
+async function resolveReport(reportId, action){
+  if(action==='remove_listing' && !confirm('Remove this listing permanently? This cannot be undone.')) return;
+  const reasonEl = document.getElementById('report-reason-'+reportId);
+  const reason = reasonEl ? reasonEl.value : undefined;
+  try {
+    await apiPut(`/api/listings/reports/${reportId}/resolve`, { action, reason });
+    document.getElementById('report-item-'+reportId).remove();
+    toast(action==='dismiss' ? 'Report dismissed.' : 'Listing removed.');
+    if(!document.querySelector('#adminReportsList .admin-item')){
+      document.getElementById('adminReportsList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No open reports — all clear! ✅</div>';
+    }
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function suspendReportedSeller(sellerId){
+  if(!sellerId) return;
+  if(!confirm('Suspend this seller? (This only flags the account for now — it does not yet block their access. Case-by-case admin call.)')) return;
+  try {
+    await apiPut(`/api/users/${sellerId}/suspend`, { suspended: true });
+    toast('⛔ Seller flagged as suspended.');
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// FEEDBACK VIEWER
+// ═══════════════════════════════════════════════
+let _fbAll = [], _fbTypeFilter = 'all', _fbShowResolved = false, _fbLoaded = false;
+const FBV_EMOJI = { suggestion:'💡', bug:'🐛', praise:'⭐', complaint:'⚠' };
+
+async function loadFeedbackView(){
+  if(_fbLoaded) return; // loaded once per page visit, same as the old modal
+  document.getElementById('feedbackViewList').innerHTML =
+    '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/users/feedback/all');
+    _fbAll = data.feedbacks || [];
+    _fbLoaded = true;
+    setBlockCount('admCountFeedback', _fbAll.filter(f=>f.status!=='resolved').length);
+    renderFeedbackFilters();
+    renderFeedbackView();
+  } catch(e){
+    document.getElementById('feedbackViewList').innerHTML =
+      `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+function renderFeedbackFilters(){
+  const types = ['all','suggestion','bug','praise','complaint'];
+  const counts = {};
+  types.forEach(t => { counts[t] = t==='all' ? _fbAll.length : _fbAll.filter(f=>f.type===t).length; });
+  const labels = { all:'All', suggestion:'💡 Suggestions', bug:'🐛 Bugs', praise:'⭐ Praise', complaint:'⚠ Complaints' };
+  document.getElementById('fbvFilters').innerHTML =
+    types.filter(t => counts[t]>0 || t==='all').map(t=>
+      `<button class="fbv-filter ${_fbTypeFilter===t?'on':''}" onclick="setFbvFilter('${t}')">
+        ${labels[t]} <span style="opacity:.7">(${counts[t]})</span>
+      </button>`
+    ).join('') +
+    `<button class="fbv-filter resolved-tog ${_fbShowResolved?'on':''}" onclick="toggleFbvResolved()" style="margin-left:auto;">
+      ✅ ${_fbShowResolved?'Hide':'Show'} Resolved
+    </button>`;
+}
+
+function setFbvFilter(type){ _fbTypeFilter=type; renderFeedbackFilters(); renderFeedbackView(); }
+function toggleFbvResolved(){ _fbShowResolved=!_fbShowResolved; renderFeedbackFilters(); renderFeedbackView(); }
+
+function renderFeedbackView(){
+  const el = document.getElementById('feedbackViewList');
+  let list = _fbAll;
+  if(_fbTypeFilter !== 'all') list = list.filter(f=>f.type===_fbTypeFilter);
+  if(!_fbShowResolved) list = list.filter(f=>f.status !== 'resolved');
+  if(!list.length){
+    el.innerHTML = `<div style="padding:30px;text-align:center;color:var(--muted);">
+      ${_fbAll.length ? 'No feedback matches this filter.' : 'No feedback submitted yet.'}</div>`;
+    return;
+  }
+  el.innerHTML = list.map((f,i)=>`
+    <div class="fbv-item ${f.status==='resolved'?'resolved':''}" id="fbv-card-${f.id}">
+      <div class="fbv-meta">
+        <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${f.type}</span>
+        ${f.rating ? `<span class="fbv-type" style="color:var(--orange);background:rgba(240,96,48,.1);">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>` : ''}
+        <span class="fbv-name">👤 ${f.created_for||f.profile?.full_name||'Unknown'}</span>
+        ${f.status==='resolved'?'<span class="fbv-resolved-badge">✅ Resolved</span>':''}
+        <span class="fbv-time">${f.created_at?new Date(f.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span>
+      </div>
+      <div class="fbv-text">"${f.description}"</div>
+      <div class="fbv-reply-row">
+        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.created_for||f.profile?.full_name||'this user'}…"></textarea>
+        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${((f.created_for||f.profile?.full_name||'Someone').replace(/'/g,"\\'"))}')">💬 Send Reply</button>
+      </div>
+      ${f.status !== 'resolved' ? `<div class="fbv-actions">
+        <button class="fbv-resolve-btn" onclick="resolveFeedback('${f.id}')">✅ Mark as Resolved</button>
+      </div>` : ''}
+    </div>`).join('');
+}
+
+async function sendFeedbackReply(feedbackId, idx, receiverId, name){
+  const txt = document.getElementById('fbv-reply-'+idx)?.value.trim();
+  if(!txt){ toast('Please type a reply first.'); return; }
+  if(!receiverId){ toast('Cannot find this user — no receiver ID.'); return; }
+  try {
+    await apiPost('/api/messages', { receiver_id: receiverId, content: txt });
+    document.getElementById('fbv-reply-'+idx).value = '';
+    toast(`✅ Reply sent to ${name} — they will see it in their Inbox.`);
+  } catch(e){ toast('Could not send reply: '+e.message); }
+}
+
+async function resolveFeedback(id){
+  try {
+    await apiPut(`/api/users/feedback/${id}/resolve`, {});
+    const item = _fbAll.find(f=>String(f.id)===String(id));
+    if(item) item.status = 'resolved';
+    renderFeedbackFilters();
+    renderFeedbackView();
+    toast('✅ Marked as resolved.');
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+checkAdminAccess();
+</script>
+</body>
+</html>

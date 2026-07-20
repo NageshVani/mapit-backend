@@ -7,7 +7,7 @@ console.log('[auth.js] Auth router loaded');
 const express   = require('express');
 const rateLimit  = require('express-rate-limit');
 const { supabase, supabaseAdmin } = require('../config/supabase');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
@@ -265,6 +265,7 @@ router.get('/me', requireAuth, async (req, res, next) => {
       profile:     profile || null,
       created_for: resolvedInvite?.created_for || null,
       invite_code: resolvedInvite?.code || null,
+      is_admin:    isAdminEmail(req.user.email),
     });
   } catch (err) {
     next(err);

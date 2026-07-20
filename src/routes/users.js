@@ -7,14 +7,14 @@
 // ============================================================
 const express         = require('express');
 const { supabaseAdmin } = require('../config/supabase');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
 // ── Mark feedback as resolved (admin) ────────────────────────
 // PUT /api/users/feedback/:id/resolve
-router.put('/feedback/:id/resolve', requireAuth, async (req, res, next) => {
+router.put('/feedback/:id/resolve', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('feedback')
@@ -29,7 +29,7 @@ router.put('/feedback/:id/resolve', requireAuth, async (req, res, next) => {
 
 // ── Get all feedbacks (admin view) ───────────────────────────
 // GET /api/users/feedback/all
-router.get('/feedback/all', requireAuth, async (req, res, next) => {
+router.get('/feedback/all', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { data: feedbacks, error } = await supabaseAdmin
       .from('feedback')
@@ -68,7 +68,7 @@ router.get('/feedback/all', requireAuth, async (req, res, next) => {
 // deliberate scope note: nothing currently checks this flag anywhere else
 // in the app (no login block, no route guard). Enforcement is a separate,
 // not-yet-scoped follow-on.
-router.put('/:id/suspend', requireAuth, async (req, res, next) => {
+router.put('/:id/suspend', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { suspended } = req.body;
     if (typeof suspended !== 'boolean') {

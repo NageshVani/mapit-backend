@@ -50,4 +50,19 @@ async function requireAuth(req, res, next) {
   }
 }
 
-module.exports = { requireAuth };
+// Admin gate — CLAUDE.md Rule 9: hardcoded admin emails, no invite codes in MVP.
+// Same hardcoded-array convention as the CORS allowedOrigins list in server.js.
+const ADMIN_EMAILS = ['nagesh.aadi@gmail.com', 'arun.bn1@gmail.com'];
+
+function isAdminEmail(email) {
+  return ADMIN_EMAILS.includes((email || '').toLowerCase());
+}
+
+function requireAdmin(req, res, next) {
+  if (!isAdminEmail(req.user?.email)) {
+    return res.status(403).json({ error: 'Admin access required.' });
+  }
+  next();
+}
+
+module.exports = { requireAuth, requireAdmin, isAdminEmail };

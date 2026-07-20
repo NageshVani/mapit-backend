@@ -151,6 +151,13 @@ app.use('/api/conversations', conversationRoutes);
 app.use('/api/users',         userRoutes);
 app.use('/api/uploads',       uploadRoutes);
 
+// ── Admin dashboard (clean URL) ─────────────────────────────────
+// Client-side check inside admin.html is just a friendly front door —
+// every admin API route is independently gated by requireAdmin.
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
 // ── Frontend static files ─────────────────────────────────────
 // Serves public/index.html at mapit.co.in (API routes above take priority)
 app.use(express.static(path.join(__dirname, '../public')));
