@@ -167,6 +167,18 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
+// ── Legal pages ──────────────────────────────────────────────
+// Terms and Privacy are one combined document (docs/terms-privacy-draft2.html,
+// finalized v1.0, approved by Arun 2026-07-21) — Part I is Terms, Part II is
+// Privacy. /privacy redirects to the same file's Privacy anchor (#p1) rather
+// than duplicating the document, so there's only one file to keep in sync.
+app.get('/terms', (req, res) => {
+  res.sendFile(path.join(__dirname, '../docs/terms-privacy-draft2.html'));
+});
+app.get('/privacy', (req, res) => {
+  res.redirect('/terms#p1');
+});
+
 // ── Frontend static files ─────────────────────────────────────
 // Serves public/index.html at mapit.co.in (API routes above take priority)
 app.use(express.static(path.join(__dirname, '../public')));
