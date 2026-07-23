@@ -211,6 +211,94 @@ router.put('/reports/:reportId/resolve', requireAuth, requireAdmin, async (req, 
   } catch (err) { next(err); }
 });
 
+// ── GET cleanup candidates (admin) ─────────────────────────────
+// GET /api/listings/cleanup/candidates
+// Two independent flags, not mutually exclusive:
+//  - stale: status='active' but expires_at has passed. Nothing in this
+//    codebase ever flips status to 'expired' or filters browse results by
+//    expires_at, so these listings would otherwise sit live forever.
+//  - duplicates: active/pending listings grouped by (seller_id + title +
+//    price) with more than one match — tight match, deliberately not
+//    category/subcategory-based, to keep false positives low (e.g. a
+//    dealer with two genuinely similar cars must not get flagged).
+router.get('/cleanup/candidates', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const nowIso = new Date().toISOString();
+
+    const { data: staleRaw, error: staleErr } = await supabaseAdmin
+      .from('listings')
+      .select('*, profiles(full_name, avatar_color)')
+      .eq('status', 'active')
+      .lt('expires_at', nowIso)
+      .order('expires_at', { ascending: true });
+    if (staleErr) return next(createError(staleErr.message));
+
+    const { data: liveRaw, error: liveErr } = await supabaseAdmin
+      .from('listings')
+      .select('*, profiles(full_name, avatar_color)')
+      .in('status', ['active', 'pending'])
+      .order('created_at', { ascending: true });
+    if (liveErr) return next(createError(liveErr.message));
+
+    const groups = new Map();
+    for (const l of liveRaw || []) {
+      const key = `${l.seller_id}|${(l.title || '').trim().toLowerCase()}|${l.price}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(l);
+    }
+    const duplicates = [...groups.values()].filter(g => g.length > 1);
+
+    res.json({ stale: staleRaw || [], duplicates });
+  } catch (err) { next(err); }
+});
+
+// ── Bulk-delete listings (admin) ───────────────────────────────
+// POST /api/listings/cleanup/bulk-delete   body: { ids: [...] }
+// Same photo-cleanup pattern as the single DELETE /:id route, just looped —
+// deliberately sequential (not Promise.all) so one Storage hiccup can't
+// tangle up with another listing's cleanup, and so the response can report
+// exactly which ids failed rather than an all-or-nothing result.
+router.post('/cleanup/bulk-delete', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || !ids.length) {
+      return next(createError('ids must be a non-empty array.'));
+    }
+
+    const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
+    const deleted = [];
+    const failed = [];
+
+    for (const id of ids) {
+      try {
+        const { data: photos } = await supabaseAdmin
+          .from('listing_photos')
+          .select('storage_path')
+          .eq('listing_id', id);
+
+        const { error: delErr } = await supabaseAdmin
+          .from('listings')
+          .delete()
+          .eq('id', id);
+        if (delErr) { failed.push({ id, error: delErr.message }); continue; }
+
+        if (photos && photos.length) {
+          try {
+            await supabaseAdmin.storage.from(bucket).remove(photos.map(p => p.storage_path));
+          } catch (storageErr) {
+            console.error('Storage cleanup on bulk delete failed for', id, ':', storageErr.message);
+          }
+        }
+        deleted.push(id);
+      } catch (err) {
+        failed.push({ id, error: err.message });
+      }
+    }
+
+    res.json({ deleted, failed, message: `${deleted.length} listing(s) deleted.${failed.length ? ` ${failed.length} failed.` : ''}` });
+  } catch (err) { next(err); }
+});
+
 // ── GET listings with radius filter ──────────────────────────
 // GET /api/listings?lat=12.93&lng=77.62&radius=5000&category=re&subcategory=Buy&q=flat
 router.get('/', requireAuth, async (req, res, next) => {

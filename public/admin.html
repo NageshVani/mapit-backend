@@ -34,7 +34,7 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .adm-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
 
 /* ── SECTION-PICKER BLOCKS ── */
-.adm-block-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}
+.adm-block-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;}
 .adm-block{background:var(--panel);border:2px solid var(--border2);border-radius:16px;padding:22px 10px;text-align:center;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;box-shadow:var(--shadow);}
 .adm-block:hover{border-color:var(--orange);transform:translateY(-1px);}
 .adm-block-ico{font-size:26px;margin-bottom:8px;display:block;}
@@ -46,7 +46,7 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 @media (max-width:760px){
   .adm-block-row{grid-template-columns:repeat(3,1fr);}
 }
-@media (max-width:520px){
+@media (max-width:400px){
   .adm-block-row{grid-template-columns:repeat(2,1fr);}
 }
 
@@ -122,6 +122,21 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .grv-badge.warn{color:var(--gold);}
 .grv-badge.late{color:var(--red);}
 .grv-badge.neutral{color:var(--muted2);}
+
+/* ── CLEANUP ── */
+.cln-section-hd{padding:12px 22px;font-size:12px;font-weight:700;color:var(--muted2);background:var(--deep);border-bottom:1px solid var(--border);border-top:1px solid var(--border);}
+.cln-item{padding:10px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;}
+.cln-item:last-child{border-bottom:none;}
+.cln-item input[type=checkbox]{margin-top:3px;width:16px;height:16px;flex-shrink:0;cursor:pointer;}
+.cln-item-body{flex:1;min-width:0;}
+.cln-group{border-bottom:1px solid var(--border);}
+.cln-group:last-child{border-bottom:none;}
+.cln-group-tag{font-size:10px;font-weight:700;color:var(--orange);padding:8px 22px 0;}
+.cln-bar{position:sticky;top:0;z-index:2;background:var(--panel);border-bottom:1px solid var(--border2);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 4px 12px rgba(0,0,0,.06);}
+.cln-bar-count{font-size:12px;color:var(--muted);font-weight:600;}
+.cln-delete-btn{padding:7px 18px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.cln-delete-btn:disabled{opacity:.4;cursor:default;}
+.cln-scroll{max-height:52vh;overflow-y:auto;}
 
 /* ── OVERVIEW ── */
 .ov-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px;}
@@ -203,6 +218,11 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
         <div class="adm-block-label">Grievances</div>
         <div class="adm-block-count" id="admCountGrievances">&nbsp;</div>
       </div>
+      <div class="adm-block" id="admTabCleanup" onclick="switchAdmSection('cleanup')">
+        <span class="adm-block-ico">🧹</span>
+        <div class="adm-block-label">Cleanup</div>
+        <div class="adm-block-count" id="admCountCleanup">&nbsp;</div>
+      </div>
     </div>
 
     <div class="adm-box">
@@ -255,6 +275,17 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
           </div>
         </div>
         <div id="grievanceList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+
+      <div id="admSectionCleanup" class="adm-section hide">
+        <div style="padding:10px 22px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);">Tick the listings you want gone, then delete them together. Permanent — matches the same delete used elsewhere in the app.</div>
+        <div class="cln-scroll">
+          <div class="cln-bar">
+            <span class="cln-bar-count" id="clnSelCount">0 selected</span>
+            <button class="cln-delete-btn" id="clnDeleteBtn" disabled onclick="bulkDeleteCleanup()">🗑 Delete Selected</button>
+          </div>
+          <div id="cleanupList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -370,6 +401,7 @@ function showDashboard(){
   loadReportsQueue();
   loadFeedbackView();
   loadGrievances();
+  loadCleanupCandidates();
 }
 
 // ═══════════════════════════════════════════════
@@ -381,15 +413,18 @@ function switchAdmSection(section){
   document.getElementById('admTabReports').classList.toggle('on', section==='reports');
   document.getElementById('admTabFeedback').classList.toggle('on', section==='feedback');
   document.getElementById('admTabGrievances').classList.toggle('on', section==='grievances');
+  document.getElementById('admTabCleanup').classList.toggle('on', section==='cleanup');
   document.getElementById('admSectionOverview').classList.toggle('hide', section!=='overview');
   document.getElementById('admSectionPending').classList.toggle('hide', section!=='pending');
   document.getElementById('admSectionReports').classList.toggle('hide', section!=='reports');
   document.getElementById('admSectionFeedback').classList.toggle('hide', section!=='feedback');
   document.getElementById('admSectionGrievances').classList.toggle('hide', section!=='grievances');
+  document.getElementById('admSectionCleanup').classList.toggle('hide', section!=='cleanup');
   if(section==='overview') loadOverview();
   if(section==='reports') loadReportsQueue();
   if(section==='feedback') loadFeedbackView();
   if(section==='grievances') loadGrievances();
+  if(section==='cleanup') loadCleanupCandidates();
 }
 
 // ═══════════════════════════════════════════════
@@ -877,6 +912,91 @@ async function resolveGrievanceEntry(id){
     toast('✅ Grievance resolved.');
     loadGrievances();
   } catch(e){ toast('Error: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// CLEANUP — bulk-select stale (past-expiry, still active) and duplicate
+// (same seller + title + price) listings for permanent deletion. One shared
+// checkbox-selection Set across both lists so the bottom bar's count and
+// delete button reflect everything ticked, regardless of which list it's in.
+// ═══════════════════════════════════════════════
+let _clnLoaded = false;
+const _clnSelected = new Set();
+
+async function loadCleanupCandidates(){
+  if(_clnLoaded) return;
+  document.getElementById('cleanupList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/listings/cleanup/candidates');
+    const stale = data.stale || [];
+    const dupGroups = data.duplicates || [];
+    _clnLoaded = true;
+    const dupCount = dupGroups.reduce((s,g)=>s+g.length, 0);
+    setBlockCount('admCountCleanup', stale.length + dupCount);
+
+    if(!stale.length && !dupGroups.length){
+      document.getElementById('cleanupList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">Nothing to clean up — no stale or duplicate listings found. ✅</div>';
+      return;
+    }
+
+    let html = '';
+    if(stale.length){
+      html += `<div class="cln-section-hd">⏰ Stale (past expiry, still active) — ${stale.length}</div>`;
+      html += stale.map(l => clnItemHtml(l, `Expired ${new Date(l.expires_at).toLocaleDateString('en-IN')}`)).join('');
+    }
+    if(dupGroups.length){
+      html += `<div class="cln-section-hd">📑 Possible Duplicates — ${dupGroups.length} group(s)</div>`;
+      html += dupGroups.map((g,gi) => `
+        <div class="cln-group">
+          <div class="cln-group-tag">Group ${gi+1} — same seller, title & price (${g.length})</div>
+          ${g.map(l => clnItemHtml(l, `Posted ${new Date(l.created_at).toLocaleDateString('en-IN')}`)).join('')}
+        </div>`).join('');
+    }
+    document.getElementById('cleanupList').innerHTML = html;
+  } catch(e){
+    document.getElementById('cleanupList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+function clnItemHtml(l, sub){
+  return `
+    <div class="cln-item">
+      <input type="checkbox" onchange="toggleClnSelect('${l.id}', this.checked)">
+      <div class="cln-item-body">
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
+        <div class="admin-item-meta">
+          <span>${l.subcategory||l.category}</span>
+          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
+          <span>👤 ${l.profiles?.full_name||'Unknown'}</span>
+          <span style="color:var(--muted);">${sub}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleClnSelect(id, checked){
+  if(checked) _clnSelected.add(id); else _clnSelected.delete(id);
+  document.getElementById('clnSelCount').textContent = `${_clnSelected.size} selected`;
+  document.getElementById('clnDeleteBtn').disabled = _clnSelected.size === 0;
+}
+
+async function bulkDeleteCleanup(){
+  const ids = [..._clnSelected];
+  if(!ids.length) return;
+  if(!confirm(`Delete ${ids.length} listing(s) permanently? This cannot be undone.`)) return;
+  const btn = document.getElementById('clnDeleteBtn');
+  btn.disabled = true;
+  try {
+    const data = await apiPost('/api/listings/cleanup/bulk-delete', { ids });
+    toast(data.message);
+    _clnSelected.clear();
+    _clnLoaded = false;
+    loadCleanupCandidates();
+  } catch(e){
+    toast('Error: '+e.message);
+    btn.disabled = false;
+  }
 }
 
 // ═══════════════════════════════════════════════
