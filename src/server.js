@@ -31,12 +31,13 @@ Sentry.init({
   sendDefaultPii: false, // Rule 8: never send PII (emails, phone numbers, cookies) to a third party
 });
 
-const path       = require('path');
-const express    = require('express');
-const cors       = require('cors');
-const helmet     = require('helmet');
-const morgan     = require('morgan');
-const rateLimit  = require('express-rate-limit');
+const path        = require('path');
+const express     = require('express');
+const cors        = require('cors');
+const helmet      = require('helmet');
+const morgan      = require('morgan');
+const compression = require('compression');
+const rateLimit   = require('express-rate-limit');
 
 const authRoutes         = require('./routes/auth');
 const listingRoutes      = require('./routes/listings');
@@ -87,6 +88,10 @@ app.use(helmet({
     },
   },
 }));
+// gzips text responses (HTML/CSS/JS/JSON) — Lighthouse flagged 169KB of
+// potential savings with this off. Default filter/threshold; images and
+// already-compressed assets are skipped automatically.
+app.use(compression());
 app.use(morgan('dev'));
 
 // ── CORS ─────────────────────────────────────────────────────
