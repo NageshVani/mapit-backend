@@ -19,6 +19,8 @@
 <meta name="twitter:image" content="https://www.mapit.co.in/og-image.png">
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -976,6 +978,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ═══════════════════════════════════════════════
@@ -1925,6 +1928,12 @@ let _exploreMarker = null, _exploreMoveTO = null;
 const mMarkers = {};
 let mStackMarkers = []; // co-located listings (identical GPS) rendered as one stacked pin — {ids:Set, group, marker}
 let hoverTO;
+// Browse-tab-only marker clustering (Leaflet.markercluster) — groups pins that
+// are merely close together on screen at the current zoom, separate from the
+// mStackMarkers logic above which groups pins sharing the *exact same* GPS
+// coordinate. Saved/My Ads never use this: both are small, user-owned lists
+// that already auto-fit bounds, so clustering would add nothing there.
+let listingCluster = null;
 
 let _userMarker = null;
 
@@ -1936,6 +1945,22 @@ function initMap(){
     subdomains:'abcd',maxZoom:20,
   }).addTo(map);
   L.control.zoom({position:'bottomright'}).addTo(map);
+
+  listingCluster = L.markerClusterGroup({
+    maxClusterRadius: 60,       // px — tight-ish, only clusters pins that would actually overlap/crowd
+    spiderfyOnMaxZoom: true,    // fan out individual pins if still clustered at max zoom
+    showCoverageOnHover: false, // skip the bounds-highlight rectangle, keeps the map calm
+    disableClusteringAtZoom: 16,// street-level zoom always shows real individual pins
+  }).addTo(map);
+  // Desktop-only hover preview of what's inside a cluster bubble — same
+  // hoverCard element the single-pin and stack-pin hovers already use.
+  // Clicking still does the library's default zoom/spiderfy, unchanged.
+  listingCluster.on('clustermouseover', e => {
+    if(_isTouchDevice()) return;
+    const listings = e.layer.getAllChildMarkers().flatMap(m => m._mapitListings || []);
+    showClusterHoverCard(e.layer.getLatLng(), listings);
+  });
+  listingCluster.on('clustermouseout', () => hideHoverCard());
 
   // User location marker — stored so it can be moved when active pin changes
   _userMarker = L.marker([loc.lat,loc.lng],{
@@ -1998,6 +2023,7 @@ function drawMarkers(){
   for(const k in mMarkers) delete mMarkers[k];
   mStackMarkers.forEach(s=>s.marker.remove());
   mStackMarkers = [];
+  listingCluster.clearLayers();
   // Markers are about to be torn down and rebuilt — an open tap-preview
   // tooltip would otherwise point at a marker that no longer exists.
   _tapPreviewId = null;
@@ -2027,7 +2053,6 @@ function drawMarkers(){
       const l = group[0];
       const sel = l.id === ST.selId;
       const m = L.marker([l.lat,l.lng],{icon:mkIcon(l,sel),zIndexOffset:sel?500:0})
-        .addTo(map)
         .on('click',()=>{
           if(!_isTouchDevice()){ selListing(l.id, keepTab); return; }
           // Mobile scan UX (Tester-7): first tap previews in a tooltip, second
@@ -2043,15 +2068,18 @@ function drawMarkers(){
         })
         .on('mouseover',()=>{ if(!_isTouchDevice()) showHoverCard(l); })
         .on('mouseout',()=>{ if(!_isTouchDevice()) hideHoverCard(); });
+      m._mapitListings = [l]; // read by the cluster hover preview to list what's inside a bubble
+      keepTab ? m.addTo(map) : listingCluster.addLayer(m);
       mMarkers[l.id] = m;
     } else {
       const ids = new Set(group.map(l=>l.id));
       const anySel = ids.has(ST.selId);
       const m = L.marker([group[0].lat,group[0].lng],{icon:mkStackIcon(group[0],group.length,anySel),zIndexOffset:anySel?500:0})
-        .addTo(map)
         .on('click',()=>openStackPopup(group, keepTab))
         .on('mouseover',()=>showStackHoverCard(group))
         .on('mouseout',()=>hideHoverCard());
+      m._mapitListings = group; // read by the cluster hover preview to list what's inside a bubble
+      keepTab ? m.addTo(map) : listingCluster.addLayer(m);
       mStackMarkers.push({ids, group, marker:m});
     }
   });
@@ -2098,6 +2126,32 @@ function showStackHoverCard(group){
   document.getElementById('hcInner').innerHTML = `
     <div class="hc-title">📍 ${group.length} listings here</div>
     <div class="hc-tip">Click pin to see the full list →</div>`;
+  hc.classList.add('show');
+}
+
+// Cluster-bubble hover preview — one compact line per listing (emoji +
+// subcategory only, not title/price like the stack popup) since a cluster
+// can hold far more listings than a same-coordinate stack and this is just
+// a fast glance, not the full list. Capped so a huge cluster can't produce
+// an unreadably tall tooltip.
+const CLUSTER_HOVER_MAX_LINES = 12;
+function showClusterHoverCard(latlng, listings){
+  clearTimeout(hoverTO);
+  const pt = map.latLngToContainerPoint(latlng);
+  const hc = document.getElementById('hoverCard');
+  const mw = document.getElementById('mapc').offsetWidth;
+  let left = pt.x + 18, top = pt.y - 60;
+  if(left+250>mw) left = pt.x-255;
+  if(top<8) top = pt.y+18;
+  hc.style.left = left+'px'; hc.style.top = top+'px';
+  const shown = listings.slice(0, CLUSTER_HOVER_MAX_LINES);
+  const rows = shown.map(l=>`<div class="hc-row"><span>${listingEmoji(l)} ${l.subcategory||l.category}</span></div>`).join('');
+  const more = listings.length > CLUSTER_HOVER_MAX_LINES
+    ? `<div class="hc-row">+${listings.length - CLUSTER_HOVER_MAX_LINES} more…</div>` : '';
+  document.getElementById('hcInner').innerHTML = `
+    <div class="hc-title">📍 ${listings.length} listings here</div>
+    ${rows}${more}
+    <div class="hc-tip">Click to zoom in →</div>`;
   hc.classList.add('show');
 }
 
