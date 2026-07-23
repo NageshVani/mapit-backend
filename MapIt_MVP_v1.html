@@ -30,7 +30,7 @@
   --ink:#F7F9FC;--deep:#EDF0F5;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
   --orange:#F06030;--orange2:#FF7A50;
   --blue:#3B82F6;--green:#22C55E;--gold:#F59E0B;--red:#EF4444;
-  --text:#111827;--muted:#6B7280;--muted2:#4B5563;
+  --text:#111827;--muted:#5F6773;--muted2:#4B5563;
   --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
   --glow:rgba(240,96,48,0.12);--shadow:0 8px 32px rgba(0,0,0,0.10);
   --sb-w:380px;
@@ -46,7 +46,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #hdr{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
-.demo-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
+.beta-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
 .srch{flex:1;max-width:400px;position:relative;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.5;}
 #srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 30px 8px 32px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
@@ -95,8 +95,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .rad-box{padding:9px 12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
 .rad-hd{display:flex;justify-content:space-between;align-items:center;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
 .rad-hd span{color:var(--orange);}
-.rad-btns{display:flex;gap:4px;}
-.rbt{flex:1;padding:5px 0;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;}
+.rad-btns{display:flex;gap:4px;overflow-x:auto;}
+.rbt{flex:1;min-width:44px;padding:5px 0;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;}
 .rbt:hover{background:var(--card);color:var(--text);}
 .rbt.on{background:var(--orange);border-color:var(--orange);color:#fff;}
 .rad-box.disabled{opacity:.4;pointer-events:none;}
@@ -175,7 +175,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-price{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--orange);}
 .ld-specs{display:flex;flex-wrap:wrap;gap:5px;}
 .ld-spec{background:var(--card);border:1px solid var(--border2);padding:3px 9px;border-radius:5px;font-size:10.5px;color:var(--muted2);}
-.ld-desc{font-size:12px;line-height:1.7;color:var(--muted);background:var(--card);border-radius:8px;border:1px solid var(--border);padding:9px 11px;}
+.ld-desc{font-size:12px;line-height:1.7;color:var(--muted);background:var(--card);border-radius:8px;border:1px solid var(--border);padding:9px 11px;max-width:480px;}
 .ld-nearby{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 11px;display:flex;flex-direction:column;gap:4px;}
 .ld-nearby-hd{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
 .ld-nearby-item{font-size:12.5px;color:var(--text);}
@@ -818,7 +818,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <!-- ── HEADER ── -->
 <header id="hdr">
   <div class="logo">Map<em>It</em></div>
-  <div class="demo-tag">Beta</div>
+  <div class="beta-tag">Beta</div>
   <div class="srch">
     <span class="srch-ic">🔍</span>
     <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
@@ -2178,7 +2178,7 @@ function updateCircle(){
   if(ST.rad<999){
     radCircle=L.circle([loc.lat,loc.lng],{
       radius:ST.rad*1000,color:circleColor,fillColor:circleColor,
-      fillOpacity:.035,weight:1.5,dashArray:'7 6',
+      fillOpacity:.06,weight:2.5,dashArray:'7 6',
     }).addTo(map);
   }
 }
