@@ -97,6 +97,21 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .admin-suspend-cancel:hover{color:var(--red);}
 .admin-dismiss-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
 .admin-dismiss-btn:hover{border-color:var(--green);color:var(--green);}
+.admin-viewchat-btn{padding:6px 14px;background:transparent;border:1px solid var(--blue);color:var(--blue);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
+.admin-viewchat-btn:hover{background:var(--blue);color:#fff;}
+
+/* ── REPORTED-CHAT VIEWER MODAL ── */
+.chatview-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.chatview-box{background:var(--panel);border-radius:16px;box-shadow:var(--shadow);width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+.chatview-hd{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.chatview-hd h3{font-size:14px;font-weight:700;}
+.chatview-close{background:none;border:none;font-size:20px;line-height:1;color:var(--muted);cursor:pointer;padding:2px 6px;}
+.chatview-close:hover{color:var(--text);}
+.chatview-body{padding:16px 20px;overflow-y:auto;flex:1;}
+.chatview-msg{margin-bottom:12px;}
+.chatview-msg-meta{font-size:10.5px;color:var(--muted);margin-bottom:2px;font-weight:600;}
+.chatview-msg-content{font-size:12.5px;color:var(--text);line-height:1.6;background:var(--card);border-radius:8px;padding:8px 12px;display:inline-block;max-width:90%;}
+.chatview-note{padding:0 20px 16px;font-size:10.5px;color:var(--muted);line-height:1.5;}
 
 /* ── GRIEVANCE LOG ── */
 .grv-input{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:12.5px;color:var(--text);font-family:'Outfit',sans-serif;outline:none;width:100%;}
@@ -242,6 +257,17 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
         <div id="grievanceList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="chatview-overlay hide" id="chatviewOverlay" onclick="if(event.target===this)closeReportChat()">
+  <div class="chatview-box">
+    <div class="chatview-hd">
+      <h3>💬 Reported Chat (read-only)</h3>
+      <button class="chatview-close" onclick="closeReportChat()">×</button>
+    </div>
+    <div class="chatview-body" id="chatviewBody"></div>
+    <div class="chatview-note">Read-only — you cannot reply from here. This view is logged for accountability.</div>
   </div>
 </div>
 
@@ -582,6 +608,7 @@ async function loadReportsQueue(){
           <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>
           <select class="admin-reason-sel" id="report-reason-${r.id}">${reasonOpts}</select>
           <button class="admin-reject-btn" onclick="resolveReport('${r.id}','remove_listing')" ${listing?'':'disabled'}>🗑 Remove Listing</button>
+          ${r.has_conversation ? `<button class="admin-viewchat-btn" onclick="openReportChat('${r.id}')">💬 View Chat</button>` : ''}
           ${suspendBtnHtml(listing?.seller_id, listing?.profiles?.suspended)}
         </div>
       </div>`;
@@ -602,6 +629,43 @@ async function resolveReport(reportId, action){
         '<div style="padding:30px;text-align:center;color:var(--muted);">No open reports — all clear! ✅</div>';
     }
   } catch(e){ toast('Error: '+e.message); }
+}
+
+async function openReportChat(reportId){
+  const overlay = document.getElementById('chatviewOverlay');
+  const body = document.getElementById('chatviewBody');
+  overlay.classList.remove('hide');
+  body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet(`/api/listings/reports/${reportId}/chat`);
+    const { conversation, messages } = data;
+    if(!messages.length){
+      body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">No messages in this conversation yet.</div>';
+      return;
+    }
+    body.innerHTML = messages.map(m=>{
+      const isBuyer = m.sender_id === conversation.buyer_id;
+      const who = isBuyer ? (conversation.buyer?.nickname||'Buyer') : (conversation.seller?.nickname||'Seller');
+      const roleTag = isBuyer ? 'Buyer' : 'Seller';
+      return `
+      <div class="chatview-msg">
+        <div class="chatview-msg-meta">${who} (${roleTag}) · ${new Date(m.sent_at).toLocaleString('en-IN')}</div>
+        <div class="chatview-msg-content">${escapeHtmlAdm(m.content||'')}</div>
+      </div>`;
+    }).join('');
+  } catch(e){
+    body.innerHTML = `<div style="padding:20px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+function closeReportChat(){
+  document.getElementById('chatviewOverlay').classList.add('hide');
+}
+
+function escapeHtmlAdm(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
 // ═══════════════════════════════════════════════

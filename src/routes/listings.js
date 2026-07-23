@@ -76,7 +76,72 @@ router.get('/reports/queue', requireAuth, requireAdmin, async (req, res, next) =
       .order('created_at', { ascending: false });
 
     if (error) return next(createError(error.message));
-    res.json({ reports: reports || [] });
+
+    // Batch-check which reports have a matching conversation (reporter as
+    // buyer, on the reported listing) so the admin page can show/hide the
+    // "View Chat" button without an extra round-trip per report.
+    const listingIds = [...new Set((reports || []).map(r => r.listing_id))];
+    let convKeySet = new Set();
+    if (listingIds.length > 0) {
+      const { data: convs } = await supabaseAdmin
+        .from('conversations')
+        .select('listing_id, buyer_id')
+        .in('listing_id', listingIds);
+      (convs || []).forEach(c => convKeySet.add(`${c.listing_id}:${c.buyer_id}`));
+    }
+    const withFlag = (reports || []).map(r => ({
+      ...r,
+      has_conversation: convKeySet.has(`${r.listing_id}:${r.reporter_id}`),
+    }));
+
+    res.json({ reports: withFlag });
+  } catch (err) { next(err); }
+});
+
+// ── GET the chat thread tied to a report (admin, read-only) ──────
+// GET /api/listings/reports/:reportId/chat
+// Finds the conversation between the reporter (as buyer) and the listing's
+// seller, returns the full message history with sender nicknames, and logs
+// the view to report_chat_views. 404s if no matching conversation exists —
+// the frontend only shows the "View Chat" button when has_conversation was
+// true on the queue response, so this is a safety net, not the main path.
+router.get('/reports/:reportId/chat', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { reportId } = req.params;
+
+    const { data: report } = await supabaseAdmin
+      .from('listing_reports')
+      .select('id, listing_id, reporter_id')
+      .eq('id', reportId)
+      .single();
+    if (!report) return next(createError('Report not found.', 404));
+
+    const { data: conversation } = await supabaseAdmin
+      .from('conversations')
+      .select(`
+        id, listing_id, buyer_id, seller_id,
+        buyer:profiles!buyer_id(id, nickname),
+        seller:profiles!seller_id(id, nickname)
+      `)
+      .eq('listing_id', report.listing_id)
+      .eq('buyer_id', report.reporter_id)
+      .maybeSingle();
+
+    if (!conversation) return next(createError('No conversation found for this report.', 404));
+
+    const { data: messages, error } = await supabaseAdmin
+      .from('chat_messages')
+      .select('id, sender_id, content, sent_at')
+      .eq('conversation_id', conversation.id)
+      .order('sent_at', { ascending: true });
+    if (error) return next(createError(error.message));
+
+    const { error: logErr } = await supabaseAdmin
+      .from('report_chat_views')
+      .insert({ report_id: reportId, admin_id: req.user.id });
+    if (logErr) console.error('report_chat_views logging failed:', logErr.message);
+
+    res.json({ conversation, messages: messages || [] });
   } catch (err) { next(err); }
 });
 
