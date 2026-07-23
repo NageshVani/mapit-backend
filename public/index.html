@@ -237,6 +237,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #main.view-map #sb{display:none;}
 }
 
+/* ── EXPLORE AREA SEARCH BAR ── */
+.explore-search-box{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:650;width:min(360px,90%);background:var(--panel);border-radius:24px;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;padding:9px 16px;gap:8px;}
+.explore-search-box.hide{display:none;}
+.explore-search-box input{flex:1;border:none;outline:none;font-size:13px;font-family:'Outfit',sans-serif;background:transparent;color:var(--text);}
+.explore-search-ic{font-size:13px;color:var(--muted);flex-shrink:0;}
+.explore-search-dd{position:absolute;top:100%;left:0;right:0;background:var(--panel);border-radius:10px;margin-top:6px;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.18);}
+.explore-search-dd.hide{display:none;}
+.explore-search-row{padding:9px 14px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);}
+.explore-search-row:last-child{border-bottom:none;}
+.explore-search-row:hover{background:var(--card);}
+
 /* ── HOVER CARD ── */
 #hoverCard{position:absolute;z-index:700;pointer-events:none;opacity:0;transform:translateY(4px) scale(.97);transition:opacity .15s,transform .15s;min-width:210px;max-width:240px;}
 #hoverCard.show{opacity:1;transform:translateY(0) scale(1);}
@@ -877,6 +888,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div id="map"></div>
     <div class="cnt-mini"><b id="mapCnt">0</b> pins visible</div>
     <div id="hoverCard"><div class="hc-inner" id="hcInner"></div></div>
+    <div class="explore-search-box hide" id="exploreSearchBox">
+      <span class="explore-search-ic">🔍</span>
+      <input type="text" id="exploreSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onExploreSearchInput()"/>
+      <div id="exploreSearchDD" class="explore-search-dd hide"></div>
+    </div>
   </div>
   <div id="viewToggle" class="vtog">
     <button class="vbtn" id="vbtnList" onclick="setViewMode('list')">☰ List</button>
@@ -3259,16 +3275,24 @@ function setSearchMode(mode){
   document.getElementById('smExplore').classList.toggle('on', ST.exploreMode);
   const radMode = document.getElementById('radMode');
   if(radMode) radMode.textContent = ST.exploreMode ? 'Search Radius' : 'Proximity Radius';
+  const searchBox = document.getElementById('exploreSearchBox');
   if(ST.exploreMode){
     _placeExploreMarker();
     map.on('move', _onExploreMove);
     map.on('moveend', _onExploreMoveEnd);
+    if(searchBox) searchBox.classList.remove('hide');
     toast('🗺 Explore mode — pan the map to search any area');
   } else {
     if(_exploreMarker){ _exploreMarker.remove(); _exploreMarker = null; }
     clearTimeout(_exploreMoveTO);
     map.off('move', _onExploreMove);
     map.off('moveend', _onExploreMoveEnd);
+    if(searchBox){
+      searchBox.classList.add('hide');
+      document.getElementById('exploreSearchIn').value = '';
+      document.getElementById('exploreSearchDD').classList.add('hide');
+      document.getElementById('exploreSearchDD').innerHTML = '';
+    }
   }
   updateCircle();
   loadListings();
@@ -3294,6 +3318,74 @@ function _onExploreMoveEnd(){
   clearTimeout(_exploreMoveTO);
   _exploreMoveTO = setTimeout(loadListings, 800);
 }
+
+// ── Explore Area search bar (Session 8 item 11) ────────────────
+// Same Photon-based locality/city search as the post-listing/home-location
+// pickers (HOMELOC_SEARCH_CLASSES) — flyTo only, never places a pin. In
+// Explore mode the map center itself IS the search point (the blue dot
+// marker + radius circle already follow map center via _onExploreMove),
+// so flyTo's own 'moveend' event is all that's needed to pick up the new
+// area — no separate marker-placement step like the post-listing picker needs.
+let _exploreSearchTimer = null;
+let _exploreSearchResults = [];
+
+function _onExploreSearchInput(){
+  clearTimeout(_exploreSearchTimer);
+  const q = document.getElementById('exploreSearchIn').value.trim();
+  const dd = document.getElementById('exploreSearchDD');
+  if(q.length < 4){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
+  _exploreSearchTimer = setTimeout(()=>_runExploreSearch(q), 400);
+}
+
+async function _runExploreSearch(q){
+  const dd = document.getElementById('exploreSearchDD');
+  try {
+    const c = map.getCenter();
+    const latDelta = 0.35; // ~39km
+    const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
+    const geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
+    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const { features } = await r.json();
+    _exploreSearchResults = features
+      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
+      .map(f => {
+        const p = f.properties;
+        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
+          .filter(Boolean).join(', ');
+        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
+      });
+    if(!_exploreSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
+    dd.innerHTML = '';
+    _exploreSearchResults.forEach((m, i) => {
+      const row = document.createElement('div');
+      row.className = 'explore-search-row';
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.onclick = () => _pickExploreSearchResult(i);
+      dd.appendChild(row);
+    });
+    dd.classList.remove('hide');
+  } catch(_){
+    dd.classList.add('hide'); dd.innerHTML = '';
+  }
+}
+
+function _pickExploreSearchResult(i){
+  const m = _exploreSearchResults[i];
+  if(!m) return;
+  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('exploreSearchDD').classList.add('hide');
+  map.flyTo([+m.lat, +m.lon], 15);
+}
+
+// Close the results dropdown on any click outside the search box, same
+// safety-net every other search dropdown in this app lacks (they live
+// inside modals that get closed a different way) — this one floats over
+// the live map, so a stray click needs to dismiss it instead of leaving
+// stale results hovering over the tiles.
+document.addEventListener('click', (e) => {
+  const box = document.getElementById('exploreSearchBox');
+  if(box && !box.contains(e.target)) document.getElementById('exploreSearchDD').classList.add('hide');
+});
 function setMode(btn){
   document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on',b===btn));
   if(btn.dataset.m==='post') openPostModal();
