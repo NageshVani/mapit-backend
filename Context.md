@@ -45,6 +45,9 @@
 
 ## 🎯 Current Goal
 
+**Session 7 + Session 8 — ✅ PROMOTED TO PRODUCTION (2026-07-26).** `feat/session-08-admin-dashboard` → `uat` (merge commit `9727b22`, pushed) → PR #1 → `main` (merge commit `2b8380f`, merged and confirmed live). Both Session 7 (Sentry, Helmet CSP, legal pages `/terms`+`/privacy`, ToS/Privacy v1.0) and all 11 Session 8 items (admin dashboard, suspend enforcement, grievance log, reported-chat visibility, bulk cleanup, perf audit, robots.txt/sitemap, marker clustering, UX polish, overview dashboard, Explore Area search) are now live on `mapit.co.in`. `gh` CLI installed + authenticated (`brew install gh` + `gh auth login`, device-code web flow) mid-session to enable PR creation directly. Local `main` fast-forwarded clean to `2b8380f`. **Next: decide Session 9 scope**, or pick up the parked items below (seed-listing idea, `.env.example` Sentry placeholder, cosmetic price/pill overlap, admin-route role-check hardening).
+
+Prior status, superseded above (2026-07-26 pre-merge):
 **Session 8 — ✅ ALL 12 UAT CHECKLIST ITEMS PASSED by Nagesh, cleared for promotion (2026-07-26).** Session 7 (Terms/Privacy) and Session 8 (Admin Dashboard) are both ready to promote `feat/session-08-admin-dashboard` → `uat` → `main` per Rule 6, pending Nagesh's final go-ahead to actually run the merge. Also this session (2026-07-26):
 - ✅ **Stale local dev server killed** — PID 28913 (plain `node`, listening on :3001, pre-dating the earlier nodemon fix) found via `lsof` and killed; port confirmed free.
 - ✅ **`profiles.suspended` (007-user-suspension.sql) — checked by Nagesh, cleared for promotion** to `uat` → `main` alongside the rest of Session 8.
