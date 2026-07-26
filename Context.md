@@ -1734,3 +1734,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **Status:** Pending manual sign-off. Items 6 (favicon), 7 (robots.txt/sitemap), 8 (clustering + hover preview), and 9 (UX polish) pre-marked Pass since already confirmed live earlier in this same session. Items 1–5, 10, 11 (admin gate, suspend/reinstate, grievance log, reported-chat visibility, bulk cleanup, Overview dashboard, Explore Area search) are fresh checks for this pass.
 - **Covers:** All 11 Session 8 items — `/admin` page + real admin gate, Suspend/Reinstate enforcement, Grievance log, Reported-chat visibility, Bulk listing cleanup tool, Lighthouse mobile performance audit, `robots.txt`+`sitemap.xml`, Marker clustering + cluster hover preview, UX polish pass, Overview dashboard, Explore Area search bar.
 - **After sign-off:** Session 8 has no further open items — fully complete. Ready to plan Session 9 or promote this branch per Rule 6 (uat → main).
+
+## UAT Status — Session 09a
+
+- **Report:** `docs/session-09a-uat-report.html`
+- **Automated:** 22 PASS / 3 FAIL→FIXED / 0 WARN / 0 SKIP — the 3 failures were all in item 6 (email verification): a full authentication bypass (Supabase auto-confirms accounts regardless of the `email_confirm` flag), a broken `isNewUser` signal (a DB trigger auto-creates the profiles row before `/register` runs), and a session-invalidation bug (setting the password revokes the just-issued session). All three found via direct `curl`/diagnostic-script testing, fixed inline, and re-verified.
+- **Manual checklist:** `docs/session-09a-uat-checklist-Nagesh.html`
+- **Tester:** Nagesh
+- **Status:** Pending manual sign-off. Items 1, 2, 3, 4, 7, 8 (CORS, CSP, RLS, Sentry, OAuth redirects, service-role-key leak) pre-marked Pass — already confirmed today via automated checks or Nagesh's own dashboard/SQL checks. Items 5 (legal pages) and 6 (email verification, 3 sub-cards) are fresh checks for this pass — item 6 especially, given how many rounds of bugs it took to get working.
+- **Covers:** All 8 Session 9a items — CORS allow-list, Helmet CSP headers, RLS on all 7 tables, Sentry error/alert monitoring, legal pages live in production, email verification, Google OAuth redirect configuration, no leaked service-role key.
+- **After sign-off:** PR #7 (`uat` → `main`) still needs merging — the fixed email-verification code is not yet live on production. Once merged, decide next: splash/Help-modal content+font pass (placeholder already in Context.md), or Session 9's paid-subscription bundle.
