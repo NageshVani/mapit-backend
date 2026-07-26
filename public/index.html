@@ -1446,6 +1446,7 @@ async function submitAuth(){
     if(!nickname){ showErr('authError','Please enter a nickname — it will be your display name.'); return; }
     ST._pendingFullName = fullName;
     ST._pendingNickname = nickname;
+    ST._pendingPassword = password;
   }
   const btn = document.getElementById('authSubmitBtn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
@@ -1636,24 +1637,47 @@ async function verifyOtp(){
     ST.user    = data.user;
     ST.profile = data.profile;
     ST.authProvider = 'email';
-    const uid = data.user?.id;
-    if(uid){
-      const name = data.profile?.nickname || data.profile?.full_name || '';
-      saveToMultiSessions(uid, { session: data.session, name, nickname: data.profile?.nickname||'', initials: getInitials(name), email: data.user?.email });
+
+    // Signup flow never sets a password on the account until verification
+    // succeeds — apply it now. Gate on agreed_tos_at rather than isNewUser:
+    // a DB trigger auto-creates a blank profiles row the instant the auth
+    // account exists (before /register ever runs), so isNewUser (= !profile)
+    // is always false even for a genuinely brand-new signup. agreed_tos_at
+    // is only ever set by POST /register, so its absence reliably means
+    // "never completed registration" — and it survives the invite-code
+    // profile reset script (which nulls nickname/full_name but not this),
+    // so a returning family member's real password still won't be clobbered.
+    if(!data.profile?.agreed_tos_at && ST._pendingPassword){
+      const newPassword = ST._pendingPassword;
+      ST._pendingPassword = null;
+      await apiPut('/api/auth/password', { password: newPassword });
+      // Setting the password via the admin API invalidates the session we
+      // just got from verify-otp (Supabase revokes existing sessions on a
+      // credentials change) — re-sign-in to get a fresh, valid one before
+      // continuing, or the next call (register) fails with "session expired".
+      const fresh = await apiPost('/api/auth/signin', { email, password: newPassword });
+      ST.session = fresh.session;
+      ST.user    = fresh.user;
+      ST.profile = fresh.profile;
     }
-    const needsProfile = data.isNewUser
-      || !data.profile?.nickname
-      || data.profile.nickname === 'MapIt User'
-      || !data.profile?.full_name
-      || data.profile.full_name === 'MapIt User';
+
+    const uid = ST.user?.id;
+    if(uid){
+      const name = ST.profile?.nickname || ST.profile?.full_name || '';
+      saveToMultiSessions(uid, { session: ST.session, name, nickname: ST.profile?.nickname||'', initials: getInitials(name), email: ST.user?.email });
+    }
+    const needsProfile = !ST.profile?.nickname
+      || ST.profile.nickname === 'MapIt User'
+      || !ST.profile?.full_name
+      || ST.profile.full_name === 'MapIt User';
     if(needsProfile){
       // Signup flow already collected Name+Nickname before verification — don't ask twice
       if(ST._pendingFullName) document.getElementById('nameInput').value = ST._pendingFullName;
-      else if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')
-        document.getElementById('nameInput').value = data.profile.full_name;
+      else if(ST.profile?.full_name && ST.profile.full_name !== 'MapIt User')
+        document.getElementById('nameInput').value = ST.profile.full_name;
       if(ST._pendingNickname) document.getElementById('profileNicknameInput').value = ST._pendingNickname;
-      else if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
-        document.getElementById('profileNicknameInput').value = data.profile.nickname;
+      else if(ST.profile?.nickname && ST.profile.nickname !== 'MapIt User')
+        document.getElementById('profileNicknameInput').value = ST.profile.nickname;
       showProfileNameRow(!(ST._pendingFullName && ST._pendingNickname));
       goToStep('step-profile');
     } else {
