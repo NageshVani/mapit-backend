@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MapIt — Buy &amp; Sell Near You</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="description" content="MapIt is a location-first marketplace for Bangalore. Browse listings by exact GPS pin, post your ad for free, and connect with nearby buyers and sellers.">
 <!-- Open Graph / WhatsApp / Facebook -->
 <meta property="og:type" content="website">
@@ -18,6 +19,8 @@
 <meta name="twitter:image" content="https://www.mapit.co.in/og-image.png">
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -27,7 +30,7 @@
   --ink:#F7F9FC;--deep:#EDF0F5;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
   --orange:#F06030;--orange2:#FF7A50;
   --blue:#3B82F6;--green:#22C55E;--gold:#F59E0B;--red:#EF4444;
-  --text:#111827;--muted:#6B7280;--muted2:#4B5563;
+  --text:#111827;--muted:#5F6773;--muted2:#4B5563;
   --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
   --glow:rgba(240,96,48,0.12);--shadow:0 8px 32px rgba(0,0,0,0.10);
   --sb-w:380px;
@@ -43,7 +46,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #hdr{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
-.demo-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
+.beta-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
 .srch{flex:1;max-width:400px;position:relative;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.5;}
 #srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 30px 8px 32px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
@@ -92,8 +95,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .rad-box{padding:9px 12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
 .rad-hd{display:flex;justify-content:space-between;align-items:center;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
 .rad-hd span{color:var(--orange);}
-.rad-btns{display:flex;gap:4px;}
-.rbt{flex:1;padding:5px 0;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;}
+.rad-btns{display:flex;gap:4px;overflow-x:auto;}
+.rbt{flex:1;min-width:44px;padding:5px 0;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;}
 .rbt:hover{background:var(--card);color:var(--text);}
 .rbt.on{background:var(--orange);border-color:var(--orange);color:#fff;}
 .rad-box.disabled{opacity:.4;pointer-events:none;}
@@ -153,6 +156,13 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-interest-send:disabled{opacity:.5;cursor:not-allowed;}
 .ld-interest-cancel{background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
 #interestBox.hide{display:none;}
+.report-body{padding:16px 22px 22px;display:flex;flex-direction:column;gap:12px;}
+.report-reasons{display:flex;flex-wrap:wrap;gap:7px;}
+.report-reason{padding:6px 13px;background:var(--card);border:1px solid var(--border2);border-radius:16px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;}
+.report-reason.sel{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08);}
+.report-body textarea{width:100%;min-height:60px;max-height:140px;resize:vertical;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;background:var(--card);color:inherit;box-sizing:border-box;}
+.report-submit{background:var(--red);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;}
+.report-submit:disabled{opacity:.5;cursor:not-allowed;}
 #homeLocSearchDD.hide{display:none;}
 #postLocSearchDD.hide{display:none;}
 .ld-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
@@ -165,7 +175,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-price{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--orange);}
 .ld-specs{display:flex;flex-wrap:wrap;gap:5px;}
 .ld-spec{background:var(--card);border:1px solid var(--border2);padding:3px 9px;border-radius:5px;font-size:10.5px;color:var(--muted2);}
-.ld-desc{font-size:12px;line-height:1.7;color:var(--muted);background:var(--card);border-radius:8px;border:1px solid var(--border);padding:9px 11px;}
+.ld-desc{font-size:12px;line-height:1.7;color:var(--muted);background:var(--card);border-radius:8px;border:1px solid var(--border);padding:9px 11px;max-width:480px;}
 .ld-nearby{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 11px;display:flex;flex-direction:column;gap:4px;}
 .ld-nearby-hd{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
 .ld-nearby-item{font-size:12.5px;color:var(--text);}
@@ -230,6 +240,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #main.view-map #sb{display:none;}
 }
 
+/* ── EXPLORE AREA SEARCH BAR ── */
+.explore-search-box{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:650;width:min(360px,90%);background:var(--panel);border-radius:24px;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;padding:9px 16px;gap:8px;}
+.explore-search-box.hide{display:none;}
+.explore-search-box input{flex:1;border:none;outline:none;font-size:13px;font-family:'Outfit',sans-serif;background:transparent;color:var(--text);}
+.explore-search-ic{font-size:13px;color:var(--muted);flex-shrink:0;}
+.explore-search-dd{position:absolute;top:100%;left:0;right:0;background:var(--panel);border-radius:10px;margin-top:6px;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.18);}
+.explore-search-dd.hide{display:none;}
+.explore-search-row{padding:9px 14px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);}
+.explore-search-row:last-child{border-bottom:none;}
+.explore-search-row:hover{background:var(--card);}
+
 /* ── HOVER CARD ── */
 #hoverCard{position:absolute;z-index:700;pointer-events:none;opacity:0;transform:translateY(4px) scale(.97);transition:opacity .15s,transform .15s;min-width:210px;max-width:240px;}
 #hoverCard.show{opacity:1;transform:translateY(0) scale(1);}
@@ -259,9 +280,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #chatBox{flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:280px;}
 #chatBox.hide{display:none;}
 .ch-hd{padding:8px 13px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.online-dot{width:7px;height:7px;background:#22C55E;border-radius:50%;}
 .ch-hd-name{font-size:12px;font-weight:600;}
-.ch-hd-sub{font-size:10.5px;color:var(--muted);}
 .ch-hd-close{margin-left:auto;cursor:pointer;font-size:13px;color:var(--muted);width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;}
 .ch-hd-close:hover{background:var(--card2);color:var(--text);}
 .cmsgs{flex:1;overflow-y:auto;padding:9px 11px;display:flex;flex-direction:column;gap:6px;}
@@ -475,31 +494,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .splash-msg ul{text-align:left;padding-left:20px;margin-top:12px;line-height:2.4;}
 .splash-btn{background:var(--orange);color:#fff;border:none;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:6px;}
 
-/* ── FEEDBACK VIEWER ── */
-.fbv-filters{display:flex;gap:5px;padding:12px 16px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--deep);}
-.fbv-filter{padding:4px 12px;border-radius:20px;border:1px solid var(--border2);font-size:11.5px;font-weight:600;cursor:pointer;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
-.fbv-filter:hover{background:var(--card);color:var(--text);}
-.fbv-filter.on{background:var(--orange);border-color:var(--orange);color:#fff;}
-.fbv-filter.resolved-tog{border-color:var(--green);color:var(--green);}
-.fbv-filter.resolved-tog.on{background:var(--green);}
-.fbv-item{padding:14px 22px;border-bottom:1px solid var(--border);transition:opacity .2s;}
-.fbv-item.resolved{opacity:.45;}
-.fbv-item:last-child{border-bottom:none;}
-.fbv-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
-.fbv-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:4px;background:var(--card2);color:var(--muted2);}
-.fbv-name{font-size:11.5px;font-weight:600;color:var(--text);}
-.fbv-time{font-size:10.5px;color:var(--muted);margin-left:auto;}
-.fbv-resolved-badge{font-size:10px;font-weight:700;color:var(--green);padding:2px 8px;border-radius:4px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);}
-.fbv-text{font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:8px;}
-.fbv-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
-.fbv-reply-row{display:flex;gap:6px;margin-top:8px;}
-.fbv-reply-input{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text);font-family:'Outfit',sans-serif;outline:none;resize:none;height:60px;}
-.fbv-reply-input:focus{border-color:var(--orange);}
-.fbv-send-btn{padding:7px 14px;background:var(--orange);color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;white-space:nowrap;}
-.fbv-send-btn:hover{background:var(--orange2);}
-.fbv-resolve-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.07);color:var(--green);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
-.fbv-resolve-btn:hover{background:rgba(34,197,94,.18);}
-
 /* ── INBOX MODAL ── */
 .inbox-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
 .inbox-modal.hide{display:none;}
@@ -512,18 +506,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .inbox-preview{font-size:11.5px;color:var(--muted);line-height:1.5;}
 .inbox-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:6px;}
 
-/* ── ADMIN MODAL ── */
-.admin-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
-.admin-modal.hide{display:none;}
-.admin-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow);}
-.admin-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:1;}
-.admin-item{padding:14px 22px;border-bottom:1px solid var(--border);}
-.admin-item:last-child{border-bottom:none;}
-.admin-item-title{font-size:13px;font-weight:600;margin-bottom:4px;}
-.admin-item-meta{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
-.admin-approve-btn{padding:6px 16px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
-.admin-reject-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
-.admin-reject-btn:hover{border-color:var(--red);color:var(--red);}
 </style>
 </head>
 <body>
@@ -540,33 +522,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="splash hide" id="splashScreen">
   <div class="splash-logo">Map<em>It</em></div>
   <div class="splash-msg" id="splashMsg">Loading your map…</div>
-</div>
-
-<!-- ── FEEDBACK VIEWER MODAL ── -->
-<div class="admin-modal hide" id="feedbackViewModal">
-  <div class="admin-box">
-    <div class="admin-header">
-      <div style="font-size:15px;font-weight:700;">💬 Feedback from Family</div>
-      <div class="post-close" onclick="closeFeedbackViewModal()">✕</div>
-    </div>
-    <div class="fbv-filters" id="fbvFilters"></div>
-    <div id="feedbackViewList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
-  </div>
-</div>
-
-<!-- ── ADMIN MODAL ── -->
-<div class="admin-modal hide" id="adminModal">
-  <div class="admin-box">
-    <div class="admin-header">
-      <div style="font-size:15px;font-weight:700;">🔐 Pending Listings — Review Queue</div>
-      <div class="post-close" onclick="closeAdminModal()">✕</div>
-    </div>
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <span style="font-size:11px;color:var(--muted);">Removes photo files left behind in Storage by deleted listings.</span>
-      <button class="admin-reject-btn" style="white-space:nowrap;" onclick="cleanupOrphanedPhotos()">🧹 Clean Up Orphaned Photos</button>
-    </div>
-    <div id="adminList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
-  </div>
 </div>
 
 <!-- ── AUTH MODAL ── -->
@@ -679,7 +634,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <input class="modal-input" id="phoneInput" placeholder="+91 98765 43210" type="tel"/>
       <div class="tos-row">
         <input type="checkbox" id="tosCheck" onchange="updateProfileContinueState()" style="margin-top:2px;accent-color:var(--orange);width:16px;height:16px;flex-shrink:0;cursor:pointer;"/>
-        <label for="tosCheck" style="font-size:12px;color:var(--muted);line-height:1.5;cursor:pointer;">I agree to the <span style="color:var(--orange);font-weight:600;">Terms of Service</span> and <span style="color:var(--orange);font-weight:600;">Privacy Policy</span></label>
+        <label for="tosCheck" style="font-size:12px;color:var(--muted);line-height:1.5;cursor:pointer;">I agree to the <a href="/terms" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Privacy Policy</a></label>
       </div>
       <button class="modal-btn" id="profileContinueBtn" onclick="saveProfile()" disabled style="margin-top:14px;">
         <span>Continue →</span>
@@ -863,7 +818,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <!-- ── HEADER ── -->
 <header id="hdr">
   <div class="logo">Map<em>It</em></div>
-  <div class="demo-tag">Beta</div>
+  <div class="beta-tag">Beta</div>
   <div class="srch">
     <span class="srch-ic">🔍</span>
     <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
@@ -891,8 +846,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <span>📥 Inbox</span>
         <span id="inboxBadge" style="display:none;background:var(--orange);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;"></span>
       </div>
-      <div class="uav-item hide" id="adminMenuItem" onclick="openAdminModal()">🔐 Review Listings</div>
-      <div class="uav-item hide" id="feedbackViewMenuItem" onclick="openFeedbackViewModal()">💬 View Feedbacks</div>
+      <a class="uav-item hide" id="adminMenuItem" href="/admin" style="text-decoration:none;">🔐 Admin</a>
+      <a class="uav-item" href="/terms" target="_blank" rel="noopener" style="text-decoration:none;">📄 Terms of Service</a>
+      <a class="uav-item" href="/privacy" target="_blank" rel="noopener" style="text-decoration:none;">🔒 Privacy Policy</a>
       <button class="uav-signout" onclick="logout()">⎋ Sign Out &amp; Switch User</button>
     </div>
   </div>
@@ -923,7 +879,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="tab-bar">
       <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse')">📍 Listings <span class="tab-count" id="cnt-badge">0</span></button>
       <button class="tab-btn" id="tab-fav" onclick="switchTab('fav')">❤ Saved <span class="tab-count" id="fav-badge">0</span></button>
-      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📋 My Ads</button>
+      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📋 My Ads <span class="tab-count" id="mine-badge">0</span></button>
     </div>
     <div id="sb-content"></div>
     <div class="feedback-strip">
@@ -935,6 +891,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div id="map"></div>
     <div class="cnt-mini"><b id="mapCnt">0</b> pins visible</div>
     <div id="hoverCard"><div class="hc-inner" id="hcInner"></div></div>
+    <div class="explore-search-box hide" id="exploreSearchBox">
+      <span class="explore-search-ic">🔍</span>
+      <input type="text" id="exploreSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onExploreSearchInput()"/>
+      <div id="exploreSearchDD" class="explore-search-dd hide"></div>
+    </div>
   </div>
   <div id="viewToggle" class="vtog">
     <button class="vbtn" id="vbtnList" onclick="setViewMode('list')">☰ List</button>
@@ -999,9 +960,26 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   </div>
 </div>
 
+<!-- ── REPORT LISTING MODAL ── -->
+<div class="inbox-modal hide" id="reportModal">
+  <div class="inbox-box" style="max-width:380px;">
+    <div class="pins-header">
+      <div style="font-size:15px;font-weight:700;">🚩 Report this listing</div>
+      <div class="post-close" onclick="closeReportModal()">✕</div>
+    </div>
+    <div class="report-body">
+      <div class="report-reasons" id="reportReasons"></div>
+      <textarea id="reportNote" maxlength="500" placeholder="Optional — add any detail that would help us review this…"></textarea>
+      <button class="report-submit" id="reportSubmitBtn" onclick="submitReport()" disabled>Submit Report</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ═══════════════════════════════════════════════
 // API_URL auto-detects environment — no manual changes needed
@@ -1012,6 +990,22 @@ const API_URL = (() => {
   if (h === 'www.mapit.co.in' || h === 'mapit.co.in') return 'https://api.mapit.co.in';
   return ''; // UAT / Vercel preview → same-origin API
 })();
+
+// ═══════════════════════════════════════════════
+// SUPABASE CLIENT — Realtime chat only (all writes still go through the
+// backend REST API above). Anon key is safe to expose — RLS is the boundary.
+// ═══════════════════════════════════════════════
+let sbClient = null;
+let sbClientPromise = null;
+function getSbClient(){
+  if(sbClient) return Promise.resolve(sbClient);
+  if(sbClientPromise) return sbClientPromise;
+  sbClientPromise = fetch(`${API_URL}/api/config`).then(r=>r.json()).then(cfg=>{
+    sbClient = supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+    return sbClient;
+  });
+  return sbClientPromise;
+}
 
 // ═══════════════════════════════════════════════
 // CATEGORY DEFINITIONS
@@ -1224,7 +1218,9 @@ const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
   cat:'all', sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
   selId:null, tab:'browse', editingId:null,
-  chatOpen:false, chatMsgs:[], chatIdx:0,
+  chatOpen:false, chatMsgs:[], chatConvId:null, chatChannel:null,
+  conversationsByListing: new Map(), // listing_id -> conversation, buyer's own conversations only
+  allConversations: new Map(),       // conversation_id -> conversation, every conversation (buyer or seller side)
   listings:[],          // from API (browse — excludes the current user's own listings)
   myListings:[],        // from /api/listings/mine/all — only the current user's own listings
   favListings:[],       // from /api/listings/saved/all — saved listings with lat/lng for map display
@@ -1285,8 +1281,30 @@ async function api(path, options = {}){
   if(token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
+  if(res.status === 403 && data.suspended){
+    // A suspended user can hit this from any random action — force a clean
+    // sign-out with one clear message instead of letting scattered generic
+    // "Error: ..." toasts fire across whatever they happen to click next.
+    forceSuspendedSignOut();
+    throw new Error(data.error || 'Your account has been suspended.');
+  }
   if(!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
+}
+
+let _suspendedSignoutInProgress = false;
+function forceSuspendedSignOut(){
+  if(_suspendedSignoutInProgress) return;
+  _suspendedSignoutInProgress = true;
+  try { apiPost('/api/auth/logout', {}).catch(()=>{}); } catch(_){}
+  localStorage.removeItem('mapit_invite');
+  localStorage.removeItem('mapit_created_for');
+  ST.session = null; ST.user = null; ST.profile = null;
+  ST.inviteCode = ''; ST.createdFor = ''; ST.authProvider = null;
+  ST.userPins = []; ST.activePin = null;
+  ST.listings = []; ST.savedIds = new Set();
+  toast('⛔ Your account has been suspended. Contact support if you believe this is a mistake.');
+  setTimeout(()=>location.reload(), 2200);
 }
 
 async function apiGet(path){ return api(path); }
@@ -1856,7 +1874,6 @@ async function logout(){
   localStorage.removeItem('mapit_invite');
   localStorage.removeItem('mapit_created_for');
   document.getElementById('adminMenuItem').classList.add('hide');
-  document.getElementById('feedbackViewMenuItem').classList.add('hide');
   ST.session = null; ST.user = null; ST.profile = null;
   ST.inviteCode = ''; ST.createdFor = ''; ST.authProvider = null;
   ST.userPins = []; ST.activePin = null;
@@ -1911,6 +1928,12 @@ let _exploreMarker = null, _exploreMoveTO = null;
 const mMarkers = {};
 let mStackMarkers = []; // co-located listings (identical GPS) rendered as one stacked pin — {ids:Set, group, marker}
 let hoverTO;
+// Browse-tab-only marker clustering (Leaflet.markercluster) — groups pins that
+// are merely close together on screen at the current zoom, separate from the
+// mStackMarkers logic above which groups pins sharing the *exact same* GPS
+// coordinate. Saved/My Ads never use this: both are small, user-owned lists
+// that already auto-fit bounds, so clustering would add nothing there.
+let listingCluster = null;
 
 let _userMarker = null;
 
@@ -1922,6 +1945,22 @@ function initMap(){
     subdomains:'abcd',maxZoom:20,
   }).addTo(map);
   L.control.zoom({position:'bottomright'}).addTo(map);
+
+  listingCluster = L.markerClusterGroup({
+    maxClusterRadius: 60,       // px — tight-ish, only clusters pins that would actually overlap/crowd
+    spiderfyOnMaxZoom: true,    // fan out individual pins if still clustered at max zoom
+    showCoverageOnHover: false, // skip the bounds-highlight rectangle, keeps the map calm
+    disableClusteringAtZoom: 16,// street-level zoom always shows real individual pins
+  }).addTo(map);
+  // Desktop-only hover preview of what's inside a cluster bubble — same
+  // hoverCard element the single-pin and stack-pin hovers already use.
+  // Clicking still does the library's default zoom/spiderfy, unchanged.
+  listingCluster.on('clustermouseover', e => {
+    if(_isTouchDevice()) return;
+    const listings = e.layer.getAllChildMarkers().flatMap(m => m._mapitListings || []);
+    showClusterHoverCard(e.layer.getLatLng(), listings);
+  });
+  listingCluster.on('clustermouseout', () => hideHoverCard());
 
   // User location marker — stored so it can be moved when active pin changes
   _userMarker = L.marker([loc.lat,loc.lng],{
@@ -1984,15 +2023,21 @@ function drawMarkers(){
   for(const k in mMarkers) delete mMarkers[k];
   mStackMarkers.forEach(s=>s.marker.remove());
   mStackMarkers = [];
+  listingCluster.clearLayers();
   // Markers are about to be torn down and rebuilt — an open tap-preview
   // tooltip would otherwise point at a marker that no longer exists.
   _tapPreviewId = null;
   document.getElementById('hoverCard').classList.remove('show','tap-mode');
 
   const isFav = ST.tab === 'fav';
-  const fl = isFav ? ST.favListings : filtered();
+  const isMine = ST.tab === 'mine';
+  // My Ads: show only the seller's own listing pins (matches the sidebar
+  // list exactly, same as Saved) — not leftover Browse-tab radius/category
+  // pins, which were confusing since they had nothing to do with "my ads".
+  const fl = isFav ? ST.favListings : isMine ? ST.myListings : filtered();
+  const keepTab = isFav || isMine; // passed through to selListing() so clicking a pin doesn't reset the active tab
   document.getElementById('mapCnt').textContent = fl.length;
-  if(!isFav) document.getElementById('cnt-badge').textContent = fl.length;
+  if(!isFav && !isMine) document.getElementById('cnt-badge').textContent = fl.length;
 
   // Group listings by exact GPS coordinate — co-located listings (same
   // apartment complex/bazaar) render as one stacked pin instead of fully
@@ -2008,37 +2053,39 @@ function drawMarkers(){
       const l = group[0];
       const sel = l.id === ST.selId;
       const m = L.marker([l.lat,l.lng],{icon:mkIcon(l,sel),zIndexOffset:sel?500:0})
-        .addTo(map)
         .on('click',()=>{
-          if(!_isTouchDevice()){ selListing(l.id, isFav); return; }
+          if(!_isTouchDevice()){ selListing(l.id, keepTab); return; }
           // Mobile scan UX (Tester-7): first tap previews in a tooltip, second
           // tap on the same pin (or its "View" button) opens the full detail.
           if(_tapPreviewId === l.id){
             _tapPreviewId = null;
             document.getElementById('hoverCard').classList.remove('show','tap-mode');
-            selListing(l.id, isFav);
+            selListing(l.id, keepTab);
           } else {
             _tapPreviewId = l.id;
-            showHoverCard(l, isFav, true);
+            showHoverCard(l, keepTab, true);
           }
         })
         .on('mouseover',()=>{ if(!_isTouchDevice()) showHoverCard(l); })
         .on('mouseout',()=>{ if(!_isTouchDevice()) hideHoverCard(); });
+      m._mapitListings = [l]; // read by the cluster hover preview to list what's inside a bubble
+      keepTab ? m.addTo(map) : listingCluster.addLayer(m);
       mMarkers[l.id] = m;
     } else {
       const ids = new Set(group.map(l=>l.id));
       const anySel = ids.has(ST.selId);
       const m = L.marker([group[0].lat,group[0].lng],{icon:mkStackIcon(group[0],group.length,anySel),zIndexOffset:anySel?500:0})
-        .addTo(map)
-        .on('click',()=>openStackPopup(group, isFav))
+        .on('click',()=>openStackPopup(group, keepTab))
         .on('mouseover',()=>showStackHoverCard(group))
         .on('mouseout',()=>hideHoverCard());
+      m._mapitListings = group; // read by the cluster hover preview to list what's inside a bubble
+      keepTab ? m.addTo(map) : listingCluster.addLayer(m);
       mStackMarkers.push({ids, group, marker:m});
     }
   });
 
-  // Auto-fit map to show all saved listings when none is selected
-  if(isFav && fl.length > 0 && !ST.selId){
+  // Auto-fit map to show all saved/own listings when none is selected
+  if(keepTab && fl.length > 0 && !ST.selId){
     const bounds = L.latLngBounds(fl.map(l=>[l.lat,l.lng]));
     map.fitBounds(bounds, {padding:[50,50], animate:true, maxZoom:14});
   }
@@ -2082,6 +2129,32 @@ function showStackHoverCard(group){
   hc.classList.add('show');
 }
 
+// Cluster-bubble hover preview — one compact line per listing (emoji +
+// subcategory only, not title/price like the stack popup) since a cluster
+// can hold far more listings than a same-coordinate stack and this is just
+// a fast glance, not the full list. Capped so a huge cluster can't produce
+// an unreadably tall tooltip.
+const CLUSTER_HOVER_MAX_LINES = 12;
+function showClusterHoverCard(latlng, listings){
+  clearTimeout(hoverTO);
+  const pt = map.latLngToContainerPoint(latlng);
+  const hc = document.getElementById('hoverCard');
+  const mw = document.getElementById('mapc').offsetWidth;
+  let left = pt.x + 18, top = pt.y - 60;
+  if(left+250>mw) left = pt.x-255;
+  if(top<8) top = pt.y+18;
+  hc.style.left = left+'px'; hc.style.top = top+'px';
+  const shown = listings.slice(0, CLUSTER_HOVER_MAX_LINES);
+  const rows = shown.map(l=>`<div class="hc-row"><span>${listingEmoji(l)} ${l.subcategory||l.category}</span></div>`).join('');
+  const more = listings.length > CLUSTER_HOVER_MAX_LINES
+    ? `<div class="hc-row">+${listings.length - CLUSTER_HOVER_MAX_LINES} more…</div>` : '';
+  document.getElementById('hcInner').innerHTML = `
+    <div class="hc-title">📍 ${listings.length} listings here</div>
+    ${rows}${more}
+    <div class="hc-tip">Click to zoom in →</div>`;
+  hc.classList.add('show');
+}
+
 function drawPinMarkers(){
   if(window._pinMarkers) window._pinMarkers.forEach(m=>m.remove());
   window._pinMarkers = [];
@@ -2105,7 +2178,7 @@ function updateCircle(){
   if(ST.rad<999){
     radCircle=L.circle([loc.lat,loc.lng],{
       radius:ST.rad*1000,color:circleColor,fillColor:circleColor,
-      fillOpacity:.035,weight:1.5,dashArray:'7 6',
+      fillOpacity:.06,weight:2.5,dashArray:'7 6',
     }).addTo(map);
   }
 }
@@ -2219,6 +2292,19 @@ async function loadSaved(){
   } catch(_){}
 }
 
+function updateMineBadge(){
+  const b = document.getElementById('mine-badge');
+  if(b) b.textContent = ST.myListings.length;
+}
+
+async function loadMyAdsCount(){
+  try {
+    const data = await apiGet('/api/listings/mine/all');
+    ST.myListings = data.listings || [];
+    updateMineBadge();
+  } catch(_){}
+}
+
 async function toggleFav(id){
   try {
     const data = await apiPost(`/api/listings/${id}/save`, {});
@@ -2278,6 +2364,7 @@ async function renderMyAds(el){
     const data = await apiGet('/api/listings/mine/all');
     const listings = data.listings || [];
     ST.myListings = listings;
+    updateMineBadge();
     if(!listings.length){
       el.innerHTML = `<div class="sb-empty">
         <div class="sb-empty-ico">📋</div>
@@ -2412,8 +2499,14 @@ function renderSidebar(){
         <div class="ld-info-actions">
           ${ST.tab==='mine' && l.seller_id===ST.user?.id
             ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit<br>Listing</button>`
-            : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm<br>Interested</button>
-               <div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`}
+            : (()=>{
+                const conv = ST.conversationsByListing.get(l.id);
+                return conv
+                  ? `<button class="ld-chat-btn" id="interestBtn" onclick="openChat('${conv.id}')">💬<br>Chat</button>`
+                  : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm<br>Interested</button>`;
+              })()
+              + `<div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`
+              + `<div class="btn-icon" onclick="openReportModal('${l.id}')" title="Report this listing">🚩</div>`}
           <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Copy link to share">🔗</div>
         </div>
       </div>
@@ -2421,7 +2514,7 @@ function renderSidebar(){
         <textarea id="interestNote" maxlength="500" oninput="updateInterestSendState()"></textarea>
         <div class="ld-interest-actions">
           <button class="ld-interest-cancel" onclick="cancelInterestNote()">Cancel</button>
-          <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote()" disabled>Send</button>
+          <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote('${l.id}')" disabled>Send</button>
         </div>
       </div>
       ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}"/></div>`).join('')}</div>`:''}</div>
@@ -2444,9 +2537,10 @@ function renderSidebar(){
     </div>
     <div id="chatBox" class="${ST.chatOpen?'':'hide'}">
       <div class="ch-hd">
-        <div class="online-dot"></div>
-        <span class="ch-hd-name">${seller.full_name||'Seller'}</span>
-        <span class="ch-hd-sub">is online</span>
+        <span class="ch-hd-name">${(()=>{
+          const openConv = ST.chatOpen ? ST.allConversations.get(ST.chatConvId) : null;
+          return openConv?.other_user?.nickname || openConv?.other_user?.full_name || seller.full_name || 'Chat';
+        })()}</span>
         <div class="ch-hd-close" onclick="closeChat()">✕</div>
       </div>
       <div class="cmsgs" id="cmsgs"></div>
@@ -2479,7 +2573,7 @@ function renderSidebar(){
 // LISTING SELECTION
 // ═══════════════════════════════════════════════
 async function selListing(id, keepTab=false){
-  ST.selId=id; ST.chatOpen=false; ST.chatMsgs=[]; ST.chatIdx=0;
+  ST.selId=id; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatMsgs=[]; ST.chatConvId=null;
   if(!keepTab){
     ST.tab='browse';
     document.getElementById('tab-browse').classList.add('on');
@@ -2512,20 +2606,17 @@ async function selListing(id, keepTab=false){
 }
 
 function closeDetail(){
-  ST.selId=null; ST.chatOpen=false;
+  ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
 }
 
 // ═══════════════════════════════════════════════
-// CHAT (simulated for prototype — real in Session 4)
+// CHAT — real, backed by conversations/chat_messages + Supabase Realtime
 // ═══════════════════════════════════════════════
-const CHAT_RESPONSES = [
-  "Hi! Thanks for your interest. The item is still available — in excellent condition.",
-  "The price has some flexibility for serious buyers. When would you like to view it?",
-  "I can arrange a viewing any evening this week. The item is located close to you on the map!",
-  "Yes, I can consider a slight reduction. Let me know what works for you and we can finalise.",
-];
 
+// First contact still goes through the note box (buyer/seller are rarely
+// online at the same time — the note + seller-notification email is the
+// reliable channel; once it's sent, the real chat thread is unlocked).
 function openInterestNote(){
   const l = ST.listings.find(x=>x.id===ST.selId) || ST.favListings.find(x=>x.id===ST.selId) || ST.myListings.find(x=>x.id===ST.selId);
   if(!l){ toast('Listing not found.'); return; }
@@ -2552,34 +2643,88 @@ function updateInterestSendState(){
   if(btn) btn.disabled = !(ta && ta.value.trim().length>0);
 }
 
-async function sendInterestNote(){
-  const l = ST.listings.find(x=>x.id===ST.selId) || ST.favListings.find(x=>x.id===ST.selId) || ST.myListings.find(x=>x.id===ST.selId);
+async function sendInterestNote(listingId){
+  const l = ST.listings.find(x=>x.id===listingId) || ST.favListings.find(x=>x.id===listingId) || ST.myListings.find(x=>x.id===listingId);
   if(!l){ toast('Listing not found.'); return; }
   const ta = document.getElementById('interestNote');
   const text = (ta?.value||'').trim();
   if(!text){ toast('Please write a note before sending.'); return; }
   const sendBtn = document.getElementById('interestSendBtn');
-  const chatBtn = document.getElementById('interestBtn');
   if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='Sending…'; }
   try {
-    await apiPost('/api/messages', {
-      listing_id: l.id,
-      receiver_id: l.seller_id,
-      content: text
-    });
+    const { conversation } = await apiPost('/api/conversations', { listing_id: l.id });
+    await apiPost(`/api/conversations/${conversation.id}/messages`, { content: text });
+    // Fill in enough to render the chat header/button immediately — the next
+    // /api/conversations refresh (on next app load) fills in the rest (nickname etc).
+    conversation.other_user = conversation.other_user || { id: l.seller_id, full_name: l.seller?.full_name };
+    ST.conversationsByListing.set(l.id, conversation);
+    ST.allConversations.set(conversation.id, conversation);
     document.getElementById('interestBox')?.classList.add('hide');
-    if(chatBtn){ chatBtn.innerHTML='✅ Sent!'; chatBtn.style.color='#16a34a'; chatBtn.disabled=true; }
     toast(`✅ Message sent to seller — they'll see it in their Inbox.`);
+    openChat(conversation.id);
   } catch(e){
     if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='Send'; }
     toast('Could not send: '+(e.message||'Unknown error'));
   }
 }
 
-function closeChat(){ ST.chatOpen=false; const cb=document.getElementById('chatBox'); if(cb) cb.classList.add('hide'); }
+// ── Open a real conversation thread ─────────────────────────────
+async function openChat(conversationId){
+  if(!ST.user){ toast('Please sign in first.'); return; }
+  unsubscribeChatChannel();
+  ST.chatConvId = conversationId;
+  ST.chatOpen = true;
+  ST.chatMsgs = [];
+  renderSidebar();
+  try {
+    const data = await apiGet(`/api/conversations/${conversationId}/messages`);
+    ST.chatMsgs = (data.messages||[]).map(m=>({
+      type: m.sender_id===ST.user.id ? 'sent' : 'recv',
+      text: m.content,
+      t: fmtMsgTime(m.sent_at),
+    }));
+    renderChatMsgs(); scrollChat(); showQM();
+  } catch(e){
+    toast('Could not load chat: '+(e.message||'Unknown error'));
+  }
+  subscribeChatChannel(conversationId);
+}
 
-function addMsg(type,text){
-  ST.chatMsgs.push({type,text,t:nowStr()});
+function closeChat(){
+  unsubscribeChatChannel();
+  ST.chatOpen=false; ST.chatConvId=null;
+  const cb=document.getElementById('chatBox'); if(cb) cb.classList.add('hide');
+}
+
+// ── Realtime — receive-only. All writes go through the backend REST routes above. ──
+async function subscribeChatChannel(conversationId){
+  const client = await getSbClient();
+  if(ST.session?.access_token) client.realtime.setAuth(ST.session.access_token);
+  const channel = client.channel(`chat-${conversationId}`)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'chat_messages',
+      filter: `conversation_id=eq.${conversationId}`,
+    }, payload => {
+      const m = payload.new;
+      // Own messages are already appended optimistically by sendMsg() — avoid a duplicate bubble.
+      if(!m || m.sender_id === ST.user?.id) return;
+      addMsg('recv', m.content, m.sent_at);
+    })
+    .subscribe();
+  ST.chatChannel = channel;
+}
+
+function unsubscribeChatChannel(){
+  if(ST.chatChannel && sbClient) sbClient.removeChannel(ST.chatChannel);
+  ST.chatChannel = null;
+}
+
+function fmtMsgTime(iso){
+  return new Date(iso||Date.now()).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+
+function addMsg(type,text,sentAtIso){
+  ST.chatMsgs.push({type,text,t:fmtMsgTime(sentAtIso)});
   renderChatMsgs(); scrollChat();
 }
 
@@ -2592,27 +2737,28 @@ function renderChatMsgs(){
     </div>`).join('');
 }
 
-function showTyping(){ const el=document.getElementById('cmsgs'); if(!el) return; const d=document.createElement('div'); d.id='typ';d.className='qdots';d.innerHTML='<div class="qdot"></div><div class="qdot"></div><div class="qdot"></div>';el.appendChild(d);scrollChat(); }
-function hideTyping(){ const e=document.getElementById('typ');if(e)e.remove(); }
 function scrollChat(){ const el=document.getElementById('cmsgs');if(el)el.scrollTop=el.scrollHeight; }
 function showQM(){
   const el=document.getElementById('qmsgs'); if(!el) return;
-  const qs=['Is this still available?','Best price?','Can I visit today?','Any defects?'];
+  const conv=ST.allConversations.get(ST.chatConvId);
+  const isSeller=conv && conv.buyer_id!==ST.user?.id;
+  const qs=isSeller
+    ? ['Yes, still available','Price is negotiable','Yes, you can visit today','No defects, great condition']
+    : ['Is this still available?','Best price?','Can I visit today?','Any defects?'];
   el.innerHTML=qs.map(q=>`<span class="qm" onclick="sendQM('${q.replace(/'/g,"\\'")}')"> ${q}</span>`).join('');
 }
 function sendQM(t){ const ci=document.getElementById('cinput'); if(ci)ci.value=t; sendMsg(); }
-function sendMsg(){
+async function sendMsg(){
   const inp=document.getElementById('cinput'); if(!inp)return;
-  const txt=inp.value.trim(); if(!txt)return;
+  const txt=inp.value.trim(); if(!txt||!ST.chatConvId)return;
   inp.value='';
   const el=document.getElementById('qmsgs'); if(el)el.innerHTML='';
   addMsg('sent',txt);
-  showTyping();
-  setTimeout(()=>{
-    hideTyping();
-    addMsg('recv',CHAT_RESPONSES[ST.chatIdx % CHAT_RESPONSES.length]);
-    ST.chatIdx++;
-  },800+Math.random()*600);
+  try {
+    await apiPost(`/api/conversations/${ST.chatConvId}/messages`, { content: txt });
+  } catch(e){
+    toast('Could not send: '+(e.message||'Unknown error'));
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -3184,16 +3330,24 @@ function setSearchMode(mode){
   document.getElementById('smExplore').classList.toggle('on', ST.exploreMode);
   const radMode = document.getElementById('radMode');
   if(radMode) radMode.textContent = ST.exploreMode ? 'Search Radius' : 'Proximity Radius';
+  const searchBox = document.getElementById('exploreSearchBox');
   if(ST.exploreMode){
     _placeExploreMarker();
     map.on('move', _onExploreMove);
     map.on('moveend', _onExploreMoveEnd);
+    if(searchBox) searchBox.classList.remove('hide');
     toast('🗺 Explore mode — pan the map to search any area');
   } else {
     if(_exploreMarker){ _exploreMarker.remove(); _exploreMarker = null; }
     clearTimeout(_exploreMoveTO);
     map.off('move', _onExploreMove);
     map.off('moveend', _onExploreMoveEnd);
+    if(searchBox){
+      searchBox.classList.add('hide');
+      document.getElementById('exploreSearchIn').value = '';
+      document.getElementById('exploreSearchDD').classList.add('hide');
+      document.getElementById('exploreSearchDD').innerHTML = '';
+    }
   }
   updateCircle();
   loadListings();
@@ -3219,6 +3373,74 @@ function _onExploreMoveEnd(){
   clearTimeout(_exploreMoveTO);
   _exploreMoveTO = setTimeout(loadListings, 800);
 }
+
+// ── Explore Area search bar (Session 8 item 11) ────────────────
+// Same Photon-based locality/city search as the post-listing/home-location
+// pickers (HOMELOC_SEARCH_CLASSES) — flyTo only, never places a pin. In
+// Explore mode the map center itself IS the search point (the blue dot
+// marker + radius circle already follow map center via _onExploreMove),
+// so flyTo's own 'moveend' event is all that's needed to pick up the new
+// area — no separate marker-placement step like the post-listing picker needs.
+let _exploreSearchTimer = null;
+let _exploreSearchResults = [];
+
+function _onExploreSearchInput(){
+  clearTimeout(_exploreSearchTimer);
+  const q = document.getElementById('exploreSearchIn').value.trim();
+  const dd = document.getElementById('exploreSearchDD');
+  if(q.length < 4){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
+  _exploreSearchTimer = setTimeout(()=>_runExploreSearch(q), 400);
+}
+
+async function _runExploreSearch(q){
+  const dd = document.getElementById('exploreSearchDD');
+  try {
+    const c = map.getCenter();
+    const latDelta = 0.35; // ~39km
+    const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
+    const geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
+    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const { features } = await r.json();
+    _exploreSearchResults = features
+      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
+      .map(f => {
+        const p = f.properties;
+        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
+          .filter(Boolean).join(', ');
+        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
+      });
+    if(!_exploreSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
+    dd.innerHTML = '';
+    _exploreSearchResults.forEach((m, i) => {
+      const row = document.createElement('div');
+      row.className = 'explore-search-row';
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.onclick = () => _pickExploreSearchResult(i);
+      dd.appendChild(row);
+    });
+    dd.classList.remove('hide');
+  } catch(_){
+    dd.classList.add('hide'); dd.innerHTML = '';
+  }
+}
+
+function _pickExploreSearchResult(i){
+  const m = _exploreSearchResults[i];
+  if(!m) return;
+  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('exploreSearchDD').classList.add('hide');
+  map.flyTo([+m.lat, +m.lon], 15);
+}
+
+// Close the results dropdown on any click outside the search box, same
+// safety-net every other search dropdown in this app lacks (they live
+// inside modals that get closed a different way) — this one floats over
+// the live map, so a stray click needs to dismiss it instead of leaving
+// stale results hovering over the tiles.
+document.addEventListener('click', (e) => {
+  const box = document.getElementById('exploreSearchBox');
+  if(box && !box.contains(e.target)) document.getElementById('exploreSearchDD').classList.add('hide');
+});
 function setMode(btn){
   document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on',b===btn));
   if(btn.dataset.m==='post') openPostModal();
@@ -3316,15 +3538,14 @@ async function initApp(){
   const firstName = displayName.split(' ')[0];
   document.getElementById('uavChipName').textContent = firstName !== '—' ? firstName : '';
 
-  // Admin detection — dual check: invite code OR registered email
-  // Email check is the reliable fallback when invite_code isn't in the DB yet
-  const ADMIN_CODES  = ['MAPIT-N-01', 'MAPIT-A-01'];
+  // Admin detection — cosmetic only (shows/hides the "Admin" menu link).
+  // Matches CLAUDE.md Rule 9 (email-only, no invite codes). The real gate
+  // is server-side: src/middleware/auth.js's requireAdmin, checked on
+  // every admin route independently of anything computed here.
   const ADMIN_EMAILS = ['nagesh.aadi@gmail.com', 'arun.bn1@gmail.com'];
-  const _code  = (ST.inviteCode || localStorage.getItem('mapit_invite') || '').toUpperCase().trim();
   const _email = (ST.user?.email || '').toLowerCase().trim();
-  const isAdmin = ADMIN_CODES.includes(_code) || ADMIN_EMAILS.includes(_email);
+  const isAdmin = ADMIN_EMAILS.includes(_email);
   document.getElementById('adminMenuItem').classList.toggle('hide', !isAdmin);
-  document.getElementById('feedbackViewMenuItem').classList.toggle('hide', !isAdmin);
 
   // Clear any stale pin state before loading fresh data for this user
   ST.userPins = []; ST.activePin = null;
@@ -3350,12 +3571,40 @@ async function initApp(){
   initMap();
   await loadListings();
   await loadSaved();
+  loadMyAdsCount();
   checkShareUrl();
-  // Load inbox unread badge count
-  apiGet('/api/messages/inbox').then(d=>{
-    const unread = (d.conversations||[]).reduce((n,c)=>n+(c.unread_count||0),0);
-    const badge = document.getElementById('inboxBadge');
-    if(badge && unread>0){ badge.textContent=unread; badge.style.display='inline'; }
+  // Load conversations — builds the unread badge count, the listing_id →
+  // conversation map (buyer's own conversation per listing — drives the
+  // "I'm Interested" vs "💬 Chat" button branch), and the full id →
+  // conversation map (every conversation, buyer or seller side — used by
+  // the inbox to open the right thread with the right "other party" name).
+  apiGet('/api/conversations').then(d=>{
+    const convs = d.conversations||[];
+    ST.allConversations = new Map(convs.map(c=>[c.id, c]));
+    // Only conversations where the current user is the buyer — a listing_id
+    // can have multiple conversations (one per interested buyer), so this map
+    // is only safe to key by listing_id from the buyer's own point of view.
+    ST.conversationsByListing = new Map(
+      convs.filter(c=>c.buyer_id===ST.user?.id).map(c=>[c.listing_id, c])
+    );
+    const unread = convs.reduce((n,c)=>n+(c.unread_count||0),0);
+    // Also fold in unread admin feedback-reply count (see openInboxModal —
+    // these live in messages_legacy, a separate table from real chat).
+    apiGet('/api/messages/legacy/mine').then(td=>{
+      const teamUnread = (td.messages||[]).filter(m=>!m.is_read).length;
+      const badge = document.getElementById('inboxBadge');
+      const total = unread + teamUnread;
+      if(badge){
+        if(total>0){ badge.textContent=total; badge.style.display='inline'; }
+        else badge.style.display='none';
+      }
+    }).catch(()=>{
+      const badge = document.getElementById('inboxBadge');
+      if(badge){
+        if(unread>0){ badge.textContent=unread; badge.style.display='inline'; }
+        else badge.style.display='none';
+      }
+    });
   }).catch(()=>{});
 
   // Splash end logic — per-user flag so onboarding shows only at first-time registration
@@ -3433,7 +3682,6 @@ async function continueAs(userId){
   document.getElementById('whoamiScreen').classList.add('hide');
   // Immediately hide admin items so they never bleed from a previous user's session
   document.getElementById('adminMenuItem').classList.add('hide');
-  document.getElementById('feedbackViewMenuItem').classList.add('hide');
   const stored = getMultiSessions()[userId];
   if(!stored?.session){ document.getElementById('authModal').classList.remove('hide'); return; }
   try {
@@ -3481,168 +3729,6 @@ function signInAsSomeoneElse(){
   ST.userPins = []; ST.activePin = null;
   document.getElementById('authModal').classList.remove('hide');
   goToStep('step-auth');
-}
-
-// ═══════════════════════════════════════════════
-// ADMIN PANEL
-// ═══════════════════════════════════════════════
-async function openAdminModal(){
-  document.getElementById('adminModal').classList.remove('hide');
-  document.getElementById('adminList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
-  try {
-    const data = await apiGet('/api/listings/pending/all');
-    const list = data.listings||[];
-    if(!list.length){
-      document.getElementById('adminList').innerHTML =
-        '<div style="padding:30px;text-align:center;color:var(--muted);">No pending listings — all clear! ✅</div>';
-      return;
-    }
-    document.getElementById('adminList').innerHTML = list.map(l=>`
-      <div class="admin-item" id="admin-item-${l.id}">
-        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
-        <div class="admin-item-meta">
-          <span>${l.subcategory||l.category}</span>
-          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
-          <span>👤 ${l.seller?.full_name||l.profiles?.full_name||'Unknown'}</span>
-          <span>📍 ${l.address||'No address'}</span>
-          <span style="color:var(--muted);">${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
-        </div>
-        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${l.description.slice(0,120)}${l.description.length>120?'…':''}</div>`:''}
-        <div>
-          <button class="admin-approve-btn" onclick="approveAdminListing('${l.id}')">✅ Approve & Go Live</button>
-          <button class="admin-reject-btn" onclick="rejectAdminListing('${l.id}')">🗑 Remove</button>
-        </div>
-      </div>`).join('');
-  } catch(e){ document.getElementById('adminList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
-}
-
-function closeAdminModal(){ document.getElementById('adminModal').classList.add('hide'); }
-
-async function cleanupOrphanedPhotos(){
-  if(!confirm('Scan Storage for photo files with no matching listing and delete them? This cannot be undone.')) return;
-  try {
-    const data = await apiPost('/api/uploads/cleanup-orphaned', {});
-    toast(data.deleted_count ? `🧹 Deleted ${data.deleted_count} orphaned photo file(s).` : '✅ No orphaned photos found — Storage is clean.');
-  } catch(e){ toast('Cleanup failed: ' + e.message); }
-}
-
-async function approveAdminListing(id){
-  try {
-    await apiPut(`/api/listings/${id}/approve`,{});
-    document.getElementById('admin-item-'+id).remove();
-    toast('✅ Listing approved and is now live!');
-    if(!document.querySelector('.admin-item')){
-      document.getElementById('adminList').innerHTML =
-        '<div style="padding:30px;text-align:center;color:var(--muted);">No pending listings — all clear! ✅</div>';
-    }
-  } catch(e){ toast('Error: '+e.message); }
-}
-
-async function rejectAdminListing(id){
-  if(!confirm('Remove this listing permanently?')) return;
-  try {
-    await apiDelete(`/api/listings/${id}`);
-    document.getElementById('admin-item-'+id).remove();
-    toast('Listing removed.');
-  } catch(e){ toast('Error: '+e.message); }
-}
-
-// ═══════════════════════════════════════════════
-// FEEDBACK VIEWER (admin)
-// ═══════════════════════════════════════════════
-let _fbAll = [], _fbTypeFilter = 'all', _fbShowResolved = false;
-const FBV_EMOJI = { suggestion:'💡', bug:'🐛', praise:'⭐', complaint:'⚠' };
-
-async function openFeedbackViewModal(){
-  document.getElementById('uavMenu').classList.remove('open');
-  document.getElementById('feedbackViewModal').classList.remove('hide');
-  document.getElementById('feedbackViewList').innerHTML =
-    '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
-  try {
-    const data = await apiGet('/api/users/feedback/all');
-    _fbAll = data.feedbacks || [];
-    _fbTypeFilter = 'all'; _fbShowResolved = false;
-    renderFeedbackFilters();
-    renderFeedbackView();
-  } catch(e){
-    document.getElementById('feedbackViewList').innerHTML =
-      `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
-  }
-}
-
-function closeFeedbackViewModal(){
-  document.getElementById('feedbackViewModal').classList.add('hide');
-}
-
-function renderFeedbackFilters(){
-  const types = ['all','suggestion','bug','praise','complaint'];
-  const counts = {};
-  types.forEach(t => { counts[t] = t==='all' ? _fbAll.length : _fbAll.filter(f=>f.type===t).length; });
-  const labels = { all:'All', suggestion:'💡 Suggestions', bug:'🐛 Bugs', praise:'⭐ Praise', complaint:'⚠ Complaints' };
-  document.getElementById('fbvFilters').innerHTML =
-    types.filter(t => counts[t]>0 || t==='all').map(t=>
-      `<button class="fbv-filter ${_fbTypeFilter===t?'on':''}" onclick="setFbvFilter('${t}')">
-        ${labels[t]} <span style="opacity:.7">(${counts[t]})</span>
-      </button>`
-    ).join('') +
-    `<button class="fbv-filter resolved-tog ${_fbShowResolved?'on':''}" onclick="toggleFbvResolved()" style="margin-left:auto;">
-      ✅ ${_fbShowResolved?'Hide':'Show'} Resolved
-    </button>`;
-}
-
-function setFbvFilter(type){ _fbTypeFilter=type; renderFeedbackFilters(); renderFeedbackView(); }
-function toggleFbvResolved(){ _fbShowResolved=!_fbShowResolved; renderFeedbackFilters(); renderFeedbackView(); }
-
-function renderFeedbackView(){
-  const el = document.getElementById('feedbackViewList');
-  let list = _fbAll;
-  if(_fbTypeFilter !== 'all') list = list.filter(f=>f.type===_fbTypeFilter);
-  if(!_fbShowResolved) list = list.filter(f=>f.status !== 'resolved');
-  if(!list.length){
-    el.innerHTML = `<div style="padding:30px;text-align:center;color:var(--muted);">
-      ${_fbAll.length ? 'No feedback matches this filter.' : 'No feedback submitted yet.'}</div>`;
-    return;
-  }
-  el.innerHTML = list.map((f,i)=>`
-    <div class="fbv-item ${f.status==='resolved'?'resolved':''}" id="fbv-card-${f.id}">
-      <div class="fbv-meta">
-        <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${f.type}</span>
-        ${f.rating ? `<span class="fbv-type" style="color:var(--orange);background:rgba(240,96,48,.1);">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>` : ''}
-        <span class="fbv-name">👤 ${f.created_for||f.profile?.full_name||'Unknown'}</span>
-        ${f.status==='resolved'?'<span class="fbv-resolved-badge">✅ Resolved</span>':''}
-        <span class="fbv-time">${f.created_at?new Date(f.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span>
-      </div>
-      <div class="fbv-text">"${f.description}"</div>
-      <div class="fbv-reply-row">
-        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.created_for||f.profile?.full_name||'this user'}…"></textarea>
-        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${((f.created_for||f.profile?.full_name||'Someone').replace(/'/g,"\\'"))}')">💬 Send Reply</button>
-      </div>
-      ${f.status !== 'resolved' ? `<div class="fbv-actions">
-        <button class="fbv-resolve-btn" onclick="resolveFeedback('${f.id}')">✅ Mark as Resolved</button>
-      </div>` : ''}
-    </div>`).join('');
-}
-
-async function sendFeedbackReply(feedbackId, idx, receiverId, name){
-  const txt = document.getElementById('fbv-reply-'+idx)?.value.trim();
-  if(!txt){ toast('Please type a reply first.'); return; }
-  if(!receiverId){ toast('Cannot find this user — no receiver ID.'); return; }
-  try {
-    await apiPost('/api/messages', { receiver_id: receiverId, content: txt });
-    document.getElementById('fbv-reply-'+idx).value = '';
-    toast(`✅ Reply sent to ${name} — they will see it in their Inbox.`);
-  } catch(e){ toast('Could not send reply: '+e.message); }
-}
-
-async function resolveFeedback(id){
-  try {
-    await apiPut(`/api/users/feedback/${id}/resolve`, {});
-    const item = _fbAll.find(f=>String(f.id)===String(id));
-    if(item) item.status = 'resolved';
-    renderFeedbackFilters();
-    renderFeedbackView();
-    toast('✅ Marked as resolved.');
-  } catch(e){ toast('Error: '+e.message); }
 }
 
 // ═══════════════════════════════════════════════
@@ -3720,6 +3806,58 @@ async function submitFeedback(){
 }
 
 // ═══════════════════════════════════════════════
+// REPORT LISTING
+// ═══════════════════════════════════════════════
+const REPORT_REASONS = [
+  { id:'fake',        label:'Fake' },
+  { id:'wrong_price',  label:'Wrong price' },
+  { id:'spam',         label:'Spam' },
+  { id:'offensive',    label:'Offensive' },
+  { id:'other',        label:'Other' },
+];
+let _reportListingId = null;
+let _reportReason = null;
+
+function openReportModal(listingId){
+  if(!ST.user){ toast('Please sign in first.'); return; }
+  _reportListingId = listingId;
+  _reportReason = null;
+  document.getElementById('reportNote').value = '';
+  document.getElementById('reportReasons').innerHTML = REPORT_REASONS.map(r=>
+    `<span class="report-reason" data-reason="${r.id}" onclick="selectReportReason('${r.id}')">${r.label}</span>`
+  ).join('');
+  updateReportSubmitState();
+  document.getElementById('reportModal').classList.remove('hide');
+}
+function closeReportModal(){ document.getElementById('reportModal').classList.add('hide'); }
+function selectReportReason(reason){
+  _reportReason = reason;
+  document.querySelectorAll('#reportReasons .report-reason').forEach(el=>{
+    el.classList.toggle('sel', el.dataset.reason===reason);
+  });
+  updateReportSubmitState();
+}
+function updateReportSubmitState(){
+  const btn = document.getElementById('reportSubmitBtn');
+  if(btn) btn.disabled = !_reportReason;
+}
+async function submitReport(){
+  if(!_reportListingId || !_reportReason) return;
+  const btn = document.getElementById('reportSubmitBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Submitting…'; }
+  try {
+    const note = document.getElementById('reportNote').value.trim();
+    await apiPost(`/api/listings/${_reportListingId}/report`, { reason:_reportReason, note: note||undefined });
+    closeReportModal();
+    toast('🚩 Report submitted — thanks for flagging this.');
+  } catch(e){
+    toast('Could not submit report: '+(e.message||'Unknown error'));
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='Submit Report'; }
+  }
+}
+
+// ═══════════════════════════════════════════════
 // INBOX
 // ═══════════════════════════════════════════════
 async function openInboxModal(){
@@ -3730,42 +3868,114 @@ async function openInboxModal(){
   if(badge){ badge.textContent=''; badge.style.display='none'; }
   document.getElementById('inboxList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
   try {
-    const data = await apiGet('/api/messages/inbox');
-    const convs = data.conversations || [];
-    if(!convs.length){
-      document.getElementById('inboxList').innerHTML =
-        '<div style="padding:30px;text-align:center;color:var(--muted);">No messages yet.<br><span style="font-size:11px;">Replies from Nagesh or Arun will appear here.</span></div>';
-      return;
-    }
-    document.getElementById('inboxList').innerHTML = convs.map(c=>{
-      const other = c.other_user || {};
-      const col = other.avatar_color || 'var(--orange)';
-      const initials = getInitials(other.full_name || '?');
-      const listing = c.listing || {};
-      const unread = (c.unread_count||0) > 0;
-      const timeStr = c.last_message?.sent_at
-        ? new Date(c.last_message.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+    const [convData, teamData] = await Promise.all([
+      apiGet('/api/conversations'),
+      apiGet('/api/messages/legacy/mine').catch(()=>({messages:[]})),
+    ]);
+    const convs = convData.conversations || [];
+    const teamMsgs = teamData.messages || [];
+    ST.allConversations = new Map(convs.map(c=>[c.id, c]));
+    ST.conversationsByListing = new Map(
+      convs.filter(c=>c.buyer_id===ST.user?.id).map(c=>[c.listing_id, c])
+    );
+
+    // Team-reply cards (read-only, one-way admin→user, see openInboxModal
+    // comment history/Context.md for why these live in a separate legacy
+    // table rather than the real chat system) render above conversations.
+    const teamHtml = teamMsgs.map(m=>{
+      const timeStr = m.sent_at
+        ? new Date(m.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
         : '';
-      const context = listing.title
-        ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${listing.title}</span>`
-        : `<span style="font-size:10px;color:var(--orange);font-weight:400;"> · admin reply</span>`;
-      return `<div class="inbox-item ${unread?'unread':''}">
-        <div class="inbox-av" style="background:${col}">${initials}</div>
+      return `<div class="inbox-item ${m.is_read?'':'unread'}">
+        <div class="inbox-av" style="background:var(--orange)">📢</div>
         <div class="inbox-meta">
-          <div class="inbox-name">${other.full_name||'Admin'}${context}</div>
-          <div class="inbox-preview">${c.last_message?.content||''}</div>
+          <div class="inbox-name">MapIt Team</div>
+          <div class="inbox-preview">${m.content}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
         </div>
-        ${unread?'<div class="inbox-unread-dot"></div>':''}
+        ${m.is_read?'':'<div class="inbox-unread-dot"></div>'}
       </div>`;
     }).join('');
-    // Mark all received messages as read in the background
-    apiPut('/api/messages/mark-all-read', {}).catch(()=>{});
+
+    if(!convs.length && !teamMsgs.length){
+      document.getElementById('inboxList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No messages yet.<br><span style="font-size:11px;">Tap "I\'m Interested" on a listing to start a conversation.</span></div>';
+    } else {
+      const convHtml = convs.map(c=>{
+        const other = c.other_user || {};
+        const col = other.avatar_color || 'var(--orange)';
+        const initials = getInitials(other.nickname || other.full_name || '?');
+        const listing = c.listing || {};
+        const unread = (c.unread_count||0) > 0;
+        const timeStr = c.last_message?.sent_at
+          ? new Date(c.last_message.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+          : '';
+        const context = listing.title
+          ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${listing.title}</span>`
+          : '';
+        return `<div class="inbox-item ${unread?'unread':''}" style="cursor:pointer" onclick="openConversationFromInbox('${c.id}','${c.listing_id}')">
+          <div class="inbox-av" style="background:${col}">${initials}</div>
+          <div class="inbox-meta">
+            <div class="inbox-name">${other.nickname||other.full_name||'User'}${context}</div>
+            <div class="inbox-preview">${c.last_message?.content||''}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
+          </div>
+          ${unread?'<div class="inbox-unread-dot"></div>':''}
+        </div>`;
+      }).join('');
+      document.getElementById('inboxList').innerHTML = teamHtml + convHtml;
+    }
+
+    // Mark team replies read now that they've been shown (matches the
+    // existing pattern in openConversationFromInbox — reading = marking read).
+    if(teamMsgs.some(m=>!m.is_read)) apiPut('/api/messages/mark-all-read', {}).catch(()=>{});
   } catch(e){
     document.getElementById('inboxList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
   }
 }
 function closeInboxModal(){ document.getElementById('inboxModal').classList.add('hide'); }
+
+// Tapping an inbox conversation navigates to its listing (so the buyer/seller
+// sees the listing context) and opens the real chat thread directly.
+async function openConversationFromInbox(conversationId, listingId){
+  closeInboxModal();
+  // If the current user is the seller on this conversation, the listing is
+  // one of their own — it lives in My Ads, not Browse. Selecting it under
+  // the wrong tab both mis-highlights the tab bar and (since selListing's
+  // fetch-and-merge targets whichever array matches ST.tab) leaks the
+  // seller's own listing into the Browse array/pins.
+  const conv = ST.allConversations.get(conversationId);
+  const isSeller = conv && conv.buyer_id !== ST.user?.id;
+  if(isSeller){
+    // Deliberately NOT calling switchTab('mine') here: with ST.selId still
+    // null at that point, switchTab's own renderSidebar() call kicks off an
+    // *unawaited* renderMyAds() fetch — that fetch can resolve after
+    // openChat() below has already rendered the listing detail + chat box,
+    // silently overwriting it back to the plain My Ads list. So the tab
+    // button/state is set directly here, ST.myListings is loaded and
+    // awaited, and renderSidebar() is only triggered once (inside
+    // selListing, below) — by which point ST.selId is already set, so it
+    // renders the listing detail instead of the list.
+    ST.tab = 'mine';
+    ST.selId = null;
+    document.getElementById('tab-browse').classList.remove('on');
+    document.getElementById('tab-fav').classList.remove('on');
+    document.getElementById('tab-mine').classList.add('on');
+    document.querySelector('.rad-box').classList.add('disabled');
+    const smBox = document.getElementById('searchModeBox');
+    if(smBox) smBox.classList.add('disabled');
+    try {
+      const data = await apiGet('/api/listings/mine/all');
+      ST.myListings = data.listings || [];
+      updateMineBadge();
+    } catch(_){}
+    drawMarkers();
+    await selListing(listingId, true);
+  } else {
+    await selListing(listingId);
+  }
+  await openChat(conversationId);
+}
 
 // ═══════════════════════════════════════════════
 // KEYWORD SEARCH

@@ -7,14 +7,14 @@
 // ============================================================
 const express         = require('express');
 const { supabaseAdmin } = require('../config/supabase');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
 // ── Mark feedback as resolved (admin) ────────────────────────
 // PUT /api/users/feedback/:id/resolve
-router.put('/feedback/:id/resolve', requireAuth, async (req, res, next) => {
+router.put('/feedback/:id/resolve', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('feedback')
@@ -29,7 +29,7 @@ router.put('/feedback/:id/resolve', requireAuth, async (req, res, next) => {
 
 // ── Get all feedbacks (admin view) ───────────────────────────
 // GET /api/users/feedback/all
-router.get('/feedback/all', requireAuth, async (req, res, next) => {
+router.get('/feedback/all', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { data: feedbacks, error } = await supabaseAdmin
       .from('feedback')
@@ -44,7 +44,7 @@ router.get('/feedback/all', requireAuth, async (req, res, next) => {
     let inviteNameMap = {};
     if (userIds.length > 0) {
       const [{ data: profiles }, { data: inviteCodes }] = await Promise.all([
-        supabaseAdmin.from('profiles').select('id, full_name, avatar_color').in('id', userIds),
+        supabaseAdmin.from('profiles').select('id, full_name, avatar_color, suspended').in('id', userIds),
         supabaseAdmin.from('invite_codes').select('used_by, created_for').in('used_by', userIds),
       ]);
       (profiles || []).forEach(p => { profilesMap[p.id] = p; });
@@ -58,6 +58,33 @@ router.get('/feedback/all', requireAuth, async (req, res, next) => {
     }));
 
     res.json({ feedbacks: enriched });
+  } catch (err) { next(err); }
+});
+
+// ── Suspend / unsuspend a user (admin) ───────────────────────
+// PUT /api/users/:id/suspend
+// Body: { suspended: boolean }
+// Enforced in src/middleware/auth.js's requireAuth — every authenticated
+// request checks this flag live, so a suspended user is rejected on their
+// very next API call, not just kept out of future sign-ins.
+router.put('/:id/suspend', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { suspended } = req.body;
+    if (typeof suspended !== 'boolean') {
+      return next(createError('suspended must be true or false.'));
+    }
+
+    const { data: profile, error } = await supabaseAdmin
+      .from('profiles')
+      .update({ suspended })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) return next(createError(error.message));
+    if (!profile) return next(createError('User not found.', 404));
+
+    res.json({ profile });
   } catch (err) { next(err); }
 });
 

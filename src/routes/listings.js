@@ -14,7 +14,7 @@
 // ============================================================
 const express         = require('express');
 const { supabaseAdmin } = require('../config/supabase');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 const { haversineM }  = require('../utils/geo');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
@@ -35,11 +35,11 @@ function generateRefCode() {
 
 // ── GET pending listings (admin review) ──────────────────────
 // GET /api/listings/pending/all
-router.get('/pending/all', requireAuth, async (req, res, next) => {
+router.get('/pending/all', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { data: listings, error } = await supabaseAdmin
       .from('listings')
-      .select('*, profiles(full_name, avatar_color)')
+      .select('*, profiles(full_name, avatar_color, suspended)')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
     if (error) return next(createError(error.message));
@@ -49,7 +49,7 @@ router.get('/pending/all', requireAuth, async (req, res, next) => {
 
 // ── Approve listing (admin) ───────────────────────────────────
 // PUT /api/listings/:id/approve
-router.put('/:id/approve', requireAuth, async (req, res, next) => {
+router.put('/:id/approve', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { id } = req.params;
     const { data: listing, error } = await supabaseAdmin
@@ -60,6 +60,242 @@ router.put('/:id/approve', requireAuth, async (req, res, next) => {
       .single();
     if (error) return next(createError(error.message));
     res.json({ listing, message: 'Listing approved and is now live.' });
+  } catch (err) { next(err); }
+});
+
+// ── GET reported-listings queue (admin) ───────────────────────
+// GET /api/listings/reports/queue
+// Returns open (unresolved) listing_reports, joined with the reported
+// listing's title/status and the reporter's nickname, newest first.
+router.get('/reports/queue', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { data: reports, error } = await supabaseAdmin
+      .from('listing_reports')
+      .select('*, listings(id, title, status, seller_id, profiles(suspended)), profiles!reporter_id(nickname, full_name)')
+      .eq('status', 'open')
+      .order('created_at', { ascending: false });
+
+    if (error) return next(createError(error.message));
+
+    // Batch-check which reports have a matching conversation (reporter as
+    // buyer, on the reported listing) so the admin page can show/hide the
+    // "View Chat" button without an extra round-trip per report.
+    const listingIds = [...new Set((reports || []).map(r => r.listing_id))];
+    let convKeySet = new Set();
+    if (listingIds.length > 0) {
+      const { data: convs } = await supabaseAdmin
+        .from('conversations')
+        .select('listing_id, buyer_id')
+        .in('listing_id', listingIds);
+      (convs || []).forEach(c => convKeySet.add(`${c.listing_id}:${c.buyer_id}`));
+    }
+    const withFlag = (reports || []).map(r => ({
+      ...r,
+      has_conversation: convKeySet.has(`${r.listing_id}:${r.reporter_id}`),
+    }));
+
+    res.json({ reports: withFlag });
+  } catch (err) { next(err); }
+});
+
+// ── GET the chat thread tied to a report (admin, read-only) ──────
+// GET /api/listings/reports/:reportId/chat
+// Finds the conversation between the reporter (as buyer) and the listing's
+// seller, returns the full message history with sender nicknames, and logs
+// the view to report_chat_views. 404s if no matching conversation exists —
+// the frontend only shows the "View Chat" button when has_conversation was
+// true on the queue response, so this is a safety net, not the main path.
+router.get('/reports/:reportId/chat', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { reportId } = req.params;
+
+    const { data: report } = await supabaseAdmin
+      .from('listing_reports')
+      .select('id, listing_id, reporter_id')
+      .eq('id', reportId)
+      .single();
+    if (!report) return next(createError('Report not found.', 404));
+
+    const { data: conversation } = await supabaseAdmin
+      .from('conversations')
+      .select(`
+        id, listing_id, buyer_id, seller_id,
+        buyer:profiles!buyer_id(id, nickname),
+        seller:profiles!seller_id(id, nickname)
+      `)
+      .eq('listing_id', report.listing_id)
+      .eq('buyer_id', report.reporter_id)
+      .maybeSingle();
+
+    if (!conversation) return next(createError('No conversation found for this report.', 404));
+
+    const { data: messages, error } = await supabaseAdmin
+      .from('chat_messages')
+      .select('id, sender_id, content, sent_at')
+      .eq('conversation_id', conversation.id)
+      .order('sent_at', { ascending: true });
+    if (error) return next(createError(error.message));
+
+    const { error: logErr } = await supabaseAdmin
+      .from('report_chat_views')
+      .insert({ report_id: reportId, admin_id: req.user.id });
+    if (logErr) console.error('report_chat_views logging failed:', logErr.message);
+
+    res.json({ conversation, messages: messages || [] });
+  } catch (err) { next(err); }
+});
+
+// ── Resolve a report (admin) ──────────────────────────────────
+// PUT /api/listings/reports/:reportId/resolve
+// Body: { action: 'dismiss' | 'remove_listing', reason? }
+//   dismiss        — marks the report resolved, listing untouched
+//   remove_listing — deletes the reported listing (+ its Storage photos,
+//                    same cleanup as the seller's own DELETE /:id) and
+//                    marks the report resolved; `reason` (one of the 5
+//                    report reason codes) overwrites the report's stored
+//                    reason if the admin picked a different one than the
+//                    reporter did
+router.put('/reports/:reportId/resolve', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { reportId } = req.params;
+    const { action, reason } = req.body;
+
+    if (!['dismiss', 'remove_listing'].includes(action)) {
+      return next(createError("action must be 'dismiss' or 'remove_listing'."));
+    }
+    if (reason && !VALID_REPORT_REASONS.includes(reason)) {
+      return next(createError(`reason must be one of: ${VALID_REPORT_REASONS.join(', ')}`));
+    }
+
+    const { data: report } = await supabaseAdmin
+      .from('listing_reports')
+      .select('id, listing_id')
+      .eq('id', reportId)
+      .single();
+    if (!report) return next(createError('Report not found.', 404));
+
+    if (action === 'remove_listing') {
+      const { data: photos } = await supabaseAdmin
+        .from('listing_photos')
+        .select('storage_path')
+        .eq('listing_id', report.listing_id);
+
+      const { error: delErr } = await supabaseAdmin
+        .from('listings')
+        .delete()
+        .eq('id', report.listing_id);
+      if (delErr) return next(createError(delErr.message));
+
+      if (photos && photos.length) {
+        const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
+        try {
+          await supabaseAdmin.storage.from(bucket).remove(photos.map(p => p.storage_path));
+        } catch (storageErr) {
+          console.error('Storage cleanup on admin listing removal failed:', storageErr.message);
+        }
+      }
+    }
+
+    const updates = { status: 'resolved' };
+    if (reason) updates.reason = reason;
+
+    const { data: updated, error } = await supabaseAdmin
+      .from('listing_reports')
+      .update(updates)
+      .eq('id', reportId)
+      .select()
+      .single();
+    if (error) return next(createError(error.message));
+
+    res.json({ report: updated });
+  } catch (err) { next(err); }
+});
+
+// ── GET cleanup candidates (admin) ─────────────────────────────
+// GET /api/listings/cleanup/candidates
+// Two independent flags, not mutually exclusive:
+//  - stale: status='active' but expires_at has passed. Nothing in this
+//    codebase ever flips status to 'expired' or filters browse results by
+//    expires_at, so these listings would otherwise sit live forever.
+//  - duplicates: active/pending listings grouped by (seller_id + title +
+//    price) with more than one match — tight match, deliberately not
+//    category/subcategory-based, to keep false positives low (e.g. a
+//    dealer with two genuinely similar cars must not get flagged).
+router.get('/cleanup/candidates', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const nowIso = new Date().toISOString();
+
+    const { data: staleRaw, error: staleErr } = await supabaseAdmin
+      .from('listings')
+      .select('*, profiles(full_name, avatar_color)')
+      .eq('status', 'active')
+      .lt('expires_at', nowIso)
+      .order('expires_at', { ascending: true });
+    if (staleErr) return next(createError(staleErr.message));
+
+    const { data: liveRaw, error: liveErr } = await supabaseAdmin
+      .from('listings')
+      .select('*, profiles(full_name, avatar_color)')
+      .in('status', ['active', 'pending'])
+      .order('created_at', { ascending: true });
+    if (liveErr) return next(createError(liveErr.message));
+
+    const groups = new Map();
+    for (const l of liveRaw || []) {
+      const key = `${l.seller_id}|${(l.title || '').trim().toLowerCase()}|${l.price}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(l);
+    }
+    const duplicates = [...groups.values()].filter(g => g.length > 1);
+
+    res.json({ stale: staleRaw || [], duplicates });
+  } catch (err) { next(err); }
+});
+
+// ── Bulk-delete listings (admin) ───────────────────────────────
+// POST /api/listings/cleanup/bulk-delete   body: { ids: [...] }
+// Same photo-cleanup pattern as the single DELETE /:id route, just looped —
+// deliberately sequential (not Promise.all) so one Storage hiccup can't
+// tangle up with another listing's cleanup, and so the response can report
+// exactly which ids failed rather than an all-or-nothing result.
+router.post('/cleanup/bulk-delete', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || !ids.length) {
+      return next(createError('ids must be a non-empty array.'));
+    }
+
+    const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
+    const deleted = [];
+    const failed = [];
+
+    for (const id of ids) {
+      try {
+        const { data: photos } = await supabaseAdmin
+          .from('listing_photos')
+          .select('storage_path')
+          .eq('listing_id', id);
+
+        const { error: delErr } = await supabaseAdmin
+          .from('listings')
+          .delete()
+          .eq('id', id);
+        if (delErr) { failed.push({ id, error: delErr.message }); continue; }
+
+        if (photos && photos.length) {
+          try {
+            await supabaseAdmin.storage.from(bucket).remove(photos.map(p => p.storage_path));
+          } catch (storageErr) {
+            console.error('Storage cleanup on bulk delete failed for', id, ':', storageErr.message);
+          }
+        }
+        deleted.push(id);
+      } catch (err) {
+        failed.push({ id, error: err.message });
+      }
+    }
+
+    res.json({ deleted, failed, message: `${deleted.length} listing(s) deleted.${failed.length ? ` ${failed.length} failed.` : ''}` });
   } catch (err) { next(err); }
 });
 
@@ -373,7 +609,9 @@ router.delete('/:id', requireAuth, async (req, res, next) => {
       .single();
 
     if (!existing) return next(createError('Listing not found.', 404));
-    if (existing.seller_id !== req.user.id) {
+    // Owners can delete their own listings; admins can also delete any
+    // listing (used by the admin Reject-pending-listing action).
+    if (existing.seller_id !== req.user.id && !isAdminEmail(req.user.email)) {
       return next(createError('You can only delete your own listings.', 403));
     }
 
@@ -501,6 +739,50 @@ router.post('/:id/view', async (req, res, next) => {
         .eq('id', id);
     }
     res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+// ── Report a listing ────────────────────────────────────────────
+// POST /api/listings/:id/report
+// Body: { reason: 'fake'|'wrong_price'|'spam'|'offensive'|'other', note? }
+// One report per (listing, reporter) — a second report from the same user
+// updates their existing row (new reason/note) rather than duplicating.
+const VALID_REPORT_REASONS = ['fake', 'wrong_price', 'spam', 'offensive', 'other'];
+router.post('/:id/report', requireAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { reason, note } = req.body;
+
+    if (!VALID_REPORT_REASONS.includes(reason)) {
+      return next(createError(`reason must be one of: ${VALID_REPORT_REASONS.join(', ')}`));
+    }
+    if (note && note.length > 500) {
+      return next(createError('Note must be 500 characters or less.'));
+    }
+
+    const { data: listing } = await supabaseAdmin
+      .from('listings')
+      .select('id, seller_id')
+      .eq('id', id)
+      .single();
+
+    if (!listing) return next(createError('Listing not found.', 404));
+    if (listing.seller_id === req.user.id) {
+      return next(createError('You cannot report your own listing.'));
+    }
+
+    const { data: report, error } = await supabaseAdmin
+      .from('listing_reports')
+      .upsert(
+        { listing_id: id, reporter_id: req.user.id, reason, note: note?.trim() || null, status: 'open' },
+        { onConflict: 'listing_id,reporter_id' }
+      )
+      .select()
+      .single();
+
+    if (error) return next(createError(error.message));
+
+    res.status(201).json({ report });
   } catch (err) { next(err); }
 });
 
