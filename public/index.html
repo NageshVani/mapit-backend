@@ -1452,6 +1452,13 @@ async function submitAuth(){
   try {
     const endpoint = AUTH_MODE === 'signin' ? '/api/auth/signin' : '/api/auth/signup';
     const data = await apiPost(endpoint, { email, password });
+    if(data.needsEmailVerification){
+      document.getElementById('emailInput').value = data.email;
+      document.getElementById('otpEmailLabel').textContent = data.email;
+      goToStep('step-otp');
+      document.getElementById('otpInput').focus();
+      return;
+    }
     ST.session = data.session;
     ST.user    = data.user;
     ST.profile = data.profile;
@@ -1640,11 +1647,14 @@ async function verifyOtp(){
       || !data.profile?.full_name
       || data.profile.full_name === 'MapIt User';
     if(needsProfile){
-      if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')
+      // Signup flow already collected Name+Nickname before verification — don't ask twice
+      if(ST._pendingFullName) document.getElementById('nameInput').value = ST._pendingFullName;
+      else if(data.profile?.full_name && data.profile.full_name !== 'MapIt User')
         document.getElementById('nameInput').value = data.profile.full_name;
-      if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
+      if(ST._pendingNickname) document.getElementById('profileNicknameInput').value = ST._pendingNickname;
+      else if(data.profile?.nickname && data.profile.nickname !== 'MapIt User')
         document.getElementById('profileNicknameInput').value = data.profile.nickname;
-      showProfileNameRow(true);
+      showProfileNameRow(!(ST._pendingFullName && ST._pendingNickname));
       goToStep('step-profile');
     } else {
       showLoadingSplash();
