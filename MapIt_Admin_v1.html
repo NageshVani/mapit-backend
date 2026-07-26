@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>MapIt Admin</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#F7F9FC;--deep:#EDF0F5;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
+  --orange:#F06030;--orange2:#FF7A50;
+  --blue:#3B82F6;--green:#22C55E;--gold:#F59E0B;--red:#EF4444;
+  --text:#111827;--muted:#6B7280;--muted2:#4B5563;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --shadow:0 8px 32px rgba(0,0,0,0.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);color:var(--text);font-size:15px;}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-track{background:var(--card);}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.28);border-radius:4px;}
+
+.adm-header{background:var(--panel);border-bottom:1px solid var(--border);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.adm-logo{font-size:19px;font-weight:800;}
+.adm-logo em{font-style:normal;color:var(--orange);}
+.adm-logo-tag{font-size:12px;color:var(--muted);font-weight:600;margin-left:8px;}
+.adm-back{font-size:12.5px;color:var(--muted);text-decoration:none;font-weight:600;}
+.adm-back:hover{color:var(--orange);}
+
+.adm-wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px;}
+.adm-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
+
+/* ── SECTION-PICKER BLOCKS ── */
+.adm-block-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;}
+.adm-block{background:var(--panel);border:2px solid var(--border2);border-radius:16px;padding:22px 10px;text-align:center;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;box-shadow:var(--shadow);}
+.adm-block:hover{border-color:var(--orange);transform:translateY(-1px);}
+.adm-block-ico{font-size:26px;margin-bottom:8px;display:block;}
+.adm-block-label{font-size:12.5px;font-weight:700;color:var(--text);}
+.adm-block-count{font-size:10.5px;font-weight:600;color:var(--muted);margin-top:3px;}
+.adm-block.on{background:var(--orange);border-color:var(--orange);}
+.adm-block.on .adm-block-label{color:#fff;}
+.adm-block.on .adm-block-count{color:rgba(255,255,255,.85);}
+@media (max-width:760px){
+  .adm-block-row{grid-template-columns:repeat(3,1fr);}
+}
+@media (max-width:400px){
+  .adm-block-row{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ── FEEDBACK / TAB PILLS (shared with admin sections) ── */
+.fbv-filters{display:flex;gap:5px;padding:12px 16px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--deep);}
+.fbv-filter{padding:4px 12px;border-radius:20px;border:1px solid var(--border2);font-size:11.5px;font-weight:600;cursor:pointer;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
+.fbv-filter:hover{background:var(--card);color:var(--text);}
+.fbv-filter.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+.fbv-filter.resolved-tog{border-color:var(--green);color:var(--green);}
+.fbv-filter.resolved-tog.on{background:var(--green);}
+.fbv-item{padding:14px 22px;border-bottom:1px solid var(--border);transition:opacity .2s;}
+.fbv-item.resolved{opacity:.45;}
+.fbv-item:last-child{border-bottom:none;}
+.fbv-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.fbv-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:4px;background:var(--card2);color:var(--muted2);}
+.fbv-name{font-size:11.5px;font-weight:600;color:var(--text);}
+.fbv-time{font-size:10.5px;color:var(--muted);margin-left:auto;}
+.fbv-resolved-badge{font-size:10px;font-weight:700;color:var(--green);padding:2px 8px;border-radius:4px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);}
+.fbv-text{font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:8px;}
+.fbv-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.fbv-reply-row{display:flex;gap:6px;margin-top:8px;}
+.fbv-reply-input{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text);font-family:'Outfit',sans-serif;outline:none;resize:none;height:60px;}
+.fbv-reply-input:focus{border-color:var(--orange);}
+.fbv-send-btn{padding:7px 14px;background:var(--orange);color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;white-space:nowrap;}
+.fbv-send-btn:hover{background:var(--orange2);}
+.fbv-resolve-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.07);color:var(--green);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.fbv-resolve-btn:hover{background:rgba(34,197,94,.18);}
+
+/* ── ADMIN ITEMS ── */
+.admin-item{padding:14px 22px;border-bottom:1px solid var(--border);}
+.admin-item:last-child{border-bottom:none;}
+.admin-item-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.admin-item-meta{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.admin-approve-btn{padding:6px 16px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.admin-reject-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
+.admin-reject-btn:hover{border-color:var(--red);color:var(--red);}
+.admin-reason-sel{font-size:11px;font-family:'Outfit',sans-serif;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--deep);color:var(--text);margin-left:6px;}
+.admin-suspend-btn{padding:6px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
+.admin-suspend-btn:hover{background:var(--red);color:#fff;}
+.admin-suspend-btn.reinstate{border-color:var(--green);color:var(--green);}
+.admin-suspend-btn.reinstate:hover{background:var(--green);color:#fff;}
+.admin-suspend-btn:disabled{opacity:.4;cursor:default;}
+.admin-suspend-btn:disabled:hover{background:transparent;color:var(--red);}
+.admin-suspend-wrap{display:block;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border2);}
+.admin-suspend-reveal{font-size:10.5px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;user-select:none;}
+.admin-suspend-reveal:hover{color:var(--text);}
+.admin-suspend-cancel{font-size:10.5px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;margin-left:8px;user-select:none;}
+.admin-suspend-cancel:hover{color:var(--red);}
+.admin-dismiss-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
+.admin-dismiss-btn:hover{border-color:var(--green);color:var(--green);}
+.admin-viewchat-btn{padding:6px 14px;background:transparent;border:1px solid var(--blue);color:var(--blue);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
+.admin-viewchat-btn:hover{background:var(--blue);color:#fff;}
+
+/* ── REPORTED-CHAT VIEWER MODAL ── */
+.chatview-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.chatview-box{background:var(--panel);border-radius:16px;box-shadow:var(--shadow);width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+.chatview-hd{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.chatview-hd h3{font-size:14px;font-weight:700;}
+.chatview-close{background:none;border:none;font-size:20px;line-height:1;color:var(--muted);cursor:pointer;padding:2px 6px;}
+.chatview-close:hover{color:var(--text);}
+.chatview-body{padding:16px 20px;overflow-y:auto;flex:1;}
+.chatview-msg{margin-bottom:12px;}
+.chatview-msg-meta{font-size:10.5px;color:var(--muted);margin-bottom:2px;font-weight:600;}
+.chatview-msg-content{font-size:12.5px;color:var(--text);line-height:1.6;background:var(--card);border-radius:8px;padding:8px 12px;display:inline-block;max-width:90%;}
+.chatview-note{padding:0 20px 16px;font-size:10.5px;color:var(--muted);line-height:1.5;}
+
+/* ── GRIEVANCE LOG ── */
+.grv-input{background:var(--card);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:12.5px;color:var(--text);font-family:'Outfit',sans-serif;outline:none;width:100%;}
+.grv-input:focus{border-color:var(--orange);}
+.grv-badges{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
+.grv-badge{font-size:11.5px;font-weight:600;}
+.grv-badge.ok{color:var(--green);}
+.grv-badge.warn{color:var(--gold);}
+.grv-badge.late{color:var(--red);}
+.grv-badge.neutral{color:var(--muted2);}
+
+/* ── CLEANUP ── */
+.cln-section-hd{padding:12px 22px;font-size:12px;font-weight:700;color:var(--muted2);background:var(--deep);border-bottom:1px solid var(--border);border-top:1px solid var(--border);}
+.cln-item{padding:10px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;}
+.cln-item:last-child{border-bottom:none;}
+.cln-item input[type=checkbox]{margin-top:3px;width:16px;height:16px;flex-shrink:0;cursor:pointer;}
+.cln-item-body{flex:1;min-width:0;}
+.cln-group{border-bottom:1px solid var(--border);}
+.cln-group:last-child{border-bottom:none;}
+.cln-group-tag{font-size:10px;font-weight:700;color:var(--orange);padding:8px 22px 0;}
+.cln-bar{position:sticky;top:0;z-index:2;background:var(--panel);border-bottom:1px solid var(--border2);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 4px 12px rgba(0,0,0,.06);}
+.cln-bar-count{font-size:12px;color:var(--muted);font-weight:600;}
+.cln-delete-btn{padding:7px 18px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.cln-delete-btn:disabled{opacity:.4;cursor:default;}
+.cln-scroll{max-height:52vh;overflow-y:auto;}
+
+/* ── OVERVIEW ── */
+.ov-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px;}
+.ov-tile{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;}
+.ov-tile-num{font-size:26px;font-weight:800;color:var(--text);}
+.ov-tile-label{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;}
+.ov-chart-wrap{padding:8px 16px 20px;border-top:1px solid var(--border);}
+.ov-chart-title{font-size:12.5px;font-weight:700;color:var(--text);margin:12px 0 14px;}
+.ov-chart-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.ov-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:160px;}
+.ov-legend-item{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text);}
+.ov-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.ov-legend-count{margin-left:auto;color:var(--muted);font-weight:600;}
+
+.adm-deny, .adm-loading{max-width:420px;min-height:100vh;margin:0 auto;text-align:center;padding:0 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.adm-deny h2{font-size:18px;margin-bottom:10px;}
+.adm-deny p{font-size:13.5px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+.adm-deny a{color:#fff;background:var(--orange);text-decoration:none;padding:10px 22px;border-radius:8px;font-size:13.5px;font-weight:600;display:inline-block;}
+.adm-spinner{width:26px;height:26px;border:3px solid var(--card2);border-top-color:var(--orange);border-radius:50%;margin:18px auto 0;animation:adm-spin .7s linear infinite;}
+@keyframes adm-spin{to{transform:rotate(360deg);}}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--card2);border:1px solid var(--border2);padding:9px 20px;border-radius:24px;font-size:12px;font-weight:600;color:var(--text);z-index:9999;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 4px 16px rgba(0,0,0,.14);white-space:nowrap;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* Must stay last: a utility class needs to win every display-property tie
+   regardless of what else in this stylesheet also sets display on the
+   same element (equal specificity resolves by source order, not intent). */
+.hide{display:none !important;}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="adm-loading" id="admLoading">
+  <div class="adm-logo">Map<em>It</em> <span class="adm-logo-tag">Admin</span></div>
+  <p style="margin-top:14px;color:var(--muted);font-size:13px;">Checking your access…</p>
+  <div class="adm-spinner"></div>
+</div>
+
+<div class="adm-deny hide" id="admDeny">
+  <div class="adm-logo" style="margin-bottom:14px;">Map<em>It</em> <span class="adm-logo-tag">Admin</span></div>
+  <h2>You need to sign in as an admin first</h2>
+  <p>Open MapIt in this browser, sign in with your admin account, then come back to this page.</p>
+  <p class="hide" id="admDenyReason" style="font-size:11.5px;color:var(--red);margin-top:-8px;"></p>
+  <a href="/">Go to MapIt</a>
+</div>
+
+<div class="hide" id="admDashboard">
+  <div class="adm-header">
+    <div class="adm-logo">Map<em>It</em> <span class="adm-logo-tag">Admin</span></div>
+    <a class="adm-back" href="/">← Back to MapIt</a>
+  </div>
+
+  <div class="adm-wrap">
+    <div class="adm-block-row">
+      <div class="adm-block on" id="admTabOverview" onclick="switchAdmSection('overview')">
+        <span class="adm-block-ico">📊</span>
+        <div class="adm-block-label">Overview</div>
+        <div class="adm-block-count">&nbsp;</div>
+      </div>
+      <div class="adm-block" id="admTabPending" onclick="switchAdmSection('pending')">
+        <span class="adm-block-ico">📋</span>
+        <div class="adm-block-label">Pending Listings</div>
+        <div class="adm-block-count" id="admCountPending">&nbsp;</div>
+      </div>
+      <div class="adm-block" id="admTabReports" onclick="switchAdmSection('reports')">
+        <span class="adm-block-ico">🚩</span>
+        <div class="adm-block-label">Reported Listings</div>
+        <div class="adm-block-count" id="admCountReports">&nbsp;</div>
+      </div>
+      <div class="adm-block" id="admTabFeedback" onclick="switchAdmSection('feedback')">
+        <span class="adm-block-ico">💬</span>
+        <div class="adm-block-label">Feedback</div>
+        <div class="adm-block-count" id="admCountFeedback">&nbsp;</div>
+      </div>
+      <div class="adm-block" id="admTabGrievances" onclick="switchAdmSection('grievances')">
+        <span class="adm-block-ico">⚖️</span>
+        <div class="adm-block-label">Grievances</div>
+        <div class="adm-block-count" id="admCountGrievances">&nbsp;</div>
+      </div>
+      <div class="adm-block" id="admTabCleanup" onclick="switchAdmSection('cleanup')">
+        <span class="adm-block-ico">🧹</span>
+        <div class="adm-block-label">Cleanup</div>
+        <div class="adm-block-count" id="admCountCleanup">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="adm-box">
+      <div id="admSectionOverview" class="adm-section">
+        <div class="ov-tiles">
+          <div class="ov-tile"><div class="ov-tile-num" id="ovTotalUsers">–</div><div class="ov-tile-label">Total Users</div></div>
+          <div class="ov-tile"><div class="ov-tile-num" id="ovActiveUsers">–</div><div class="ov-tile-label">Active Users (30d)</div></div>
+        </div>
+        <div class="ov-chart-wrap">
+          <div class="ov-chart-title">📍 Listings by Area</div>
+          <div class="ov-chart-row" id="ovChartRow">
+            <div style="padding:20px;text-align:center;color:var(--muted);">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="admSectionPending" class="adm-section hide">
+        <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span style="font-size:11px;color:var(--muted);">Removes photo files left behind in Storage by deleted listings.</span>
+          <button class="admin-reject-btn" style="white-space:nowrap;" onclick="cleanupOrphanedPhotos()">🧹 Clean Up Orphaned Photos</button>
+        </div>
+        <div id="adminList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+
+      <div id="admSectionReports" class="adm-section hide">
+        <div id="adminReportsList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+
+      <div id="admSectionFeedback" class="adm-section hide">
+        <div class="fbv-filters" id="fbvFilters"></div>
+        <div id="feedbackViewList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+
+      <div id="admSectionGrievances" class="adm-section hide">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+          <button class="admin-reject-btn" id="grvNewToggleBtn" style="white-space:nowrap;" onclick="toggleGrievanceForm()">+ Log New Grievance</button>
+          <div class="hide" id="grvNewForm" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+            <input class="grv-input" id="grvName" placeholder="Complainant's name *">
+            <input class="grv-input" id="grvContact" placeholder="Their email or phone (optional, so Arun can reply)">
+            <textarea class="grv-input" id="grvNote" placeholder="What's the grievance? *" style="height:64px;resize:vertical;"></textarea>
+            <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;">
+              Received on
+              <input type="date" class="grv-input" id="grvReceivedAt" style="width:auto;padding:5px 8px;">
+              <span style="color:var(--muted);">(defaults to today — backdate if you're logging it late)</span>
+            </label>
+            <div>
+              <button class="admin-approve-btn" onclick="submitGrievance()">Save Grievance</button>
+              <button class="admin-reject-btn" onclick="toggleGrievanceForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <div id="grievanceList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+      </div>
+
+      <div id="admSectionCleanup" class="adm-section hide">
+        <div style="padding:10px 22px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);">Tick the listings you want gone, then delete them together. Permanent — matches the same delete used elsewhere in the app.</div>
+        <div class="cln-scroll">
+          <div class="cln-bar">
+            <span class="cln-bar-count" id="clnSelCount">0 selected</span>
+            <button class="cln-delete-btn" id="clnDeleteBtn" disabled onclick="bulkDeleteCleanup()">🗑 Delete Selected</button>
+          </div>
+          <div id="cleanupList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="chatview-overlay hide" id="chatviewOverlay" onclick="if(event.target===this)closeReportChat()">
+  <div class="chatview-box">
+    <div class="chatview-hd">
+      <h3>💬 Reported Chat (read-only)</h3>
+      <button class="chatview-close" onclick="closeReportChat()">×</button>
+    </div>
+    <div class="chatview-body" id="chatviewBody"></div>
+    <div class="chatview-note">Read-only — you cannot reply from here. This view is logged for accountability.</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// API SERVICE — same pattern as MapIt_MVP_v1.html
+// ═══════════════════════════════════════════════
+const API_URL = (() => {
+  const h = window.location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3001';
+  if (h === 'www.mapit.co.in' || h === 'mapit.co.in') return 'https://api.mapit.co.in';
+  return '';
+})();
+
+let ST = { session: null, user: null };
+
+async function api(path, options = {}){
+  const token = ST.session?.access_token;
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  if(token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+async function apiGet(path){ return api(path); }
+async function apiPost(path, body){ return api(path, { method:'POST', body: JSON.stringify(body) }); }
+async function apiPut(path, body){ return api(path, { method:'PUT', body: JSON.stringify(body) }); }
+async function apiDelete(path){ return api(path, { method:'DELETE' }); }
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+const CAT_EMOJI = { re:'🏠', veh:'🚗', hh:'🏡' };
+const SUBCAT_EMOJI = {
+  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬',
+  'Cars':'🚗','2 Wheelers':'🛵','Cycles':'🚲','Trucks & Commercial':'🚛',
+  'Electronic Appliances':'📺','Furniture':'🛋️','Home Decor':'🎨',
+};
+function fmtPrice(p){
+  if(p>=10000000) return `₹${(p/10000000).toFixed(2)}Cr`;
+  if(p>=100000)   return `₹${(p/100000).toFixed(1)}L`;
+  if(p>=1000)     return `₹${(p/1000).toFixed(0)}K`;
+  return `₹${p}`;
+}
+
+// ═══════════════════════════════════════════════
+// ACCESS CHECK — reuses the same mapit_sessions (shared-device) store the
+// main app writes to via saveToMultiSessions(). Assumes the operator is
+// already signed in to MapIt in this browser; this is a friendly front
+// door only — every route below is independently gated by requireAdmin.
+// ═══════════════════════════════════════════════
+function getMultiSessions(){
+  try { return JSON.parse(localStorage.getItem('mapit_sessions') || '{}'); } catch(_){ return {}; }
+}
+
+async function checkAdminAccess(){
+  const all = getMultiSessions();
+  const entries = Object.entries(all).sort((a,b)=>new Date(b[1].last_login||0)-new Date(a[1].last_login||0));
+  const latest = entries[0]?.[1];
+
+  if(!latest?.session){ return showDeny(); }
+
+  ST.session = latest.session;
+  try {
+    // Hard timeout so a slow/unreachable API can never leave this screen
+    // stuck on "Checking your access…" forever — surfaces a clear error
+    // instead of an infinite spinner.
+    const data = await Promise.race([
+      apiGet('/api/auth/me'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timed out contacting the server.')), 10000)),
+    ]);
+    if(!data.is_admin){ return showDeny('This account is not an admin.'); }
+    ST.user = data.user;
+    showDashboard();
+  } catch(e){
+    showDeny(e.message);
+  }
+}
+
+function showDeny(reason){
+  document.getElementById('admLoading').classList.add('hide');
+  const denyEl = document.getElementById('admDeny');
+  denyEl.classList.remove('hide');
+  if(reason){
+    document.getElementById('admDenyReason').textContent = reason;
+    document.getElementById('admDenyReason').classList.remove('hide');
+  }
+}
+
+function showDashboard(){
+  document.getElementById('admLoading').classList.add('hide');
+  document.getElementById('admDashboard').classList.remove('hide');
+  loadOverview();
+  // Also warm the other counts in the background so every block shows a
+  // number right away, not just the one currently open.
+  loadPendingListings();
+  loadReportsQueue();
+  loadFeedbackView();
+  loadGrievances();
+  loadCleanupCandidates();
+}
+
+// ═══════════════════════════════════════════════
+// SECTION SWITCHING
+// ═══════════════════════════════════════════════
+function switchAdmSection(section){
+  document.getElementById('admTabOverview').classList.toggle('on', section==='overview');
+  document.getElementById('admTabPending').classList.toggle('on', section==='pending');
+  document.getElementById('admTabReports').classList.toggle('on', section==='reports');
+  document.getElementById('admTabFeedback').classList.toggle('on', section==='feedback');
+  document.getElementById('admTabGrievances').classList.toggle('on', section==='grievances');
+  document.getElementById('admTabCleanup').classList.toggle('on', section==='cleanup');
+  document.getElementById('admSectionOverview').classList.toggle('hide', section!=='overview');
+  document.getElementById('admSectionPending').classList.toggle('hide', section!=='pending');
+  document.getElementById('admSectionReports').classList.toggle('hide', section!=='reports');
+  document.getElementById('admSectionFeedback').classList.toggle('hide', section!=='feedback');
+  document.getElementById('admSectionGrievances').classList.toggle('hide', section!=='grievances');
+  document.getElementById('admSectionCleanup').classList.toggle('hide', section!=='cleanup');
+  if(section==='overview') loadOverview();
+  if(section==='reports') loadReportsQueue();
+  if(section==='feedback') loadFeedbackView();
+  if(section==='grievances') loadGrievances();
+  if(section==='cleanup') loadCleanupCandidates();
+}
+
+// ═══════════════════════════════════════════════
+// OVERVIEW — total/active users + region-wise listing breakdown.
+// Chart is a hand-rolled SVG donut (stroke-dasharray technique) — no
+// chart library dependency, consistent with the rest of the app.
+// ═══════════════════════════════════════════════
+let _ovLoaded = false;
+const OV_COLORS = ['#F06030','#3B82F6','#22C55E','#F59E0B','#EF4444','#8B5CF6','#6B7280'];
+
+async function loadOverview(){
+  if(_ovLoaded) return;
+  try {
+    const data = await apiGet('/api/admin/overview');
+    _ovLoaded = true;
+    document.getElementById('ovTotalUsers').textContent = data.total_users;
+    document.getElementById('ovActiveUsers').textContent = data.active_users;
+    renderRegionDonut(data.regions || []);
+  } catch(e){
+    document.getElementById('ovChartRow').innerHTML = `<div style="padding:20px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+function renderRegionDonut(regions){
+  const row = document.getElementById('ovChartRow');
+  if(!regions.length){
+    row.innerHTML = '<div style="padding:20px;color:var(--muted);">No listings yet.</div>';
+    return;
+  }
+  const total = regions.reduce((s,r)=>s+r.count,0);
+  const size = 160, radius = 60, cx = size/2, cy = size/2;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+  const circles = regions.map((reg, i)=>{
+    const len = (reg.count / total) * circumference;
+    const dashoffset = -offset;
+    offset += len;
+    const color = OV_COLORS[i % OV_COLORS.length];
+    return `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${color}" stroke-width="24" stroke-dasharray="${len} ${circumference-len}" stroke-dashoffset="${dashoffset}" transform="rotate(-90 ${cx} ${cy})"></circle>`;
+  }).join('');
+  const legend = regions.map((reg,i)=>`
+    <div class="ov-legend-item">
+      <span class="ov-legend-dot" style="background:${OV_COLORS[i % OV_COLORS.length]};"></span>
+      <span>${reg.name}</span>
+      <span class="ov-legend-count">${reg.count}</span>
+    </div>`).join('');
+  row.innerHTML = `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0;">${circles}</svg>
+    <div class="ov-legend">${legend}</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// SUSPEND / REINSTATE — shared across Pending, Reported, and Feedback
+// ═══════════════════════════════════════════════
+// Deliberately NOT a one-click button sitting next to Approve/Reject/Dismiss:
+// clicking "⚙ Account access" reveals the real Suspend/Reinstate button (plus
+// a "✕ cancel" to back out without acting), so an accidental tap near the
+// other action buttons can't fire it directly. Only one item's controls can
+// be expanded anywhere on the page at a time (collapseAllSuspendReveals()),
+// and a successful action auto-collapses back to the muted state — so the
+// dangerous buttons are never left lying around exposed.
+function suspendBtnHtml(userId, isSuspended){
+  if(!userId) return `<span class="admin-suspend-wrap"><span class="admin-suspend-reveal" style="opacity:.35;pointer-events:none;">⚙ Account access</span></span>`;
+  return `<span class="admin-suspend-wrap" data-uid="${userId}" data-suspended="${!!isSuspended}" data-expanded="false">${suspendCollapsedHtml()}</span>`;
+}
+
+function suspendCollapsedHtml(){
+  return `<span class="admin-suspend-reveal" onclick="toggleSuspendReveal(this.parentElement)">⚙ Account access</span>`;
+}
+
+function suspendExpandedHtml(userId, isSuspended){
+  const label = isSuspended ? '✅ Reinstate' : '⛔ Suspend';
+  const cls   = 'admin-suspend-btn' + (isSuspended ? ' reinstate' : '');
+  return `<button class="${cls}" onclick="toggleUserSuspension('${userId}', ${isSuspended}, this)">${label}</button>
+    <span class="admin-suspend-cancel" onclick="toggleSuspendReveal(this.parentElement)">✕ cancel</span>`;
+}
+
+function collapseAllSuspendReveals(){
+  document.querySelectorAll('.admin-suspend-wrap[data-expanded="true"]').forEach(el=>{
+    el.dataset.expanded = 'false';
+    el.innerHTML = suspendCollapsedHtml();
+  });
+}
+
+function toggleSuspendReveal(wrapEl){
+  const wasExpanded = wrapEl.dataset.expanded === 'true';
+  collapseAllSuspendReveals(); // only one expanded at a time, across the whole page
+  if(!wasExpanded){
+    wrapEl.dataset.expanded = 'true';
+    wrapEl.innerHTML = suspendExpandedHtml(wrapEl.dataset.uid, wrapEl.dataset.suspended === 'true');
+  }
+}
+
+async function toggleUserSuspension(userId, currentlySuspended, btnEl){
+  const willSuspend = !currentlySuspended;
+  const msg = willSuspend
+    ? 'This will prevent this user from signing in. You can reinstate them anytime.'
+    : "This will restore this user's access immediately.";
+  if(!confirm(msg)) return;
+  const wrapEl = btnEl.closest('.admin-suspend-wrap');
+  try {
+    await apiPut(`/api/users/${userId}/suspend`, { suspended: willSuspend });
+    toast(willSuspend ? '⛔ User suspended.' : '✅ User reinstated.');
+    if(wrapEl){
+      wrapEl.dataset.suspended = willSuspend;
+      wrapEl.dataset.expanded = 'false';
+      wrapEl.innerHTML = suspendCollapsedHtml();
+    }
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// PENDING LISTINGS
+// ═══════════════════════════════════════════════
+function setBlockCount(id, n){
+  document.getElementById(id).textContent = n===1 ? '1 item' : `${n} items`;
+}
+
+async function loadPendingListings(){
+  document.getElementById('adminList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/listings/pending/all');
+    const list = data.listings||[];
+    setBlockCount('admCountPending', list.length);
+    if(!list.length){
+      document.getElementById('adminList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No pending listings — all clear! ✅</div>';
+      return;
+    }
+    document.getElementById('adminList').innerHTML = list.map(l=>`
+      <div class="admin-item" id="admin-item-${l.id}">
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
+        <div class="admin-item-meta">
+          <span>${l.subcategory||l.category}</span>
+          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
+          <span>👤 ${l.seller?.full_name||l.profiles?.full_name||'Unknown'}</span>
+          <span>📍 ${l.address||'No address'}</span>
+          <span style="color:var(--muted);">${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
+        </div>
+        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${l.description.slice(0,120)}${l.description.length>120?'…':''}</div>`:''}
+        <div>
+          <button class="admin-approve-btn" onclick="approveAdminListing('${l.id}')">✅ Approve & Go Live</button>
+          <button class="admin-reject-btn" onclick="rejectAdminListing('${l.id}')">🗑 Remove</button>
+          ${suspendBtnHtml(l.seller_id, l.profiles?.suspended)}
+        </div>
+      </div>`).join('');
+  } catch(e){ document.getElementById('adminList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
+}
+
+async function approveAdminListing(id){
+  try {
+    await apiPut(`/api/listings/${id}/approve`,{});
+    document.getElementById('admin-item-'+id).remove();
+    toast('✅ Listing approved and is now live!');
+    if(!document.querySelector('#adminList .admin-item')){
+      document.getElementById('adminList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No pending listings — all clear! ✅</div>';
+    }
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function rejectAdminListing(id){
+  if(!confirm('Remove this listing permanently?')) return;
+  try {
+    await apiDelete(`/api/listings/${id}`);
+    document.getElementById('admin-item-'+id).remove();
+    toast('Listing removed.');
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function cleanupOrphanedPhotos(){
+  if(!confirm('Scan Storage for photo files with no matching listing and delete them? This cannot be undone.')) return;
+  try {
+    const data = await apiPost('/api/uploads/cleanup-orphaned', {});
+    toast(data.deleted_count ? `🧹 Deleted ${data.deleted_count} orphaned photo file(s).` : '✅ No orphaned photos found — Storage is clean.');
+  } catch(e){ toast('Cleanup failed: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// REPORTED LISTINGS
+// ═══════════════════════════════════════════════
+const REPORT_REASONS = [
+  { id:'fake',        label:'Fake' },
+  { id:'wrong_price',  label:'Wrong price' },
+  { id:'spam',         label:'Spam' },
+  { id:'offensive',    label:'Offensive' },
+  { id:'other',        label:'Other' },
+];
+
+async function loadReportsQueue(){
+  document.getElementById('adminReportsList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/listings/reports/queue');
+    const list = data.reports||[];
+    setBlockCount('admCountReports', list.length);
+    if(!list.length){
+      document.getElementById('adminReportsList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No open reports — all clear! ✅</div>';
+      return;
+    }
+    document.getElementById('adminReportsList').innerHTML = list.map(r=>{
+      const listing = r.listings;
+      const reporter = r.profiles;
+      const reasonOpts = REPORT_REASONS.map(rr=>
+        `<option value="${rr.id}" ${rr.id===r.reason?'selected':''}>${rr.label}</option>`).join('');
+      return `
+      <div class="admin-item" id="report-item-${r.id}">
+        <div class="admin-item-title">🚩 ${listing ? listing.title : '(listing deleted)'}</div>
+        <div class="admin-item-meta">
+          <span>Reason: ${(REPORT_REASONS.find(rr=>rr.id===r.reason)||{}).label||r.reason}</span>
+          <span>👤 Reported by ${reporter ? (reporter.nickname||reporter.full_name||'Unknown') : 'Unknown'}</span>
+          <span style="color:var(--muted);">${new Date(r.created_at).toLocaleDateString('en-IN')}</span>
+        </div>
+        ${r.note?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">"${r.note}"</div>`:''}
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
+          <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>
+          <select class="admin-reason-sel" id="report-reason-${r.id}">${reasonOpts}</select>
+          <button class="admin-reject-btn" onclick="resolveReport('${r.id}','remove_listing')" ${listing?'':'disabled'}>🗑 Remove Listing</button>
+          ${r.has_conversation ? `<button class="admin-viewchat-btn" onclick="openReportChat('${r.id}')">💬 View Chat</button>` : ''}
+          ${suspendBtnHtml(listing?.seller_id, listing?.profiles?.suspended)}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ document.getElementById('adminReportsList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
+}
+
+async function resolveReport(reportId, action){
+  if(action==='remove_listing' && !confirm('Remove this listing permanently? This cannot be undone.')) return;
+  const reasonEl = document.getElementById('report-reason-'+reportId);
+  const reason = reasonEl ? reasonEl.value : undefined;
+  try {
+    await apiPut(`/api/listings/reports/${reportId}/resolve`, { action, reason });
+    document.getElementById('report-item-'+reportId).remove();
+    toast(action==='dismiss' ? 'Report dismissed.' : 'Listing removed.');
+    if(!document.querySelector('#adminReportsList .admin-item')){
+      document.getElementById('adminReportsList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No open reports — all clear! ✅</div>';
+    }
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function openReportChat(reportId){
+  const overlay = document.getElementById('chatviewOverlay');
+  const body = document.getElementById('chatviewBody');
+  overlay.classList.remove('hide');
+  body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet(`/api/listings/reports/${reportId}/chat`);
+    const { conversation, messages } = data;
+    if(!messages.length){
+      body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">No messages in this conversation yet.</div>';
+      return;
+    }
+    body.innerHTML = messages.map(m=>{
+      const isBuyer = m.sender_id === conversation.buyer_id;
+      const who = isBuyer ? (conversation.buyer?.nickname||'Buyer') : (conversation.seller?.nickname||'Seller');
+      const roleTag = isBuyer ? 'Buyer' : 'Seller';
+      return `
+      <div class="chatview-msg">
+        <div class="chatview-msg-meta">${who} (${roleTag}) · ${new Date(m.sent_at).toLocaleString('en-IN')}</div>
+        <div class="chatview-msg-content">${escapeHtmlAdm(m.content||'')}</div>
+      </div>`;
+    }).join('');
+  } catch(e){
+    body.innerHTML = `<div style="padding:20px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+function closeReportChat(){
+  document.getElementById('chatviewOverlay').classList.add('hide');
+}
+
+function escapeHtmlAdm(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ═══════════════════════════════════════════════
+// FEEDBACK VIEWER
+// ═══════════════════════════════════════════════
+let _fbAll = [], _fbTypeFilter = 'all', _fbShowResolved = false, _fbLoaded = false;
+const FBV_EMOJI = { suggestion:'💡', bug:'🐛', praise:'⭐', complaint:'⚠' };
+
+async function loadFeedbackView(){
+  if(_fbLoaded) return; // loaded once per page visit, same as the old modal
+  document.getElementById('feedbackViewList').innerHTML =
+    '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/users/feedback/all');
+    _fbAll = data.feedbacks || [];
+    _fbLoaded = true;
+    setBlockCount('admCountFeedback', _fbAll.filter(f=>f.status!=='resolved').length);
+    renderFeedbackFilters();
+    renderFeedbackView();
+  } catch(e){
+    document.getElementById('feedbackViewList').innerHTML =
+      `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+function renderFeedbackFilters(){
+  const types = ['all','suggestion','bug','praise','complaint'];
+  const counts = {};
+  types.forEach(t => { counts[t] = t==='all' ? _fbAll.length : _fbAll.filter(f=>f.type===t).length; });
+  const labels = { all:'All', suggestion:'💡 Suggestions', bug:'🐛 Bugs', praise:'⭐ Praise', complaint:'⚠ Complaints' };
+  document.getElementById('fbvFilters').innerHTML =
+    types.filter(t => counts[t]>0 || t==='all').map(t=>
+      `<button class="fbv-filter ${_fbTypeFilter===t?'on':''}" onclick="setFbvFilter('${t}')">
+        ${labels[t]} <span style="opacity:.7">(${counts[t]})</span>
+      </button>`
+    ).join('') +
+    `<button class="fbv-filter resolved-tog ${_fbShowResolved?'on':''}" onclick="toggleFbvResolved()" style="margin-left:auto;">
+      ✅ ${_fbShowResolved?'Hide':'Show'} Resolved
+    </button>`;
+}
+
+function setFbvFilter(type){ _fbTypeFilter=type; renderFeedbackFilters(); renderFeedbackView(); }
+function toggleFbvResolved(){ _fbShowResolved=!_fbShowResolved; renderFeedbackFilters(); renderFeedbackView(); }
+
+function renderFeedbackView(){
+  const el = document.getElementById('feedbackViewList');
+  let list = _fbAll;
+  if(_fbTypeFilter !== 'all') list = list.filter(f=>f.type===_fbTypeFilter);
+  if(!_fbShowResolved) list = list.filter(f=>f.status !== 'resolved');
+  if(!list.length){
+    el.innerHTML = `<div style="padding:30px;text-align:center;color:var(--muted);">
+      ${_fbAll.length ? 'No feedback matches this filter.' : 'No feedback submitted yet.'}</div>`;
+    return;
+  }
+  el.innerHTML = list.map((f,i)=>`
+    <div class="fbv-item ${f.status==='resolved'?'resolved':''}" id="fbv-card-${f.id}">
+      <div class="fbv-meta">
+        <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${f.type}</span>
+        ${f.rating ? `<span class="fbv-type" style="color:var(--orange);background:rgba(240,96,48,.1);">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>` : ''}
+        <span class="fbv-name">👤 ${f.created_for||f.profile?.full_name||'Unknown'}</span>
+        ${f.status==='resolved'?'<span class="fbv-resolved-badge">✅ Resolved</span>':''}
+        <span class="fbv-time">${f.created_at?new Date(f.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span>
+      </div>
+      <div class="fbv-text">"${f.description}"</div>
+      <div class="fbv-reply-row">
+        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.created_for||f.profile?.full_name||'this user'}…"></textarea>
+        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${((f.created_for||f.profile?.full_name||'Someone').replace(/'/g,"\\'"))}')">💬 Send Reply</button>
+      </div>
+      <div class="fbv-actions">
+        ${f.status !== 'resolved' ? `<button class="fbv-resolve-btn" onclick="resolveFeedback('${f.id}')">✅ Mark as Resolved</button>` : ''}
+        ${suspendBtnHtml(f.user_id, f.profile?.suspended)}
+      </div>
+    </div>`).join('');
+}
+
+async function sendFeedbackReply(feedbackId, idx, receiverId, name){
+  const txt = document.getElementById('fbv-reply-'+idx)?.value.trim();
+  if(!txt){ toast('Please type a reply first.'); return; }
+  if(!receiverId){ toast('Cannot find this user — no receiver ID.'); return; }
+  try {
+    await apiPost('/api/messages', { receiver_id: receiverId, content: txt });
+    document.getElementById('fbv-reply-'+idx).value = '';
+    toast(`✅ Reply sent to ${name} — they will see it in their Inbox.`);
+  } catch(e){ toast('Could not send reply: '+e.message); }
+}
+
+async function resolveFeedback(id){
+  try {
+    await apiPut(`/api/users/feedback/${id}/resolve`, {});
+    const item = _fbAll.find(f=>String(f.id)===String(id));
+    if(item) item.status = 'resolved';
+    renderFeedbackFilters();
+    renderFeedbackView();
+    toast('✅ Marked as resolved.');
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// GRIEVANCE LOG — IT Rules 2021 Rule 3(2): acknowledge within 24h,
+// resolve within 15 days. Both deadlines are computed here from
+// received_at, never stored, so they can't drift out of sync.
+// ═══════════════════════════════════════════════
+function grvBadges(g){
+  const now = new Date();
+  const received = new Date(g.received_at);
+  const ackDeadline = new Date(received.getTime() + 24*60*60*1000);
+  const resolveDeadline = new Date(received.getTime() + 15*24*60*60*1000);
+  const badges = [];
+
+  if(g.acknowledged_at){
+    const ackAt = new Date(g.acknowledged_at);
+    const onTime = ackAt <= ackDeadline;
+    badges.push(`<div class="grv-badge ${onTime?'ok':'late'}">${onTime?'✅':'⚠'} Acknowledged ${ackAt.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>`);
+  } else if(now > ackDeadline){
+    badges.push(`<div class="grv-badge late">⚠ Not acknowledged — past 24h limit</div>`);
+  } else {
+    const hrsLeft = Math.max(0, Math.round((ackDeadline-now)/3600000));
+    badges.push(`<div class="grv-badge warn">⏳ Acknowledge within ${hrsLeft}h</div>`);
+  }
+
+  if(g.status === 'resolved'){
+    badges.push(`<div class="grv-badge ok">✅ Resolved</div>`);
+  } else {
+    const daysLeft = Math.floor((resolveDeadline-now)/86400000);
+    if(daysLeft < 0) badges.push(`<div class="grv-badge late">🔴 Overdue by ${Math.abs(daysLeft)}d (15-day limit)</div>`);
+    else if(daysLeft <= 3) badges.push(`<div class="grv-badge warn">🟠 Due in ${daysLeft}d</div>`);
+    else badges.push(`<div class="grv-badge ok">🟢 ${daysLeft}d remaining</div>`);
+  }
+
+  return badges.join('');
+}
+
+async function loadGrievances(){
+  document.getElementById('grievanceList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/grievances');
+    const list = data.grievances || [];
+    setBlockCount('admCountGrievances', list.filter(g=>g.status!=='resolved').length);
+    if(!list.length){
+      document.getElementById('grievanceList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">No grievances logged yet.</div>';
+      return;
+    }
+    document.getElementById('grievanceList').innerHTML = list.map(g=>`
+      <div class="admin-item" id="grv-item-${g.id}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div>
+            <div class="admin-item-title">${g.complainant_name}${g.complainant_contact?` · ${g.complainant_contact}`:''}</div>
+            <div class="admin-item-meta">
+              <span>Received ${new Date(g.received_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span>
+            </div>
+          </div>
+          <div class="grv-badges" style="text-align:right;margin-bottom:0;flex-shrink:0;">${grvBadges(g)}</div>
+        </div>
+        <div style="font-size:11.5px;color:var(--text);line-height:1.6;margin-bottom:8px;">"${g.note}"</div>
+        <div>
+          ${!g.acknowledged_at ? `<button class="admin-dismiss-btn" onclick="acknowledgeGrievance('${g.id}')">✓ Mark Acknowledged</button>` : ''}
+          ${g.status!=='resolved' ? `<button class="fbv-resolve-btn" onclick="resolveGrievanceEntry('${g.id}')">✅ Mark Resolved</button>` : ''}
+        </div>
+      </div>`).join('');
+  } catch(e){ document.getElementById('grievanceList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`; }
+}
+
+function toggleGrievanceForm(){
+  const form = document.getElementById('grvNewForm');
+  const isHidden = form.classList.contains('hide');
+  form.classList.toggle('hide');
+  document.getElementById('grvNewToggleBtn').textContent = isHidden ? '− Cancel' : '+ Log New Grievance';
+  if(isHidden){
+    document.getElementById('grvName').value = '';
+    document.getElementById('grvContact').value = '';
+    document.getElementById('grvNote').value = '';
+    document.getElementById('grvReceivedAt').value = new Date().toISOString().slice(0,10);
+  }
+}
+
+async function submitGrievance(){
+  const name = document.getElementById('grvName').value.trim();
+  const contact = document.getElementById('grvContact').value.trim();
+  const note = document.getElementById('grvNote').value.trim();
+  const receivedAt = document.getElementById('grvReceivedAt').value;
+  if(!name){ toast('Complainant name is required.'); return; }
+  if(!note){ toast('A short note is required.'); return; }
+  try {
+    await apiPost('/api/grievances', {
+      complainant_name: name,
+      complainant_contact: contact || undefined,
+      note,
+      received_at: receivedAt || undefined,
+    });
+    toast('✅ Grievance logged.');
+    toggleGrievanceForm();
+    loadGrievances();
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function acknowledgeGrievance(id){
+  try {
+    await apiPut(`/api/grievances/${id}/acknowledge`, {});
+    toast('✓ Marked acknowledged.');
+    loadGrievances();
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function resolveGrievanceEntry(id){
+  if(!confirm('Mark this grievance as resolved?')) return;
+  try {
+    await apiPut(`/api/grievances/${id}/resolve`, {});
+    toast('✅ Grievance resolved.');
+    loadGrievances();
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// CLEANUP — bulk-select stale (past-expiry, still active) and duplicate
+// (same seller + title + price) listings for permanent deletion. One shared
+// checkbox-selection Set across both lists so the bottom bar's count and
+// delete button reflect everything ticked, regardless of which list it's in.
+// ═══════════════════════════════════════════════
+let _clnLoaded = false;
+const _clnSelected = new Set();
+
+async function loadCleanupCandidates(){
+  if(_clnLoaded) return;
+  document.getElementById('cleanupList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/listings/cleanup/candidates');
+    const stale = data.stale || [];
+    const dupGroups = data.duplicates || [];
+    _clnLoaded = true;
+    const dupCount = dupGroups.reduce((s,g)=>s+g.length, 0);
+    setBlockCount('admCountCleanup', stale.length + dupCount);
+
+    if(!stale.length && !dupGroups.length){
+      document.getElementById('cleanupList').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted);">Nothing to clean up — no stale or duplicate listings found. ✅</div>';
+      return;
+    }
+
+    let html = '';
+    if(stale.length){
+      html += `<div class="cln-section-hd">⏰ Stale (past expiry, still active) — ${stale.length}</div>`;
+      html += stale.map(l => clnItemHtml(l, `Expired ${new Date(l.expires_at).toLocaleDateString('en-IN')}`)).join('');
+    }
+    if(dupGroups.length){
+      html += `<div class="cln-section-hd">📑 Possible Duplicates — ${dupGroups.length} group(s)</div>`;
+      html += dupGroups.map((g,gi) => `
+        <div class="cln-group">
+          <div class="cln-group-tag">Group ${gi+1} — same seller, title & price (${g.length})</div>
+          ${g.map(l => clnItemHtml(l, `Posted ${new Date(l.created_at).toLocaleDateString('en-IN')}`)).join('')}
+        </div>`).join('');
+    }
+    document.getElementById('cleanupList').innerHTML = html;
+  } catch(e){
+    document.getElementById('cleanupList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+function clnItemHtml(l, sub){
+  return `
+    <div class="cln-item">
+      <input type="checkbox" onchange="toggleClnSelect('${l.id}', this.checked)">
+      <div class="cln-item-body">
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
+        <div class="admin-item-meta">
+          <span>${l.subcategory||l.category}</span>
+          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
+          <span>👤 ${l.profiles?.full_name||'Unknown'}</span>
+          <span style="color:var(--muted);">${sub}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleClnSelect(id, checked){
+  if(checked) _clnSelected.add(id); else _clnSelected.delete(id);
+  document.getElementById('clnSelCount').textContent = `${_clnSelected.size} selected`;
+  document.getElementById('clnDeleteBtn').disabled = _clnSelected.size === 0;
+}
+
+async function bulkDeleteCleanup(){
+  const ids = [..._clnSelected];
+  if(!ids.length) return;
+  if(!confirm(`Delete ${ids.length} listing(s) permanently? This cannot be undone.`)) return;
+  const btn = document.getElementById('clnDeleteBtn');
+  btn.disabled = true;
+  try {
+    const data = await apiPost('/api/listings/cleanup/bulk-delete', { ids });
+    toast(data.message);
+    _clnSelected.clear();
+    _clnLoaded = false;
+    loadCleanupCandidates();
+  } catch(e){
+    toast('Error: '+e.message);
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+checkAdminAccess();
+</script>
+</body>
+</html>

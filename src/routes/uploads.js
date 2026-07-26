@@ -7,7 +7,7 @@
 const express         = require('express');
 const multer          = require('multer');
 const { supabaseAdmin } = require('../config/supabase');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
@@ -202,7 +202,7 @@ router.put('/photo/:photo_id/order', requireAuth, async (req, res, next) => {
 // the DB rows — this route is a backstop sweep for whatever slips through
 // that. Same admin gating as the existing pending-listings/approve routes
 // (requireAuth only, frontend hides the trigger for non-admin users).
-router.post('/cleanup-orphaned', requireAuth, async (req, res, next) => {
+router.post('/cleanup-orphaned', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
 
