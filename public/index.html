@@ -566,6 +566,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
         <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
       </div>
+      <div id="registerGuideLink" class="modal-link" style="display:none;margin:0 0 12px;" onclick="window.open('/user-guide.html','_blank')">📖 New to MapIt? <span>See the full user guide →</span></div>
       <div id="authError" class="modal-error" style="display:none"></div>
       <div id="registerMandatoryNote" style="display:none;font-size:11px;color:var(--muted);margin:-2px 0 10px;">All fields are mandatory *</div>
       <label class="modal-label">Email <span style="color:var(--orange);">*</span></label>
@@ -840,6 +841,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="uav-menu" id="uavMenu" onclick="event.stopPropagation()">
       <div class="uav-name" id="uavName">—</div>
       <div class="uav-item" onclick="openHelpModal()">❓ Help</div>
+      <div class="uav-item" onclick="window.open('/user-guide.html','_blank')">📖 User Guide</div>
       <div class="uav-item" onclick="changeNickname()">✏️ Change Nickname</div>
       <div class="uav-item" onclick="openPinsModal()">📍 My Locations</div>
       <div class="uav-item" id="inboxMenuItem" onclick="openInboxModal()" style="justify-content:space-between;">
@@ -1356,6 +1358,7 @@ function switchAuthTab(mode){
   document.getElementById('confirmPwdGroup').style.display   = mode==='register' ? 'block' : 'none';
   document.getElementById('registerNameFields').style.display = mode==='register' ? 'block' : 'none';
   document.getElementById('registerMandatoryNote').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('registerGuideLink').style.display = mode==='register' ? 'block' : 'none';
   document.getElementById('forgotPwdRow').style.display = mode==='signin' ? 'block' : 'none';
   document.getElementById('authPassword').autocomplete = mode==='signin' ? 'current-password' : 'new-password';
   hideErr('authError');
