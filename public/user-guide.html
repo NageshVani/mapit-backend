@@ -1,0 +1,679 @@
+<title>MapIt — User Guide</title>
+<style>
+  @font-face {
+    font-family: 'GuideSerif';
+    src: local('Georgia'), local('Times New Roman');
+  }
+
+  :root{
+    --orange:#F06030; --orange2:#FF7A50; --orange-soft:#FDE4DA;
+    --ground:#F7F9FC; --panel:#FFFFFF; --card:#F0F3F8; --card2:#E3E8F0;
+    --ink:#111827; --muted:#5F6773; --muted2:#4B5563;
+    --border:rgba(17,24,39,0.09); --border2:rgba(17,24,39,0.15);
+    --blue:#3B82F6; --green:#22C55E; --gold:#F59E0B; --red:#EF4444;
+    --glow:rgba(240,96,48,.16);
+    --shadow:0 10px 34px rgba(17,24,39,.10);
+    --map:#EAF0F4;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#12161D; --panel:#1A2029; --card:#20272F; --card2:#2A323C;
+      --ink:#EEF1F5; --muted:#98A2B0; --muted2:#B8C0CC;
+      --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+      --glow:rgba(240,96,48,.22);
+      --shadow:0 10px 34px rgba(0,0,0,.42);
+      --map:#171D25;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#12161D; --panel:#1A2029; --card:#20272F; --card2:#2A323C;
+    --ink:#EEF1F5; --muted:#98A2B0; --muted2:#B8C0CC;
+    --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+    --glow:rgba(240,96,48,.22);
+    --shadow:0 10px 34px rgba(0,0,0,.42);
+    --map:#171D25;
+  }
+  :root[data-theme="light"]{
+    --ground:#F7F9FC; --panel:#FFFFFF; --card:#F0F3F8; --card2:#E3E8F0;
+    --ink:#111827; --muted:#5F6773; --muted2:#4B5563;
+    --border:rgba(17,24,39,0.09); --border2:rgba(17,24,39,0.15);
+    --glow:rgba(240,96,48,.16);
+    --shadow:0 10px 34px rgba(17,24,39,.10);
+    --map:#EAF0F4;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ground); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    font-size:16px; line-height:1.6;
+  }
+  h1,h2,h3{
+    font-family:'GuideSerif',Georgia,'Times New Roman',serif;
+    font-weight:400; text-wrap:balance; margin:0;
+  }
+  em{font-style:normal;color:var(--orange);}
+  .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;}
+
+  a{color:var(--orange);}
+  ::selection{background:var(--glow);}
+
+  /* ── TOP BAR ── */
+  #topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:14px;
+    height:64px; padding:0 22px;
+    background:color-mix(in srgb, var(--panel) 88%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .wordmark{font-family:'GuideSerif',Georgia,serif; font-size:22px; color:var(--ink);}
+  .eyebrow{
+    font-size:11px; font-weight:700; letter-spacing:1.6px; text-transform:uppercase;
+    color:var(--muted); border-left:1px solid var(--border2); padding-left:14px;
+  }
+  #backBtn{
+    display:none; align-items:center; gap:6px; margin-left:auto;
+    background:var(--card); border:1px solid var(--border2); color:var(--ink);
+    font-size:14px; font-weight:600; padding:8px 16px; border-radius:20px; cursor:pointer;
+    font-family:inherit; transition:border-color .15s, background .15s;
+  }
+  #backBtn:hover{border-color:var(--orange); background:var(--orange-soft);}
+  #backBtn:focus-visible, .topic-tile:focus-visible, .navbtn:focus-visible{
+    outline:2px solid var(--orange); outline-offset:2px;
+  }
+  body.detail-open #backBtn{display:inline-flex;}
+  body.detail-open #landing{display:none;}
+
+  /* ── LANDING ── */
+  #landing{max-width:1080px; margin:0 auto; padding:56px 24px 90px;}
+  .hero-kicker{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange);}
+  .hero-title{font-size:clamp(30px,4.2vw,44px); margin-top:10px; max-width:720px;}
+  .hero-sub{font-size:17px; color:var(--muted); max-width:560px; margin-top:14px; line-height:1.7;}
+
+  .topic-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:14px; margin-top:42px;
+  }
+  .topic-tile{
+    display:flex; flex-direction:column; align-items:flex-start; gap:10px;
+    text-align:left; background:var(--panel); border:1px solid var(--border);
+    border-radius:14px; padding:20px 18px; cursor:pointer;
+    font-family:inherit; color:var(--ink);
+    transition:border-color .15s, transform .15s, box-shadow .15s;
+  }
+  .topic-tile:hover{border-color:var(--orange); box-shadow:var(--shadow); transform:translateY(-2px);}
+  .topic-ico{font-size:38px; line-height:1;}
+  .topic-name{font-size:16.5px; font-weight:700;}
+  .topic-teaser{font-size:13px; color:var(--muted); line-height:1.5;}
+  @media (prefers-reduced-motion: reduce){
+    .topic-tile{transition:none;}
+    .topic-tile:hover{transform:none;}
+  }
+
+  /* ── DETAIL VIEW ── */
+  .topic-detail{display:none; max-width:1160px; margin:0 auto; padding:44px 24px 100px;}
+  body.detail-open .topic-detail.active{display:block;}
+
+  .detail-eyebrow{font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--orange);}
+  .detail-title{font-size:clamp(26px,3.4vw,36px); margin-top:8px;}
+  .detail-intro{font-size:15.5px; color:var(--muted); max-width:640px; margin-top:10px; line-height:1.7;}
+
+  .detail-cols{
+    display:grid; grid-template-columns:minmax(280px,380px) 1fr;
+    gap:36px; margin-top:34px; align-items:start;
+  }
+  @media (max-width:820px){ .detail-cols{grid-template-columns:1fr;} }
+
+  .steps{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:18px;}
+  .steps li{display:flex; gap:14px;}
+  .step-num{
+    flex-shrink:0; width:28px; height:28px; border-radius:50%;
+    background:var(--orange); color:#fff; font-size:13px; font-weight:700;
+    font-family:ui-monospace,'SF Mono',Menlo,monospace;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .step-body b{display:block; font-size:15px; margin-bottom:3px;}
+  .step-body span{font-size:14px; color:var(--muted); line-height:1.6;}
+
+  .mockup-wrap{
+    position:sticky; top:86px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:16px; padding:18px; box-shadow:var(--shadow);
+  }
+  .mockup-wrap svg{display:block; width:100%; height:auto; border-radius:8px;}
+
+  .detail-nav{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:56px; padding-top:22px; border-top:1px solid var(--border);
+    gap:12px; flex-wrap:wrap;
+  }
+  .navbtn{
+    background:var(--panel); border:1px solid var(--border2); color:var(--ink);
+    font-family:inherit; font-size:13.5px; font-weight:600;
+    padding:10px 16px; border-radius:10px; cursor:pointer;
+    transition:border-color .15s;
+  }
+  .navbtn:hover{border-color:var(--orange);}
+  .navbtn .lbl{display:block; font-size:10.5px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-bottom:2px;}
+
+  /* ── SVG MOCKUP SHARED TOKENS (used inline via CSS vars aren't inherited into SVG presentation attrs reliably in all renderers, so mockups use literal hexes matching the tokens above) ── */
+  .callout-num{font-family:ui-monospace,'SF Mono',Menlo,monospace; font-weight:700; font-size:12px;}
+</style>
+
+<div id="topbar">
+  <div class="wordmark">Map<em>It</em></div>
+  <div class="eyebrow">User Guide</div>
+  <button id="backBtn" onclick="showLanding()">← All topics</button>
+</div>
+
+<main id="landing">
+  <div class="hero-kicker">How MapIt works</div>
+  <h1 class="hero-title">One topic at a time — pick what you need help with.</h1>
+  <p class="hero-sub">Fifteen short walkthroughs covering everything from your first sign-up to reporting a bad listing. Each one shows exactly where to tap.</p>
+
+  <div class="topic-grid" id="topicGrid"></div>
+</main>
+
+<div id="topicDetails"></div>
+
+<script>
+/* ── Reusable schematic SVG mockups, drawn in the app's own palette ── */
+const C = { orange:'#F06030', orange2:'#FF7A50', blue:'#3B82F6', green:'#22C55E', gold:'#F59E0B', red:'#EF4444',
+            panel:'#FFFFFF', card:'#F0F3F8', border:'#D8DEE7', ink:'#111827', muted:'#5F6773', map:'#E4EBF1' };
+
+function callout(x,y,n){
+  return `<circle cx="${x}" cy="${y}" r="11" fill="${C.orange}" stroke="#fff" stroke-width="1.5"/>
+    <text x="${x}" y="${y+4}" text-anchor="middle" fill="#fff" class="callout-num">${n}</text>`;
+}
+function leader(x1,y1,x2,y2){
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${C.orange}" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+}
+function ring(x,y,w,h,r=8){
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="none" stroke="${C.orange}" stroke-width="2.5"/>`;
+}
+function header(){
+  return `
+  <rect x="0" y="0" width="640" height="40" fill="${C.panel}"/>
+  <line x1="0" y1="40" x2="640" y2="40" stroke="${C.border}"/>
+  <text x="16" y="25" font-family="Georgia,serif" font-size="16" fill="${C.ink}">Map<tspan fill="${C.orange}">It</tspan></text>
+  <rect x="200" y="10" width="240" height="20" rx="10" fill="${C.card}" stroke="${C.border}"/>
+  <text x="212" y="24" font-size="10.5" fill="${C.muted}">🔍 Search a location…</text>
+  <rect x="452" y="10" width="98" height="20" rx="10" fill="${C.card}" stroke="${C.border}"/>
+  <text x="464" y="24" font-size="10" fill="${C.muted}">📍 Koramangala</text>
+  <circle cx="610" cy="20" r="12" fill="${C.orange}"/>
+  <text x="610" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">N</text>
+  `;
+}
+function sidebarFrame(){
+  return `
+  <rect x="0" y="40" width="200" height="380" fill="${C.panel}"/>
+  <line x1="200" y1="40" x2="200" y2="420" stroke="${C.border}"/>
+  ${['🗺️ All','🏠 RE','🚗 Veh','🏡 HH'].map((l,i)=>`
+    <circle cx="${28+i*44}" cy="66" r="15" fill="${C.card}" stroke="${C.border}"/>
+    <text x="${28+i*44}" y="70" text-anchor="middle" font-size="12">${l.split(' ')[0]}</text>
+    <text x="${28+i*44}" y="90" text-anchor="middle" font-size="7.5" fill="${C.muted}">${l.split(' ')[1]}</text>
+  `).join('')}
+  <line x1="14" y1="104" x2="186" y2="104" stroke="${C.border}"/>
+  <text x="14" y="120" font-size="8" font-weight="700" letter-spacing="1" fill="${C.muted}">RADIUS</text>
+  ${['3km','5km','10km','City'].map((l,i)=>`
+    <rect x="${14+i*44}" y="126" width="38" height="20" rx="6" fill="${i===1?C.orange:C.card}" stroke="${i===1?C.orange:C.border}"/>
+    <text x="${33+i*44}" y="139" text-anchor="middle" font-size="9" fill="${i===1?'#fff':C.muted}">${l}</text>
+  `).join('')}
+  <line x1="14" y1="158" x2="186" y2="158" stroke="${C.border}"/>
+  <rect x="14" y="168" width="172" height="22" rx="11" fill="${C.card}" stroke="${C.border}"/>
+  <rect x="16" y="170" width="84" height="18" rx="9" fill="${C.orange}"/>
+  <text x="58" y="182" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">📍 Listings</text>
+  <text x="144" y="182" text-anchor="middle" font-size="8.5" fill="${C.muted}">❤ Saved</text>
+  <rect x="14" y="200" width="172" height="76" rx="10" fill="${C.card}" stroke="${C.border}"/>
+  <rect x="20" y="206" width="46" height="46" rx="6" fill="${C.card2}"/>
+  <text x="43" y="234" text-anchor="middle" font-size="16">🏠</text>
+  <text x="74" y="218" font-size="10" font-weight="700" fill="${C.ink}">2BHK Apartment</text>
+  <text x="74" y="232" font-size="11" font-weight="700" fill="${C.orange}">₹45,000/mo</text>
+  <text x="74" y="245" font-size="8.5" fill="${C.muted}">1.2 km away</text>
+  <circle cx="176" cy="212" r="8" fill="none" stroke="${C.red}" stroke-width="1.3"/>
+  <text x="176" y="215" text-anchor="middle" font-size="9">🤍</text>
+  <rect x="14" y="284" width="172" height="76" rx="10" fill="${C.card}" stroke="${C.border}"/>
+  <rect x="20" y="290" width="46" height="46" rx="6" fill="${C.card2}"/>
+  <text x="43" y="318" text-anchor="middle" font-size="16">🚗</text>
+  <text x="74" y="302" font-size="10" font-weight="700" fill="${C.ink}">Honda City 2019</text>
+  <text x="74" y="316" font-size="11" font-weight="700" fill="${C.orange}">₹6.8L</text>
+  <text x="74" y="329" font-size="8.5" fill="${C.muted}">2.8 km away</text>
+  `;
+}
+function mapFrame(highlightPin){
+  const pins = [ [320,120],[420,180],[360,260],[480,320],[280,340] ];
+  return `
+  <rect x="200" y="40" width="440" height="380" fill="${C.map}"/>
+  ${pins.map(([x,y],i)=>{
+    const big = highlightPin && i===2;
+    return `<circle cx="${x}" cy="${y}" r="${big?12:7}" fill="${big?C.orange:C.blue}" stroke="#fff" stroke-width="2"/>`;
+  }).join('')}
+  `;
+}
+const MOCKUPS = {};
+
+MOCKUPS.main = function(hl){
+  let extra = '';
+  if(hl==='browse') extra = ring(12,50,182,50)+ring(200,40,440,380)+callout(103,36,1)+callout(410,64,2)+leader(103,47,103,60)+leader(400,64,410,64);
+  if(hl==='search') extra = ring(198,8,244,24)+callout(320,-2>0?2:2,1);
+  if(hl==='radius') extra = ring(12,122,180,28)+callout(20,110,1)+leader(20,117,20,122);
+  if(hl==='save') extra = ring(166,202,20,20)+ring(14,168,172,22)+callout(190,190,1)+callout(58,158,2)+leader(180,195,190,190)+leader(58,168,58,158);
+  return `<svg viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg">
+    ${mapFrame(hl==='browse')}${sidebarFrame()}${header()}${extra}
+  </svg>`;
+};
+
+MOCKUPS.auth = function(){
+  return `<svg viewBox="0 0 500 420" xmlns="http://www.w3.org/2000/svg">
+    <rect width="500" height="420" fill="${C.card}"/>
+    <rect x="90" y="40" width="320" height="340" rx="16" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="250" y="82" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="${C.ink}">Map<tspan fill="${C.orange}">It</tspan></text>
+    <rect x="118" y="106" width="128" height="26" rx="8" fill="${C.orange}"/>
+    <text x="182" y="123" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">Sign Up</text>
+    <rect x="254" y="106" width="128" height="26" rx="8" fill="${C.card}" stroke="${C.border}"/>
+    <text x="318" y="123" text-anchor="middle" font-size="10.5" fill="${C.muted}">Sign In</text>
+    ${ring(112,100,140,32)}${callout(112,90,1)}${leader(112,96,112,100)}
+    <rect x="118" y="152" width="264" height="26" rx="7" fill="${C.card}" stroke="${C.border}"/>
+    <text x="128" y="169" font-size="10" fill="${C.muted}">Email address</text>
+    <rect x="118" y="188" width="264" height="26" rx="7" fill="${C.card}" stroke="${C.border}"/>
+    <text x="128" y="205" font-size="10" fill="${C.muted}">Password</text>
+    <rect x="118" y="224" width="264" height="30" rx="8" fill="${C.orange}"/>
+    <text x="250" y="243" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Create Account</text>
+    <text x="250" y="270" text-anchor="middle" font-size="9.5" fill="${C.muted}">— or —</text>
+    <rect x="118" y="280" width="264" height="28" rx="8" fill="${C.panel}" stroke="${C.border2}"/>
+    <text x="250" y="299" text-anchor="middle" font-size="10" fill="${C.ink}">🔵 Continue with Google</text>
+    <rect x="118" y="316" width="264" height="28" rx="8" fill="${C.panel}" stroke="${C.border2}"/>
+    <text x="250" y="335" text-anchor="middle" font-size="10" fill="${C.ink}">✉️ Email me a one-time code</text>
+    ${callout(390,290,2)}${leader(382,294,390,290)}
+    <rect x="150" y="356" width="200" height="18" rx="9" fill="${C.card2}"/>
+    <text x="250" y="369" text-anchor="middle" font-size="8.5" letter-spacing="2" fill="${C.muted}">6 · 2 · 9 · 1 · 4 · 7</text>
+    ${callout(360,365,3)}${leader(350,365,360,365)}
+  </svg>`;
+};
+
+MOCKUPS.homeloc = function(){
+  return `<svg viewBox="0 0 520 400" xmlns="http://www.w3.org/2000/svg">
+    <rect width="520" height="400" fill="${C.map}"/>
+    <rect x="60" y="30" width="400" height="340" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="80" y="60" font-size="14" font-weight="700" fill="${C.ink}">📍 My Locations</text>
+    <line x1="60" y1="76" x2="460" y2="76" stroke="${C.border}"/>
+    <rect x="80" y="92" width="360" height="24" rx="8" fill="${C.card}" stroke="${C.border}"/>
+    <text x="92" y="108" font-size="10.5" fill="${C.muted}">🔍 Search your area…</text>
+    ${callout(80,84,1)}${leader(80,88,80,92)}
+    <rect x="80" y="130" width="360" height="180" rx="10" fill="${C.card2}"/>
+    <circle cx="260" cy="220" r="9" fill="${C.orange}" stroke="#fff" stroke-width="2.5"/>
+    <line x1="260" y1="220" x2="260" y2="196" stroke="${C.orange}" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <text x="260" y="192" text-anchor="middle" font-size="9" fill="${C.muted}">drag to adjust</text>
+    ${callout(300,240,2)}${leader(268,224,300,240)}
+    <rect x="80" y="322" width="200" height="30" rx="8" fill="${C.orange}"/>
+    <text x="180" y="341" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Save Location</text>
+    ${callout(300,320,3)}${leader(280,332,300,320)}
+  </svg>`;
+};
+
+MOCKUPS.explore = function(){
+  let s = MOCKUPS.main();
+  const extra = ring(60,168,64,22)+callout(60,158,1)
+    + ring(12,196,176,22)+callout(190,196,2)+leader(176,196,190,196)
+    + ring(198,44,244,24)+callout(320,32,3);
+  return s.replace('</svg>', extra+'</svg>');
+};
+
+MOCKUPS.listing = function(){
+  return `<svg viewBox="0 0 560 440" xmlns="http://www.w3.org/2000/svg">
+    <rect width="560" height="440" fill="${C.card}"/>
+    <rect x="60" y="24" width="440" height="392" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <rect x="60" y="24" width="440" height="140" rx="14" fill="${C.card2}"/>
+    <text x="280" y="100" text-anchor="middle" font-size="34">🏠</text>
+    <circle cx="470" cy="52" r="13" fill="${C.panel}" stroke="${C.border2}"/>
+    <text x="470" y="56" text-anchor="middle" font-size="12">🤍</text>
+    ${callout(490,40,3)}${leader(480,48,490,40)}
+    <text x="82" y="188" font-size="15" font-weight="700" fill="${C.ink}">Spacious 2BHK Apartment</text>
+    <text x="82" y="210" font-size="17" font-weight="700" fill="${C.orange}">₹45,000 / mo</text>
+    <rect x="82" y="222" width="72" height="18" rx="9" fill="${C.card}" stroke="${C.border}"/>
+    <text x="118" y="235" text-anchor="middle" font-size="8.5" fill="${C.muted}">2 BHK</text>
+    <rect x="160" y="222" width="90" height="18" rx="9" fill="${C.card}" stroke="${C.border}"/>
+    <text x="205" y="235" text-anchor="middle" font-size="8.5" fill="${C.muted}">Semi-Furnished</text>
+    ${callout(82,214,1)}${leader(82,204,82,214)}
+    <line x1="82" y1="252" x2="478" y2="252" stroke="${C.border}"/>
+    <text x="82" y="272" font-size="10" font-weight="700" letter-spacing="1" fill="${C.muted}">📍 NEARBY</text>
+    <text x="82" y="290" font-size="10.5" fill="${C.ink}">🏫 JSS School — 450 m</text>
+    <text x="82" y="306" font-size="10.5" fill="${C.ink}">🏬 Total Mall — 900 m</text>
+    <text x="82" y="322" font-size="10.5" fill="${C.ink}">🛒 More Supermarket — 650 m</text>
+    ${ring(72,262,410,68)}${callout(490,270,2)}${leader(482,278,490,270)}
+    <rect x="82" y="356" width="360" height="32" rx="8" fill="${C.green}"/>
+    <text x="262" y="377" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">🤝 I&#8217;m Interested</text>
+  </svg>`;
+};
+
+MOCKUPS.post = function(){
+  return `<svg viewBox="0 0 560 440" xmlns="http://www.w3.org/2000/svg">
+    <rect width="560" height="440" fill="${C.card}"/>
+    <rect x="50" y="20" width="460" height="400" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="70" y="52" font-size="14" font-weight="700" fill="${C.ink}">📍 Post a Listing</text>
+    ${callout(300,40,1)}${leader(200,52,300,40)}
+    <line x1="50" y1="66" x2="510" y2="66" stroke="${C.border}"/>
+    ${['🏠','🚗','🏡'].map((ic,i)=>`
+      <rect x="${70+i*66}" y="82" width="56" height="40" rx="8" fill="${i===0?C.orange:C.card}" stroke="${i===0?C.orange:C.border}"/>
+      <text x="${98+i*66}" y="107" text-anchor="middle" font-size="16">${ic}</text>
+    `).join('')}
+    ${callout(340,100,2)}${leader(268,102,340,100)}
+    <rect x="70" y="140" width="410" height="80" rx="10" fill="${C.card}" stroke="${C.border}" stroke-dasharray="4 3"/>
+    <text x="275" y="176" text-anchor="middle" font-size="20">📷</text>
+    <text x="275" y="200" text-anchor="middle" font-size="9.5" fill="${C.muted}">Add up to 5 photos</text>
+    <rect x="70" y="236" width="410" height="24" rx="7" fill="${C.card}" stroke="${C.border}"/>
+    <text x="80" y="252" font-size="9.5" fill="${C.muted}">Title, price, and details…</text>
+    <rect x="70" y="276" width="410" height="118" rx="10" fill="${C.map}"/>
+    <circle cx="275" cy="335" r="9" fill="${C.orange}" stroke="#fff" stroke-width="2.5"/>
+    <text x="275" y="372" text-anchor="middle" font-size="9" fill="${C.muted}">Drop your pin at the exact spot</text>
+    ${ring(70,276,410,118)}${callout(500,290,3)}${leader(480,300,500,290)}
+  </svg>`;
+};
+
+MOCKUPS.myads = function(){
+  return `<svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+    <rect width="560" height="400" fill="${C.card}"/>
+    <rect x="50" y="20" width="460" height="360" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="70" y="52" font-size="13" font-weight="700" letter-spacing="1" fill="${C.muted}">📋 MY ADS</text>
+    ${callout(230,40,1)}${leader(160,52,230,40)}
+    <line x1="50" y1="66" x2="510" y2="66" stroke="${C.border}"/>
+    <rect x="70" y="84" width="420" height="82" rx="10" fill="${C.card}" stroke="${C.border}"/>
+    <rect x="80" y="94" width="52" height="52" rx="7" fill="${C.card2}"/>
+    <text x="106" y="126" text-anchor="middle" font-size="18">🏠</text>
+    <text x="146" y="108" font-size="11" font-weight="700" fill="${C.ink}">2BHK Apartment</text>
+    <text x="146" y="124" font-size="12" font-weight="700" fill="${C.orange}">₹45,000/mo</text>
+    <text x="146" y="140" font-size="9" fill="${C.muted}">Expires in 22 days</text>
+    <rect x="330" y="122" width="46" height="20" rx="6" fill="${C.card}" stroke="${C.blue}"/>
+    <text x="353" y="136" text-anchor="middle" font-size="8.5" fill="${C.blue}">Edit</text>
+    <rect x="380" y="122" width="52" height="20" rx="6" fill="${C.card}" stroke="${C.border2}"/>
+    <text x="406" y="136" text-anchor="middle" font-size="8.5" fill="${C.muted}">Sold</text>
+    <rect x="436" y="122" width="52" height="20" rx="6" fill="${C.card}" stroke="${C.red}"/>
+    <text x="462" y="136" text-anchor="middle" font-size="8.5" fill="${C.red}">Delete</text>
+    ${ring(326,116,166,32)}${callout(500,112,2)}${leader(492,120,500,112)}
+    <rect x="70" y="180" width="420" height="82" rx="10" fill="${C.card}" stroke="${C.border}"/>
+    <rect x="80" y="190" width="52" height="52" rx="7" fill="${C.card2}"/>
+    <text x="106" y="222" text-anchor="middle" font-size="18">🚗</text>
+    <text x="146" y="204" font-size="11" font-weight="700" fill="${C.ink}">Honda City 2019</text>
+    <text x="146" y="220" font-size="12" font-weight="700" fill="${C.orange}">₹6.8L</text>
+    <text x="146" y="236" font-size="9" fill="${C.red}">Expires in 2 days</text>
+    ${callout(146,246,3)}${leader(146,240,146,246)}
+  </svg>`;
+};
+
+MOCKUPS.chat = function(){
+  return `<svg viewBox="0 0 560 440" xmlns="http://www.w3.org/2000/svg">
+    <rect width="560" height="440" fill="${C.card}"/>
+    <rect x="60" y="220" width="440" height="46" rx="10" fill="${C.panel}" stroke="${C.border}"/>
+    <rect x="76" y="230" width="220" height="26" rx="8" fill="${C.green}"/>
+    <text x="186" y="247" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">🤝 I&#8217;m Interested</text>
+    ${callout(320,232,1)}${leader(300,238,320,232)}
+    <rect x="60" y="20" width="440" height="180" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="80" y="50" font-size="12" font-weight="700" fill="${C.ink}">💬 Chat — Priya (Seller)</text>
+    <rect x="80" y="66" width="230" height="34" rx="12" fill="${C.card}"/>
+    <text x="92" y="87" font-size="9.5" fill="${C.ink}">Hi, is this still available?</text>
+    <rect x="270" y="108" width="200" height="34" rx="12" fill="${C.orange}"/>
+    <text x="282" y="129" font-size="9.5" fill="#fff">Yes! Would you like to visit?</text>
+    ${ring(60,20,440,180)}${callout(490,32,2)}${leader(480,40,490,32)}
+    <rect x="80" y="284" width="340" height="28" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="92" y="302" font-size="9.5" fill="${C.muted}">Type a message…</text>
+    <circle cx="450" cy="298" r="16" fill="${C.orange}"/>
+    <text x="450" y="302" text-anchor="middle" font-size="11" fill="#fff">➤</text>
+    ${callout(490,298,3)}${leader(468,298,490,298)}
+  </svg>`;
+};
+
+MOCKUPS.report = function(){
+  return `<svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+    <rect width="500" height="400" fill="${C.card}"/>
+    <rect x="70" y="30" width="360" height="320" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="90" y="62" font-size="13" font-weight="700" fill="${C.red}">🚩 Report this listing</text>
+    ${callout(250,50,1)}${leader(250,56,250,50)}
+    <line x1="70" y1="78" x2="430" y2="78" stroke="${C.border}"/>
+    ${['Fake','Wrong price','Spam','Offensive'].map((l,i)=>`
+      <rect x="${90+ (i%2)*160}" y="${96+Math.floor(i/2)*40}" width="150" height="28" rx="14" fill="${i===0?C.orange:C.card}" stroke="${i===0?C.orange:C.border}"/>
+      <text x="${165+(i%2)*160}" y="${115+Math.floor(i/2)*40}" text-anchor="middle" font-size="10" fill="${i===0?'#fff':C.muted}">${l}</text>
+    `).join('')}
+    ${ring(86,90,164,34)}${callout(266,84,2)}${leader(250,90,266,84)}
+    <rect x="90" y="192" width="300" height="70" rx="8" fill="${C.card}" stroke="${C.border}"/>
+    <text x="102" y="210" font-size="9.5" fill="${C.muted}">Add an optional note…</text>
+    <rect x="90" y="278" width="140" height="32" rx="8" fill="${C.red}"/>
+    <text x="160" y="299" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Submit Report</text>
+    ${callout(250,278,3)}${leader(230,290,250,278)}
+  </svg>`;
+};
+
+MOCKUPS.profile = function(){
+  return `<svg viewBox="0 0 460 380" xmlns="http://www.w3.org/2000/svg">
+    <rect width="460" height="380" fill="${C.card}"/>
+    <rect x="0" y="0" width="460" height="40" fill="${C.panel}"/>
+    <line x1="0" y1="40" x2="460" y2="40" stroke="${C.border}"/>
+    <circle cx="430" cy="20" r="12" fill="${C.orange}"/>
+    <text x="430" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">N</text>
+    ${callout(430,4,1)}${leader(430,8,430,10)}
+    <rect x="240" y="48" width="200" height="230" rx="12" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="256" y="70" font-size="9.5" font-weight="700" fill="${C.muted}">NAGESH</text>
+    <line x1="248" y1="80" x2="432" y2="80" stroke="${C.border}"/>
+    <text x="256" y="100" font-size="10.5" fill="${C.ink}">✏️ Edit Nickname</text>
+    <text x="256" y="124" font-size="10.5" fill="${C.ink}">📍 My Locations</text>
+    <text x="256" y="148" font-size="10.5" fill="${C.ink}">🗺 Default View: Map</text>
+    ${ring(248,138,184,20)}${callout(444,146,2)}${leader(432,146,444,146)}
+    <text x="256" y="172" font-size="10.5" fill="${C.ink}">⭐ Feedback</text>
+    <text x="256" y="196" font-size="10.5" fill="${C.ink}">📥 Inbox</text>
+    <rect x="248" y="216" width="184" height="26" rx="6" fill="none" stroke="${C.red}" stroke-opacity=".4"/>
+    <text x="340" y="233" text-anchor="middle" font-size="9.5" font-weight="700" fill="${C.red}">Sign Out</text>
+    ${callout(444,214,3)}${leader(432,225,444,214)}
+  </svg>`;
+};
+
+MOCKUPS.feedback = function(){
+  return `<svg viewBox="0 0 480 380" xmlns="http://www.w3.org/2000/svg">
+    <rect width="480" height="380" fill="${C.card}"/>
+    <rect x="60" y="30" width="360" height="300" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="80" y="62" font-size="13" font-weight="700" fill="${C.ink}">⭐ Feedback</text>
+    ${callout(230,50,1)}${leader(230,56,230,50)}
+    <line x1="60" y1="78" x2="420" y2="78" stroke="${C.border}"/>
+    <text x="80" y="102" font-size="20" fill="${C.gold}">★ ★ ★ ★ ☆</text>
+    ${ring(72,84,140,26)}${callout(230,90,2)}${leader(212,96,230,90)}
+    ${['Bug','Content Report','Suggestion','Other'].map((l,i)=>`
+      <rect x="${80+i*82}" y="126" width="76" height="24" rx="12" fill="${i===2?C.orange:C.card}" stroke="${i===2?C.orange:C.border}"/>
+      <text x="${118+i*82}" y="142" text-anchor="middle" font-size="8" fill="${i===2?'#fff':C.muted}">${l}</text>
+    `).join('')}
+    <rect x="80" y="168" width="300" height="70" rx="8" fill="${C.card}" stroke="${C.border}"/>
+    <text x="92" y="186" font-size="9.5" fill="${C.muted}">Tell us more…</text>
+    <rect x="80" y="254" width="140" height="30" rx="8" fill="${C.orange}"/>
+    <text x="150" y="273" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">Send Feedback</text>
+    ${callout(230,254,3)}${leader(220,262,230,254)}
+  </svg>`;
+};
+
+MOCKUPS.legal = function(){
+  return `<svg viewBox="0 0 480 300" xmlns="http://www.w3.org/2000/svg">
+    <rect width="480" height="300" fill="${C.card}"/>
+    <rect x="60" y="40" width="360" height="220" rx="14" fill="${C.panel}" stroke="${C.border}"/>
+    <text x="240" y="72" text-anchor="middle" font-family="Georgia,serif" font-size="16" fill="${C.ink}">Map<tspan fill="${C.orange}">It</tspan></text>
+    <text x="240" y="100" text-anchor="middle" font-size="9.5" fill="${C.muted}">I agree to the</text>
+    <text x="204" y="118" text-anchor="middle" font-size="10.5" font-weight="700" fill="${C.orange}" text-decoration="underline">Terms of Service</text>
+    <text x="240" y="118" text-anchor="middle" font-size="9.5" fill="${C.muted}"> and </text>
+    <text x="290" y="118" text-anchor="middle" font-size="10.5" font-weight="700" fill="${C.orange}" text-decoration="underline">Privacy Policy</text>
+    ${ring(160,106,170,20)}${callout(346,106,1)}${leader(330,110,346,106)}
+    <line x1="60" y1="150" x2="420" y2="150" stroke="${C.border}"/>
+    <text x="80" y="176" font-size="9.5" fill="${C.ink}">What we collect &amp; why</text>
+    <text x="80" y="196" font-size="9.5" fill="${C.ink}">Your rights as a user</text>
+    ${callout(346,178,2)}${leader(300,178,346,178)}
+    <text x="80" y="224" font-size="9.5" fill="${C.ink}">📧 Grievance Officer contact</text>
+    ${callout(346,220,3)}${leader(300,220,346,220)}
+  </svg>`;
+};
+</script>
+
+<script>
+const TOPICS = [
+  { id:'start', ico:'🚀', name:'Getting Started', teaser:'Sign up and verify your email in under a minute.',
+    intro:'Create your account with the method that suits you, then confirm your email so sellers know you’re real.',
+    steps:[
+      ['Choose how to sign up','Tap <b>Sign Up</b> and pick email + password, Google, or a one-time email code.'],
+      ['Verify your email','A 6-digit code arrives in your inbox — enter it to confirm your account.'],
+      ['Add your nickname','This is the name sellers and buyers will see instead of your email.']
+    ], mockup:'auth' },
+
+  { id:'home', ico:'📍', name:'Setting Your Home Location', teaser:'Tell MapIt where you live so nearby listings show first.',
+    intro:'Your home pin is what MapIt uses to sort listings by distance — set it once from the profile menu.',
+    steps:[
+      ['Open My Locations','Tap your avatar (top right), then <b>📍 My Locations</b>.'],
+      ['Find your spot','Search your area by name, or drag the pin to your exact location.'],
+      ['Save it','Listings from here on are sorted by distance from this pin.']
+    ], mockup:'homeloc' },
+
+  { id:'browse', ico:'🗺️', name:'Browsing Listings', teaser:'See what’s for sale near you, on the map or as a list.',
+    intro:'Every listing near your location shows up as a pin on the map and a card in the sidebar — filter by category to narrow things down.',
+    steps:[
+      ['Look at the map or list','Pins on the map and cards in the sidebar show the same listings.'],
+      ['Filter by category','Use 🏠 Real Estate, 🚗 Vehicles, or 🏡 Household Items to narrow results.'],
+      ['Open a listing','Tap any pin or card to see full details.']
+    ], mockup:'main', highlight:'browse' },
+
+  { id:'search', ico:'🔎', name:'Searching', teaser:'Jump the map straight to a place name.',
+    intro:'Typing a locality in the search bar moves the map there instantly — combine it with filters for a focused result.',
+    steps:[
+      ['Type a place name','Use the search bar at the top of the screen.'],
+      ['Map jumps there','MapIt centers the map on that location.'],
+      ['Narrow it down','Add a category filter or keyword to refine the results.']
+    ], mockup:'main', highlight:'search' },
+
+  { id:'radius', ico:'🎯', name:'Filtering by Distance', teaser:'Show only listings within 3, 5, 10 km, or a whole city/region.',
+    intro:'Radius buttons control how far MapIt looks from your active location — the default is 5 km.',
+    steps:[
+      ['Pick a radius','Choose 3 km, 5 km, 10 km, City, or Region.'],
+      ['Map redraws','Only listings inside that circle are shown.'],
+      ['Change anytime','Switch radius as often as you like — nothing else resets.']
+    ], mockup:'main', highlight:'radius' },
+
+  { id:'explore', ico:'🧭', name:'Exploring Other Areas', teaser:'Browse a neighborhood that isn’t your own, without losing your home pin.',
+    intro:'Explore Area is a second, temporary search center — perfect for house-hunting in a different part of town.',
+    steps:[
+      ['Switch modes','Tap <b>🗺 Explore Area</b> instead of My Locations.'],
+      ['Search any place','Type a locality — the map flies there.'],
+      ['Switch back anytime','Tap <b>📍 My Locations</b> to return to your saved home pin.']
+    ], mockup:'explore' },
+
+  { id:'view', ico:'🏷️', name:'Viewing a Listing', teaser:'Photos, price, specs, and what’s nearby.',
+    intro:'Every listing opens into a full detail panel — including a 📍 Nearby section with schools, malls, and supermarkets close by.',
+    steps:[
+      ['Browse photos & specs','See up to 5 photos plus category-specific details (BHK, brand, condition, etc.).'],
+      ['Check what’s nearby','The 📍 Nearby section lists close schools, malls, and supermarkets.'],
+      ['Save or contact','Tap the heart to save it, or scroll down to message the seller.']
+    ], mockup:'listing' },
+
+  { id:'save', ico:'❤️', name:'Saving Listings', teaser:'Bookmark listings to compare later.',
+    intro:'Tap the heart on any listing to keep it in one place — your Saved tab.',
+    steps:[
+      ['Tap the heart','Available on both listing cards and the full detail view.'],
+      ['Find it in Saved','Open the <b>❤ Saved</b> tab anytime to see everything you’ve bookmarked.'],
+      ['Remove anytime','Tap the heart again to take it off your Saved list.']
+    ], mockup:'main', highlight:'save' },
+
+  { id:'post', ico:'➕', name:'Posting a Listing', teaser:'List a home, vehicle, or item in a few steps.',
+    intro:'Posting walks you through category, photos, and dropping a precise GPS pin — exact location is what makes MapIt different.',
+    steps:[
+      ['Tap Post a Listing','Found in the header, next to Browse.'],
+      ['Fill in the details','Pick a category and subcategory, add up to 5 photos, and describe the item.'],
+      ['Drop your pin','Place the pin at the exact spot on the map, then submit.']
+    ], mockup:'post' },
+
+  { id:'myads', ico:'📋', name:'Managing Your Listings', teaser:'Edit, mark as sold, or delete what you’ve posted.',
+    intro:'Everything you’ve listed lives in My Ads — with quick actions for each one.',
+    steps:[
+      ['Open My Ads','Tap the <b>📋 My Ads</b> tab to see all your listings.'],
+      ['Take an action','Edit details, mark it <b>Sold</b>, or <b>Delete</b> it entirely.'],
+      ['Know the expiry','Listings expire automatically 30 days after posting.']
+    ], mockup:'myads' },
+
+  { id:'contact', ico:'🤝', name:'Contacting a Seller', teaser:'Send an interest note, then keep chatting.',
+    intro:'A first note goes to the seller by email — once they reply, the conversation moves into Chat.',
+    steps:[
+      ['Tap I’m Interested','Found on any listing’s detail view.'],
+      ['Send a short note','The seller gets notified by email right away.'],
+      ['Continue in Chat','Once they reply, keep talking via the message icon in the header.']
+    ], mockup:'chat' },
+
+  { id:'report', ico:'🚩', name:'Reporting a Listing', teaser:'Flag something fake, spammy, or offensive.',
+    intro:'Reports go straight to our review queue — nothing is deleted automatically, a real person checks each one.',
+    steps:[
+      ['Tap Report','Found on the listing’s detail view.'],
+      ['Choose a reason','Fake, Wrong price, Spam, or Offensive.'],
+      ['Add a note (optional)','Submit — our team reviews it from there.']
+    ], mockup:'report' },
+
+  { id:'profile', ico:'👤', name:'Your Profile', teaser:'Nickname, default view, and signing out.',
+    intro:'Your profile menu is also where multiple family members on one device can switch accounts.',
+    steps:[
+      ['Open the menu','Tap your avatar in the top right.'],
+      ['Update preferences','Change your nickname or default view — Map or List.'],
+      ['Sign out or switch','Sign out here, or switch to another person’s account on a shared device.']
+    ], mockup:'profile' },
+
+  { id:'feedback', ico:'⭐', name:'Giving Feedback', teaser:'Rate your experience or report a bug.',
+    intro:'Feedback goes directly to the team building MapIt — every submission gets read.',
+    steps:[
+      ['Open Feedback','Found in the profile menu.'],
+      ['Rate & categorize','Pick 1–5 stars and a category — Bug, Content Report, Suggestion, or Other.'],
+      ['Send it','Add any details and submit.']
+    ], mockup:'feedback' },
+
+  { id:'legal', ico:'📄', name:'Privacy & Terms', teaser:'What we collect, and your rights as a user.',
+    intro:'Our Terms of Service and Privacy Policy are linked at sign-up and from your profile menu at any time.',
+    steps:[
+      ['Find the links','At sign-up, and anytime from the profile menu.'],
+      ['Know your rights','They explain what data we collect and how it’s used.'],
+      ['Have a concern?','Our Grievance Officer contact is listed in the Privacy Policy.']
+    ], mockup:'legal' },
+];
+
+const grid = document.getElementById('topicGrid');
+const detailsHost = document.getElementById('topicDetails');
+
+TOPICS.forEach((t,i)=>{
+  const tile = document.createElement('button');
+  tile.className = 'topic-tile';
+  tile.innerHTML = `<span class="topic-ico">${t.ico}</span><span class="topic-name">${t.name}</span><span class="topic-teaser">${t.teaser}</span>`;
+  tile.onclick = ()=>showTopic(t.id);
+  grid.appendChild(tile);
+});
+
+TOPICS.forEach((t,i)=>{
+  const sec = document.createElement('section');
+  sec.className = 'topic-detail';
+  sec.id = 'topic-'+t.id;
+  const stepsHtml = t.steps.map((s,idx)=>`
+    <li><span class="step-num">${idx+1}</span><span class="step-body"><b>${s[0]}</b><span>${s[1]}</span></span></li>
+  `).join('');
+  const prev = TOPICS[i-1], next = TOPICS[i+1];
+  sec.innerHTML = `
+    <div class="detail-eyebrow">Topic ${i+1} of ${TOPICS.length}</div>
+    <h2 class="detail-title">${t.ico} ${t.name}</h2>
+    <p class="detail-intro">${t.intro}</p>
+    <div class="detail-cols">
+      <ol class="steps">${stepsHtml}</ol>
+      <div class="mockup-wrap">${MOCKUPS[t.mockup](t.highlight)}</div>
+    </div>
+    <div class="detail-nav">
+      ${prev ? `<button class="navbtn" onclick="showTopic('${prev.id}')"><span class="lbl">← Previous</span>${prev.name}</button>` : '<span></span>'}
+      ${next ? `<button class="navbtn" onclick="showTopic('${next.id}')"><span class="lbl">Next →</span>${next.name}</button>` : '<span></span>'}
+    </div>
+  `;
+  detailsHost.appendChild(sec);
+});
+
+function showTopic(id){
+  document.body.classList.add('detail-open');
+  document.querySelectorAll('.topic-detail').forEach(el=>el.classList.remove('active'));
+  document.getElementById('topic-'+id).classList.add('active');
+  window.scrollTo({top:0, behavior:'instant'});
+}
+function showLanding(){
+  document.body.classList.remove('detail-open');
+  window.scrollTo({top:0, behavior:'instant'});
+}
+</script>
