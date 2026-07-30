@@ -96,10 +96,16 @@ router.post('/signin', async (req, res, next) => {
 // ── Email + Password: Create Account ─────────────────────────
 // POST /api/auth/signup
 // Body: { email, password }
-// Creates the account UNCONFIRMED and sends an email OTP — no session is
-// issued here. The frontend collects the code via the same verify-code
-// screen already used for passwordless OTP sign-in (POST /verify-otp),
-// which confirms the email and returns the session in one step.
+// IMPORTANT: this Supabase project auto-confirms every account at creation
+// time regardless of the email_confirm flag passed to the admin API (found
+// during Session 9a UAT — admin.createUser({email_confirm:false}) and even
+// signInWithOtp({shouldCreateUser:true}) both left email_confirmed_at set
+// immediately). That means confirmation status can't be used as the
+// verification gate here. Instead: NO PASSWORD IS EVER SET ON THE ACCOUNT
+// until after the OTP is verified. The chosen password is held client-side
+// and applied via PUT /api/auth/password (existing route) once verify-otp
+// returns a session. Until then, POST /api/auth/signin cannot succeed for
+// this email — there's no password on the account to check against.
 router.post('/signup', otpLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -108,33 +114,12 @@ router.post('/signup', otpLimiter, async (req, res, next) => {
     }
     const cleanEmail = email.trim().toLowerCase();
 
-    const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email: cleanEmail,
-      password,
-      email_confirm: false,
-    });
-
-    if (createErr) {
-      // Existing account re-hitting signup — preserve the old behavior of
-      // falling through to a normal sign-in (already confirmed from before
-      // in the common case; if genuinely still unconfirmed, Supabase's own
-      // "Email not confirmed" error surfaces here, which is correct).
-      if (!createErr.message.toLowerCase().includes('already')) {
-        return res.status(400).json({ error: createErr.message });
-      }
-      const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-      if (error) return res.status(400).json({ error: error.message });
-
-      const { session, user } = data;
-      const { data: profile } = await supabaseAdmin
-        .from('profiles').select('*').eq('id', user.id).maybeSingle();
-      return res.json({ session, user, profile: profile || null, isNewUser: !profile });
-    }
-
-    // Brand new account — send the verification code, no session yet.
+    // Works uniformly for brand-new AND existing emails — Supabase just
+    // sends a code either way, never errors on "already exists". An existing
+    // account's real password is never touched by this call.
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email: cleanEmail,
-      options: { shouldCreateUser: false },
+      options: { shouldCreateUser: true },
     });
     if (otpError) return res.status(400).json({ error: otpError.message });
 
