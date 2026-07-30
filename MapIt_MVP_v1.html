@@ -495,6 +495,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .whoami-no:hover{border-color:var(--orange);color:var(--orange);}
 .whoami-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:460px;max-height:55vh;overflow-y:auto;padding:2px;}
 @media (max-width:520px){.whoami-grid{grid-template-columns:1fr;max-width:280px;}}
+.whoami-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.28);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;cursor:pointer;transition:background .15s;}
+.whoami-remove:hover{background:rgba(0,0,0,.5);}
 
 /* ── SPLASH ── */
 .splash{position:fixed;inset:0;background:var(--panel);z-index:1200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .4s;}
@@ -1213,18 +1216,35 @@ function renderWhoamiScreen(){
     const displayName = u.nickname || u.created_for || u.name || 'Family Member';
     const displayInit = displayName !== 'Family Member' ? getInitials(displayName) : (u.initials || '?');
     return `
-    <button class="whoami-yes" onclick="continueAs('${uid}')" title="${displayName}"
-      style="display:flex;align-items:center;gap:8px;text-align:left;padding:8px 10px;border-radius:10px;min-width:0;">
-      <div style="width:30px;height:30px;border-radius:50%;background:var(--orange);display:flex;align-items:center;
-        justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.5px;">
-        ${displayInit}
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName}</div>
-        <div style="font-size:9.5px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.invite_code||''}</div>
-      </div>
-    </button>`;
+    <div style="position:relative;">
+      <button class="whoami-yes" onclick="continueAs('${uid}')" title="${displayName}"
+        style="display:flex;align-items:center;gap:8px;text-align:left;padding:8px 10px;border-radius:10px;min-width:0;width:100%;box-sizing:border-box;">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--orange);display:flex;align-items:center;
+          justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.5px;">
+          ${displayInit}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName}</div>
+          <div style="font-size:9.5px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.invite_code||''}</div>
+        </div>
+      </button>
+      <span class="whoami-remove" onclick="removeMultiSession('${uid}', event)" title="Remove ${displayName} from this device">✕</span>
+    </div>`;
   }).join('');
+}
+
+function removeMultiSession(userId, ev){
+  ev.stopPropagation();
+  const all = getMultiSessions();
+  delete all[userId];
+  localStorage.setItem('mapit_sessions', JSON.stringify(all));
+  if(Object.keys(all).length === 0){
+    document.getElementById('whoamiScreen').classList.add('hide');
+    document.getElementById('authModal').classList.remove('hide');
+    if(!localStorage.getItem('mapit_seen_landing')) goToStep('step-landing');
+    return;
+  }
+  renderWhoamiScreen();
 }
 
 function listingRow(l){
