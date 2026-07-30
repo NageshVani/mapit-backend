@@ -453,6 +453,15 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .feedback-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:460px;box-shadow:var(--shadow);padding:28px 28px 22px;}
 .feedback-box h3{font-size:16px;font-weight:700;margin-bottom:4px;}
 .feedback-box p{font-size:12px;color:var(--muted);margin-bottom:18px;}
+.help-box{max-width:720px;}
+.help-scroll{max-height:min(62vh,520px);overflow-y:auto;padding-right:10px;}
+.help-scroll ul{column-count:2;column-gap:32px;}
+.help-scroll ul li{break-inside:avoid;margin-bottom:10px;}
+@media (max-width:700px){
+  .help-box{max-width:460px;}
+  .help-scroll{max-height:60vh;}
+  .help-scroll ul{column-count:1;}
+}
 .fb-type-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
 .fb-type{padding:5px 13px;border-radius:20px;border:1px solid var(--border2);font-size:11.5px;cursor:pointer;color:var(--muted);font-family:'Outfit',sans-serif;transition:all .18s;}
 .fb-type.on{background:var(--orange);border-color:var(--orange);color:#fff;}
@@ -948,9 +957,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
 <!-- ── HELP MODAL ── -->
 <div class="feedback-modal hide" id="helpModal">
-  <div class="feedback-box">
+  <div class="feedback-box help-box">
     <h3>❓ How MapIt Works</h3>
-    <ul style="margin:14px 0 4px;padding-left:20px;line-height:2;font-size:15px;color:var(--text);">
+    <div class="help-scroll">
+    <ul style="margin:14px 0 4px;padding-left:20px;line-height:1.5;font-size:15px;color:var(--text);">
       <li>🗺 <b>Browse:</b> listings near you appear as pins on the map (or the list, on mobile) — tap a pin to view details, filter by category and distance in the sidebar</li>
       <li>🌍 <b>Explore Area:</b> want to browse a different neighborhood instead of your own? Switch to <b>Explore Area</b> in the sidebar and search any place</li>
       <li>➕ <b>Post:</b> tap <b>Post a Listing</b> in the header to list a home, vehicle, or item</li>
@@ -963,6 +973,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <li>📍 <b>Change your location:</b> use <b>My Locations</b> in the profile menu</li>
       <li>⭐ <b>Rate your experience:</b> tap <b>Feedback</b> in the profile menu to rate MapIt and tell us what's working or what needs fixing</li>
     </ul>
+    </div>
     <button class="modal-btn" onclick="closeHelpModal()" style="margin-top:10px;">Got it</button>
   </div>
 </div>
