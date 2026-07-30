@@ -19,6 +19,7 @@ Stack:
 Developers:
   Nagesh : day-to-day MVP development using Claude Code
   Arun   : Bangalore strategy, legal, investor relations, UAT review
+  Fondly, Nagesh and Arun have named you 'James' as in James Bond 007, who comes up with a solution in any critical situation.
 
 ## CRITICAL: Two-File Rule
 The frontend has TWO copies that must ALWAYS be identical:
@@ -30,7 +31,7 @@ AFTER EVERY frontend change, run:
   diff MapIt_MVP_v1.html public/index.html
   (diff must show NO differences. Never push without this check.)
 
-## Rule 1 — You Are a Senior Developer AND a Mentor
+## Rule 1 — You Are a Senior Developer AND a Mentor. 
 Before writing any code, migration, config, or running any step:
   1. Explain WHY this is needed in plain language
   2. State what alternatives exist and why this approach is recommended
@@ -88,7 +89,7 @@ dev (local) → uat (Vercel preview, family testing) → main (production)
   - Then open a PR, await sign-off: merge to main
 
 ## Rule 7 — Document as You Build
-For each significant feature, add notes to the relevant docs/ file.
+For each significant feature, add notes to the relevant docs/ file, with date and timestamp.
 Add new environment variables to .env.example immediately.
 Update DB schema changes to database/migrations/ with numbered SQL files.
 If DB changes were made (in Supabase SQL Editor), note them in CONTEXT.md.

@@ -765,6 +765,129 @@
     </div>
   </article>
 
+  <article class="log-entry" data-cat="other">
+    <div class="entry-dot" data-cat="other"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#16</span>
+        <span class="cat-badge cat-other">other</span>
+        <span class="entry-time">2026-06-15 ~session start</span>
+      </div>
+      <div class="user-msg" data-cat="other">read context.md</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Ran <code>/resume</code> skill — read <code>Context.md</code> and produced Session Resume Summary</li>
+        <li>Current goal: UAT Phase 4 ongoing, production live at <code>https://mapit.co.in</code> (commit <code>02eb030</code>)</li>
+        <li>Highlighted pending items: git email quotes fix, SQL cleanup for empty-details listings, TVS SCOOTY subcategory fix, "1" suffix names in Supabase</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="question">
+    <div class="entry-dot" data-cat="question"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#17</span>
+        <span class="cat-badge cat-question">question</span>
+        <span class="entry-time">2026-06-15</span>
+      </div>
+      <div class="user-msg" data-cat="question">One of the invite code MAPIT-F-12 sent to a family member recently is indicating 'Invalid or expired invite code'. Whereas other recent invite code sent is working fine. Is this something to do with the RLS security?</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Read <code>src/routes/auth.js</code> — confirmed <code>validate-invite</code> endpoint uses <code>supabaseAdmin</code> (service-role key), which bypasses RLS entirely; RLS ruled out as cause</li>
+        <li>Identified error maps to line 44–49: <code>!invite</code> path — row not found in DB at all</li>
+        <li>Diagnosed most likely cause: leading/trailing whitespace in the <code>code</code> column from manual Supabase table-editor insert</li>
+        <li>Provided diagnostic SQL: <code>SELECT code, length(code), created_for FROM invite_codes WHERE code LIKE '%F-12%'</code> and fix: <code>UPDATE invite_codes SET code = trim(code) WHERE code LIKE '%F-12%'</code></li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="fix">
+    <div class="entry-dot" data-cat="fix"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#18</span>
+        <span class="cat-badge cat-fix">fix</span>
+        <span class="entry-time">2026-06-15</span>
+      </div>
+      <div class="user-msg" data-cat="fix">Yes, you were right, there was space in the code and it was removed using the SQL command.</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>User confirmed whitespace was present in <code>MAPIT-F-12</code> and successfully removed via trim SQL</li>
+        <li>Recommended proactive cleanup for all codes: <code>UPDATE invite_codes SET code = trim(code) WHERE code != trim(code)</code></li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="question">
+    <div class="entry-dot" data-cat="question"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#19</span>
+        <span class="cat-badge cat-question">question</span>
+        <span class="entry-time">2026-06-15</span>
+      </div>
+      <div class="user-msg" data-cat="question">I believe there were one or two more records when I ran the SQL code as I only got the result as 'Success'</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Explained Supabase SQL Editor shows "Success" without a row count for UPDATE statements — cannot tell how many rows were changed from the UI alone</li>
+        <li>Provided verification query: <code>SELECT code, length(code), created_for FROM invite_codes ORDER BY created_at DESC</code> to visually inspect all codes</li>
+        <li>Confirmed the proactive trim UPDATE is idempotent — safe to re-run to verify clean state</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="fix">
+    <div class="entry-dot" data-cat="fix"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#20</span>
+        <span class="cat-badge cat-fix">fix</span>
+        <span class="entry-time">2026-06-15</span>
+      </div>
+      <div class="user-msg" data-cat="fix">All rows shows code length as 10 characters. So I believe all rows are now fine without whitespace.</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Confirmed all <code>invite_codes</code> rows have exactly 10-char codes — no whitespace remaining in any row</li>
+        <li>Noted length 10 is correct for <code>MAPIT-X-NN</code> format (5+1+1+1+2)</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="docs">
+    <div class="entry-dot" data-cat="docs"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#21</span>
+        <span class="cat-badge cat-docs">docs</span>
+        <span class="entry-time">2026-06-15</span>
+      </div>
+      <div class="user-msg" data-cat="docs">/checkpoint</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Updated <code>Context.md</code>: added Session 16 entry under Completed — full diagnosis and fix for <code>MAPIT-F-12</code> whitespace issue</li>
+        <li>Updated Current Goal and Last Updated date to 2026-06-15</li>
+        <li>Added new Decisions entry: trim invite codes after every manual Supabase table-editor insert</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="docs">
+    <div class="entry-dot" data-cat="docs"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#22</span>
+        <span class="cat-badge cat-docs">docs</span>
+        <span class="entry-time">2026-06-15</span>
+      </div>
+      <div class="user-msg" data-cat="docs">/sessionlog</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Updated <code>session-log.html</code> — appended entries #16–#22 covering Session 16 (invite code whitespace diagnosis and fix)</li>
+      </ul>
+    </div>
+  </article>
+
   <!-- LOG_ENTRIES_END -->
 </div>
 
