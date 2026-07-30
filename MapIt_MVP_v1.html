@@ -576,6 +576,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
     <!-- Step 1: Email + Password (primary auth) -->
     <div class="modal-step active" id="step-auth">
+      <div id="switchAccountLink" class="modal-link" style="display:none;margin:0 0 10px;font-size:11.5px;" onclick="backToWhoami()">← Not you? <span>Choose a different account</span></div>
       <div class="auth-tabs">
         <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
         <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
@@ -1378,6 +1379,22 @@ function goToStep(id){
   document.querySelectorAll('.modal-step').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   _updateModalBrand();
+  _updateSwitchAccountLink();
+}
+
+// Shows the "← Not you? Choose a different account" link on step-auth
+// whenever this device has other cached logins to switch back to.
+function _updateSwitchAccountLink(){
+  const link = document.getElementById('switchAccountLink');
+  if(!link) return;
+  const hasSessions = Object.keys(getMultiSessions()).length > 0;
+  link.style.display = (document.getElementById('step-auth').classList.contains('active') && hasSessions) ? 'block' : 'none';
+}
+
+function backToWhoami(){
+  document.getElementById('authModal').classList.add('hide');
+  renderWhoamiScreen();
+  document.getElementById('whoamiScreen').classList.remove('hide');
 }
 
 // Home-location map step and the register (Create Account) form are the tightest
