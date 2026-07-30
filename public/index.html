@@ -3848,7 +3848,11 @@ async function continueAs(userId){
   // Immediately hide admin items so they never bleed from a previous user's session
   document.getElementById('adminMenuItem').classList.add('hide');
   const stored = getMultiSessions()[userId];
-  if(!stored?.session){ document.getElementById('authModal').classList.remove('hide'); return; }
+  if(!stored?.session){
+    document.getElementById('splashScreen').classList.add('hide');
+    document.getElementById('authModal').classList.remove('hide');
+    return;
+  }
   try {
     ST.session = stored.session;
     // Pass stored invite code so backend can resolve created_for even if used_by isn't set
@@ -3875,6 +3879,7 @@ async function continueAs(userId){
     document.getElementById('authModal').classList.add('hide');
     await initApp();
   } catch(_){
+    document.getElementById('splashScreen').classList.add('hide');
     toast(`Session for ${stored.name||'this user'} expired — please log in again.`);
     // Pre-fill email so the user can sign in immediately
     const kEmail = stored.email || '';
