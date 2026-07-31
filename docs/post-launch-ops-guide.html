@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Post-Launch Operations Guide</title>
+<style>
+  :root {
+    --orange: #f06030;
+    --orange-light: #fff4f0;
+    --orange-mid: #fde0d4;
+    --teal: #0d9488;
+    --teal-light: #f0fdfa;
+    --blue: #1d4ed8;
+    --blue-light: #eff6ff;
+    --yellow: #b45309;
+    --yellow-light: #fffbeb;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --grey-50: #f9fafb;
+    --grey-100: #f3f4f6;
+    --grey-200: #e5e7eb;
+    --grey-300: #d1d5db;
+    --grey-500: #6b7280;
+    --grey-700: #374151;
+    --grey-900: #111827;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--grey-900);
+    background: #ffffff;
+  }
+
+  /* ── Layout ── */
+  .layout { display: flex; min-height: 100vh; }
+
+  nav {
+    width: 240px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--grey-50);
+    border-right: 1px solid var(--grey-200);
+    padding: 24px 0 40px;
+  }
+
+  nav .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--grey-200);
+    margin-bottom: 16px;
+  }
+
+  nav .logo .pin { font-size: 24px; }
+
+  nav .logo-text {
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--orange);
+    letter-spacing: -0.3px;
+  }
+
+  nav .logo-sub {
+    font-size: 10px;
+    color: var(--grey-500);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  nav ul { list-style: none; }
+
+  nav li a {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 7px 20px;
+    color: var(--grey-700);
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 1.4;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  nav li a:hover {
+    background: var(--grey-100);
+    color: var(--grey-900);
+    border-left-color: var(--grey-300);
+  }
+
+  nav li a.active {
+    background: var(--orange-light);
+    color: var(--orange);
+    border-left-color: var(--orange);
+    font-weight: 600;
+  }
+
+  nav .nav-section {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--grey-500);
+    padding: 16px 20px 4px;
+  }
+
+  main { flex: 1; padding: 40px 52px 80px; max-width: 900px; }
+
+  /* ── Document header ── */
+  .doc-header {
+    padding-bottom: 28px;
+    border-bottom: 2px solid var(--grey-200);
+    margin-bottom: 40px;
+  }
+
+  .doc-header .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--orange);
+    background: var(--orange-light);
+    border: 1px solid var(--orange-mid);
+    border-radius: 4px;
+    padding: 3px 10px;
+    margin-bottom: 14px;
+  }
+
+  .doc-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--grey-900);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+
+  .doc-header p {
+    font-size: 15px;
+    color: var(--grey-500);
+    max-width: 620px;
+  }
+
+  .doc-meta {
+    display: flex;
+    gap: 20px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .doc-meta span {
+    font-size: 12px;
+    color: var(--grey-500);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* ── Sections ── */
+  section { margin-bottom: 56px; }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--grey-200);
+  }
+
+  .section-num {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--orange);
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+
+  .section-title h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--grey-900);
+    letter-spacing: -0.2px;
+    margin-bottom: 3px;
+  }
+
+  .section-title p {
+    font-size: 13px;
+    color: var(--grey-500);
+  }
+
+  /* ── Cards ── */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .cards.three { grid-template-columns: 1fr 1fr 1fr; }
+  .cards.one { grid-template-columns: 1fr; }
+
+  .card {
+    background: white;
+    border: 1px solid var(--grey-200);
+    border-radius: 10px;
+    padding: 16px 18px;
+    position: relative;
+  }
+
+  .card.orange { border-left: 3px solid var(--orange); }
+  .card.teal   { border-left: 3px solid var(--teal); }
+  .card.blue   { border-left: 3px solid var(--blue); }
+  .card.yellow { border-left: 3px solid var(--yellow); }
+  .card.red    { border-left: 3px solid var(--red); }
+  .card.green  { border-left: 3px solid var(--green); }
+  .card.purple { border-left: 3px solid var(--purple); }
+
+  .card-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .card h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--grey-900);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .card p {
+    font-size: 13px;
+    color: var(--grey-500);
+    line-height: 1.55;
+  }
+
+  .card .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-bottom: 7px;
+  }
+
+  .tag-critical { background: #fee2e2; color: #991b1b; }
+  .tag-required { background: #fef3c7; color: #92400e; }
+  .tag-recommended { background: #d1fae5; color: #065f46; }
+  .tag-optional { background: #e0e7ff; color: #3730a3; }
+  .tag-daily { background: #fce7f3; color: #9d174d; }
+  .tag-weekly { background: #e0f2fe; color: #075985; }
+
+  /* ── Priority table ── */
+  .priority-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .priority-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--grey-100);
+    color: var(--grey-700);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--grey-200);
+  }
+
+  .priority-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--grey-100);
+    vertical-align: top;
+    color: var(--grey-700);
+  }
+
+  .priority-table tr:last-child td { border-bottom: none; }
+  .priority-table tr:hover td { background: var(--grey-50); }
+
+  .priority-table td:first-child { font-weight: 600; color: var(--grey-900); }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-green  { background: #d1fae5; color: #065f46; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-grey   { background: var(--grey-100); color: var(--grey-700); }
+
+  /* ── Callout ── */
+  .callout {
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 16px 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .callout .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout.warning { background: var(--yellow-light); border: 1px solid #fcd34d; }
+  .callout.info    { background: var(--blue-light); border: 1px solid #93c5fd; }
+  .callout.danger  { background: var(--red-light); border: 1px solid #fca5a5; }
+  .callout.success { background: var(--green-light); border: 1px solid #86efac; }
+  .callout.tip     { background: var(--purple-light); border: 1px solid #c4b5fd; }
+
+  .callout strong { color: var(--grey-900); }
+
+  /* ── Effort bar ── */
+  .effort-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--grey-100);
+  }
+  .effort-row:last-child { border-bottom: none; }
+
+  .effort-label { font-size: 13px; font-weight: 600; flex: 1; color: var(--grey-900); }
+  .effort-sub   { font-size: 12px; color: var(--grey-500); font-weight: 400; }
+
+  .effort-bar-wrap { width: 140px; flex-shrink: 0; }
+  .effort-bar-bg { height: 6px; background: var(--grey-200); border-radius: 3px; overflow: hidden; }
+  .effort-bar    { height: 6px; border-radius: 3px; }
+  .effort-bar.low    { background: #34d399; width: 25%; }
+  .effort-bar.medium { background: #fbbf24; width: 55%; }
+  .effort-bar.high   { background: #f87171; width: 85%; }
+  .effort-bar.full   { background: #ef4444; width: 100%; }
+
+  .effort-val { font-size: 11px; font-weight: 700; color: var(--grey-500); width: 50px; text-align: right; flex-shrink: 0; }
+
+  /* ── Verdict box ── */
+  .verdict {
+    border: 2px solid var(--green);
+    border-radius: 12px;
+    padding: 20px 22px;
+    background: var(--green-light);
+    margin-top: 16px;
+  }
+
+  .verdict h3 { font-size: 16px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+  .verdict p  { font-size: 13.5px; color: var(--grey-700); line-height: 1.6; }
+
+  .verdict.caution { border-color: var(--yellow); background: var(--yellow-light); }
+  .verdict.caution h3 { color: var(--yellow); }
+
+  /* ── Role card ── */
+  .role-card {
+    background: white;
+    border: 1px solid var(--grey-200);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .role-card-header {
+    padding: 16px 20px;
+    background: var(--grey-50);
+    border-bottom: 1px solid var(--grey-200);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .role-card-header .role-icon { font-size: 24px; }
+  .role-card-header h3 { font-size: 16px; font-weight: 700; color: var(--grey-900); }
+  .role-card-header p  { font-size: 12px; color: var(--grey-500); margin-top: 2px; }
+  .role-card-body { padding: 16px 20px; }
+
+  .must-have, .nice-have {
+    margin-bottom: 14px;
+  }
+
+  .must-have h4, .nice-have h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .must-have h4 { color: var(--red); }
+  .nice-have h4 { color: var(--teal); }
+
+  .skill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .skill {
+    font-size: 12px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .skill.must { background: #fee2e2; color: #991b1b; }
+  .skill.nice { background: #ccfbf1; color: #0f766e; }
+
+  /* ── Comparison table ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--grey-200);
+    margin-top: 8px;
+  }
+
+  .compare-table th {
+    padding: 11px 14px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    background: var(--grey-100);
+    color: var(--grey-700);
+    border-bottom: 1px solid var(--grey-200);
+  }
+
+  .compare-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--grey-100);
+    vertical-align: top;
+    color: var(--grey-700);
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  .check { color: #16a34a; font-weight: 700; }
+  .cross { color: #dc2626; font-weight: 700; }
+  .warn  { color: #d97706; font-weight: 700; }
+
+  /* ── Code ── */
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--grey-100);
+    color: #7c3aed;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ── Section divider ── */
+  .divider { height: 1px; background: var(--grey-200); margin: 32px 0; }
+
+  /* ── TOC summary ── */
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .toc-item {
+    background: var(--grey-50);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .toc-item:hover {
+    background: var(--orange-light);
+    border-color: var(--orange-mid);
+  }
+
+  .toc-item .toc-num {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--orange);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .toc-item .toc-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--grey-900);
+    line-height: 1.35;
+  }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--grey-200);
+    font-size: 12px;
+    color: var(--grey-500);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  @media (max-width: 900px) {
+    nav { display: none; }
+    main { padding: 24px 20px 60px; }
+    .cards { grid-template-columns: 1fr; }
+    .cards.three { grid-template-columns: 1fr; }
+    .toc-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar nav ── -->
+  <nav>
+    <div class="logo">
+      <span class="pin">📍</span>
+      <div>
+        <div class="logo-text">MapIt</div>
+        <div class="logo-sub">Post-Launch Ops Guide</div>
+      </div>
+    </div>
+    <ul>
+      <li class="nav-section">Overview</li>
+      <li><a href="#overview">Introduction</a></li>
+
+      <li class="nav-section">Questions</li>
+      <li><a href="#q1">Q1 &mdash; Setup Modifications</a></li>
+      <li><a href="#q2">Q2 &mdash; User Feedback Types</a></li>
+      <li><a href="#q3">Q3 &mdash; Daily Admin Tasks</a></li>
+      <li><a href="#q4">Q4 &mdash; Back-End Task List</a></li>
+      <li><a href="#q5">Q5 &mdash; Who to Hire</a></li>
+      <li><a href="#q6">Q6 &mdash; AI + You Without Hiring</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Main content ── -->
+  <main>
+
+    <!-- ── Document header ── -->
+    <div class="doc-header" id="overview">
+      <div class="label">📋 Ops &amp; Strategy</div>
+      <h1>Post-Launch Operations Guide</h1>
+      <p>A practical reference for what happens after MapIt goes public — infrastructure changes, user behaviour, daily operations, staffing, and whether AI alone can carry the load.</p>
+      <div class="doc-meta">
+        <span>📅 As of: 27 June 2026</span>
+        <span>🌿 Branch: UAT → Main pending merge</span>
+        <span>👤 Audience: Nagesh &amp; Arun</span>
+        <span>🏷 Version: Post-Session-3</span>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <div>
+        <strong>Context for this document:</strong> MapIt is currently in family-beta (≈20 users, invite-only, single Supabase project for UAT + prod). This guide covers the transition from that state to a <em>public, open registration</em> launch — and what is needed to sustain it operationally. All findings are specific to the actual stack: Node.js + Express on Vercel, Supabase Auth + DB + Storage, Resend SMTP, Leaflet.js, and vanilla JS single-file frontend.
+      </div>
+    </div>
+
+    <!-- ── TOC ── -->
+    <div class="toc-grid" style="margin-bottom:48px;">
+      <a class="toc-item" href="#q1">
+        <div class="toc-num">Q1</div>
+        <div class="toc-title">Infrastructure &amp; Setup Modifications</div>
+      </a>
+      <a class="toc-item" href="#q2">
+        <div class="toc-num">Q2</div>
+        <div class="toc-title">Types of User Feedback</div>
+      </a>
+      <a class="toc-item" href="#q3">
+        <div class="toc-num">Q3</div>
+        <div class="toc-title">Daily Administration Tasks</div>
+      </a>
+      <a class="toc-item" href="#q4">
+        <div class="toc-num">Q4</div>
+        <div class="toc-title">Back-End Task List</div>
+      </a>
+      <a class="toc-item" href="#q5">
+        <div class="toc-num">Q5</div>
+        <div class="toc-title">Who to Hire</div>
+      </a>
+      <a class="toc-item" href="#q6">
+        <div class="toc-num">Q6</div>
+        <div class="toc-title">AI + One of You — No Hire?</div>
+      </a>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════
+         Q1 — Setup modifications
+    ═══════════════════════════════════════ -->
+    <section id="q1">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <div class="section-title">
+          <h2>Background Setup Modifications on Public Release</h2>
+          <p>Beyond the already-planned upgrades — what else needs to change before and after the public launch button is pressed.</p>
+        </div>
+      </div>
+
+      <p style="font-size:13.5px; color:var(--grey-500); margin-bottom:18px;">
+        The sessions plan already covers: Vercel Pro upgrade, Supabase Pro upgrade, email verification step, Google OAuth redirect URLs, and OTP rate limit tuning. The items below are <em>in addition</em> to those.
+      </p>
+
+      <table class="priority-table" style="margin-bottom:28px;">
+        <thead>
+          <tr>
+            <th>Modification</th>
+            <th>Why it is needed</th>
+            <th>When</th>
+            <th>Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Remove <code>localhost</code> from CORS allowlist</td>
+            <td>Currently allows <code>localhost:3000</code>, <code>localhost:3001</code>, <code>localhost:5500</code>, <code>127.0.0.1:5500</code>. These are dev-only origins and should not be reachable from production Express. An attacker running a local server could exploit the open CORS.</td>
+            <td>Before go-live</td>
+            <td><span class="badge badge-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td>Re-enable Helmet CSP with an explicit allowlist</td>
+            <td>Helmet's Content Security Policy is currently disabled globally (<code>contentSecurityPolicy: false</code>) to allow inline scripts and CDN resources. For a public marketplace, a proper CSP prevents XSS. The fix is to write an explicit policy that allows Leaflet CDN, Font Awesome, Google Fonts, and inline scripts specifically rather than disabling it entirely.</td>
+            <td>Pre-launch hardening</td>
+            <td><span class="badge badge-orange">High</span></td>
+          </tr>
+          <tr>
+            <td>Nominatim usage policy compliance</td>
+            <td>MapIt uses OSM Nominatim (free, no key) for reverse geocoding and address lookup. The OSM usage policy prohibits heavy commercial use from the shared tile server. Public traffic could hit their rate limits and your app silently stops showing addresses. Either self-host Nominatim on a $5/mo VM or switch to Geoapify free tier (2,500 req/day free, paid after that).</td>
+            <td>Pre-launch</td>
+            <td><span class="badge badge-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td>Supabase Storage CDN configuration</td>
+            <td>Listing photos are served directly from Supabase Storage URLs. Supabase Pro includes a CDN layer — it must be <em>explicitly enabled</em> in the dashboard. Without it, every photo request hits the origin, which is slow for Indian mobile users and can hit Supabase egress limits quickly.</td>
+            <td>At Supabase Pro upgrade</td>
+            <td><span class="badge badge-orange">High</span></td>
+          </tr>
+          <tr>
+            <td>Orphaned photo cleanup job</td>
+            <td>When a listing is deleted or expires, the photos in Supabase Storage are <em>not</em> automatically removed. After a few months of public use, Storage can fill with orphaned files. A cron job (or Vercel Edge Function on a schedule) should periodically delete storage objects with no matching listing row.</td>
+            <td>Within 30 days of launch</td>
+            <td><span class="badge badge-orange">High</span></td>
+          </tr>
+          <tr>
+            <td>Supabase Row Level Security (RLS) full audit</td>
+            <td>Every table — <code>listings</code>, <code>profiles</code>, <code>messages</code>, <code>user_pins</code>, <code>invite_codes</code> — needs RLS policies verified before public launch. A misconfigured policy could expose all listings, all user profiles, or all messages to unauthenticated queries. The <code>spatial_ref_sys</code> table is intentionally unrestricted (PostGIS system table) and is fine.</td>
+            <td>Before go-live</td>
+            <td><span class="badge badge-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td>Error monitoring (Sentry or Vercel observability)</td>
+            <td>Currently there is no error tracking. In production, silent failures (API 500s, edge function crashes, unexpected DB query results) go completely undetected until a user reports them. Sentry's free tier (5,000 errors/month) or Vercel's built-in observability dashboard covers this at zero cost for MVP scale.</td>
+            <td>Day of launch</td>
+            <td><span class="badge badge-orange">High</span></td>
+          </tr>
+          <tr>
+            <td>Legal pages: Privacy Policy + Terms of Service</td>
+            <td>The current ToS is a checkbox with no linked document. For a public marketplace in India, a published Privacy Policy is legally required under the IT Act (SPDI Rules) and is needed for Google OAuth consent screen approval. Without it, Google may disable the OAuth button for new users.</td>
+            <td>Before go-live</td>
+            <td><span class="badge badge-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td>Resend email plan upgrade</td>
+            <td>Resend free tier is 100 emails/day. With OTP sign-ins, listing expiry notifications, and "I'm Interested" emails at public scale, 100/day is exhausted by ~50 active daily users. Resend Starter is $20/mo for 50,000 emails/month.</td>
+            <td>At launch or just before</td>
+            <td><span class="badge badge-orange">High</span></td>
+          </tr>
+          <tr>
+            <td>Supabase Auth email template branding</td>
+            <td>Currently, OTP emails use Supabase's default unbranded template. Public users receiving "Supabase Auth" emails lose trust in the MapIt brand. Templates should be updated in Supabase → Auth → Email Templates to show the MapIt name, logo emoji, and consistent colours.</td>
+            <td>Pre-launch</td>
+            <td><span class="badge badge-blue">Medium</span></td>
+          </tr>
+          <tr>
+            <td>Listing expiry notification emails</td>
+            <td>Listings expire after 30 days (set in Session 3). Sellers have no visibility that their listing is about to expire. A cron or database trigger should send a Resend email 3 days before expiry: "Your MapIt listing '<em>title</em>' expires in 3 days. Post it again to stay listed." Prevents ghost listings and keeps sellers engaged.</td>
+            <td>Within first month</td>
+            <td><span class="badge badge-blue">Medium</span></td>
+          </tr>
+          <tr>
+            <td>Twilio India phone number setup</td>
+            <td>SMS OTP (Twilio) is already wired. However, Twilio's India long-code SMS delivery has been unreliable post-2021 DLT registration requirement. You need to register a DLT-compliant header/entity on the TRAI portal (one-time, free) and link it to Twilio before OTP SMS works reliably for Indian phone numbers.</td>
+            <td>Pre-launch if SMS OTP enabled</td>
+            <td><span class="badge badge-orange">High</span></td>
+          </tr>
+          <tr>
+            <td>PostGIS GiST index verification</td>
+            <td>The listings query currently uses a JS haversine filter on all rows (no DB spatial index). This is fine at &lt;1,000 listings but degrades linearly after that. Before public launch, confirm a GiST index exists on the <code>(lat, lng)</code> columns and run <code>EXPLAIN ANALYZE</code> on a representative query to ensure "Index Scan" (not "Seq Scan").</td>
+            <td>Pre-launch</td>
+            <td><span class="badge badge-orange">High</span></td>
+          </tr>
+          <tr>
+            <td>Supabase connection pooler (PgBouncer)</td>
+            <td>Vercel serverless functions each open their own DB connection. At 50+ concurrent users, connection count exceeds Supabase Free limits (20 direct connections). Supabase's built-in PgBouncer pooler (Session Mode) should be enabled — it's a one-line connection string change in the backend config.</td>
+            <td>Before &gt;50 concurrent users</td>
+            <td><span class="badge badge-blue">Medium</span></td>
+          </tr>
+          <tr>
+            <td>robots.txt + sitemap.xml for SEO</td>
+            <td>MapIt serves a single-page app. With no sitemap, Google's crawler sees nothing useful. A static <code>/sitemap.xml</code> listing the root domain + a minimal robots.txt (allowing all, blocking nothing) helps with organic discovery for "buy sell Bangalore" type searches.</td>
+            <td>Within first month</td>
+            <td><span class="badge badge-blue">Medium</span></td>
+          </tr>
+          <tr>
+            <td>Open Graph / meta tags for link sharing</td>
+            <td>When a listing URL is shared on WhatsApp or Twitter, the preview currently shows nothing meaningful. Adding <code>&lt;meta property="og:title"&gt;</code>, <code>og:description</code>, and <code>og:image</code> tags (even if static for the landing) dramatically improves click-through on shared links — important for a marketplace that relies on WhatsApp sharing in India.</td>
+            <td>Pre-launch</td>
+            <td><span class="badge badge-blue">Medium</span></td>
+          </tr>
+          <tr>
+            <td>Performance audit on slow mobile / 4G</td>
+            <td>The frontend is a ~3,000+ line single HTML file that includes all CSS, all JS, and loads Leaflet (~150KB), Font Awesome, and Google Fonts from CDN. On a 4G Indian mobile connection, first paint can exceed 4 seconds. A <code>rel="preload"</code> directive for Leaflet and font-display:swap on Google Fonts reduces perceived load without a full rewrite.</td>
+            <td>Pre-launch</td>
+            <td><span class="badge badge-blue">Medium</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout danger">
+        <span class="callout-icon">⚠️</span>
+        <div>
+          <strong>Non-negotiable before public launch:</strong> Email verification (<code>step-verify-email</code>) must be implemented. Currently <code>email_confirm: true</code> in the admin API skips all email verification — anyone can register with someone else's email address. This is noted in CONTEXT.md as a known pre-public-launch gap and cannot ship to public users.
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         Q2 — User Feedback
+    ═══════════════════════════════════════ -->
+    <section id="q2">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <div class="section-title">
+          <h2>Types of Feedback to Expect from Public Users</h2>
+          <p>Mapped to the actual features and known constraints of MapIt — not generic marketplace theory.</p>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card orange">
+          <span class="card-icon">📍</span>
+          <span class="tag tag-critical">Very Common</span>
+          <h3>Location pin is wrong / GPS not accurate</h3>
+          <p>The most common complaint in any map-based app. Cheap Android phones in India often have GPS drift of 50–200 m. Users will say "the pin shows my listing in the wrong place" or "I tapped on the map but it moved." The reverse-geocoding via Nominatim also occasionally returns a wrong locality name for pins near area boundaries.</p>
+        </div>
+        <div class="card orange">
+          <span class="card-icon">🔑</span>
+          <span class="tag tag-critical">Very Common</span>
+          <h3>Login / OTP not received</h3>
+          <p>OTP email not arriving (Resend → spam folder, or Resend daily limit hit), Google OAuth redirecting to the wrong page, or "Invalid or expired invite code" type errors even after invite codes are removed. Users rarely read error messages — they will report "login doesn't work" with no further detail.</p>
+        </div>
+        <div class="card blue">
+          <span class="card-icon">🗺️</span>
+          <span class="tag tag-required">Common</span>
+          <h3>Map doesn't load / shows blank tile</h3>
+          <p>OpenStreetMap tile server throttles IPs that hit the free tile server without a custom User-Agent header set. At scale, tiles stop loading for some users. Also, older Android WebView versions have rendering issues with Leaflet. This appears as a blank grey map with no tiles.</p>
+        </div>
+        <div class="card blue">
+          <span class="card-icon">📸</span>
+          <span class="tag tag-required">Common</span>
+          <h3>Photo upload failing / taking too long</h3>
+          <p>The 5-photo limit is enforced but the error message when it is exceeded is technical. On slow connections, multipart uploads time out silently. Users also try to upload HEIC (iPhone) photos which may not be accepted by the current multer config. You will see "I tried to add photos but nothing happened" reports frequently.</p>
+        </div>
+        <div class="card teal">
+          <span class="card-icon">⏰</span>
+          <span class="tag tag-recommended">Moderate</span>
+          <h3>My listing disappeared / expired</h3>
+          <p>30-day listing expiry (Session 3) will confuse users who don't re-read the "Expires in Xd" countdown. Without an expiry notification email, listings just vanish. Sellers will file support: "I posted my car for sale and it's gone." They will also ask how to renew without re-posting from scratch.</p>
+        </div>
+        <div class="card teal">
+          <span class="card-icon">📱</span>
+          <span class="tag tag-recommended">Moderate</span>
+          <h3>Layout broken on my phone</h3>
+          <p>The frontend is a single-file vanilla JS app. It works well on modern browsers but Indian users have a very wide device spread: Samsung Galaxy A-series (Chrome), Redmi (MIUI browser), Vivo (Funtouch browser), Nokia (Android Go). Tab bar wrapping, the post-form field overflow, and the modal on small screens (&lt;360px wide) are high-risk areas.</p>
+        </div>
+        <div class="card yellow">
+          <span class="card-icon">💬</span>
+          <span class="tag tag-recommended">Moderate</span>
+          <h3>"I pressed Interested but the seller never replied"</h3>
+          <p>The current "I'm Interested" flow sends a pre-filled message via <code>POST /api/messages</code> with no notification to the seller. The seller has no push notification, no SMS, no email alert — they only see the inbox badge when they next open the app. In a marketplace context, this is a conversion killer. Expect many complaints about "no response from seller."</p>
+        </div>
+        <div class="card yellow">
+          <span class="card-icon">🏷️</span>
+          <span class="tag tag-recommended">Moderate</span>
+          <h3>Wrong category / can't find where to post X</h3>
+          <p>The three categories (Real Estate, Vehicles, Household Items) have clear gaps: no Electronics, no Jobs, no Services, no Pets. Indian users will try to post smartphones, TVs, and domestic services. They will either post in the wrong category or give up and report "I can't find the right category for my item."</p>
+        </div>
+        <div class="card purple">
+          <span class="card-icon">🌐</span>
+          <span class="tag tag-optional">Occasional</span>
+          <h3>Requests for Hindi / regional language</h3>
+          <p>At public scale in Bangalore and India broadly, users will request Kannada, Hindi, and Tamil UI. This is a significant feature request but a development scope expansion (i18n system). For MVP, the response is: "English only for now — coming soon." Worth tracking as it signals regional expansion readiness.</p>
+        </div>
+        <div class="card purple">
+          <span class="card-icon">🚨</span>
+          <span class="tag tag-optional">Occasional</span>
+          <h3>Fake listing / scam reports</h3>
+          <p>Public marketplaces attract fraudsters within weeks of launch. Common patterns: listings at unrealistically low prices (bait), seller asking for advance payment via UPI, listings copy-pasted from OLX/Quikr with stock photos. Without a "Report Listing" button, these will come in via the general feedback form or direct WhatsApp to Nagesh/Arun.</p>
+        </div>
+        <div class="card red">
+          <span class="card-icon">🔒</span>
+          <span class="tag tag-critical">Rare but High Impact</span>
+          <h3>Account security / "someone used my number"</h3>
+          <p>With email verification not yet enforced pre-launch, a user could register with another person's email. At scale, someone will complain "I got an OTP I didn't request" or "an account was created with my email." This is the known pre-launch gap documented in CONTEXT.md — urgent to fix before public release.</p>
+        </div>
+        <div class="card red">
+          <span class="card-icon">⚡</span>
+          <span class="tag tag-optional">Rare but Important</span>
+          <h3>Feature requests that reveal product gaps</h3>
+          <p>WhatsApp chat button on listing, direct call button (without showing full phone number), price negotiation flow, saved searches with email alerts, "share to WhatsApp" one-tap action. These will come from power users and are actually valuable product signals — worth logging systematically in a Notion or spreadsheet, not just the feedback form.</p>
+        </div>
+      </div>
+
+      <div class="callout tip" style="margin-top:20px;">
+        <span class="callout-icon">💡</span>
+        <div>
+          <strong>Feedback collection tip:</strong> The current feedback form (<code>POST /api/feedback</code>) stores free-text responses. For public launch, add a structured rating (1–5 stars) and a category dropdown (Bug / Suggestion / Content Report / Other) to the feedback form. This makes triage 5× faster than reading free text.
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         Q3 — Daily Admin Tasks
+    ═══════════════════════════════════════ -->
+    <section id="q3">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <div class="section-title">
+          <h2>Daily Administration Tasks</h2>
+          <p>What needs human attention every day to keep the marketplace healthy, trustworthy, and running.</p>
+        </div>
+      </div>
+
+      <table class="priority-table" style="margin-bottom:20px;">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Where / How</th>
+            <th>Cadence</th>
+            <th>Est. Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Listing moderation — approve or reject pending listings</td>
+            <td>Admin menu → Review Listings (already built); or Supabase Dashboard → listings table filtered by <code>status='pending'</code></td>
+            <td><span class="badge badge-red">Daily</span></td>
+            <td>5–15 min</td>
+          </tr>
+          <tr>
+            <td>Review user-submitted feedback / bug reports</td>
+            <td>Admin menu → View Feedbacks; triage by category; escalate bugs to Claude Code session for fix</td>
+            <td><span class="badge badge-red">Daily</span></td>
+            <td>5–10 min</td>
+          </tr>
+          <tr>
+            <td>Check Vercel function error logs</td>
+            <td>Vercel Dashboard → Project → Functions → View logs. Look for 500 errors, cold-start crashes, or repeated timeout patterns.</td>
+            <td><span class="badge badge-red">Daily</span></td>
+            <td>2–5 min</td>
+          </tr>
+          <tr>
+            <td>Check Resend delivery dashboard</td>
+            <td>Resend Dashboard → Overview. Look for hard bounces (invalid emails), delivery failures, daily volume approaching limit.</td>
+            <td><span class="badge badge-red">Daily</span></td>
+            <td>2 min</td>
+          </tr>
+          <tr>
+            <td>Spot-check map for spam or suspicious listings</td>
+            <td>Open the live app at <code>mapit.co.in</code>; browse all categories at City radius; look for obvious price anomalies, duplicate posts, or placeholder-text listings</td>
+            <td><span class="badge badge-red">Daily</span></td>
+            <td>5–10 min</td>
+          </tr>
+          <tr>
+            <td>Remove / suspend flagged user accounts</td>
+            <td>Supabase → Authentication → Users → select user → Disable or Delete. Also <code>DELETE FROM listings WHERE seller_id='...'</code> in SQL Editor if needed.</td>
+            <td><span class="badge badge-orange">As needed</span></td>
+            <td>2–5 min per case</td>
+          </tr>
+          <tr>
+            <td>Respond to user messages / inbox</td>
+            <td>Feedback form messages come into the app's admin inbox. Direct user queries (WhatsApp, email to Nagesh/Arun) also need a response SLA — aim for &lt;24 hours at MVP scale.</td>
+            <td><span class="badge badge-red">Daily</span></td>
+            <td>10–20 min</td>
+          </tr>
+          <tr>
+            <td>Monitor Supabase DB usage</td>
+            <td>Supabase Dashboard → Settings → Usage. Watch: database size, storage usage, Auth monthly active users, bandwidth. Free tier limits are the trip-wire before Pro upgrade.</td>
+            <td><span class="badge badge-blue">Weekly</span></td>
+            <td>2 min</td>
+          </tr>
+          <tr>
+            <td>Review expired listings</td>
+            <td>SQL: <code>SELECT * FROM listings WHERE expires_at &lt; NOW() AND status != 'expired'</code>. Confirm the expiry cron is running or batch-update manually.</td>
+            <td><span class="badge badge-blue">Weekly</span></td>
+            <td>5 min</td>
+          </tr>
+          <tr>
+            <td>New user review (post-launch growth check)</td>
+            <td>Supabase → Authentication → Users → sort by Created At. Spot-check new registrants for bot patterns (same IP, dummy names, no listings posted).</td>
+            <td><span class="badge badge-blue">Weekly</span></td>
+            <td>5 min</td>
+          </tr>
+          <tr>
+            <td>Backup verification</td>
+            <td>Supabase Pro includes daily automated backups. Confirm the last backup timestamp in Supabase → Settings → Backups. Test a restore quarterly.</td>
+            <td><span class="badge badge-blue">Weekly check, monthly restore test</span></td>
+            <td>2 min check</td>
+          </tr>
+          <tr>
+            <td>Dependency security audit</td>
+            <td>Run <code>npm audit</code> in the project root. High/critical vulnerabilities must be patched. Medium vulnerabilities reviewed for exploitability in the current setup.</td>
+            <td><span class="badge badge-orange">Monthly</span></td>
+            <td>10–30 min</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout success">
+        <span class="callout-icon">✅</span>
+        <div>
+          <strong>Good news:</strong> Most of the heavy infrastructure is managed for you. Vercel handles deployments, SSL, and function scaling. Supabase handles DB connections, Auth, and Storage. Your daily admin is almost entirely <em>content moderation</em> and <em>communication</em> — not infrastructure firefighting. At MVP scale (&lt;500 MAU), total daily ops time should be under 30 minutes.
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         Q4 — Back-end tasks
+    ═══════════════════════════════════════ -->
+    <section id="q4">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <div class="section-title">
+          <h2>Back-End Tasks — If You Were to Hire</h2>
+          <p>A complete list of all back-end responsibilities, showing what a hired developer would own.</p>
+        </div>
+      </div>
+
+      <div class="cards one" style="gap:10px;">
+
+        <div class="card teal">
+          <span class="tag tag-critical">Core Ongoing</span>
+          <h3>API development and maintenance</h3>
+          <p>Adding new Express routes as features are built (real-time chat, notifications, saved search alerts, admin dashboard API). Maintaining existing routes in <code>src/routes/</code> — auth, listings, messages, pins, uploads, users. Keeping route contracts stable so the frontend doesn't break on changes.</p>
+        </div>
+
+        <div class="card teal">
+          <span class="tag tag-critical">Core Ongoing</span>
+          <h3>Database migrations and schema management</h3>
+          <p>Writing numbered SQL migration files in <code>database/migrations/</code>, running them safely in Supabase SQL Editor, verifying with <code>EXPLAIN ANALYZE</code> that new queries use indexes. Adding new tables for features like real-time chat (<code>003-chat-schema.sql</code> is pre-written but not yet applied), saved searches, notifications, review/rating system.</p>
+        </div>
+
+        <div class="card teal">
+          <span class="tag tag-critical">Core Ongoing</span>
+          <h3>Row Level Security (RLS) policy management</h3>
+          <p>Every new table in Supabase needs correctly scoped RLS policies. Getting these wrong can either lock users out of their own data or expose all data publicly. Writing, testing, and auditing policies for each table as the schema grows. This is the most Supabase-specific skill that requires care.</p>
+        </div>
+
+        <div class="card orange">
+          <span class="tag tag-required">Infrastructure</span>
+          <h3>Performance monitoring and query optimisation</h3>
+          <p>Running <code>EXPLAIN ANALYZE</code> on slow queries flagged by Supabase's slow query log. Adding or tuning GiST indexes on PostGIS columns as the listings table grows. Monitoring Vercel function cold-start times and edge function memory usage. Identifying and fixing N+1 query patterns in the listings + profiles joins.</p>
+        </div>
+
+        <div class="card orange">
+          <span class="tag tag-required">Infrastructure</span>
+          <h3>Listing lifecycle management</h3>
+          <p>Building the listing expiry cron (send reminder email 3 days before expiry via Resend, update <code>status='expired'</code> at <code>expires_at</code>). Building the listing renewal API (<code>PUT /api/listings/:id/renew</code> resets <code>expires_at = now + 30 days</code>). Handling the cascading deletes correctly when a listing is removed (photos, messages, saved pins).</p>
+        </div>
+
+        <div class="card orange">
+          <span class="tag tag-required">Infrastructure</span>
+          <h3>Security patching and dependency updates</h3>
+          <p>Monthly <code>npm audit</code>, updating vulnerable packages, testing that the update does not break existing routes. Monitoring Supabase's security advisories. Rotating service role keys if they are ever exposed. Ensuring <code>SUPABASE_SERVICE_ROLE_KEY</code> is never in any client-visible code path — periodic code audit for this.</p>
+        </div>
+
+        <div class="card blue">
+          <span class="tag tag-recommended">Feature Work</span>
+          <h3>Notification system (email + optional SMS)</h3>
+          <p>Sellers currently get no notification when a buyer presses "I'm Interested." Building a Resend email trigger on <code>POST /api/messages</code> (seller gets "You have a new inquiry for [listing title]") solves the biggest conversion gap. Later: push notifications via a Web Push API or Firebase Cloud Messaging for browser-based alerts without a native app.</p>
+        </div>
+
+        <div class="card blue">
+          <span class="tag tag-recommended">Feature Work</span>
+          <h3>Admin dashboard API</h3>
+          <p>The current admin panel is two menu items hardcoded to <code>nagesh.aadi@gmail.com</code> and <code>arun.bn1@gmail.com</code>. As volume grows, a proper admin API is needed: listing approval/rejection endpoints with reason codes, user suspension endpoint, bulk action support, aggregate stats (total listings, new users today, messages sent today).</p>
+        </div>
+
+        <div class="card blue">
+          <span class="tag tag-recommended">Feature Work</span>
+          <h3>Search and ranking improvements</h3>
+          <p>Current search is client-side substring match on listing titles. Backend full-text search using Postgres <code>tsvector</code> / <code>tsquery</code> would cover partial matches, synonyms, and multi-word phrases. Adding a relevance score (proximity × recency × views) to the listing query so popular nearby listings surface first.</p>
+        </div>
+
+        <div class="card blue">
+          <span class="tag tag-recommended">Feature Work</span>
+          <h3>Storage management and cleanup</h3>
+          <p>Scheduled job to delete orphaned photos from Supabase Storage (photos whose listing row no longer exists). Enforcing per-user storage quotas to prevent a single bad actor filling Storage. Potentially adding server-side image resizing to reduce CDN egress costs (Supabase Transformation API, available on Pro).</p>
+        </div>
+
+        <div class="card purple">
+          <span class="tag tag-optional">Growth Phase</span>
+          <h3>Analytics and event tracking backend</h3>
+          <p>Tracking what users search, which listing categories are most viewed, drop-off point in the post-listing funnel, messaging conversion rate per listing. This requires an <code>events</code> table or integration with a lightweight analytics backend (PostHog free tier is a natural fit with Supabase). Data becomes valuable for Arun's investor conversations.</p>
+        </div>
+
+        <div class="card purple">
+          <span class="tag tag-optional">Growth Phase</span>
+          <h3>Payment gateway integration (Razorpay)</h3>
+          <p>Currently out of scope (per CLAUDE.md MVP boundary), but when paid boost tiers or featured listings are added, Razorpay integration is the Indian standard. This is a significant back-end milestone — webhook handling, idempotency, refund flows, and invoice generation all need to be correct from day one.</p>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         Q5 — Who to hire
+    ═══════════════════════════════════════ -->
+    <section id="q5">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <div class="section-title">
+          <h2>Who to Hire</h2>
+          <p>The right profile for someone who can own the back-end of MapIt, mapped to the actual stack.</p>
+        </div>
+      </div>
+
+      <div class="role-card">
+        <div class="role-card-header">
+          <span class="role-icon">👨‍💻</span>
+          <div>
+            <h3>Option A — Full-Stack Developer (Node.js + Supabase)</h3>
+            <p>Best all-round fit for the current MapIt stack. Can own both API and DB work independently.</p>
+          </div>
+        </div>
+        <div class="role-card-body">
+          <div class="must-have">
+            <h4>Must-Have Skills</h4>
+            <div class="skill-list">
+              <span class="skill must">Node.js / Express</span>
+              <span class="skill must">PostgreSQL — queries, indexes, migrations</span>
+              <span class="skill must">REST API design</span>
+              <span class="skill must">JWT / Auth middleware</span>
+              <span class="skill must">Git / GitHub workflow</span>
+              <span class="skill must">Vercel or similar serverless deployment</span>
+            </div>
+          </div>
+          <div class="nice-have">
+            <h4>Nice to Have</h4>
+            <div class="skill-list">
+              <span class="skill nice">Supabase (learnable in 1–2 weeks)</span>
+              <span class="skill nice">PostGIS or spatial SQL</span>
+              <span class="skill nice">Leaflet.js or map APIs</span>
+              <span class="skill nice">Vanilla JS frontend (can read + patch the single HTML file)</span>
+              <span class="skill nice">Resend / SendGrid email API</span>
+              <span class="skill nice">Razorpay (for future payments)</span>
+            </div>
+          </div>
+          <p style="font-size:13px; color:var(--grey-600); margin-top:10px;">
+            <strong>Where to find:</strong> LinkedIn (Bangalore), Internshala for freshers, Turing.com for remote, or a referral from the Supabase Discord community. The Supabase Discord has a #jobs channel with active Indian developers who already know the stack.
+          </p>
+          <p style="font-size:13px; color:var(--grey-600); margin-top:6px;">
+            <strong>Approximate cost (Bangalore, 2–3 years exp):</strong> ₹8–15 LPA full-time, or ₹800–1,500/day contract. A junior (0–1 yr, with Node.js internship) is ₹4–6 LPA and works well if Nagesh can review PRs.
+          </p>
+        </div>
+      </div>
+
+      <div class="role-card">
+        <div class="role-card-header">
+          <span class="role-icon">🛠️</span>
+          <div>
+            <h3>Option B — Back-End Developer Only (Node.js + PostgreSQL)</h3>
+            <p>Focused hire if you want someone who is purely API + DB. Does not touch the HTML frontend.</p>
+          </div>
+        </div>
+        <div class="role-card-body">
+          <div class="must-have">
+            <h4>Must-Have Skills</h4>
+            <div class="skill-list">
+              <span class="skill must">Node.js</span>
+              <span class="skill must">PostgreSQL — advanced queries, RLS, schema design</span>
+              <span class="skill must">API security (rate limiting, input validation, SQL injection prevention)</span>
+              <span class="skill must">Serverless function model (stateless, cold starts)</span>
+            </div>
+          </div>
+          <p style="font-size:13px; color:var(--grey-600); margin-top:10px;">
+            <strong>Limitation:</strong> Any frontend bug (CSS, JS logic in <code>MapIt_MVP_v1.html</code>) still falls on Nagesh or Claude. Suitable only if Nagesh is comfortable maintaining the frontend himself or delegating to Claude Code.
+          </p>
+        </div>
+      </div>
+
+      <div class="role-card">
+        <div class="role-card-header">
+          <span class="role-icon">🎓</span>
+          <div>
+            <h3>Option C — Junior Developer + Claude Code as Co-Pilot</h3>
+            <p>Lowest cost. A junior developer handles moderation, testing, SQL, and small fixes — Claude does the heavy implementation.</p>
+          </div>
+        </div>
+        <div class="role-card-body">
+          <div class="must-have">
+            <h4>Must-Have Skills</h4>
+            <div class="skill-list">
+              <span class="skill must">Basic JavaScript / Node.js</span>
+              <span class="skill must">Comfortable with Supabase SQL Editor</span>
+              <span class="skill must">Can run git, npm, and deploy to Vercel</span>
+              <span class="skill must">Willing to work with AI-assisted code review</span>
+            </div>
+          </div>
+          <p style="font-size:13px; color:var(--grey-600); margin-top:10px;">
+            <strong>Structure:</strong> Nagesh reviews code quality and approves PRs; Claude Code writes implementations; the junior developer executes, tests, and handles daily ops. This is the most cost-effective structure for an early-stage marketplace in India.
+          </p>
+          <p style="font-size:13px; color:var(--grey-600); margin-top:6px;">
+            <strong>Approximate cost:</strong> ₹3–5 LPA (fresher with Node.js basics). Internships from IITs/NITs are a great source.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <div>
+          <strong>Hiring tip specific to MapIt:</strong> Ask candidates to open <code>mapit.co.in</code>, post a listing, and describe what they observe in the backend architecture from the network requests alone. Someone who notices the Supabase storage URLs, the <code>/api/listings</code> endpoint returning GeoJSON-style data, and the Vercel serverless signatures is already 80% of the way there.
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════
+         Q6 — AI + One of You
+    ═══════════════════════════════════════ -->
+    <section id="q6">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <div class="section-title">
+          <h2>AI Agent + One of You — Without Hiring Anyone</h2>
+          <p>An honest assessment of what Claude Code can cover, what it cannot, and where the human load falls.</p>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">🤖</span>
+        <div>
+          <strong>What "Claude Code as AI Agent" actually means here:</strong> Claude Code (this tool) can read every file in the project, write code, run shell commands, run the server, read SQL schemas, and commit to git. It does not run autonomously without Nagesh present. Think of it as a senior developer who is always available for a session but needs Nagesh to initiate each one, review the output, and run the Supabase SQL Editor manually where code cannot reach.
+        </div>
+      </div>
+
+      <h3 style="font-size:15px; font-weight:700; margin:20px 0 12px; color:var(--grey-900);">Effort assessment by area</h3>
+
+      <div style="border:1px solid var(--grey-200); border-radius:10px; padding:6px 16px; margin-bottom:24px;">
+        <div class="effort-row">
+          <div class="effort-label">Bug fixes from user reports <span class="effort-sub">— Claude writes the fix, Nagesh reviews and deploys</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar low"></div></div></div>
+          <div class="effort-val">Easy</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">New API routes + migrations <span class="effort-sub">— Claude writes, Nagesh runs SQL in Supabase Editor</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar low"></div></div></div>
+          <div class="effort-val">Easy</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">Listing moderation <span class="effort-sub">— human judgment required for every listing</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar medium"></div></div></div>
+          <div class="effort-val">Moderate</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">User support / responding to feedback <span class="effort-sub">— Claude can draft responses, human sends</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar medium"></div></div></div>
+          <div class="effort-val">Moderate</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">Daily log review (Vercel, Resend) <span class="effort-sub">— Claude can interpret logs if pasted, human must check dashboards</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar low"></div></div></div>
+          <div class="effort-val">Easy</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">RLS policy audits <span class="effort-sub">— Claude writes policies, but Supabase SQL Editor is manual</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar medium"></div></div></div>
+          <div class="effort-val">Moderate</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">Performance optimisation under viral load <span class="effort-sub">— requires profiling, load testing, Supabase Pro features</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar high"></div></div></div>
+          <div class="effort-val">Hard</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">Security incident response <span class="effort-sub">— data breach, account takeover, API abuse — needs immediate human action</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar full"></div></div></div>
+          <div class="effort-val">Critical</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">Legal / compliance (privacy, TRAI DLT, GST) <span class="effort-sub">— Claude provides research, humans decide + file</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar high"></div></div></div>
+          <div class="effort-val">Hard</div>
+        </div>
+        <div class="effort-row">
+          <div class="effort-label">Scaling beyond 500 MAU <span class="effort-sub">— architecture decisions, DB pooling, caching, multi-region</span></div>
+          <div class="effort-bar-wrap"><div class="effort-bar-bg"><div class="effort-bar full"></div></div></div>
+          <div class="effort-val">Hard</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px; font-weight:700; margin:0 0 12px; color:var(--grey-900);">Capability comparison</h3>
+
+      <table class="compare-table" style="margin-bottom:24px;">
+        <thead>
+          <tr>
+            <th>Responsibility</th>
+            <th>Claude Code</th>
+            <th>Nagesh (or Arun)</th>
+            <th>Without hiring?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Write code (API routes, frontend JS, migrations)</td>
+            <td><span class="check">✔ Yes</span></td>
+            <td><span class="check">✔ Yes (reviews)</span></td>
+            <td><span class="check">✔ Fully covered</span></td>
+          </tr>
+          <tr>
+            <td>Run Supabase SQL Editor migrations</td>
+            <td><span class="cross">✘ No (no direct DB access)</span></td>
+            <td><span class="check">✔ Manual step</span></td>
+            <td><span class="warn">⚠ Covered but Nagesh must do it</span></td>
+          </tr>
+          <tr>
+            <td>Deploy to Vercel</td>
+            <td><span class="check">✔ git push triggers it</span></td>
+            <td><span class="check">✔ or manually</span></td>
+            <td><span class="check">✔ Fully covered</span></td>
+          </tr>
+          <tr>
+            <td>Listing moderation (approve/reject)</td>
+            <td><span class="cross">✘ No (no persistent browser session)</span></td>
+            <td><span class="check">✔ Via admin menu</span></td>
+            <td><span class="warn">⚠ Nagesh/Arun must do daily</span></td>
+          </tr>
+          <tr>
+            <td>Respond to user feedback</td>
+            <td><span class="warn">⚠ Can draft responses</span></td>
+            <td><span class="check">✔ Sends and decides</span></td>
+            <td><span class="warn">⚠ Covered with some time from Nagesh/Arun</span></td>
+          </tr>
+          <tr>
+            <td>Monitor dashboards (Vercel, Supabase, Resend)</td>
+            <td><span class="cross">✘ No autonomous monitoring</span></td>
+            <td><span class="check">✔ Manual daily check (&lt;10 min)</span></td>
+            <td><span class="warn">⚠ Manageable at MVP scale</span></td>
+          </tr>
+          <tr>
+            <td>Investigate and fix production 500 errors</td>
+            <td><span class="check">✔ Yes, if log is shared</span></td>
+            <td><span class="check">✔ Triggers the session</span></td>
+            <td><span class="check">✔ Fully covered</span></td>
+          </tr>
+          <tr>
+            <td>Add new features (Sessions 4–9)</td>
+            <td><span class="check">✔ Primary implementer</span></td>
+            <td><span class="check">✔ Reviews and approves</span></td>
+            <td><span class="check">✔ Fully covered</span></td>
+          </tr>
+          <tr>
+            <td>Handle viral traffic spike</td>
+            <td><span class="warn">⚠ Can diagnose, advise on fixes</span></td>
+            <td><span class="warn">⚠ Must act quickly on Supabase/Vercel</span></td>
+            <td><span class="warn">⚠ Risky if spike is sudden at night</span></td>
+          </tr>
+          <tr>
+            <td>Handle a data breach / security incident</td>
+            <td><span class="warn">⚠ Can advise on steps</span></td>
+            <td><span class="check">✔ Must act (revoke keys, disable accounts)</span></td>
+            <td><span class="cross">✘ High stress, needs immediate human availability</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="verdict">
+        <h3>✅ Verdict: Yes — AI + Nagesh alone can manage, up to ~500 Monthly Active Users</h3>
+        <p>
+          For the launch phase (first 3–6 months, family + early-adopter scale), the combination of Claude Code + Nagesh's daily 30-minute ops check is sufficient. Supabase and Vercel eliminate almost all infrastructure management. Claude handles all code — features, bug fixes, RLS policies, migrations. Nagesh provides the human layer that Claude cannot: Supabase SQL Editor, listing moderation, user support, and dashboard monitoring.
+        </p>
+        <p style="margin-top:8px;">
+          <strong>Daily time commitment from Nagesh:</strong> approximately 30–45 minutes for ops (moderation, logs, feedback). Feature development (new sessions) is additional but planned in blocks, not daily.
+        </p>
+      </div>
+
+      <div class="verdict caution" style="margin-top:14px;">
+        <h3>⚠️ When to hire: the clear trigger points</h3>
+        <p>
+          Hire when <strong>any two</strong> of the following are true simultaneously: (1) daily listing moderation takes more than 1 hour; (2) user support messages exceed 20/day; (3) there are 2+ unresolved production bugs open at the same time; (4) Nagesh cannot attend to the app for more than 3 days and Arun cannot cover; (5) a paid feature (Razorpay) is being built. At that point, Option C (junior developer ₹3–5 LPA + Claude as co-pilot) is the most cost-efficient first hire.
+        </p>
+      </div>
+
+      <div class="callout warning" style="margin-top:16px;">
+        <span class="callout-icon">⚠️</span>
+        <div>
+          <strong>The one genuine gap:</strong> Neither Claude Code nor Nagesh alone constitutes a monitoring system. If the Vercel function throws 500 errors at 2am while you are asleep, nobody knows until morning. Setting up a free <a href="#q1" style="color:var(--blue);">Sentry alert</a> or Vercel email notification for error rate spikes costs nothing and closes this gap completely without a hire.
+        </div>
+      </div>
+
+    </section>
+
+
+    <footer>
+      <span>📍 MapIt — Post-Launch Operations Guide · Generated 27 June 2026</span>
+      <span>For internal use · Nagesh &amp; Arun</span>
+    </footer>
+
+  </main>
+
+</div>
+
+</body>
+</html>

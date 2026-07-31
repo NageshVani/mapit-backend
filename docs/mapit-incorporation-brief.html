@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MapIt — Incorporation Decision Brief</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#EDEAE3;
+    --paper-raised:#FBFAF7;
+    --ink:#211D18;
+    --ink-soft:#544A3D;
+    --muted:#8C7F6C;
+    --rule:#D9D1C1;
+    --accent:#C7430F;
+    --accent-soft:#F1E0D2;
+    --good:#3C6E52;
+    --good-soft:#DEEBE2;
+    --caution:#916312;
+    --caution-soft:#F0E3C4;
+    --risk:#8B3A3A;
+    --risk-soft:#F0DAD8;
+    --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", "URW Palladio", Georgia, serif;
+    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#18160F;
+      --paper-raised:#221F17;
+      --ink:#EBE4D6;
+      --ink-soft:#C6BAA3;
+      --muted:#8F8270;
+      --rule:#3C3527;
+      --accent:#FF7A42;
+      --accent-soft:#3E2415;
+      --good:#6FBE95;
+      --good-soft:#1D3227;
+      --caution:#E0A93C;
+      --caution-soft:#39300F;
+      --risk:#E2807A;
+      --risk-soft:#3A211F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#18160F;
+    --paper-raised:#221F17;
+    --ink:#EBE4D6;
+    --ink-soft:#C6BAA3;
+    --muted:#8F8270;
+    --rule:#3C3527;
+    --accent:#FF7A42;
+    --accent-soft:#3E2415;
+    --good:#6FBE95;
+    --good-soft:#1D3227;
+    --caution:#E0A93C;
+    --caution-soft:#39300F;
+    --risk:#E2807A;
+    --risk-soft:#3A211F;
+  }
+  :root[data-theme="light"]{
+    --paper:#EDEAE3;
+    --paper-raised:#FBFAF7;
+    --ink:#211D18;
+    --ink-soft:#544A3D;
+    --muted:#8C7F6C;
+    --rule:#D9D1C1;
+    --accent:#C7430F;
+    --accent-soft:#F1E0D2;
+    --good:#3C6E52;
+    --good-soft:#DEEBE2;
+    --caution:#916312;
+    --caution-soft:#F0E3C4;
+    --risk:#8B3A3A;
+    --risk-soft:#F0DAD8;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);}
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+  }
+
+  .page{
+    max-width:800px;
+    margin:0 auto;
+    padding:56px 24px 96px;
+  }
+
+  /* ---- masthead ---- */
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:16px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+  }
+  .wordmark{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:1.3rem;
+    letter-spacing:0.01em;
+  }
+  .wordmark span{color:var(--accent);}
+  .masthead-meta{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.04em;
+    color:var(--muted);
+    text-align:right;
+  }
+
+  h1.doc-title{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:2.4rem;
+    line-height:1.14;
+    margin:28px 0 10px;
+    text-wrap:balance;
+  }
+  p.doc-sub{
+    font-size:1.05rem;
+    color:var(--ink-soft);
+    max-width:56ch;
+    margin:0 0 40px;
+  }
+
+  /* ---- framing note ---- */
+  .frame-note{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-left:4px solid var(--accent);
+    border-radius:4px;
+    padding:20px 24px;
+    margin:0 0 48px;
+  }
+  .frame-note p{margin:0 0 10px; font-size:0.95rem;}
+  .frame-note p:last-child{margin-bottom:0;}
+  .frame-note b{color:var(--ink);}
+
+  /* ---- sections ---- */
+  section{margin:0 0 52px;}
+  .eyebrow{
+    font-family:var(--mono);
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    font-size:0.72rem;
+    color:var(--accent);
+    margin:0 0 8px;
+  }
+  h2{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:1.5rem;
+    margin:0 0 6px;
+    text-wrap:balance;
+  }
+  .section-intro{
+    color:var(--ink-soft);
+    font-size:0.96rem;
+    max-width:64ch;
+    margin:0 0 24px;
+  }
+  p{max-width:66ch;}
+
+  /* ---- comparison table ---- */
+  .table-scroll{overflow-x:auto; margin:0 0 8px; border:1px solid var(--rule); border-radius:6px;}
+  table.compare{
+    width:100%;
+    min-width:640px;
+    border-collapse:collapse;
+    background:var(--paper-raised);
+    font-size:0.88rem;
+  }
+  table.compare th, table.compare td{
+    text-align:left;
+    padding:13px 16px;
+    border-bottom:1px solid var(--rule);
+    vertical-align:top;
+  }
+  table.compare thead th{
+    font-family:var(--mono);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    font-size:0.7rem;
+    color:var(--muted);
+    font-weight:600;
+    background:var(--paper);
+    border-bottom:2px solid var(--ink);
+  }
+  table.compare tbody th{
+    font-weight:600;
+    font-size:0.86rem;
+    white-space:nowrap;
+    color:var(--ink);
+  }
+  table.compare tbody tr:last-child td, table.compare tbody tr:last-child th{border-bottom:none;}
+  table.compare td{color:var(--ink-soft);}
+
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:2px 10px 3px;
+    border-radius:99px;
+    font-family:var(--mono);
+    font-size:0.7rem;
+    letter-spacing:0.03em;
+    font-weight:600;
+    margin-bottom:6px;
+    white-space:nowrap;
+  }
+  .chip.good{background:var(--good-soft); color:var(--good);}
+  .chip.caution{background:var(--caution-soft); color:var(--caution);}
+  .chip.risk{background:var(--risk-soft); color:var(--risk);}
+  .chip::before{content:"●"; font-size:0.55rem;}
+
+  .cell-note{display:block; margin-top:2px;}
+
+  /* ---- status readout ---- */
+  .status-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+    gap:14px;
+    margin:0 0 8px;
+  }
+  .status-card{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:16px 18px;
+  }
+  .status-card .k{
+    font-family:var(--mono);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    font-size:0.66rem;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .status-card .v{font-size:0.92rem; color:var(--ink);}
+
+  /* ---- trigger checklist ---- */
+  ol.triggers{
+    list-style:none;
+    margin:0;
+    padding:0;
+    counter-reset:trig;
+    border-top:1px solid var(--rule);
+  }
+  ol.triggers li{
+    counter-increment:trig;
+    display:grid;
+    grid-template-columns:34px 1fr;
+    gap:14px;
+    padding:16px 0;
+    border-bottom:1px solid var(--rule);
+  }
+  ol.triggers li::before{
+    content:counter(trig);
+    font-family:var(--mono);
+    font-size:0.85rem;
+    color:var(--accent);
+    font-weight:700;
+    padding-top:2px;
+  }
+  ol.triggers .t-head{font-weight:600; margin:0 0 3px; font-size:0.97rem;}
+  ol.triggers .t-body{color:var(--ink-soft); font-size:0.9rem; margin:0;}
+
+  /* ---- recommendation ---- */
+  .verdict{
+    background:var(--good-soft);
+    border:1px solid var(--good);
+    border-radius:8px;
+    padding:26px 28px;
+  }
+  .verdict .eyebrow{color:var(--good);}
+  .verdict h2{margin-bottom:12px;}
+  .verdict p{margin:0 0 12px; color:var(--ink);}
+  .verdict p:last-child{margin-bottom:0;}
+
+  footer.doc-footer{
+    border-top:1px solid var(--rule);
+    padding-top:22px;
+    margin-top:8px;
+    color:var(--muted);
+    font-size:0.8rem;
+  }
+  footer.doc-footer p{margin:0 0 6px; max-width:none;}
+
+  @media (max-width:560px){
+    h1.doc-title{font-size:1.9rem;}
+    .masthead{flex-direction:column; align-items:flex-start; gap:6px;}
+    .masthead-meta{text-align:left;}
+  }
+  @media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto !important;} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="wordmark">Map<span>It</span></div>
+    <div class="masthead-meta">Internal brief · 2026-07-16<br/>For Nagesh &amp; Arun's discussion</div>
+  </div>
+
+  <h1 class="doc-title">Should MapIt incorporate, or stay a sole proprietorship?</h1>
+  <p class="doc-sub">A structured comparison to talk through together — not a recommendation to file anything today, and not a substitute for a CA or company secretary once you're ready to act.</p>
+
+  <div class="frame-note">
+    <p><b>Where this stands right now:</b> you've already decided MapIt launches as a sole proprietorship under Arun's name for the MVP — this brief doesn't reopen that. It exists so the choice was made with the full picture in view, and so you both know exactly which future events should bring you back to this table.</p>
+    <p>This is a plain-language comparison, not legal or tax advice. The actual filing — and the LLP-vs-Pvt-Ltd call, if you get there — should go through a Karnataka-based CA or company secretary.</p>
+  </div>
+
+  <section>
+    <p class="eyebrow">Where MapIt stands today</p>
+    <h2>The facts that make this an easy call for now</h2>
+    <div class="status-grid">
+      <div class="status-card"><div class="k">Revenue</div><div class="v">₹0 — 100% free to use, no fees planned near-term</div></div>
+      <div class="status-card"><div class="k">Users</div><div class="v">Family &amp; friends beta, manually approved listings</div></div>
+      <div class="status-card"><div class="k">Money on-platform</div><div class="v">None — no escrow, no payments processed by MapIt</div></div>
+      <div class="status-card"><div class="k">Outside capital</div><div class="v">None sought or planned</div></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">The three real options</p>
+    <h2>Sole Proprietorship vs. LLP vs. Private Limited</h2>
+    <p class="section-intro">Scored against what actually matters for a two-person, pre-revenue marketplace: what you're exposed to, what it costs to set up and keep running, and what it lets you do later.</p>
+    <div class="table-scroll">
+      <table class="compare">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Sole Proprietorship</th>
+            <th>LLP</th>
+            <th>Private Limited Co.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Personal liability</th>
+            <td><span class="chip risk">unlimited</span><span class="cell-note">Arun personally liable — no separation between him and MapIt.</span></td>
+            <td><span class="chip good">limited</span><span class="cell-note">Partners' liability capped at their agreed contribution.</span></td>
+            <td><span class="chip good">limited</span><span class="cell-note">Shareholders liable only up to shares held.</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Cost &amp; time to set up</th>
+            <td><span class="chip good">~₹0, immediate</span><span class="cell-note">No mandatory registration to simply start trading.</span></td>
+            <td><span class="chip caution">~₹5k–15k, 1–2 wks</span><span class="cell-note">MCA filing (FiLLiP), DSC + DPIN for each partner.</span></td>
+            <td><span class="chip caution">~₹8k–20k+, 1–2 wks</span><span class="cell-note">MCA filing (SPICe+), min. 2 directors/shareholders.</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Ongoing yearly compliance</th>
+            <td><span class="chip good">minimal</span><span class="cell-note">Personal ITR; GST returns only if GST-registered.</span></td>
+            <td><span class="chip caution">moderate</span><span class="cell-note">Form 8 &amp; 11 to ROC; audit only above ₹40L turnover / ₹25L contribution.</span></td>
+            <td><span class="chip risk">heaviest</span><span class="cell-note">ROC filings (AOC-4, MGT-7), mandatory audit every year regardless of size, board minutes. Typically ₹25k–60k+/yr in CA/CS fees.</span></td>
+          </tr>
+          <tr>
+            <th scope="row">How profit is taxed</th>
+            <td>At Arun's personal slab rate (up to ~30% + surcharge/cess)</td>
+            <td>Flat ~30% on LLP income; partners' share not taxed again</td>
+            <td>~22–25% corporate rate, then dividend tax when profit is distributed to shareholders</td>
+          </tr>
+          <tr>
+            <th scope="row">Giving Nagesh a real, documented stake</th>
+            <td><span class="chip risk">not possible</span><span class="cell-note">Only an informal/contractual arrangement — no ownership instrument exists.</span></td>
+            <td><span class="chip good">yes</span><span class="cell-note">Add him as a partner via the LLP agreement — a real, filed ownership stake.</span></td>
+            <td><span class="chip good">yes</span><span class="cell-note">Issue him equity shares or an ESOP — the standard co-founder instrument.</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Raising outside investment</th>
+            <td><span class="chip risk">not viable</span></td>
+            <td><span class="chip caution">unusual</span><span class="cell-note">Most VCs and angels want a company, not an LLP — expect a conversion later.</span></td>
+            <td><span class="chip good">standard vehicle</span><span class="cell-note">What investors expect to see.</span></td>
+          </tr>
+          <tr>
+            <th scope="row">Credibility — banks, partners, vendors</th>
+            <td><span class="chip caution">tied to Arun personally</span></td>
+            <td>Separate PAN, dedicated business bank account</td>
+            <td>Separate PAN, dedicated business bank account</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Looking ahead</p>
+    <h2>Signals that should bring you back to this decision</h2>
+    <p class="section-intro">None of these are close right now — but each one meaningfully changes the calculus above, so it's worth knowing what to watch for rather than deciding on a fixed calendar date.</p>
+    <ol class="triggers">
+      <li>
+        <div>
+          <p class="t-head">MapIt starts handling money — escrow, paid listings, or any in-platform payment</p>
+          <p class="t-body">The moment MapIt touches a transaction (not just facilitates contact between buyer and seller), the "MapIt does not process payments" clause in the Terms of Service stops being true — and Arun's personal liability exposure stops being theoretical.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <p class="t-head">Nagesh's role needs to become a real, documented stake</p>
+          <p class="t-body">A sole proprietorship has no mechanism to give Nagesh actual ownership — only an informal agreement outside any legal structure. If that's ever the intent, an LLP (partner) or Pvt Ltd (shares/ESOP) is the point where it becomes real.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <p class="t-head">You want to raise money from anyone outside the two of you</p>
+          <p class="t-body">Angels and VCs invest in companies, not sole proprietorships. This is usually the single biggest forcing function for incorporating.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <p class="t-head">MapIt formally hires — even one person</p>
+          <p class="t-body">Payroll, PF/ESI obligations, and employment contracts are far cleaner under a registered entity than under a personal proprietorship.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <p class="t-head">User base grows past "people Arun and Nagesh know"</p>
+          <p class="t-body">Manual listing approval and a small trusted user base are effectively today's safety net against fraud/liability exposure. Once MapIt is open to the general public, that safety net thins — and so does the case for staying unincorporated.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <div class="verdict">
+    <p class="eyebrow">Where this leaves you</p>
+    <h2>Stay a sole proprietorship for now — revisit at the first trigger above, not on a deadline</h2>
+    <p>At zero revenue, zero outside money, and a user base you both personally know, none of the real risks of unlimited liability or the real benefits of incorporation (fundraising, formal co-ownership, employee hiring) are live yet. The heavier annual compliance cost of an LLP or Pvt Ltd — CA/CS fees, mandatory filings — would be pure overhead against no corresponding benefit right now.</p>
+    <p>Converting a sole proprietorship into an LLP or Pvt Ltd later is a well-worn, routine path in India — it is not a one-way door, and delaying incorporation doesn't foreclose it. Decide again when one of the five triggers above actually happens, not before.</p>
+  </div>
+
+  <footer class="doc-footer">
+    <p>Prepared for internal discussion only — not legal, tax, or financial advice. Figures for compliance cost and timeline are typical ranges, not quotes, and change with professional fees and state-level variation. Confirm the actual filing and its cost with a Karnataka-based CA or company secretary when you're ready to act.</p>
+    <p>MapIt — internal brief, 2026-07-16.</p>
+  </footer>
+
+</div>
+</body>
+</html>

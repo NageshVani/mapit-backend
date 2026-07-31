@@ -15,7 +15,33 @@
       "Bash(git commit -m '*')",
       "Bash(git push *)",
       "Bash(git merge *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git config *)",
+      "Bash(npm --version)",
+      "Bash(brew --version)",
+      "Bash(/opt/homebrew/bin/node --version)",
+      "Bash(/opt/homebrew/bin/npm --version)",
+      "Bash(/opt/homebrew/bin/brew --version)",
+      "Read(//Users/nageshnagarajarao/**)",
+      "Bash(node ./_scratch_test_cascade.js)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(npm run test *)",
+      "Bash(npm run lint *)",
+      "Bash(npm run build)"
+    ],
+       "ask": [
+      "Bash(git push *)",
+      "Bash(git commit *)",
+      "Bash(supabase db *)"
+    ],
+        "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/service_role*)"
     ],
     "additionalDirectories": [
       "/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend"

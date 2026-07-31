@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MapIt — Session 7 UAT Checklist (Nagesh)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root{--bg:#0f1117;--card:#1a1d27;--card2:#21253a;--border:#2a2e3e;--green:#22c55e;--red:#ef4444;--orange:#f97316;--gold:#eab308;--blue:#3b82f6;--muted:#6b7280;--muted2:#9ca3af;--text:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',system-ui,sans-serif;font-size:14px;line-height:1.6;padding:0 0 80px;}
+  header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;position:sticky;top:0;z-index:100;}
+  .hd-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .logo{font-size:20px;font-weight:700;}.logo span{color:var(--orange);}
+  .hd-meta{font-size:12px;color:var(--muted);}
+  .progress-bar{height:6px;background:var(--card2);border-radius:3px;margin-top:12px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s;}
+  .progress-label{font-size:12px;color:var(--muted2);margin-top:6px;} .progress-label span{color:var(--green);font-weight:700;}
+  main{max-width:820px;margin:0 auto;padding:32px 24px;}
+  .intro-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:28px;}
+  .intro-card h2{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .intro-card p{font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .intro-card code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card2);padding:2px 6px;border-radius:3px;color:#93c5fd;}
+  h2.section{font-size:14px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.7px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  h2.section .item-num{color:var(--orange);margin-right:6px;}
+  .test-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;transition:border-color .2s;}
+  .test-card.passed{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.04);}
+  .test-card.failed{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.04);}
+  .test-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .test-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;margin-top:2px;min-width:36px;}
+  .test-title{font-size:13px;font-weight:600;flex:1;}
+  .btn-row{display:flex;gap:8px;flex-shrink:0;}
+  button.pass-btn,button.fail-btn{padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
+  button.pass-btn{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  button.pass-btn:hover{background:rgba(34,197,94,.28);}
+  button.fail-btn{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+  button.fail-btn:hover{background:rgba(239,68,68,.22);}
+  button.pass-btn.active{background:var(--green);color:#000;}
+  button.fail-btn.active{background:var(--red);color:#fff;}
+  .test-steps{font-size:12px;color:var(--muted2);margin-top:10px;line-height:1.8;}
+  .test-steps ol{padding-left:18px;}
+  .test-steps li{margin-bottom:3px;}
+  .test-steps code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--card2);padding:1px 5px;border-radius:3px;color:#93c5fd;}
+  .test-steps .expected{color:var(--green);font-weight:600;}
+  .note-area{margin-top:10px;display:none;}
+  .note-area textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;resize:vertical;min-height:56px;}
+  .note-area textarea::placeholder{color:var(--muted);}
+  .auto-badge{display:inline-block;background:rgba(59,130,246,.15);color:var(--blue);border-radius:4px;font-size:10px;font-weight:700;padding:1px 7px;margin-left:8px;vertical-align:middle;}
+  .signoff{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:32px;}
+  .signoff h3{font-size:15px;font-weight:700;margin-bottom:14px;}
+  .signoff label{display:block;font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .signoff input,.signoff select,.signoff textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;margin-bottom:14px;}
+  .signoff .verdict-row{display:flex;gap:10px;margin-bottom:14px;}
+  .verdict-btn{flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;}
+  .verdict-btn.approve{border-color:rgba(34,197,94,.5);color:var(--green);}
+  .verdict-btn.approve.sel{background:var(--green);color:#000;border-color:var(--green);}
+  .verdict-btn.reject{border-color:rgba(239,68,68,.5);color:var(--red);}
+  .verdict-btn.reject.sel{background:var(--red);color:#fff;border-color:var(--red);}
+  .verdict-btn.hold{border-color:rgba(249,115,22,.5);color:var(--orange);}
+  .verdict-btn.hold.sel{background:var(--orange);color:#000;border-color:var(--orange);}
+  .submit-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+  .submit-btn:hover{background:#2563eb;}
+  .result-box{display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;margin-top:14px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-row">
+    <div>
+      <div class="logo">Map<span>It</span> &nbsp;·&nbsp; Session 7 UAT Checklist</div>
+      <div class="hd-meta">Tester: Nagesh &nbsp;·&nbsp; Date: 2026-07-21 &nbsp;·&nbsp; Branches: feat/session-07-security-hardening (Sentry/CSP), feat/session-08-admin-dashboard (Legal Pages)</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="progress-label">Progress: <span id="pct">0%</span> &nbsp;(<span id="doneCount">0</span> / <span id="totalCount">0</span>)</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</header>
+
+<main>
+  <div class="intro-card">
+    <h2>📋 Session 7 Manual UAT — Security Hardening + Legal Pages</h2>
+    <p>This covers everything in Session 7: Sentry error monitoring, the Sentry email alert rule, Helmet CSP re-enablement (plus the chat quick-reply bug found and fixed during that CSP testing), and the new Legal Pages (<code>/terms</code>, <code>/privacy</code>). Claude has already run an automated pass — see <code>session-07-uat-report.html</code> for that report (24 pass, 1 known warning, 1 already-confirmed manual item).</p>
+    <p>Most of Sentry and CSP were already fully click-tested by you back on 2026-07-19/20 — those are pre-marked below since nothing in this session touched that code again. The genuinely <strong>new</strong> thing to check carefully is Legal Pages, since it's a real legal document going live for the first time.</p>
+    <p><strong>Test locally:</strong> <code>npm start</code> then open <code>http://localhost:3001</code> — or test on the <code>uat</code> preview if it's been deployed there.</p>
+  </div>
+
+  <!-- BLOCK A: PRE-VERIFIED -->
+  <h2 class="section"><span class="item-num">·</span>Pre-verified — already tested, no action needed</h2>
+
+  <div class="test-card" id="card-A1">
+    <div class="test-hd">
+      <div class="test-id">A1</div>
+      <div class="test-title">Sentry error monitoring — real test error appeared in the Sentry dashboard <span class="auto-badge">CONFIRMED 2026-07-19</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">You confirmed a test error appeared in the real Sentry project (org <code>mapit-bq</code>, project <code>node</code>) within seconds of triggering it. Nothing in Sentry's wiring changed since. Pre-marked Pass.</div>
+  </div>
+
+  <div class="test-card" id="card-A2">
+    <div class="test-hd">
+      <div class="test-id">A2</div>
+      <div class="test-title">Sentry alert rule — email notification configured <span class="auto-badge">CONFIRMED 2026-07-20</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">You confirmed the "a new issue is created → email" alert rule exists with the suggested settings. Dashboard-only, nothing to re-check in code. Pre-marked Pass.</div>
+  </div>
+
+  <div class="test-card" id="card-A3">
+    <div class="test-hd">
+      <div class="test-id">A3</div>
+      <div class="test-title">CSP re-enablement — map tiles, photo upload, and live chat all still work <span class="auto-badge">CONFIRMED 2026-07-19</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">You click-tested map tiles, photo upload to Supabase Storage, and live chat over Realtime under the new CSP headers — all worked, DevTools Issues panel clean apart from pre-existing accessibility notices. Nothing in the CSP config changed since. Pre-marked Pass.</div>
+  </div>
+
+  <div class="test-card" id="card-A4">
+    <div class="test-hd">
+      <div class="test-id">A4</div>
+      <div class="test-title">Chat quick-reply chips show the right options for buyer vs. seller <span class="auto-badge">CONFIRMED 2026-07-19</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">You confirmed both roles now see the correct chip set in a chat thread (buyer: "Is this still available?" etc.; seller: "Yes, still available" etc.) — this was the bug found and fixed during CSP testing. Pre-marked Pass.</div>
+  </div>
+
+  <div class="test-card" id="card-A5">
+    <div class="test-hd">
+      <div class="test-id">A5</div>
+      <div class="test-title">Terms and Privacy links land in the right place <span class="auto-badge">CONFIRMED 2026-07-21</span></div>
+      <div class="btn-row">
+        <button class="pass-btn active" onclick="mark('A5','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('A5','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">You already clicked both the Terms and Privacy links and confirmed each opens the document at the correct section. Pre-marked Pass — B1/B2 below just repeat this from the other two entry points (sign-up checkbox, profile menu) since the links live in two places now.</div>
+  </div>
+
+  <!-- BLOCK B: LEGAL PAGES — fresh checks -->
+  <h2 class="section"><span class="item-num">1</span>Legal Pages — Terms of Service &amp; Privacy Policy (new this session)</h2>
+
+  <div class="test-card" id="card-B1">
+    <div class="test-hd">
+      <div class="test-id">B1</div>
+      <div class="test-title">Sign-up screen's Terms/Privacy links open the document</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B1','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B1','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Start creating a new account (or open the profile-completion step) until you see the "I agree to the Terms of Service and Privacy Policy" checkbox line</li>
+        <li>Tap the words "Terms of Service" — a new tab should open</li>
+        <li class="expected">Verify: the new tab shows the finalized document, and the checkbox on the original tab is <em>not</em> accidentally ticked just from opening the link</li>
+        <li>Repeat for the "Privacy Policy" words — verify it opens the document scrolled down to the Privacy Policy section (Part II), not the very top</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B1"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B2">
+    <div class="test-hd">
+      <div class="test-id">B2</div>
+      <div class="test-title">Profile menu's Terms/Privacy links work for an already-signed-in user</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B2','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B2','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>While signed in, tap your profile avatar (top right) to open the dropdown menu</li>
+        <li class="expected">Verify: you see "📄 Terms of Service" and "🔒 Privacy Policy" listed alongside Help / Inbox / My Locations (and 🔐 Admin, if you're an admin)</li>
+        <li>Tap each — verify both open correctly in a new tab, same as B1</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B2"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B3">
+    <div class="test-hd">
+      <div class="test-id">B3</div>
+      <div class="test-title">Final read-through: business name, address, and dates are all correct</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B3','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B3','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open <code>/terms</code> directly and read through the top notice box and Section 19 (Terms) / Section 15 (Privacy) — the Grievance Officer contact block</li>
+        <li class="expected">Verify: "Arun BN, proprietor, trading as MapIt" reads correctly wherever the entity name appears</li>
+        <li class="expected">Verify: the address — <code>#115, 4th Main, Arekere Mico Layout 2nd Stage, Bannerghatta Road, Bangalore 560076</code> — is spelled correctly everywhere it appears (3 places: Terms §19, Privacy §2, Privacy §15)</li>
+        <li class="expected">Verify: the document reads as final (title says "Final v1.0", no leftover "draft"/"not legal advice" wording anywhere)</li>
+        <li>This is the last chance to catch a typo before this becomes the live, linked-to legal document — read slowly</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B3"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <div class="test-card" id="card-B4">
+    <div class="test-hd">
+      <div class="test-id">B4</div>
+      <div class="test-title">Document is readable on a phone screen</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('B4','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('B4','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open <code>/terms</code> on your phone (or narrow your desktop browser window to phone width)</li>
+        <li class="expected">Verify: text doesn't overflow the screen sideways, the table of contents and section headings are still readable, nothing overlaps</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-B4"><textarea placeholder="Notes on failure…"></textarea></div>
+  </div>
+
+  <!-- SIGN-OFF -->
+  <div class="signoff" id="signoff">
+    <h3>✍️ UAT Sign-off — Nagesh</h3>
+    <label>Tester Name</label>
+    <input type="text" id="so-name" placeholder="Nagesh" value="Nagesh"/>
+    <label>Date of Testing</label>
+    <input type="date" id="so-date" value="2026-07-21"/>
+    <label>UAT URL / Environment Used</label>
+    <input type="text" id="so-url" placeholder="localhost:3001 or mapit.co.in"/>
+    <label>Overall Verdict</label>
+    <div class="verdict-row">
+      <button class="verdict-btn approve" id="v-approve" onclick="setVerdict('approve')">✅ Approve</button>
+      <button class="verdict-btn hold" id="v-hold" onclick="setVerdict('hold')">⏸ Hold (minor issues)</button>
+      <button class="verdict-btn reject" id="v-reject" onclick="setVerdict('reject')">❌ Reject</button>
+    </div>
+    <label>Notes / Observations</label>
+    <textarea id="so-notes" style="min-height:80px;" placeholder="Any observations or issues found during testing…"></textarea>
+    <button class="submit-btn" onclick="submitSignoff()">📋 Generate Sign-off Summary</button>
+    <div class="result-box" id="result-box"></div>
+  </div>
+</main>
+
+<script>
+const total = document.querySelectorAll('.test-card').length;
+document.getElementById('totalCount').textContent = total;
+let _verdict = '';
+
+const STORAGE_KEY = 'mapit_uat_session07_nagesh_v1';
+const testIds = Array.from(document.querySelectorAll('.test-card')).map(el => el.id.replace('card-',''));
+
+function save(){
+  const state = {};
+  testIds.forEach(id=>{
+    const card = document.getElementById('card-'+id);
+    if(card.classList.contains('passed')) state[id]='pass';
+    else if(card.classList.contains('failed')) state[id]='fail';
+  });
+  const notes = {};
+  document.querySelectorAll('.note-area textarea').forEach(ta=>{
+    const id = ta.closest('.note-area').id.replace('note-','');
+    if(ta.value) notes[id]=ta.value;
+  });
+  const data = {
+    state, notes,
+    soName: document.getElementById('so-name').value,
+    soDate: document.getElementById('so-date').value,
+    soUrl: document.getElementById('so-url').value,
+    soNotes: document.getElementById('so-notes').value,
+    verdict: _verdict
+  };
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+}
+
+function mark(id, result){
+  const card = document.getElementById('card-'+id);
+  const noteArea = document.getElementById('note-'+id);
+  card.classList.remove('passed','failed');
+  card.classList.add(result==='pass'?'passed':'failed');
+  card.querySelector('.pass-btn').classList.toggle('active', result==='pass');
+  card.querySelector('.fail-btn').classList.toggle('active', result==='fail');
+  if(noteArea) noteArea.style.display = result==='fail' ? 'block' : 'none';
+  updateProgress();
+  save();
+}
+
+function restore(){
+  let data;
+  try{ data = JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){ data = null; }
+  if(!data) return;
+  if(data.state) Object.keys(data.state).forEach(id => mark(id, data.state[id]));
+  if(data.notes) Object.keys(data.notes).forEach(id=>{
+    const el = document.querySelector('#note-'+id+' textarea');
+    if(el) el.value = data.notes[id];
+  });
+  if(data.soName) document.getElementById('so-name').value = data.soName;
+  if(data.soDate) document.getElementById('so-date').value = data.soDate;
+  if(data.soUrl) document.getElementById('so-url').value = data.soUrl;
+  if(data.soNotes) document.getElementById('so-notes').value = data.soNotes;
+  if(data.verdict) setVerdict(data.verdict);
+}
+
+function updateProgress(){
+  const done = document.querySelectorAll('.test-card.passed, .test-card.failed').length;
+  const pct = Math.round(done/total*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('pct').textContent = pct+'%';
+  document.getElementById('doneCount').textContent = done;
+}
+
+function setVerdict(v){
+  _verdict = v;
+  ['approve','hold','reject'].forEach(x=>{
+    document.getElementById('v-'+x).classList.toggle('sel', x===v);
+  });
+  save();
+}
+
+function submitSignoff(){
+  const name = document.getElementById('so-name').value.trim() || 'Nagesh';
+  const date = document.getElementById('so-date').value || new Date().toISOString().slice(0,10);
+  const url  = document.getElementById('so-url').value.trim() || 'Not specified';
+  const notes = document.getElementById('so-notes').value.trim();
+  const passed = document.querySelectorAll('.test-card.passed').length;
+  const failed = document.querySelectorAll('.test-card.failed').length;
+  const pending = total - passed - failed;
+  const vLabel = {approve:'✅ APPROVED',hold:'⏸ HOLD — MINOR ISSUES',reject:'❌ REJECTED'}[_verdict] || '— not set —';
+  const vColor = {approve:'#22c55e',hold:'#f97316',reject:'#ef4444'}[_verdict]||'#9ca3af';
+
+  const box = document.getElementById('result-box');
+  box.style.display='block';
+  box.style.borderColor = vColor;
+  box.style.background = `rgba(${_verdict==='approve'?'34,197,94':_verdict==='hold'?'249,115,22':'239,68,68'},.06)`;
+  box.innerHTML = `
+    <div style="font-weight:700;font-size:15px;color:${vColor};margin-bottom:10px;">${vLabel}</div>
+    <div style="font-size:12px;color:#9ca3af;line-height:2;">
+      <strong>Tester:</strong> ${name}<br/>
+      <strong>Date:</strong> ${date}<br/>
+      <strong>URL:</strong> ${url}<br/>
+      <strong>Results:</strong> ${passed} passed · ${failed} failed · ${pending} not tested<br/>
+      <strong>Pass rate:</strong> ${passed+failed>0?Math.round(passed/(passed+failed)*100):0}%<br/>
+      ${notes?`<strong>Notes:</strong> ${notes}`:''}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:#6b7280;">
+      Session 7 — Security Hardening + Legal Pages · MapIt UAT
+    </div>`;
+}
+
+// Persist free-text fields as the tester types, not just on Pass/Fail/verdict clicks
+document.getElementById('so-name').addEventListener('input', save);
+document.getElementById('so-date').addEventListener('input', save);
+document.getElementById('so-url').addEventListener('input', save);
+document.getElementById('so-notes').addEventListener('input', save);
+document.querySelectorAll('.note-area textarea').forEach(ta => ta.addEventListener('input', save));
+
+restore();
+
+// Pre-mark A1–A5 as auto-passed (already confirmed in prior sessions / earlier today)
+mark('A1','pass');
+mark('A2','pass');
+mark('A3','pass');
+mark('A4','pass');
+mark('A5','pass');
+updateProgress();
+</script>
+</body>
+</html>

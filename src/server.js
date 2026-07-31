@@ -80,7 +80,7 @@ app.use(helmet({
       // original Session 7 CSP audit since it only showed up as a broken
       // image, not a console error.
       imgSrc:      ["'self'", 'data:', 'https://*.basemaps.cartocdn.com', 'https://cdnjs.cloudflare.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
-      connectSrc:  ["'self'", 'https://nominatim.openstreetmap.org', 'https://photon.komoot.io', ...(supabaseHost ? [`https://${supabaseHost}`, `wss://${supabaseHost}`] : [])],
+      connectSrc:  ["'self'", 'https://api.mapit.co.in', 'https://nominatim.openstreetmap.org', 'https://photon.komoot.io', ...(supabaseHost ? [`https://${supabaseHost}`, `wss://${supabaseHost}`] : [])],
       objectSrc:   ["'none'"],
       baseUri:     ["'self'"],
       frameAncestors: ["'none'"],

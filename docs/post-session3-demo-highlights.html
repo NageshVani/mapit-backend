@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Demo Guide: What's New Since Session 3</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;}
+  a{color:#60a5fa;text-decoration:none;}
+  .shell{display:flex;min-height:100vh;}
+  nav{width:230px;background:#1a1d2e;border-right:1px solid #2d3148;padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  nav .logo{padding:0 20px 20px;font-size:18px;font-weight:800;color:#f97316;letter-spacing:-.5px;}
+  nav .logo span{color:#e2e8f0;font-weight:400;}
+  nav h3{padding:10px 20px 4px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4b5563;}
+  nav a{display:block;padding:6px 20px;font-size:12px;color:#9ca3af;border-left:3px solid transparent;transition:all .15s;}
+  nav a:hover{color:#e2e8f0;background:#1f2235;border-left-color:#f97316;}
+  main{flex:1;padding:40px 48px;max-width:1150px;}
+  .hd{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid #2d3148;}
+  .hd h1{font-size:26px;font-weight:800;margin-bottom:6px;}
+  .hd .sub{font-size:13px;color:#9ca3af;line-height:1.7;}
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px;}
+  .stat{background:#1a1d2e;border:1px solid #2d3148;border-radius:10px;padding:16px 18px;text-align:center;}
+  .stat .num{font-size:26px;font-weight:800;color:#f97316;}
+  .stat .lbl{font-size:10.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:#9ca3af;margin-top:4px;}
+  .flow-card{background:#1a1d2e;border:1px solid #2d3148;border-radius:12px;padding:24px 26px;margin-bottom:36px;}
+  .flow-card h2{font-size:16px;font-weight:700;color:#f97316;margin-bottom:6px;}
+  .flow-card .flow-sub{font-size:12.5px;color:#9ca3af;margin-bottom:16px;}
+  .flow-steps{counter-reset:flowstep;}
+  .flow-step{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid #23263a;}
+  .flow-step:last-child{border-bottom:none;}
+  .flow-step .n{counter-increment:flowstep;flex-shrink:0;width:26px;height:26px;border-radius:50%;background:#f97316;color:#0f1117;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;}
+  .flow-step .n::before{content:counter(flowstep);}
+  .flow-step .txt{font-size:13px;color:#e2e8f0;line-height:1.6;padding-top:3px;}
+  .flow-step .txt strong{color:#fbbf24;}
+  section{margin-bottom:36px;}
+  section h2{font-size:16px;font-weight:700;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #2d3148;color:#f97316;}
+  section .cat-sub{font-size:12px;color:#9ca3af;margin:8px 0 16px;}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .card{background:#1a1d2e;border:1px solid #2d3148;border-radius:10px;padding:16px 18px;}
+  .card h3{font-size:13.5px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .card p{font-size:12.5px;color:#9ca3af;line-height:1.6;}
+  .card .why{margin-top:8px;padding-top:8px;border-top:1px dashed #2d3148;font-size:11.5px;color:#93c5fd;}
+  .card .why b{color:#60a5fa;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+  .tag-live{background:#14532d;color:#4ade80;}
+  .tag-soon{background:#78350f;color:#fbbf24;}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid #2d3148;font-size:11px;color:#4b5563;}
+  @media(max-width:820px){.grid{grid-template-columns:1fr;} .stat-row{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="logo">Map<span>It</span> Demo</div>
+  <h3>Guide</h3>
+  <a href="#flow">Suggested Demo Flow</a>
+  <h3>Categories</h3>
+  <a href="#cat-search">🔍 Search &amp; Discovery</a>
+  <a href="#cat-trust">🛡 Trust &amp; Safety</a>
+  <a href="#cat-seller">✍️ Seller Experience</a>
+  <a href="#cat-mobile">📱 Mobile Experience</a>
+  <a href="#cat-health">⚙️ Platform Health</a>
+</nav>
+
+<main>
+  <div class="hd">
+    <h1>What's New Since Session 3 — Demo Guide for Arun</h1>
+    <div class="sub">A quick-reference list of the major, demo-worthy improvements shipped after Session 3's core listing lifecycle (reference codes, expiry, delete/edit, landing screen). Covers Session 4, follow-up UAT fixes (04B, 04C), and all of Session 5 — everything below is live at <a href="https://mapit.co.in">mapit.co.in</a> unless marked "Pending your sign-off."</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="num">4</div><div class="lbl">Sessions of work</div></div>
+    <div class="stat"><div class="num">18</div><div class="lbl">Major features/fixes</div></div>
+    <div class="stat"><div class="num">2</div><div class="lbl">Real security leaks closed</div></div>
+    <div class="stat"><div class="num">~2.5 wks</div><div class="lbl">Elapsed calendar time</div></div>
+  </div>
+
+  <div class="flow-card" id="flow">
+    <h2>🎬 Suggested Demo Flow (~8–10 min)</h2>
+    <div class="flow-sub">A live walkthrough order that shows the most visually convincing improvements first, then the "trust" story underneath.</div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="n"></div><div class="txt">Open <strong>mapit.co.in</strong> on desktop. Pan the map anywhere in Bangalore with <strong>"🗺 Explore Area"</strong> toggled on — watch the blue radius circle follow you and listings auto-refresh. Switch back to <strong>"📍 My Locations"</strong> to show it defaults back to the user's saved spot.</div></div>
+      <div class="flow-step"><div class="n"></div><div class="txt">Open any listing near a school or mall — point out the new <strong>"📍 Nearby"</strong> section showing distance to the nearest school/mall/supermarket. This is fully automatic, no seller input needed.</div></div>
+      <div class="flow-step"><div class="n"></div><div class="txt">Post 2 test listings at the same address — show the map collapsing them into <strong>one pin with a count badge</strong>, tap it to open the mini-list. (Great for apartment complexes / bazaars.)</div></div>
+      <div class="flow-step"><div class="n"></div><div class="txt">Start posting a new listing — show the <strong>location picker</strong>: type an area name to pan the map, tap to drop a pin, or paste GPS coordinates from a Google Maps long-press. All three converge on the same pin.</div></div>
+      <div class="flow-step"><div class="n"></div><div class="txt">Tap <strong>"I'm Interested"</strong> on a listing as a buyer, type a real note, send it — then show the seller's inbox: an actual email arrived with the buyer's own words (not a canned message).</div></div>
+      <div class="flow-step"><div class="n"></div><div class="txt">Switch to a phone (or narrow the browser) — show the <strong>Map/List toggle</strong> and tap a pin to demonstrate the <strong>preview-then-open</strong> tap behavior built specifically for touch scanning.</div></div>
+      <div class="flow-step"><div class="n"></div><div class="txt">Close with the trust story: mention the <strong>RLS security audit</strong> found and closed two real data leaks (other users' phone numbers/home addresses were readable before the fix) — this is the kind of hardening that happens before a wider launch, not after.</div></div>
+    </div>
+  </div>
+
+  <section id="cat-search">
+    <h2>🔍 Search &amp; Discovery</h2>
+    <div class="cat-sub">Making it faster to find the right listing, wherever the buyer is looking.</div>
+    <div class="grid">
+      <div class="card">
+        <h3>🗺 Explore Area mode <span class="tag tag-live">LIVE</span></h3>
+        <p>A new toggle lets buyers pan the map to any part of the city and search from there — not just their saved home location. Listings auto-reload as they stop panning.</p>
+        <div class="why"><b>Why it matters:</b> buyers relocating or scouting a new neighborhood aren't stuck searching only around home.</div>
+      </div>
+      <div class="card">
+        <h3>🔎 Keyword search, restored to the header <span class="tag tag-live">LIVE</span></h3>
+        <p>Type any word and instantly filter listings by title/description, respecting whatever area is currently in view on the map.</p>
+        <div class="why"><b>Why it matters:</b> the fastest path to "I know exactly what I want" searches.</div>
+      </div>
+      <div class="card">
+        <h3>📍 Nearby POIs on every listing <span class="tag tag-live">LIVE</span></h3>
+        <p>Every new listing automatically shows the nearest named school, mall, and supermarket with distance — fully automatic, no seller data entry.</p>
+        <div class="why"><b>Why it matters:</b> a real-estate-style amenity signal that costs nothing extra to build (free OpenStreetMap data).</div>
+      </div>
+      <div class="card">
+        <h3>📌 Stacked pins for same-address listings <span class="tag tag-live">LIVE</span></h3>
+        <p>Apartment complexes and bazaars with multiple listings at the identical address now show one badged pin with a scrollable mini-list, instead of overlapping markers.</p>
+        <div class="why"><b>Why it matters:</b> the map stays readable exactly in the dense areas where MapIt's core promise (exact GPS) matters most.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cat-trust">
+    <h2>🛡 Trust &amp; Safety</h2>
+    <div class="cat-sub">Protecting user data and giving sellers confidence that real buyers are reaching out.</div>
+    <div class="grid">
+      <div class="card">
+        <h3>🔐 Full RLS security audit <span class="tag tag-live">LIVE</span></h3>
+        <p>A direct database-level audit found and fixed two real gaps: any logged-in user could previously read every other user's phone number and home address, and an unauthenticated visitor could read the (now-retired) invite-codes table.</p>
+        <div class="why"><b>Why it matters:</b> the kind of finding that matters a lot more before a public launch than after one.</div>
+      </div>
+      <div class="card">
+        <h3>📧 Seller email on "I'm Interested" <span class="tag tag-live">LIVE</span></h3>
+        <p>Sellers now get an email notification the moment a buyer expresses interest — and the buyer types a real note instead of a fixed canned message, so the email shows genuine buyer intent.</p>
+        <div class="why"><b>Why it matters:</b> faster seller response times, which is the single biggest lever on marketplace liquidity.</div>
+      </div>
+      <div class="card">
+        <h3>🤖 AI spam/lead screening <span class="tag tag-soon">PENDING YOUR SIGN-OFF</span></h3>
+        <p>Built and tested — every buyer note gets silently classified as genuine or spam-like using Claude, flagging low-quality contacts for the seller without ever blocking a real message. Fails safe: if the check can't run, the message still always goes through.</p>
+        <div class="why"><b>Why it matters:</b> the only thing blocking this from going live is your go-ahead on the small recurring API cost (Rule 11 budget discipline).</div>
+      </div>
+      <div class="card">
+        <h3>🔑 Stronger password rules <span class="tag tag-live">LIVE</span></h3>
+        <p>New accounts now require 8+ characters, one uppercase letter, and one special character — with live feedback as the user types.</p>
+        <div class="why"><b>Why it matters:</b> basic account-takeover hygiene before scaling up user count.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cat-seller">
+    <h2>✍️ Seller Experience</h2>
+    <div class="cat-sub">Making it faster and less confusing to post a listing.</div>
+    <div class="grid">
+      <div class="card">
+        <h3>📍 Tap-to-pin location picker <span class="tag tag-live">LIVE</span></h3>
+        <p>Posting a listing now uses the same polished flow as registration: search an area by name, tap the map to drop a pin, or paste exact GPS coordinates from a Google Maps long-press — all three converge on the same result.</p>
+        <div class="why"><b>Why it matters:</b> this directly serves MapIt's core promise — exact GPS on every listing, made as easy as possible to get right.</div>
+      </div>
+      <div class="card">
+        <h3>🗂 Roomier 2-column post form <span class="tag tag-live">LIVE</span></h3>
+        <p>The "Post a Listing" form is now a 2-column layout on desktop/tablet — significantly less scrolling to fill in category, details, location, and photos.</p>
+        <div class="why"><b>Why it matters:</b> shorter forms measurably reduce listing-abandonment.</div>
+      </div>
+      <div class="card">
+        <h3>🙅 No more duplicate signup fields <span class="tag tag-live">LIVE</span></h3>
+        <p>New accounts used to be asked for Full Name and Nickname twice in one signup flow. Now asked once.</p>
+        <div class="why"><b>Why it matters:</b> a small but real friction point removed from the very first thing a new user does.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cat-mobile">
+    <h2>📱 Mobile Experience</h2>
+    <div class="cat-sub">Most of MapIt's real-world usage happens on a phone — these were built and tested on-device.</div>
+    <div class="grid">
+      <div class="card">
+        <h3>☰ Map/List view toggle <span class="tag tag-live">LIVE</span></h3>
+        <p>On phone-sized screens, a floating toggle switches between full-screen map and full-screen list — and remembers the user's last choice.</p>
+        <div class="why"><b>Why it matters:</b> more screen real estate for whichever mode the user actually wants at that moment.</div>
+      </div>
+      <div class="card">
+        <h3>👆 Tap-to-preview before opening <span class="tag tag-live">LIVE</span></h3>
+        <p>On touch devices, the first tap on a pin shows a quick preview card; a second tap (or an explicit button) opens the full listing — avoids accidentally opening the wrong listing while scanning a busy map.</p>
+        <div class="why"><b>Why it matters:</b> built specifically in response to real tester feedback on how thumbs actually behave on a map full of pins.</div>
+      </div>
+      <div class="card">
+        <h3>❓ Lightweight Help modal <span class="tag tag-live">LIVE</span></h3>
+        <p>A quick in-app guide (Browse, Post, Save, Contact a seller, Delete a listing, Change your location) reachable from the profile menu.</p>
+        <div class="why"><b>Why it matters:</b> self-serve answers for first-time users, without needing a full support/FAQ system yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cat-health">
+    <h2>⚙️ Platform Health &amp; Cost Control</h2>
+    <div class="cat-sub">Behind-the-scenes work that keeps the platform cheap to run and easy to operate as it grows.</div>
+    <div class="grid">
+      <div class="card">
+        <h3>🧹 Orphaned photo cleanup <span class="tag tag-live">LIVE</span></h3>
+        <p>Deleting a listing now also removes its photo files from storage (previously only the listing record was deleted, silently leaving photo files behind forever). A one-time cleanup already recovered 3 leaked files in production.</p>
+        <div class="why"><b>Why it matters:</b> storage costs scale with listing volume — this keeps that growth honest.</div>
+      </div>
+      <div class="card">
+        <h3>⭐ Feedback form with star ratings <span class="tag tag-live">LIVE</span></h3>
+        <p>User feedback (suggestions, bugs, complaints, praise) now includes an optional 1–5 star rating, shown next to each entry in the admin feedback list for faster triage.</p>
+        <div class="why"><b>Why it matters:</b> quicker to spot the feedback that actually needs attention first.</div>
+      </div>
+      <div class="card">
+        <h3>✉️ Branded transactional emails <span class="tag tag-live">LIVE</span></h3>
+        <p>Sign-in and password-reset emails now carry MapIt's branding and colors instead of the generic default template.</p>
+        <div class="why"><b>Why it matters:</b> every email touchpoint is a brand impression — this one used to look like a generic dev tool.</div>
+      </div>
+      <div class="card">
+        <h3>🔒 CORS &amp; error-handling hardening <span class="tag tag-live">LIVE</span></h3>
+        <p>Tightened which domains can call the API, and fixed two lower-severity bugs found during testing (wrong HTTP status on a rejected request, and a debug stack trace that could leak in certain error responses).</p>
+        <div class="why"><b>Why it matters:</b> standard due-diligence hygiene, the kind that gets asked about in any serious platform review.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    MapIt · Demo Guide compiled by Claude Code ("James") · Covers Session 4 through Session 5 (2026-06-29 → 2026-07-12) · All items marked LIVE are on production at mapit.co.in
+  </footer>
+</main>
+</div>
+</body>
+</html>
