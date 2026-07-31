@@ -1,0 +1,415 @@
+<title>MapIt — Build Progress, Sessions 1–8</title>
+<meta name="description" content="Status brief for Arun: everything shipped across Sessions 1 through 8, session by session.">
+
+<style>
+  :root{
+    --paper:#f4f6f5;
+    --panel:#ffffff;
+    --ink:#1c2523;
+    --ink-soft:#4b5854;
+    --line:#dde3e0;
+    --accent:#1f7a6c;
+    --accent-soft:#e2f0ec;
+    --accent-ink:#0f4038;
+    --done:#2f8f5b;
+    --done-soft:#e6f4ea;
+    --pending:#b3791f;
+    --pending-soft:#f8ecd8;
+    --next:#5b6b74;
+    --next-soft:#eaeef0;
+  }
+  :root[data-theme="dark"]{
+    --paper:#121715;
+    --panel:#181f1d;
+    --ink:#e9edeb;
+    --ink-soft:#a9b6b1;
+    --line:#2a3532;
+    --accent:#4fb69f;
+    --accent-soft:#1c2f2a;
+    --accent-ink:#bdece0;
+    --done:#5cc98c;
+    --done-soft:#183025;
+    --pending:#e0ac52;
+    --pending-soft:#332615;
+    --next:#8fa09a;
+    --next-soft:#212a28;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#121715;
+      --panel:#181f1d;
+      --ink:#e9edeb;
+      --ink-soft:#a9b6b1;
+      --line:#2a3532;
+      --accent:#4fb69f;
+      --accent-soft:#1c2f2a;
+      --accent-ink:#bdece0;
+      --done:#5cc98c;
+      --done-soft:#183025;
+      --pending:#e0ac52;
+      --pending-soft:#332615;
+      --next:#8fa09a;
+      --next-soft:#212a28;
+    }
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+  }
+  h1,h2,h3,.disp{
+    font-family:Iowan Old Style,Palatino Linotype,Georgia,"Times New Roman",serif;
+    text-wrap:balance;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:56px 24px 96px;}
+
+  /* Header / masthead */
+  header.mast{
+    display:flex;flex-direction:column;gap:10px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:28px;margin-bottom:36px;
+  }
+  .eyebrow{
+    font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;
+  }
+  h1{font-size:34px;margin:0;font-weight:600;letter-spacing:-.01em;color:var(--ink);}
+  .subline{color:var(--ink-soft);font-size:15.5px;max-width:62ch;}
+  .meta-row{
+    display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--ink-soft);
+    margin-top:6px;font-variant-numeric:tabular-nums;
+  }
+  .meta-row b{color:var(--ink);font-weight:600;}
+
+  /* Stat strip */
+  .stats{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;
+    overflow:hidden;margin-bottom:40px;
+  }
+  .stat{background:var(--panel);padding:18px 16px;}
+  .stat .n{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .stat .l{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  @media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr);}}
+
+  /* Table of contents */
+  nav.toc{
+    display:flex;flex-wrap:wrap;gap:8px;margin-bottom:44px;
+  }
+  nav.toc a{
+    font-size:13px;color:var(--ink-soft);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:999px;
+    transition:border-color .15s, color .15s;
+  }
+  nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent-ink);}
+
+  /* Session sections */
+  section.session{margin-bottom:52px;scroll-margin-top:24px;}
+  .session-head{
+    display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+    margin-bottom:6px;
+  }
+  .session-num{
+    font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.04em;
+  }
+  .session-head h2{font-size:22px;margin:0;font-weight:600;color:var(--ink);}
+  .session-status{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .st-done{background:var(--done-soft);color:var(--done);}
+  .st-pending{background:var(--pending-soft);color:var(--pending);}
+  .st-next{background:var(--next-soft);color:var(--next);}
+
+  .session-sub{color:var(--ink-soft);font-size:14px;margin:2px 0 18px;max-width:70ch;}
+
+  .items{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;
+  }
+  .item{
+    display:grid;grid-template-columns:22px 1fr auto;gap:14px;
+    padding:14px 18px;border-top:1px solid var(--line);align-items:start;
+  }
+  .item:first-child{border-top:none;}
+  .item .dot{
+    width:9px;height:9px;border-radius:50%;margin-top:7px;justify-self:center;
+    background:var(--done);
+  }
+  .item.is-pending .dot{background:var(--pending);}
+  .item.is-next .dot{background:var(--next);}
+  .item-body h3{
+    font-family:inherit;font-size:15px;font-weight:600;margin:0 0 3px;color:var(--ink);
+  }
+  .item-body p{margin:0;font-size:14px;color:var(--ink-soft);max-width:66ch;}
+  .chip{
+    font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;white-space:nowrap;
+    text-transform:uppercase;letter-spacing:.03em;margin-top:2px;
+  }
+  .chip-done{background:var(--done-soft);color:var(--done);}
+  .chip-pending{background:var(--pending-soft);color:var(--pending);}
+  .chip-next{background:var(--next-soft);color:var(--next);}
+
+  .uat-note{
+    margin-top:12px;font-size:13px;color:var(--ink-soft);
+    background:var(--accent-soft);border-radius:8px;padding:10px 14px;
+  }
+  .uat-note b{color:var(--accent-ink);}
+
+  /* Roadmap footer */
+  .roadmap{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:22px 22px 20px;margin-top:12px;
+  }
+  .roadmap h2{font-size:20px;margin:0 0 8px;}
+  .roadmap p{font-size:14.5px;color:var(--ink-soft);margin:0 0 14px;max-width:68ch;}
+  .roadmap ul{margin:0;padding-left:20px;font-size:14.5px;color:var(--ink);}
+  .roadmap li{margin-bottom:6px;}
+  .roadmap li b{color:var(--accent-ink);}
+
+  footer{
+    margin-top:40px;font-size:12.5px;color:var(--ink-soft);
+    border-top:1px solid var(--line);padding-top:16px;
+  }
+
+  a{color:var(--accent-ink);}
+  ::selection{background:var(--accent-soft);}
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div class="eyebrow">MapIt — Build Status Brief</div>
+    <h1>Sessions 1–8, in full</h1>
+    <div class="subline">Prepared for Arun. Every feature built so far, grouped by the session it shipped in, with a plain-language note on what it does and where sign-off stands.</div>
+    <div class="meta-row">
+      <span><b>Prepared:</b> 23 Jul 2026</span>
+      <span><b>Covers:</b> Session 1 → Session 8</span>
+      <span><b>Next:</b> Session 9 &amp; 10 non-subscription items, subscriptions held to just before go-live</span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n">8</div><div class="l">sessions built</div></div>
+    <div class="stat"><div class="n">6</div><div class="l">fully signed off</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">awaiting Nagesh's UAT (7 &amp; 8)</div></div>
+    <div class="stat"><div class="n">$0</div><div class="l">monthly spend so far</div></div>
+  </div>
+
+  <nav class="toc">
+    <a href="#s1">1 · Foundation</a>
+    <a href="#s2">2 · Auth</a>
+    <a href="#s3">3 · Listings</a>
+    <a href="#s4">4 · Search &amp; Map Security</a>
+    <a href="#s5">5 · Notifications &amp; POI</a>
+    <a href="#s6">6 · Chat</a>
+    <a href="#s7">7 · Security Hardening</a>
+    <a href="#s8">8 · Admin Dashboard</a>
+    <a href="#next">What's next</a>
+  </nav>
+
+  <!-- SESSION 1 -->
+  <section class="session" id="s1">
+    <div class="session-head">
+      <span class="session-num">SESSION 1</span>
+      <h2>Foundation</h2>
+      <span class="session-status st-done">Complete</span>
+    </div>
+    <p class="session-sub">The groundwork — nothing user-visible, but everything after this depended on it.</p>
+    <div class="items">
+      <div class="item">
+        <div class="dot"></div>
+        <div class="item-body">
+          <h3>Project housekeeping</h3>
+          <p>Repo structure, environment template, and folder layout set up so every later session has a consistent place to add routes, migrations, and docs.</p>
+        </div>
+        <span class="chip chip-done">Done</span>
+      </div>
+      <div class="item">
+        <div class="dot"></div>
+        <div class="item-body">
+          <h3>Collaboration rulebook (CLAUDE.md)</h3>
+          <p>Written rules for how Claude and Nagesh work together — branch discipline, security non-negotiables, DB safety habits — so quality stays consistent across a long build.</p>
+        </div>
+        <span class="chip chip-done">Done</span>
+      </div>
+      <div class="item">
+        <div class="dot"></div>
+        <div class="item-body">
+          <h3>Database migrations pre-written</h3>
+          <p>Core schema (listings, profiles, invite codes) drafted ahead of time as numbered SQL files, ready to apply as each feature needed them.</p>
+        </div>
+        <span class="chip chip-done">Done</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SESSION 2 -->
+  <section class="session" id="s2">
+    <div class="session-head">
+      <span class="session-num">SESSION 2</span>
+      <h2>Sign-up &amp; Login</h2>
+      <span class="session-status st-done">Complete</span>
+    </div>
+    <p class="session-sub">Every way a real person gets into the app, plus the account basics.</p>
+    <div class="items">
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Email + password sign-up and login</h3><p>Standard account creation and sign-in flow.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Google Sign-In</h3><p>One-tap login via Google OAuth for users who'd rather not create a new password.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Email OTP login</h3><p>6-digit one-time code as a third login option, no password needed.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Terms acceptance checkbox</h3><p>Required tick-box at sign-up, wired ahead of the legal pages themselves landing later (Session 7).</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Home location capture</h3><p>New users set their home area on first login — this is what "near me" search is built on.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Nickname field</h3><p>Display name shown to other users instead of their real name, for a bit of privacy.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Password reset</h3><p>Standard "forgot password" email flow.</p></div><span class="chip chip-done">Done</span></div>
+    </div>
+  </section>
+
+  <!-- SESSION 3 -->
+  <section class="session" id="s3">
+    <div class="session-head">
+      <span class="session-num">SESSION 3</span>
+      <h2>Listing Lifecycle</h2>
+      <span class="session-status st-done">Complete</span>
+    </div>
+    <p class="session-sub">Everything about a listing from the moment it's posted to the moment it's gone.</p>
+    <div class="items">
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Reference codes</h3><p>Every listing gets a short human-readable code (e.g. <code>MP-BLR-...</code>) for support conversations and UAT tracking.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Listing expiry</h3><p>Listings auto-expire after a set window, keeping the map from filling up with stale posts.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Show/hide phone number</h3><p>Seller-controlled toggle for whether their phone number is visible on the listing.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>View counter</h3><p>Tracks how many times a listing has been opened, visible to the seller.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Delete &amp; edit listing</h3><p>Sellers can update or remove their own listings after posting.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Landing screen</h3><p>First-run screen shown before a user dives into the map.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>UAT fixes</h3><p>Bugs found during family testing of the above, fixed within the same session.</p></div><span class="chip chip-done">Done</span></div>
+    </div>
+  </section>
+
+  <!-- SESSION 4 -->
+  <section class="session" id="s4">
+    <div class="session-head">
+      <span class="session-num">SESSION 4</span>
+      <h2>Location Search, Map UX &amp; Security</h2>
+      <span class="session-status st-done">Complete</span>
+    </div>
+    <p class="session-sub">The session that made MapIt actually feel like a map-first app, plus the first big security pass.</p>
+    <div class="items">
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Location + category + keyword search</h3><p>Buyers type a place name (e.g. "Kumaraswamy Layout 2nd Stage"), the map re-centres there and filters by category and keyword — free, no API key (Nominatim).</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Warmer map tiles (CartoDB Voyager)</h3><p>Replaced plain OpenStreetMap tiles with a more professional-looking basemap showing shops and landmarks.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Satellite / hybrid toggle</h3><p>🛰 button to switch between street view and satellite imagery.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item is-pending"><div class="dot"></div><div class="item-body"><h3>Email verification</h3><p>Closed the biggest pre-launch security gap: signing up with someone else's email address is no longer possible — a 6-digit OTP now has to be confirmed first.</p></div><span class="chip chip-pending">Security fix</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Database index check (GiST)</h3><p>Confirmed the map's "nearby" queries use a proper spatial index rather than scanning the whole table — keeps search fast as listings grow.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>My Ads pin auto-fly</h3><p>Opening one of your own listings now flies the map to its pin instead of leaving the map static.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Minimum 1 photo required</h3><p>Can't post a listing with zero photos — enforced both on the phone/browser and on the server.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Lighter map rendering (Canvas)</h3><p>Switched how pins are drawn so the map runs noticeably smoother on cheaper Android phones.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Simpler pin-drop instructions</h3><p>Clearer on-screen guidance for placing your GPS pin when posting a listing.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item is-pending"><div class="dot"></div><div class="item-body"><h3>Removed dev-only CORS entries</h3><p>Localhost addresses used only during development were stripped from the production server's allow-list.</p></div><span class="chip chip-pending">Security fix</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>WhatsApp share preview</h3><p>Sharing a listing link to WhatsApp now shows a proper title/description/image card instead of a bare link.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Faster page load</h3><p>Preloaded map assets and made Google Fonts load without blocking the page — matters most on slow 4G.</p></div><span class="chip chip-done">Done</span></div>
+    </div>
+    <div class="uat-note"><b>UAT:</b> 40 automated checks passed, 1 known warning (a placeholder share-image was still pending). Both security fixes above were the two highest-priority items in the whole session.</div>
+  </section>
+
+  <!-- SESSION 5 -->
+  <section class="session" id="s5">
+    <div class="session-head">
+      <span class="session-num">SESSION 5</span>
+      <h2>Notifications, Nearby Places &amp; Hardening</h2>
+      <span class="session-status st-done">Complete — signed off</span>
+    </div>
+    <p class="session-sub">An unplanned session, added after the pre-launch review — closed the biggest gap in getting buyers and sellers to actually talk to each other.</p>
+    <div class="items">
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Seller email notification on "I'm Interested"</h3><p>Sellers now get an email the moment a buyer expresses interest, instead of only finding out if they happen to check the app.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item is-next"><div class="dot"></div><div class="item-body"><h3>Listing-expiry reminder email (3 days out)</h3><p>Route is built; the automatic trigger needs Vercel's paid Cron feature, so it's parked until Session 9's subscription bundle.</p></div><span class="chip chip-next">Waiting on Pro plan</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Full RLS security audit</h3><p>Checked every database table to confirm strangers genuinely cannot read other people's private data — not just assumed it.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Nearby places on a listing ("📍 Nearby")</h3><p>When a listing is posted, MapIt automatically looks up the nearest school, mall, and supermarket and shows them on the listing — a real differentiator, free via OpenStreetMap.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Same-spot listing grouping</h3><p>If several listings share the exact same GPS point (an apartment block, a bazaar), tapping the pin now shows a scrollable mini-list instead of picking one arbitrarily.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>GPS preview map while posting</h3><p>A small live map shows exactly where the pin will land as the seller types coordinates, so mistakes are caught before submitting.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Pin tooltip on first tap</h3><p>Tapping a pin shows a quick title/price/distance card first, full detail only on a second tap — fewer taps to browse.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Map vs. list default view</h3><p>Users can set which view opens by default and it's remembered.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Help modal</h3><p>Simple "?" icon explaining how to browse, post, save, and contact a seller — no server work needed.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Orphaned photo cleanup</h3><p>Removes photos left behind in storage after a listing is deleted, so storage doesn't quietly fill up over months.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Structured feedback form</h3><p>Feedback now has a category (bug / report / suggestion) and a star rating, so triaging feedback later is much faster.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Branded OTP emails</h3><p>Verification emails now say "MapIt" clearly instead of a generic Supabase template.</p></div><span class="chip chip-done">Done</span></div>
+    </div>
+    <div class="uat-note"><b>UAT:</b> Nagesh tested and passed all 12 manual checklist items on 09 Jul 2026. Session 5 is fully closed.</div>
+  </section>
+
+  <!-- SESSION 6 -->
+  <section class="session" id="s6">
+    <div class="session-head">
+      <span class="session-num">SESSION 6</span>
+      <h2>Real-Time Chat &amp; Moderation</h2>
+      <span class="session-status st-done">Complete — signed off</span>
+    </div>
+    <p class="session-sub">Replaced the old one-tap "I'm Interested" note with an actual back-and-forth conversation.</p>
+    <div class="items">
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Real-time buyer↔seller chat</h3><p>Full message threads with live delivery (Supabase Realtime) — messages appear instantly without refreshing, protected so only the two participants in a conversation can ever see it.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>"Report Listing" button</h3><p>Buyers can flag a listing as fake, wrongly priced, spam, or offensive, with an optional note — previously this only ever reached Nagesh/Arun over WhatsApp.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Admin moderation queue</h3><p>Reported listings now show up in a proper review queue inside the app instead of living only in the Supabase dashboard.</p></div><span class="chip chip-done">Done</span></div>
+    </div>
+    <div class="uat-note"><b>UAT:</b> Nagesh confirmed all 21 checklist items on 19 Jul 2026. Session 6 is fully closed — no open items.</div>
+  </section>
+
+  <!-- SESSION 7 -->
+  <section class="session" id="s7">
+    <div class="session-head">
+      <span class="session-num">SESSION 7</span>
+      <h2>Security Hardening</h2>
+      <span class="session-status st-pending">Built — awaiting sign-off</span>
+    </div>
+    <p class="session-sub">Deliberately scoped to skip anything needing a paid plan, so this could happen before any subscription spend.</p>
+    <div class="items">
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Error monitoring (Sentry)</h3><p>Silent server errors used to go undetected until a user complained — now they're caught and emailed automatically, free tier.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Privacy Policy &amp; Terms of Service pages</h3><p>Live <code>/privacy</code> and <code>/terms</code> pages, linked from sign-up — legally required, and Google requires a live privacy URL for the "Sign in with Google" button to even show.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Content-Security-Policy re-enabled</h3><p>A browser-level safety rule that restricts what scripts can run on the page — previously switched off because it clashed with the app's inline scripts; now explicitly allow-listed instead.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Sentry alert rule</h3><p>First occurrence of any new error type now triggers an alert, not just a log entry.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item is-next"><div class="dot"></div><div class="item-body"><h3>Google OAuth consent screen update</h3><p>External step for Arun: point Google's console at the now-live Privacy Policy URL.</p></div><span class="chip chip-next">Arun's task</span></div>
+    </div>
+    <div class="uat-note"><b>UAT:</b> Checklist ready (<code>docs/session-07-uat-checklist-Nagesh.html</code>). 5 items pre-confirmed from earlier in the build; 4 need a fresh click-through — sign-up checkbox links, profile-menu links, a proofread of the final legal text, and a mobile readability check.</div>
+  </section>
+
+  <!-- SESSION 8 -->
+  <section class="session" id="s8">
+    <div class="session-head">
+      <span class="session-num">SESSION 8</span>
+      <h2>Admin Dashboard, Performance &amp; Polish</h2>
+      <span class="session-status st-pending">Built — awaiting sign-off</span>
+    </div>
+    <p class="session-sub">Scope was deliberately widened before building: the admin page will mainly be run by Arun from Bangalore, occasionally Nagesh remotely — so it was designed novice-first, plain language throughout, and usable from a phone.</p>
+    <div class="items">
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Proper admin dashboard (<code>/admin</code>)</h3><p>One real admin-only gate for the whole page, replacing the old pattern of separate password-protected pop-ups. The two existing admin pop-ups (listing review, feedback viewer) were folded into it as tabs.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Suspend / Reinstate — real enforcement</h3><p>A suspended user is now blocked on their very next action, not just their next login — closing a gap where an already-logged-in suspended user could keep using the app.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Grievance log</h3><p>Tracks complaints with the two legally-required response clocks (acknowledge within 24 hours, resolve within 15 days) — required under India's IT Rules 2021.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Reported-chat visibility</h3><p>When a listing or user is reported, Arun can now read the actual conversation behind the report — only in that context, never a general "browse all chats" view.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Bulk listing cleanup</h3><p>Multi-select stale or duplicate listings and remove them in one action, instead of one at a time.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Mobile performance audit</h3><p>Ran Lighthouse and fixed the top issues (compressed assets, favicon) so the site loads faster on phones.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3><code>robots.txt</code> + <code>sitemap.xml</code></h3><p>Basic search-engine plumbing so Google can index the site properly once it's public.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Marker clustering</h3><p>Nearby pins now merge into a numbered circle at low zoom and fan out on click — keeps the map readable as listing volume grows.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Visual polish pass</h3><p>Contrast, spacing, and naming fixes picked from the earlier UX audit's highest-impact issues.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>Overview / analytics dashboard</h3><p>A "how's the platform doing" tab: listings by status, new users this week, messages sent, open reports — the first thing Arun sees on opening the admin page.</p></div><span class="chip chip-done">Done</span></div>
+      <div class="item"><div class="dot"></div><div class="item-body"><h3>"Explore Area" search bar</h3><p>Type a place name to pan the map there while exploring — reuses the same search pattern already shipped for posting/registration.</p></div><span class="chip chip-done">Done</span></div>
+    </div>
+    <div class="uat-note"><b>UAT:</b> Checklist ready (<code>docs/session-08-uat-checklist-08-Nagesh.html</code>). Items 6–9 pre-confirmed from earlier in the build; items 1–5, 10, 11 need a fresh pass. <b>Nagesh will run this shortly.</b></div>
+  </section>
+
+  <!-- WHAT'S NEXT -->
+  <section class="session" id="next">
+    <div class="roadmap">
+      <h2>What's next</h2>
+      <p>Sessions 7 and 8 are code-complete and just need Nagesh's UAT sign-off. Once that's done, the plan is to work through everything in Session 9 (and any Session 10 items) that <b>does not</b> require a paid subscription — Vercel Pro, Supabase Pro, and Resend's paid tier are all deliberately being held until the last stretch before go-live, so recurring costs stay at $0 for as long as possible.</p>
+      <ul>
+        <li><b>Held for last:</b> Vercel Pro ($20/mo), Supabase Pro ($25/mo), Resend Starter ($20/mo) — bundled into one upgrade step immediately before public launch.</li>
+        <li><b>Unlocked by that upgrade (parked until then):</b> the listing-expiry reminder cron, database connection pooling, Storage CDN, backup/PITR verification.</li>
+        <li><b>Final gate before going live:</b> a 9-point security and readiness checklist (CORS, CSP, RLS, error monitoring, legal pages, email verification, OAuth redirects, no leaked service keys), followed by a 48-hour soft-open to a small outside group.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    MapIt internal build brief — will be updated once Session 9 and 10 are complete. Source: <code>CONTEXT.md</code>.
+  </footer>
+
+</div>

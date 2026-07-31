@@ -28,3 +28,4 @@ uploads/
 
 # Google OAuth client secret files — NEVER commit
 client_secret_*.json
+OAuth Google cloud.rtf

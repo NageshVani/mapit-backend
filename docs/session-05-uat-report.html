@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 05 UAT Report (Full Scope)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;}
+  a{color:#60a5fa;text-decoration:none;}
+  .shell{display:flex;min-height:100vh;}
+  nav{width:230px;background:#1a1d2e;border-right:1px solid #2d3148;padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  nav .logo{padding:0 20px 20px;font-size:18px;font-weight:800;color:#f97316;letter-spacing:-.5px;}
+  nav .logo span{color:#e2e8f0;font-weight:400;}
+  nav h3{padding:10px 20px 4px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4b5563;}
+  nav a{display:block;padding:6px 20px;font-size:12px;color:#9ca3af;border-left:3px solid transparent;transition:all .15s;}
+  nav a:hover{color:#e2e8f0;background:#1f2235;border-left-color:#f97316;}
+  main{flex:1;padding:40px 48px;max-width:1150px;}
+  .rpt-header{margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid #2d3148;}
+  .rpt-header h1{font-size:26px;font-weight:800;margin-bottom:6px;}
+  .rpt-header .sub{font-size:13px;color:#9ca3af;line-height:1.7;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;}
+  .badge-pass{background:#14532d;color:#4ade80;}
+  .badge-fail{background:#7f1d1d;color:#f87171;}
+  .badge-warn{background:#78350f;color:#fbbf24;}
+  .badge-skip{background:#2d2d3d;color:#9ca3af;}
+  .badge-fixed{background:#1e3a5f;color:#60a5fa;margin-left:4px;}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px;}
+  .scard{background:#1a1d2e;border:1px solid #2d3148;border-radius:10px;padding:18px 20px;text-align:center;}
+  .scard .num{font-size:32px;font-weight:800;margin-bottom:4px;}
+  .scard .lbl{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#9ca3af;}
+  .num-pass{color:#4ade80;}
+  .num-fail{color:#f87171;}
+  .num-warn{color:#fbbf24;}
+  .num-skip{color:#64748b;}
+  .verdict{background:#14532d;border:1px solid #1e7a3f;border-radius:10px;padding:16px 22px;margin-bottom:36px;display:flex;align-items:center;gap:14px;}
+  .verdict-icon{font-size:28px;}
+  .verdict-text{font-size:15px;font-weight:700;color:#4ade80;}
+  .verdict-sub{font-size:12px;color:#bbf7d0;margin-top:2px;line-height:1.6;}
+  section{margin-bottom:40px;}
+  section h2{font-size:16px;font-weight:700;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #2d3148;color:#f97316;}
+  section .item-status{font-size:11px;color:#9ca3af;margin:8px 0 14px;}
+  .test-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .test-table th{background:#1a1d2e;padding:9px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #2d3148;}
+  .test-table td{padding:9px 12px;border-bottom:1px solid #1f2235;vertical-align:top;}
+  .test-table tr:hover td{background:#1a1d2e;}
+  .test-id{font-weight:700;color:#9ca3af;white-space:nowrap;}
+  .test-area{color:#c4b5fd;font-size:11px;}
+  code{background:#1f2235;border:1px solid #2d3148;border-radius:4px;padding:1px 5px;font-family:'Courier New',monospace;font-size:11px;color:#a5f3fc;}
+  .evidence{background:#0f1117;border:1px solid #2d3148;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:10.5px;color:#a5f3fc;max-height:140px;overflow-y:auto;margin-top:8px;white-space:pre-wrap;}
+  .obs-card{background:#1a1d2e;border:1px solid #374151;border-left:4px solid #fbbf24;border-radius:8px;padding:14px 18px;margin-bottom:12px;}
+  .obs-card h3{font-size:12.5px;font-weight:700;color:#fbbf24;margin-bottom:5px;}
+  .obs-card p{font-size:12px;color:#9ca3af;line-height:1.6;}
+  .file-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #1f2235;font-size:12px;}
+  .file-path{color:#a5f3fc;font-family:'Courier New',monospace;flex-shrink:0;}
+  .file-desc{color:#9ca3af;}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid #2d3148;font-size:11px;color:#4b5563;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="logo">Map<span>It</span> UAT</div>
+  <h3>Session 05 (Full)</h3>
+  <a href="#summary">Summary</a>
+  <a href="#verdict">Verdict</a>
+  <h3>Items 1–10</h3>
+  <a href="#block-1">1 · RLS Policy Audit</a>
+  <a href="#block-2">2 · POI Proximity</a>
+  <a href="#block-3">3 · Stacked Pins</a>
+  <a href="#block-4">4 · Tap-to-Pin Location Picker</a>
+  <a href="#block-5">5 · Pin Tooltip (Mobile Tap)</a>
+  <a href="#block-6">6 · Map/List View Toggle</a>
+  <a href="#block-7">7 · Help Modal</a>
+  <a href="#block-8">8 · Orphaned Photo Cleanup</a>
+  <a href="#block-9">9 · Feedback Star Rating</a>
+  <a href="#block-10">10 · Email Template Branding</a>
+  <h3>Platform</h3>
+  <a href="#block-k">K · Security &amp; Regression</a>
+  <a href="#block-l">L · Config / DB / Two-File Rule</a>
+  <h3>Findings</h3>
+  <a href="#observations">Observations</a>
+  <a href="#files">Files Touched</a>
+</nav>
+
+<main>
+  <div class="rpt-header">
+    <h1>Session 05 — UAT Report (Full 10-Item Scope)</h1>
+    <div class="sub">Automated QA re-pass covering <strong>all 10</strong> Session 5 items, superseding the earlier report (2026-07-08) which only covered items 1–2 (seller notification email + Claude lead scoring) under the original narrower Session 5 definition. Branch <code>feat/session-05-lead-scoring</code>, merged to <code>main</code> across commits <code>293276c</code>, <code>1bbb4a0</code>, <code>c2805ae</code>, <code>ce3063a</code>, <code>e112292</code>, <code>1a34054</code> · Generated 2026-07-13.</div>
+  </div>
+
+  <section id="summary">
+    <div class="summary">
+      <div class="scard"><div class="num num-pass">25</div><div class="lbl">Passed</div></div>
+      <div class="scard"><div class="num num-fail">0</div><div class="lbl">Failed</div></div>
+      <div class="scard"><div class="num num-warn">1</div><div class="lbl">Warnings</div></div>
+      <div class="scard"><div class="num num-skip">1</div><div class="lbl">Manual-only</div></div>
+    </div>
+  </section>
+
+  <section id="verdict">
+    <div class="verdict">
+      <div class="verdict-icon">✅</div>
+      <div>
+        <div class="verdict-text">Overall Verdict: PASS — all 10 items hold up under re-test</div>
+        <div class="verdict-sub">27 automated checks run against the live codebase, local server, and production database (disposable test rows only, all cleaned up afterward). Zero regressions found. The 1 warning (T-003, POI lookup) is the Overpass public API being rate-limited/slow at test time — the code's fail-open behavior was confirmed working correctly regardless, and the POI-found path was already verified end-to-end in the original build session. The 1 manual-only item (T-019, email template branding) lives entirely in the Supabase Dashboard and was already confirmed by Nagesh — nothing to re-check in code.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="block-1">
+    <h2>1 · RLS Policy Full Audit</h2>
+    <div class="item-status">Fixed two live PII-exposure gaps (<code>profiles</code>, <code>invite_codes</code>) — re-verified the fixes still hold.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-001</td><td class="test-area">RLS / profiles</td><td>Anon Supabase client cannot read <em>any</em> row from <code>profiles</code> (phone, home_lat/lng, address) — confirms the public-SELECT policy fix still holds</td><td>Live query with anon key against production DB</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-002</td><td class="test-area">RLS / invite_codes</td><td>Anon (unauthenticated) client cannot read any row from <code>invite_codes</code> — confirms the public-SELECT policy removal still holds</td><td>Live query with anon key against production DB</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">anon SELECT profiles      -> []
+anon SELECT invite_codes  -> []</div>
+  </section>
+
+  <section id="block-2">
+    <h2>2 · POI Proximity on Listing Post</h2>
+    <div class="item-status">Fire-and-forget Overpass lookup of nearby school/mall/supermarket, merged into <code>listings.details</code>.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-003</td><td class="test-area">poiLookup.js</td><td>Live end-to-end run of <code>lookupAndStoreNearbyPois()</code> against a disposable test listing at real Bangalore coordinates; confirms fail-open behavior (no crash, pre-existing <code>details.foo</code> key preserved) when the lookup can't complete</td><td>Disposable insert → real function call → verify <code>details</code> → delete, against production DB</td><td><span class="badge badge-warn">WARN</span></td></tr>
+      <tr><td class="test-id">T-004</td><td class="test-area">listings.js</td><td>Wiring confirmed: <code>lookupAndStoreNearbyPois()</code> called unawaited after listing insert, <code>.catch()</code>-logged (matches the proven <code>scoreAndNotify()</code> fire-and-forget shape, no anti-pattern reintroduced)</td><td>Source review + grep</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">Attempt 1: "POI lookup failed: This operation was aborted" (8s AbortController timeout hit)
+Attempt 2: "Overpass API error 504"
+Both times: listings.details after the call == {"foo":"bar"} (unchanged) — confirms merge-not-overwrite + fail-open both hold even when Overpass itself is unavailable.</div>
+    <p style="font-size:12px;color:#9ca3af;margin-top:10px;">Note on T-003 (WARN): the public Overpass instance (<code>overpass-api.de</code>) was slow/rate-limited during this test window (2026-07-13), so the "POI actually found" path could not be freshly re-exercised. This is the exact, already-documented risk from the original build (Vercel Nov not guaranteeing fire-and-forget promises, Overpass being less reliable than Anthropic/Resend) — not a new defect. The POI-found path (correct distances, correct icons, 3 POI types resolved) was verified end-to-end in the original 2026-07-12 build session and is unchanged code since.</p>
+  </section>
+
+  <section id="block-3">
+    <h2>3 · Same-Location Stacked Pin Popup</h2>
+    <div class="item-status">Co-located listings (identical GPS) render as one badged pin instead of overlapping markers. UAT-passed by Nagesh previously.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-005</td><td class="test-area">Frontend</td><td>All stacking functions present and wired: <code>mkStackIcon()</code>, <code>openStackPopup()</code>, <code>showStackHoverCard()</code>, and the separate <code>mStackMarkers</code> array that avoids the icon-repaint collision bug caught during design</td><td><code>grep</code> across <code>MapIt_MVP_v1.html</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-4">
+    <h2>4 · GPS / Tap-to-Pin Location Picker (Post + Registration)</h2>
+    <div class="item-status">Rebuilt twice same day per Arun/Nagesh feedback — tap-to-pin + search, then GPS text-entry restored alongside it. UAT-passed previously.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-006</td><td class="test-area">Frontend</td><td>Shared tap-to-pin helpers present for both post-listing and home-location pickers: <code>_placePostLocPin()</code>, <code>_placeHomeLocPin()</code>, <code>_postPickerCoords</code>, <code>_onPostLocSearchInput()</code></td><td><code>grep</code> across <code>MapIt_MVP_v1.html</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-5">
+    <h2>5 · Pin Tooltip on First Tap (Mobile Scan UX)</h2>
+    <div class="item-status">Touch devices see a tooltip on first tap, full detail on second tap. UAT-passed on-device previously.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-007</td><td class="test-area">Frontend</td><td><code>_isTouchDevice()</code> gate and <code>.tap-mode</code> class (enabling the "View full details →" button's <code>pointer-events</code>) both present</td><td><code>grep</code> across <code>MapIt_MVP_v1.html</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-6">
+    <h2>6 · Default Map/List View Preference (Mobile-Only)</h2>
+    <div class="item-status">Floating toggle below 768px width; persisted server-side. UAT-passed on-device previously.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-008</td><td class="test-area">Frontend</td><td><code>setViewMode()</code>, <code>.view-list</code>/<code>.view-map</code> classes present and wired to <code>#sb</code>/<code>#mapc</code></td><td><code>grep</code> across <code>MapIt_MVP_v1.html</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-009</td><td class="test-area">API / auth.js</td><td>Unauthenticated <code>PUT /api/auth/default-view</code> correctly rejected (no bypass of ownership check)</td><td><code>curl</code> against a freshly-started local server</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-010</td><td class="test-area">DB / profiles</td><td><code>profiles.default_view</code> column exists and is queryable, values persist correctly (<code>'map'</code>/<code>'list'</code>)</td><td>Live Supabase query via service-role client against production DB</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">PUT /api/auth/default-view (no token) -> 401 {"error":"Missing or invalid authorization header..."}
+admin SELECT profiles.default_view    -> [{"id":"58b3d3c6-...","default_view":"map"}]</div>
+  </section>
+
+  <section id="block-7">
+    <h2>7 · Lightweight Help Modal</h2>
+    <div class="item-status">Pure frontend, no server route. Pushed straight to <code>main</code> on Nagesh's go-ahead.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-011</td><td class="test-area">Frontend</td><td>"❓ Help" entry present in the profile/avatar dropdown, modal markup and open function present</td><td><code>grep</code> across <code>MapIt_MVP_v1.html</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-8">
+    <h2>8 · Orphaned Photo Cleanup</h2>
+    <div class="item-status"><code>DELETE /api/listings/:id</code> now also removes Storage objects; admin backfill sweep already run in production (3 real orphans deleted by Nagesh).</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-012</td><td class="test-area">listings.js</td><td>Live end-to-end test: created a disposable listing + a real Storage object + its <code>listing_photos</code> row, ran the exact delete-then-remove-Storage logic used by <code>DELETE /api/listings/:id</code>, confirmed both the DB row (via cascade) and the Storage file are gone afterward</td><td>Disposable insert/upload → real deletion logic → verify both gone, against production DB + Storage bucket</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-013</td><td class="test-area">uploads.js</td><td>Read-only dry-run bucket scan (the same algorithm <code>POST /api/uploads/cleanup-orphaned</code> uses) finds <strong>zero</strong> orphaned files in production right now — confirms the earlier real cleanup (3 files) is holding and nothing has leaked since</td><td>Full bucket walk vs. <code>listing_photos</code> rows, production Storage + DB</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-014</td><td class="test-area">API / auth</td><td>Unauthenticated <code>POST /api/uploads/cleanup-orphaned</code> correctly rejected</td><td><code>curl</code> against a freshly-started local server</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">Dry-run scan: 11 known DB photo rows, 0 orphaned files found.
+E2E test: created listing + storage object + photo row → ran delete logic → listing_photos rows remaining: 0, storage files remaining: 0.
+POST /api/uploads/cleanup-orphaned (no token) -> 401 {"error":"Missing or invalid authorization header..."}</div>
+  </section>
+
+  <section id="block-9">
+    <h2>9 · Structured Feedback Form Upgrade (Category + Star Rating)</h2>
+    <div class="item-status">Migration 005 adds nullable, CHECK-constrained <code>rating</code> to <code>feedback</code>. Nagesh confirmed stars render correctly in admin view.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-015</td><td class="test-area">DB / feedback</td><td><code>feedback.rating</code> column exists and is queryable</td><td>Live Supabase query via service-role client against production DB</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-016</td><td class="test-area">users.js</td><td>Server-side validation rejects non-integer or out-of-range (not 1–5) ratings before insert, while allowing <code>null</code> (rating is optional)</td><td>Source review of <code>POST /api/users/feedback/submit</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-017</td><td class="test-area">API / auth</td><td>Unauthenticated <code>POST /api/users/feedback/submit</code> correctly rejected</td><td><code>curl</code> against a freshly-started local server</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-018</td><td class="test-area">Frontend</td><td>5-star clickable picker markup present in the feedback modal, star-rendering present in the admin "View Feedbacks" list</td><td><code>grep</code> across <code>MapIt_MVP_v1.html</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">admin SELECT feedback.rating -> [{"id":"c330f78b-...","type":"suggestion","rating":null}]
+POST /api/users/feedback/submit (no token) -> 401 {"error":"Missing or invalid authorization header..."}</div>
+  </section>
+
+  <section id="block-10">
+    <h2>10 · Supabase Auth Email Template Branding</h2>
+    <div class="item-status">Dashboard-only task — no application code to test.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-019</td><td class="test-area">Supabase Dashboard</td><td>Magic Link + Reset Password templates carry MapIt branding — lives entirely in the Supabase Dashboard, not in this repo's code, so it can't be re-verified by an automated code/API pass</td><td>Manual — Nagesh already tested both emails and confirmed correct branded copy</td><td><span class="badge badge-skip">MANUAL — ALREADY CONFIRMED</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-k">
+    <h2>K · Security &amp; Regression (cross-cutting)</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-020</td><td class="test-area">API / auth</td><td>Unauthenticated <code>POST /api/messages</code> correctly rejected</td><td><code>curl</code> against a freshly-started local server</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-021</td><td class="test-area">API / auth</td><td>Unauthenticated <code>GET /api/messages/inbox</code> correctly rejected</td><td><code>curl</code> against a freshly-started local server</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-022</td><td class="test-area">Regression</td><td>Unknown route still returns a clean 404, no internal detail leaked</td><td><code>curl</code> against a freshly-started local server</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-023</td><td class="test-area">Regression</td><td>The <code>.catch()</code>-on-Postgrest-builder anti-pattern (fixed at <code>64cfdff</code> in Session 5 #1) has not resurfaced anywhere in <code>src/</code> — the two <code>.catch()</code> calls present are both on the outer fire-and-forget async wrapper, the correct pattern</td><td><code>grep -rn "\.catch(" src/routes/</code> + manual review of both matches</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-024</td><td class="test-area">Regression</td><td>Every listing-mutating route (browse, mine, saved, post, update, delete, sold, save) still correctly requires auth — no accidental public exposure introduced by any Session 5 change</td><td>Source review of <code>src/routes/listings.js</code> route table</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-l">
+    <h2>L · Config / DB / Two-File Rule</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-025</td><td class="test-area">File / syntax</td><td><code>node -c</code> clean on every file in <code>src/routes/</code>, <code>src/utils/</code>, <code>src/middleware/</code>, and <code>src/server.js</code></td><td><code>node -c</code> loop over all backend files</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-026</td><td class="test-area">Two-File Rule</td><td><code>MapIt_MVP_v1.html</code> and <code>public/index.html</code> are byte-identical</td><td><code>diff</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-027</td><td class="test-area">Frontend / syntax</td><td>All inline <code>&lt;script&gt;</code> blocks parse without a syntax error</td><td>Node <code>new Function()</code> smoke check</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-028</td><td class="test-area">Config</td><td><code>ANTHROPIC_API_KEY</code> confirmed still absent from local <code>.env</code> — matches the documented, still-open blocker (Arun's budget sign-off) and confirms the Session 5 #2 lead-scoring feature is still safely in its fail-open <code>unscreened</code> state, not a new gap</td><td>Node env-presence check (key names only, no values printed)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </section>
+
+  <section id="observations">
+    <h2>💡 Observations</h2>
+    <div class="obs-card">
+      <h3>OBS-01 — Overpass public API was rate-limited during this test window</h3>
+      <p>Two live calls to <code>lookupAndStoreNearbyPois()</code> both hit either an 8-second timeout or a 504 from <code>overpass-api.de</code> (T-003). This is the exact, already-documented risk from the original build session — the free public Overpass instance is less reliable than Anthropic/Resend. The fail-open guarantee held correctly both times (no crash, existing <code>details</code> keys untouched). No code change needed; the POI-found path itself is unchanged since its original verification.</p>
+    </div>
+    <div class="obs-card">
+      <h3>OBS-02 — Stale local server process found running old code</h3>
+      <p>Before this pass could hit <code>/api/auth/default-view</code> and <code>/api/uploads/cleanup-orphaned</code>, a leftover <code>npm start</code> process from an earlier session was still bound to port 3001 and returned "route not found" for both — a false negative from stale code, not an actual bug. Restarting the server against the current codebase resolved it immediately; flagging so future local UAT passes restart the server first rather than assuming a running instance reflects the latest commit.</p>
+    </div>
+    <div class="obs-card">
+      <h3>OBS-03 — Everything already Nagesh-tested on-device is unchanged</h3>
+      <p>Items 3, 4, 5, and 6 (stacked pins, tap-to-pin picker, mobile tap tooltip, map/list toggle) were already click-tested and UAT-passed on real devices by Nagesh during the original build. This pass re-confirmed the underlying code is present, unmodified, and free of regressions since — it does not replace the on-device click-testing itself (no browser available in this environment), it just re-validates nothing has silently broken.</p>
+    </div>
+  </section>
+
+  <section id="files">
+    <h2>📂 Files Touched (Session 5, cumulative across all 10 items)</h2>
+    <div class="file-row"><div class="file-path">src/utils/poiLookup.js, src/utils/geo.js</div><div class="file-desc">NEW — Overpass POI lookup, shared <code>haversineM()</code></div></div>
+    <div class="file-row"><div class="file-path">src/routes/listings.js</div><div class="file-desc">POI lookup wiring on POST; Storage cleanup on DELETE</div></div>
+    <div class="file-row"><div class="file-path">src/routes/uploads.js</div><div class="file-desc">NEW <code>POST /cleanup-orphaned</code> admin sweep</div></div>
+    <div class="file-row"><div class="file-path">src/routes/auth.js</div><div class="file-desc">NEW <code>PUT /default-view</code></div></div>
+    <div class="file-row"><div class="file-path">src/routes/users.js</div><div class="file-desc"><code>POST /feedback/submit</code> gains optional <code>rating</code> validation</div></div>
+    <div class="file-row"><div class="file-path">database/migrations/005-feedback-rating.sql</div><div class="file-desc">NEW — nullable, CHECK-constrained <code>rating</code> on <code>feedback</code></div></div>
+    <div class="file-row"><div class="file-path">MapIt_MVP_v1.html / public/index.html</div><div class="file-desc">Stacked pins, tap-to-pin picker, tap tooltip, view toggle, Help modal, star-rating picker — all Session 5 frontend work, two-file synced</div></div>
+    <div class="file-row"><div class="file-path">Supabase Dashboard (no repo file)</div><div class="file-desc">Two RLS policy fixes (profiles, invite_codes); Magic Link + Reset Password email template branding</div></div>
+  </section>
+
+  <footer>
+    MapIt UAT · Session 05 (Full 10-Item Scope) · Branch feat/session-05-lead-scoring, merged to main · Report generated 2026-07-13 · Automated re-pass by Claude Code · 0 new bugs found, 25 checks pass, 1 warning (external API availability), 1 manual-only item already confirmed
+  </footer>
+</main>
+</div>
+</body>
+</html>

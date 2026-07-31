@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MapIt — Terms of Service &amp; Privacy Policy (Draft)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#faf7f1;
+    --paper-raised:#ffffff;
+    --ink:#251f19;
+    --ink-soft:#57493a;
+    --muted:#8a7a68;
+    --rule:#e3d9c9;
+    --accent:#c1440e;
+    --accent-soft:#f3e3d6;
+    --stamp:#b3401a;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#18140f;
+      --paper-raised:#221c15;
+      --ink:#ede4d6;
+      --ink-soft:#c9b9a3;
+      --muted:#8f7c66;
+      --rule:#3a2f22;
+      --accent:#ff7a42;
+      --accent-soft:#3a2417;
+      --stamp:#ff7a42;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#18140f;
+    --paper-raised:#221c15;
+    --ink:#ede4d6;
+    --ink-soft:#c9b9a3;
+    --muted:#8f7c66;
+    --rule:#3a2f22;
+    --accent:#ff7a42;
+    --accent-soft:#3a2417;
+    --stamp:#ff7a42;
+  }
+  :root[data-theme="light"]{
+    --paper:#faf7f1;
+    --paper-raised:#ffffff;
+    --ink:#251f19;
+    --ink-soft:#57493a;
+    --muted:#8a7a68;
+    --rule:#e3d9c9;
+    --accent:#c1440e;
+    --accent-soft:#f3e3d6;
+    --stamp:#b3401a;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);}
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+  }
+
+  /* ---------- shell layout ---------- */
+  .shell{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 24px 96px;
+    display:grid;
+    grid-template-columns:240px minmax(0,760px);
+    gap:56px;
+    justify-content:center;
+  }
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr;}
+    nav.toc{position:static; max-height:none; order:2;}
+    main{order:1;}
+  }
+
+  /* ---------- cover ---------- */
+  .cover{
+    grid-column:1/-1;
+    max-width:900px;
+    margin:0 auto;
+    padding:64px 0 40px;
+    text-align:center;
+    position:relative;
+  }
+  .wordmark{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:2rem;
+    letter-spacing:0.01em;
+  }
+  .wordmark span{color:var(--accent);}
+  .doc-title{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:2.6rem;
+    line-height:1.15;
+    margin:18px 0 8px;
+    text-wrap:balance;
+  }
+  .doc-sub{
+    color:var(--ink-soft);
+    font-size:1.05rem;
+    max-width:60ch;
+    margin:0 auto;
+  }
+  .meta-row{
+    display:flex;
+    justify-content:center;
+    gap:28px;
+    margin-top:28px;
+    font-family:var(--mono);
+    font-size:0.8rem;
+    color:var(--muted);
+    letter-spacing:0.02em;
+  }
+  .meta-row b{color:var(--ink-soft); font-weight:600;}
+
+  .stamp{
+    display:inline-block;
+    margin-top:30px;
+    padding:10px 22px;
+    border:2px solid var(--stamp);
+    border-radius:3px;
+    color:var(--stamp);
+    font-family:var(--mono);
+    font-size:0.82rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    transform:rotate(-3deg);
+  }
+
+  /* ---------- review notice ---------- */
+  .notice{
+    grid-column:1/-1;
+    max-width:760px;
+    margin:0 auto 8px;
+    background:var(--accent-soft);
+    border:1px solid var(--accent);
+    border-radius:8px;
+    padding:20px 24px;
+  }
+  .notice h2{
+    margin:0 0 8px;
+    font-family:var(--serif);
+    font-size:1.05rem;
+    color:var(--accent);
+  }
+  .notice p{margin:0 0 10px; font-size:0.94rem;}
+  .notice ul{margin:8px 0 0; padding-left:20px; font-size:0.92rem;}
+  .notice li{margin-bottom:6px;}
+
+  /* ---------- TOC ---------- */
+  nav.toc{
+    position:sticky;
+    top:24px;
+    align-self:start;
+    max-height:calc(100vh - 48px);
+    overflow-y:auto;
+    padding-right:8px;
+    font-size:0.86rem;
+  }
+  nav.toc h3{
+    font-family:var(--mono);
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    font-size:0.72rem;
+    color:var(--muted);
+    margin:0 0 10px;
+  }
+  nav.toc h3.part2{margin-top:22px;}
+  nav.toc ol{
+    list-style:none;
+    margin:0 0 4px;
+    padding:0;
+    counter-reset:toc;
+  }
+  nav.toc li{counter-increment:toc; margin-bottom:3px;}
+  nav.toc a{
+    display:block;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:4px 0 4px 26px;
+    position:relative;
+    border-radius:4px;
+  }
+  nav.toc a::before{
+    content: counter(toc) ".";
+    position:absolute;
+    left:0;
+    width:20px;
+    font-family:var(--mono);
+    color:var(--muted);
+    font-size:0.78rem;
+  }
+  nav.toc a:hover{color:var(--accent); background:var(--accent-soft);}
+
+  /* ---------- main content ---------- */
+  main{min-width:0;}
+  .part-label{
+    font-family:var(--mono);
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    font-size:0.76rem;
+    color:var(--accent);
+    margin:64px 0 6px;
+  }
+  .part-title{
+    font-family:var(--serif);
+    font-size:1.9rem;
+    font-weight:600;
+    margin:0 0 8px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:14px;
+  }
+  .part-intro{color:var(--ink-soft); font-size:0.98rem; margin-bottom:8px;}
+
+  section.clause{
+    padding:22px 0;
+    border-bottom:1px solid var(--rule);
+    scroll-margin-top:24px;
+  }
+  section.clause:last-child{border-bottom:none;}
+  section.clause h3{
+    font-family:var(--serif);
+    font-size:1.24rem;
+    font-weight:600;
+    margin:0 0 12px;
+    display:flex;
+    gap:12px;
+    align-items:baseline;
+  }
+  section.clause h3 .num{
+    font-family:var(--mono);
+    color:var(--accent);
+    font-size:0.95rem;
+    font-weight:500;
+  }
+  section.clause p{margin:0 0 12px; max-width:66ch;}
+  section.clause ul, section.clause ol.legal{
+    margin:0 0 12px;
+    padding-left:22px;
+    max-width:64ch;
+  }
+  section.clause li{margin-bottom:6px;}
+  section.clause h4{
+    font-family:var(--sans);
+    font-size:0.98rem;
+    font-weight:700;
+    margin:16px 0 8px;
+    color:var(--ink-soft);
+  }
+
+  .callout{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--accent);
+    border-radius:6px;
+    padding:14px 18px;
+    margin:14px 0;
+    font-size:0.9rem;
+    color:var(--ink-soft);
+  }
+  .callout b{color:var(--ink);}
+  .fill{
+    background:var(--accent-soft);
+    color:var(--accent);
+    padding:0 5px;
+    border-radius:3px;
+    font-family:var(--mono);
+    font-size:0.88em;
+  }
+
+  table.data{
+    width:100%;
+    border-collapse:collapse;
+    margin:10px 0 16px;
+    font-size:0.88rem;
+  }
+  table.data th, table.data td{
+    text-align:left;
+    padding:9px 12px;
+    border-bottom:1px solid var(--rule);
+    vertical-align:top;
+  }
+  table.data th{
+    font-family:var(--mono);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-size:0.72rem;
+    color:var(--muted);
+    font-weight:600;
+  }
+  .table-wrap{overflow-x:auto; margin:0 0 16px;}
+
+  footer.doc-footer{
+    grid-column:1/-1;
+    max-width:760px;
+    margin:40px auto 0;
+    padding-top:24px;
+    border-top:1px solid var(--rule);
+    color:var(--muted);
+    font-size:0.82rem;
+    text-align:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{scroll-behavior:auto !important;}
+  }
+  html{scroll-behavior:smooth;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="cover">
+    <div class="wordmark">Map<span>It</span></div>
+    <h1 class="doc-title">Terms of Service &amp; Privacy Policy</h1>
+    <p class="doc-sub">Draft prepared for internal review by Nagesh &amp; Arun ahead of the Bengaluru MVP launch.</p>
+    <div class="meta-row">
+      <span><b>Version</b> 0.2&nbsp;draft</span>
+      <span><b>Prepared</b> 2026-07-13, updated 2026-07-16</span>
+      <span><b>Jurisdiction</b> Karnataka, India</span>
+    </div>
+    <div class="stamp">Draft — not yet in force</div>
+  </div>
+
+  <div class="notice">
+    <h2>Read this before the clauses below</h2>
+    <p>This is a working draft written to match how MapIt actually operates today (GPS-first P2P classifieds, Bengaluru launch, no in-house payments). <b>It is not legal advice and is not ready to publish.</b> Please have a Karnataka-licensed advocate review it, in particular:</p>
+    <ul>
+      <li>The <span class="fill">[bracketed placeholders]</span> throughout — legal entity name, registered office address, and a named Grievance Officer must be filled in before this goes live. Section 19 (Terms) and Section 15 (Privacy) cannot legally stay blank once the site is public — the IT Rules, 2021 require a named grievance officer with a published phone number and email.</li>
+      <li>Whether MapIt should incorporate (Pvt. Ltd. / LLP) before launch, or launch as a sole proprietorship first — this changes who is named as the contracting party throughout both documents.</li>
+      <li>The Digital Personal Data Protection Act, 2023 (DPDP Act) rules were still being finalized by the Ministry of Electronics & IT as of this draft — some obligations below (e.g. Consent Manager integration) may become mandatory only once the rules are notified. Flagged inline where relevant.</li>
+      <li>Real Estate listings: confirm with counsel whether any RERA (Real Estate Regulatory Authority) registration or disclosure obligation attaches to MapIt itself, given listings may include under-construction properties.</li>
+      <li>Whether to add a binding arbitration clause (Section 21) or leave disputes to ordinary courts — this is a cost/speed tradeoff, not a legal requirement either way.</li>
+    </ul>
+  </div>
+
+  <!-- ============================================================ -->
+  <nav class="toc" aria-label="Table of contents">
+    <h3>Part I — Terms of Service</h3>
+    <ol>
+      <li><a href="#t1">Acceptance of Terms</a></li>
+      <li><a href="#t2">Eligibility</a></li>
+      <li><a href="#t3">Nature of the Service</a></li>
+      <li><a href="#t4">Account Registration &amp; Security</a></li>
+      <li><a href="#t5">Your Listings &amp; Content License</a></li>
+      <li><a href="#t6">Location &amp; GPS Data — Special Notice</a></li>
+      <li><a href="#t7">Prohibited Listings &amp; Conduct</a></li>
+      <li><a href="#t8">Real Estate Listings</a></li>
+      <li><a href="#t9">Vehicle Listings</a></li>
+      <li><a href="#t10">Messaging Between Users</a></li>
+      <li><a href="#t11">Fees</a></li>
+      <li><a href="#t12">Feedback &amp; Ratings</a></li>
+      <li><a href="#t13">Intellectual Property</a></li>
+      <li><a href="#t14">Third-Party Services</a></li>
+      <li><a href="#t15">Disclaimer of Warranties</a></li>
+      <li><a href="#t16">Limitation of Liability</a></li>
+      <li><a href="#t17">Indemnification</a></li>
+      <li><a href="#t18">Suspension &amp; Termination</a></li>
+      <li><a href="#t19">Grievance Officer</a></li>
+      <li><a href="#t20">Governing Law &amp; Jurisdiction</a></li>
+      <li><a href="#t21">Dispute Resolution</a></li>
+      <li><a href="#t22">Changes to these Terms</a></li>
+      <li><a href="#t23">General Provisions</a></li>
+    </ol>
+    <h3 class="part2">Part II — Privacy Policy</h3>
+    <ol>
+      <li><a href="#p1">Introduction &amp; Scope</a></li>
+      <li><a href="#p2">Who We Are</a></li>
+      <li><a href="#p3">Information We Collect</a></li>
+      <li><a href="#p4">How We Use Information</a></li>
+      <li><a href="#p5">Legal Basis for Processing</a></li>
+      <li><a href="#p6">Location Data — Special Notice</a></li>
+      <li><a href="#p7">How We Share Information</a></li>
+      <li><a href="#p8">Cross-Border Transfer</a></li>
+      <li><a href="#p9">Data Retention</a></li>
+      <li><a href="#p10">Data Security</a></li>
+      <li><a href="#p11">Your Rights</a></li>
+      <li><a href="#p12">Children's Privacy</a></li>
+      <li><a href="#p13">Cookies &amp; Local Storage</a></li>
+      <li><a href="#p14">Changes to this Policy</a></li>
+      <li><a href="#p15">Grievance Officer &amp; Contact</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============================================================ -->
+  <main>
+
+    <p class="part-label">Part I</p>
+    <h2 class="part-title">Terms of Service</h2>
+    <p class="part-intro">These Terms of Service ("Terms") govern access to and use of the MapIt platform, website, and related services (together, the "Service"), operated by <span class="fill">[MapIt legal entity name]</span> ("MapIt", "we", "us"). By creating an account or using the Service you agree to be bound by these Terms.</p>
+
+    <section class="clause" id="t1">
+      <h3><span class="num">1</span> Acceptance of Terms</h3>
+      <p>By registering for, accessing, or using the Service in any way, you agree to these Terms and to our Privacy Policy (Part II of this document), which is incorporated by reference. If you do not agree, you must not use the Service.</p>
+      <p>If you use the Service on behalf of another person or entity, you represent that you are authorized to bind them to these Terms.</p>
+    </section>
+
+    <section class="clause" id="t2">
+      <h3><span class="num">2</span> Eligibility</h3>
+      <p>You must be at least 18 years old and capable of entering into a binding contract under the Indian Contract Act, 1872 to create an account or post a listing. MapIt does not knowingly permit account creation by anyone under 18 (see also Section 12 of the Privacy Policy).</p>
+      <p>You confirm that all registration information you provide (name, phone number, email, location) is accurate and that you will keep it up to date.</p>
+    </section>
+
+    <section class="clause" id="t3">
+      <h3><span class="num">3</span> Nature of the Service</h3>
+      <p>MapIt is a <b>location-based classifieds and discovery platform</b>. We provide the technology that lets a Seller post a listing pinned to an exact GPS location, and lets a Buyer search, filter, and message nearby listings.</p>
+      <h4>MapIt is not a party to any transaction</h4>
+      <ul>
+        <li>MapIt does not buy, sell, own, inspect, warehouse, ship, or take title to any item listed on the platform.</li>
+        <li>MapIt does not process payments between Buyers and Sellers. Any exchange of money happens directly between users, entirely outside the Service, and entirely at their own risk.</li>
+        <li>MapIt does not verify the identity of users, the accuracy of a listing, the ownership or legal title of any item, or the outcome of any transaction.</li>
+        <li>Any agreement to buy, sell, rent, or exchange an item is solely between the Buyer and the Seller. MapIt is not a broker, agent, auctioneer, or real estate agent within the meaning of any applicable law, and nothing on the Service should be construed as such.</li>
+      </ul>
+      <div class="callout"><b>Why this clause matters:</b> this is the clause that keeps MapIt in the same legal posture as OLX/Quikr — a neutral platform, not a seller of goods. It only holds up if the rest of the product (UI copy, support responses, marketing) never implies MapIt guarantees, inspects, or stands behind a listing.</div>
+    </section>
+
+    <section class="clause" id="t4">
+      <h3><span class="num">4</span> Account Registration &amp; Security</h3>
+      <p>You may register using email and password, Google Sign-In, or a one-time email passcode. You are responsible for maintaining the confidentiality of your login credentials and for all activity under your account. Notify us immediately at contact.us@mapit.co.in if you suspect unauthorized access.</p>
+      <p>One account per person. You may not create an account using another person's identity or false information.</p>
+    </section>
+
+    <section class="clause" id="t5">
+      <h3><span class="num">5</span> Your Listings &amp; Content License</h3>
+      <p>You retain ownership of the text, photographs, and other content you upload ("User Content"). By posting User Content, you grant MapIt a worldwide, non-exclusive, royalty-free license to host, store, display, reproduce, and distribute it solely for the purpose of operating and promoting the Service (for example, showing your listing on the map to nearby Buyers).</p>
+      <p>You are solely responsible for your listings. You represent that:</p>
+      <ul>
+        <li>You own or have the legal right to sell, rent, or offer the item;</li>
+        <li>The description, price, condition, and photographs are accurate and not misleading;</li>
+        <li>The listing does not infringe any third party's intellectual property or other rights; and</li>
+        <li>The pinned GPS location genuinely corresponds to the item or property being listed.</li>
+      </ul>
+      <p>MapIt may remove any listing or content, without notice, that it reasonably believes violates these Terms or applicable law.</p>
+    </section>
+
+    <section class="clause" id="t6">
+      <h3><span class="num">6</span> Location &amp; GPS Data — Special Notice</h3>
+      <p>MapIt's core feature is exact-location listings. When you post a listing, the GPS coordinates you provide (via tap-to-pin, device GPS, or manually entered coordinates) are <b>displayed publicly</b> to other users of the Service, together with your listing.</p>
+      <p>Separately, if you save a home or other personal location to your profile (for example, to center your search radius), that location is used only to power your own search experience and is <b>not</b> shown to other users unless you separately attach it to a public listing.</p>
+      <p>You should not post a listing at your home address unless you are comfortable with that exact location being publicly visible. See also Section 6 of the Privacy Policy.</p>
+    </section>
+
+    <section class="clause" id="t7">
+      <h3><span class="num">7</span> Prohibited Listings &amp; Conduct</h3>
+      <p>You must not use the Service to list, request, or facilitate the sale of:</p>
+      <ul>
+        <li>Stolen goods, or any item you do not have the legal right to sell;</li>
+        <li>Firearms, ammunition, explosives, or weapons of any kind;</li>
+        <li>Narcotics, controlled substances, or drug paraphernalia;</li>
+        <li>Counterfeit goods or items infringing a third party's trademark or copyright;</li>
+        <li>Wildlife, wildlife products, or anything restricted under the Wildlife Protection Act, 1972;</li>
+        <li>Any item whose sale is restricted or prohibited under Indian law (including but not limited to the categories above).</li>
+      </ul>
+      <p>You must also not: harass, threaten, or defraud another user; post spam or repeated near-duplicate listings; scrape or bulk-extract data from the Service; attempt to circumvent location, rate, or content-moderation checks; or misuse the messaging feature to send unsolicited commercial content.</p>
+      <p>Violation may result in listing removal, account suspension, and — where the conduct is criminal (fraud, forgery, dealing in stolen property) — referral to law enforcement.</p>
+    </section>
+
+    <section class="clause" id="t8">
+      <h3><span class="num">8</span> Real Estate Listings — Additional Terms</h3>
+      <p>MapIt does not verify title, occupancy, RERA registration status, or any statutory approval for a property listed under the Real Estate category. Sellers of under-construction property are solely responsible for complying with the Real Estate (Regulation and Development) Act, 2016 ("RERA") and any Karnataka RERA (K-RERA) rules, including registration and disclosure obligations, before advertising a project.</p>
+      <p>MapIt is not a real estate agent within the meaning of RERA or any state rules made under it, and makes no representation as to a property's legal status.</p>
+    </section>
+
+    <section class="clause" id="t9">
+      <h3><span class="num">9</span> Vehicle Listings — Additional Terms</h3>
+      <p>Sellers listing a vehicle represent that they hold valid title/registration (RC) and that the vehicle is not stolen, and are solely responsible for complying with the Motor Vehicles Act, 1988 in connection with any transfer of ownership, including timely intimation to the relevant Regional Transport Office (RTO). MapIt plays no role in, and takes no responsibility for, the ownership-transfer process.</p>
+    </section>
+
+    <section class="clause" id="t10">
+      <h3><span class="num">10</span> Messaging Between Users</h3>
+      <p>The Service lets a Buyer send a message expressing interest in a listing. Messages are relayed by MapIt but are the sole responsibility of the sender. Do not share sensitive personal or financial information (bank details, OTPs, ID numbers) over in-app messaging or with any other user.</p>
+      <p>MapIt may use automated tools to screen message content for spam or abuse before notifying a Seller (see Section 4 of the Privacy Policy). This screening is a safety measure and does not make MapIt a party to, or guarantor of, any resulting conversation or transaction.</p>
+    </section>
+
+    <section class="clause" id="t11">
+      <h3><span class="num">11</span> Fees</h3>
+      <p>The Service is currently free to use for posting and browsing listings. MapIt may introduce fees for certain features in the future (for example, promoted listings) with at least 30 days' advance notice published on the Service before such fees take effect for new listings.</p>
+    </section>
+
+    <section class="clause" id="t12">
+      <h3><span class="num">12</span> Feedback &amp; Ratings</h3>
+      <p>You may submit feedback (bug reports, suggestions, complaints, praise) and, where offered, a star rating, about your experience with the Service. Feedback is not published to other users in the current version of the Service and is used solely to improve MapIt.</p>
+    </section>
+
+    <section class="clause" id="t13">
+      <h3><span class="num">13</span> Intellectual Property</h3>
+      <p>The MapIt name, logo, and the Service's software, design, and underlying technology are the property of <span class="fill">[MapIt legal entity name]</span> and are protected by applicable intellectual property laws. Nothing in these Terms grants you any right to use MapIt's trademarks or branding without prior written consent.</p>
+    </section>
+
+    <section class="clause" id="t14">
+      <h3><span class="num">14</span> Third-Party Services</h3>
+      <p>The Service uses mapping and geocoding data from OpenStreetMap contributors (via Leaflet.js, Nominatim, Photon, and the Overpass API) to render maps, search locations, and surface nearby points of interest. This data is provided "as is" by third parties; MapIt does not guarantee its accuracy or availability. See <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">openstreetmap.org/copyright</a> for attribution terms.</p>
+      <p>The Service may link to, or rely on, other third-party services (for example, Google for sign-in). Your use of those services is governed by their own terms, not these Terms.</p>
+    </section>
+
+    <section class="clause" id="t15">
+      <h3><span class="num">15</span> Disclaimer of Warranties</h3>
+      <p>The Service is provided "as is" and "as available," without warranties of any kind, whether express or implied, including any implied warranty of merchantability, fitness for a particular purpose, accuracy, or non-infringement, to the fullest extent permitted under Indian law. MapIt does not warrant that the Service will be uninterrupted, timely, secure, or error-free, or that any listing, location, or user statement is accurate or complete.</p>
+    </section>
+
+    <section class="clause" id="t16">
+      <h3><span class="num">16</span> Limitation of Liability</h3>
+      <p>To the fullest extent permitted by law, MapIt and its officers, employees, and affiliates will not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profit, data, goodwill, or opportunity, arising out of or in connection with your use of the Service or any transaction with another user, whether based on contract, tort, or any other legal theory, even if MapIt has been advised of the possibility of such damages.</p>
+      <p>Where liability cannot be excluded under applicable law, MapIt's total aggregate liability arising out of these Terms is limited to ₹5,000 (Indian Rupees five thousand).</p>
+    </section>
+
+    <section class="clause" id="t17">
+      <h3><span class="num">17</span> Indemnification</h3>
+      <p>You agree to indemnify and hold harmless MapIt, its officers, employees, and affiliates from any claim, demand, loss, or damage (including reasonable legal fees) arising out of: your use of the Service; your listings or other User Content; your violation of these Terms; or your violation of any right of another person, including in connection with a transaction with another user.</p>
+    </section>
+
+    <section class="clause" id="t18">
+      <h3><span class="num">18</span> Suspension &amp; Termination</h3>
+      <p>MapIt may suspend or terminate your account, with or without notice, if it reasonably believes you have violated these Terms, engaged in fraudulent or unlawful conduct, or posed a risk to other users or the Service. You may stop using the Service and request account deletion at any time (see Section 11 of the Privacy Policy).</p>
+      <p>Sections that by their nature should survive termination (including Sections 15–17 and 19–21) will survive.</p>
+    </section>
+
+    <section class="clause" id="t19">
+      <h3><span class="num">19</span> Grievance Officer</h3>
+      <p>In accordance with the Information Technology Act, 2000 and the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021, the details of the Grievance Officer are published below. Complaints regarding content on the Service can be directed here for redressal within the statutory timeline.</p>
+      <div class="table-wrap">
+        <table class="data">
+          <tr><th>Name</th><td>Arun BN</td></tr>
+          <tr><th>Designation</th><td>Grievance Officer</td></tr>
+          <tr><th>Email</th><td>arun.bn1@gmail.com</td></tr>
+          <tr><th>Phone</th><td>+91 98801 00329</td></tr>
+          <tr><th>Address</th><td class="fill">[registered office address, Bengaluru — Mico Layout, Bannerghatta Road; full address to be confirmed]</td></tr>
+        </table>
+      </div>
+      <div class="callout"><b>Action needed:</b> this section is a hard legal requirement, not optional boilerplate — it cannot go live with placeholders in it.</div>
+    </section>
+
+    <section class="clause" id="t20">
+      <h3><span class="num">20</span> Governing Law &amp; Jurisdiction</h3>
+      <p>These Terms are governed by the laws of India. Subject to Section 21, the courts at Bengaluru, Karnataka shall have exclusive jurisdiction over any dispute arising out of or relating to these Terms or the Service.</p>
+    </section>
+
+    <section class="clause" id="t21">
+      <h3><span class="num">21</span> Dispute Resolution</h3>
+      <p>MapIt does not require binding arbitration. Disputes are resolved through the courts identified in Section 20.</p>
+    </section>
+
+    <section class="clause" id="t22">
+      <h3><span class="num">22</span> Changes to these Terms</h3>
+      <p>MapIt may update these Terms from time to time. Material changes will be notified through the Service or by email at least 15 days before they take effect. Continued use of the Service after changes take effect constitutes acceptance.</p>
+    </section>
+
+    <section class="clause" id="t23">
+      <h3><span class="num">23</span> General Provisions</h3>
+      <p><b>Severability:</b> if any provision of these Terms is held invalid, the remaining provisions continue in full force. <b>Force majeure:</b> MapIt is not liable for delay or failure caused by events beyond its reasonable control. <b>Assignment:</b> you may not assign these Terms without MapIt's consent; MapIt may assign them in connection with a merger, acquisition, or sale of assets. <b>Entire agreement:</b> these Terms, together with the Privacy Policy, constitute the entire agreement between you and MapIt regarding the Service.</p>
+    </section>
+
+    <!-- ============================================================ -->
+    <p class="part-label">Part II</p>
+    <h2 class="part-title">Privacy Policy</h2>
+    <p class="part-intro">This Privacy Policy explains what personal data MapIt collects, why, and what rights you have over it, in line with the Digital Personal Data Protection Act, 2023 ("DPDP Act") and the Information Technology Act, 2000.</p>
+
+    <section class="clause" id="p1">
+      <h3><span class="num">1</span> Introduction &amp; Scope</h3>
+      <p>This Policy applies to personal data processed through the MapIt website and app (the "Service"). It should be read together with the Terms of Service in Part I. "Personal data" means any data that identifies or relates to an identifiable individual, as defined under the DPDP Act.</p>
+    </section>
+
+    <section class="clause" id="p2">
+      <h3><span class="num">2</span> Who We Are</h3>
+      <p><span class="fill">[MapIt legal entity name]</span> ("MapIt", "we") is the Data Fiduciary responsible for your personal data under the DPDP Act, with its registered office at <span class="fill">[registered address, Bengaluru, Karnataka]</span>.</p>
+    </section>
+
+    <section class="clause" id="p3">
+      <h3><span class="num">3</span> Information We Collect</h3>
+      <div class="table-wrap">
+        <table class="data">
+          <tr><th>Category</th><th>Examples</th><th>Source</th></tr>
+          <tr><td>Account &amp; profile</td><td>Full name, nickname, email, phone number, password (hashed)</td><td>Provided by you at registration</td></tr>
+          <tr><td>Location data</td><td>Saved home/pin coordinates; GPS coordinates you attach to a listing; approximate location derived from your device or search</td><td>Device GPS, tap-to-pin map, or manual entry</td></tr>
+          <tr><td>Listing content</td><td>Title, description, price, category, photographs (up to 5 per listing)</td><td>Provided by you</td></tr>
+          <tr><td>Messages</td><td>Content of "I'm Interested" notes and other in-app messages</td><td>Provided by you</td></tr>
+          <tr><td>Feedback</td><td>Feedback category, free-text comments, optional star rating</td><td>Provided by you</td></tr>
+          <tr><td>Usage &amp; device data</td><td>Pages/screens viewed, listing views count, approximate IP-based region, browser/device type</td><td>Collected automatically</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="clause" id="p4">
+      <h3><span class="num">4</span> How We Use Information</h3>
+      <ul>
+        <li>To create and operate your account, and to show your listings to nearby Buyers;</li>
+        <li>To calculate distances and show listings within a Buyer's chosen search radius;</li>
+        <li>To look up nearby points of interest (schools, malls, supermarkets) for a listing, using only the listing's location — never your personal saved locations;</li>
+        <li>To send transactional emails (sign-in links, password resets, one-time passcodes for email-OTP sign-in, seller notifications when a Buyer expresses interest);</li>
+        <li>To automatically screen buyer-authored messages for spam/fraud signals before notifying a Seller, so genuine enquiries aren't lost among low-effort or automated ones. This screening never blocks a message from reaching the Seller — it only adds a label;</li>
+        <li>To detect and remove orphaned files, prevent abuse, and maintain the security of the Service;</li>
+        <li>To respond to feedback and support requests.</li>
+      </ul>
+    </section>
+
+    <section class="clause" id="p5">
+      <h3><span class="num">5</span> Legal Basis for Processing</h3>
+      <p>We process your personal data on the basis of your consent, given when you register for the Service and agree to this Policy, and, where applicable, on the basis of legitimate uses reasonably expected in the course of providing a location-listing service (for example, showing your listing's location to Buyers, which is the core function you signed up for).</p>
+      <p>You may withdraw consent at any time by deleting your account (Section 11), though withdrawal does not affect the lawfulness of processing carried out before withdrawal.</p>
+    </section>
+
+    <section class="clause" id="p6">
+      <h3><span class="num">6</span> Location Data — Special Notice</h3>
+      <p>MapIt distinguishes between two kinds of location data:</p>
+      <ul>
+        <li><b>Listing location (public):</b> the GPS coordinates attached to a published listing are visible to any user Browse the Service.</li>
+        <li><b>Personal/saved location (private):</b> a home address or other pin saved to your profile for search convenience is used only to power your own search radius and is never shown to other users, and never sold or shared with advertisers.</li>
+      </ul>
+      <p>Because listing locations are precise and public by design, do not attach your home address to a listing unless you are comfortable with that exact point being publicly visible.</p>
+    </section>
+
+    <section class="clause" id="p7">
+      <h3><span class="num">7</span> How We Share Information</h3>
+      <p>We do not sell your personal data. We share it only as follows:</p>
+      <ul>
+        <li><b>With other users:</b> your listing content, listing location, and nickname are visible to other users as part of the Service's core function. Your Interested message is shared with the relevant Seller.</li>
+        <li><b>With service providers who process data on our behalf</b>, under contract, solely to operate the Service:</li>
+      </ul>
+      <div class="table-wrap">
+        <table class="data">
+          <tr><th>Provider</th><th>Purpose</th></tr>
+          <tr><td>Supabase</td><td>Database, authentication, and photo storage</td></tr>
+          <tr><td>Resend</td><td>Transactional email delivery (sign-in, password reset, one-time passcodes, notifications)</td></tr>
+          <tr><td>Google</td><td>"Sign in with Google" authentication, if you choose that option</td></tr>
+          <tr><td>OpenStreetMap / Nominatim / Photon / Overpass</td><td>Map rendering, place search, and nearby-point-of-interest lookups (only the listing's coordinates are sent, never your personal saved locations)</td></tr>
+          <tr><td>Anthropic</td><td>Automated spam/genuine screening of buyer message text, to flag low-quality enquiries for Sellers</td></tr>
+          <tr><td>Vercel</td><td>Application hosting</td></tr>
+        </table>
+      </div>
+      <p><b>With authorities:</b> we may disclose data where required by law, court order, or a valid request from a government or law-enforcement authority.</p>
+    </section>
+
+    <section class="clause" id="p8">
+      <h3><span class="num">8</span> Cross-Border Data Transfer</h3>
+      <p>Some service providers listed in Section 7 may store or process data on servers located outside India. Where this occurs, we rely on those providers' own contractual and security safeguards. The DPDP Act permits cross-border transfer except to countries specifically restricted by the Central Government; as of this draft, no such restriction list affects the providers above, but this should be reconfirmed at launch and periodically thereafter.</p>
+    </section>
+
+    <section class="clause" id="p9">
+      <h3><span class="num">9</span> Data Retention</h3>
+      <p>We retain your account and listing data for as long as your account is active. If you delete your account, we delete your personal profile data and associated photographs within 90 days, except where retention is required to comply with a legal obligation, resolve a dispute, or enforce these Terms. Listings you delete are removed immediately, together with their stored photographs.</p>
+      <p>Separately, in accordance with the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021, we retain limited registration and access records (such as IP address and timestamp associated with account creation, sign-in, listing creation, and messaging) for 180 days, so that we can respond to a valid request from law enforcement or a court. This compliance record is separate from, and retained independently of, the 90-day account-deletion window above.</p>
+    </section>
+
+    <section class="clause" id="p10">
+      <h3><span class="num">10</span> Data Security</h3>
+      <p>We apply reasonable technical and organizational safeguards appropriate to the sensitivity of the data involved, including access-scoped database policies (row-level security), encrypted transport (HTTPS), and hashed password storage. No system is completely secure, and we cannot guarantee absolute security of information transmitted to or from the Service.</p>
+    </section>
+
+    <section class="clause" id="p11">
+      <h3><span class="num">11</span> Your Rights</h3>
+      <p>As a Data Principal under the DPDP Act, 2023, you have the right to:</p>
+      <ul>
+        <li><b>Access</b> a summary of the personal data we hold about you and how it is processed;</li>
+        <li><b>Correct or update</b> inaccurate or incomplete personal data;</li>
+        <li><b>Erase</b> personal data that is no longer necessary for the purpose it was collected (subject to Section 9);</li>
+        <li><b>Nominate</b> another individual to exercise these rights on your behalf in the event of death or incapacity;</li>
+        <li><b>Withdraw consent</b> at any time, as easily as it was given; and</li>
+        <li><b>Grievance redressal</b> — to raise a complaint with our Grievance Officer (Section 15) before, if unresolved, approaching the Data Protection Board of India.</li>
+      </ul>
+      <p>Most of these actions are available directly from your profile (edit profile, manage locations, delete listing); for account deletion or a data-access request, contact us using Section 15.</p>
+    </section>
+
+    <section class="clause" id="p12">
+      <h3><span class="num">12</span> Children's Privacy</h3>
+      <p>The Service is not directed at, and we do not knowingly collect personal data from, anyone under 18. If we learn that we have collected personal data from someone under 18, we will delete it promptly.</p>
+    </section>
+
+    <section class="clause" id="p13">
+      <h3><span class="num">13</span> Cookies &amp; Local Storage</h3>
+      <p>The Service uses browser local storage (not third-party ad-tracking cookies) to remember your session, your preferred map/list view, and whether you have already seen certain one-time prompts (like the welcome screen). This is used only to make the Service work smoothly for you and not for advertising or cross-site tracking.</p>
+    </section>
+
+    <section class="clause" id="p14">
+      <h3><span class="num">14</span> Changes to this Policy</h3>
+      <p>We may update this Privacy Policy from time to time. Material changes will be notified through the Service or by email at least 15 days before they take effect.</p>
+    </section>
+
+    <section class="clause" id="p15">
+      <h3><span class="num">15</span> Grievance Officer &amp; Contact</h3>
+      <div class="table-wrap">
+        <table class="data">
+          <tr><th>Name</th><td>Arun BN</td></tr>
+          <tr><th>Email</th><td>arun.bn1@gmail.com</td></tr>
+          <tr><th>Phone</th><td>+91 98801 00329</td></tr>
+          <tr><th>Address</th><td class="fill">[registered office address, Bengaluru — Mico Layout, Bannerghatta Road; full address to be confirmed]</td></tr>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="doc-footer">
+    MapIt — draft Terms of Service &amp; Privacy Policy, prepared 2026-07-13, updated 2026-07-16 for internal review only. Not published, not final, not legal advice.
+  </footer>
+
+</div>
+</body>
+</html>

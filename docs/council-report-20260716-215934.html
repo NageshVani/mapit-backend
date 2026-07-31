@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MapIt — Council Verdict: Incorporation Decision</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#EDEAE3; --paper-raised:#FBFAF7; --ink:#211D18; --ink-soft:#544A3D;
+    --muted:#8C7F6C; --rule:#D9D1C1; --accent:#C7430F; --accent-soft:#F1E0D2;
+    --good:#3C6E52; --good-soft:#DEEBE2; --caution:#916312; --caution-soft:#F0E3C4;
+    --risk:#8B3A3A; --risk-soft:#F0DAD8;
+    --serif: ui-serif, "Iowan Old Style", Georgia, serif;
+    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#18160F; --paper-raised:#221F17; --ink:#EBE4D6; --ink-soft:#C6BAA3;
+      --muted:#8F8270; --rule:#3C3527; --accent:#FF7A42; --accent-soft:#3E2415;
+      --good:#6FBE95; --good-soft:#1D3227; --caution:#E0A93C; --caution-soft:#39300F;
+      --risk:#E2807A; --risk-soft:#3A211F; }
+  }
+  :root[data-theme="dark"]{ --paper:#18160F; --paper-raised:#221F17; --ink:#EBE4D6; --ink-soft:#C6BAA3;
+    --muted:#8F8270; --rule:#3C3527; --accent:#FF7A42; --accent-soft:#3E2415;
+    --good:#6FBE95; --good-soft:#1D3227; --caution:#E0A93C; --caution-soft:#39300F;
+    --risk:#E2807A; --risk-soft:#3A211F; }
+  :root[data-theme="light"]{ --paper:#EDEAE3; --paper-raised:#FBFAF7; --ink:#211D18; --ink-soft:#544A3D;
+    --muted:#8C7F6C; --rule:#D9D1C1; --accent:#C7430F; --accent-soft:#F1E0D2;
+    --good:#3C6E52; --good-soft:#DEEBE2; --caution:#916312; --caution-soft:#F0E3C4;
+    --risk:#8B3A3A; --risk-soft:#F0DAD8; }
+
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.62; -webkit-font-smoothing:antialiased;}
+  a{color:var(--accent);}
+  .page{max-width:840px; margin:0 auto; padding:56px 24px 96px;}
+
+  .masthead{display:flex; justify-content:space-between; align-items:baseline; gap:16px; border-bottom:2px solid var(--ink); padding-bottom:18px; margin-bottom:8px; flex-wrap:wrap;}
+  .wordmark{font-family:var(--serif); font-weight:600; font-size:1.3rem;}
+  .wordmark span{color:var(--accent);}
+  .masthead-meta{font-family:var(--mono); font-size:0.72rem; color:var(--muted); text-align:right;}
+
+  h1.doc-title{font-family:var(--serif); font-weight:600; font-size:2.3rem; line-height:1.16; margin:28px 0 10px; text-wrap:balance;}
+  p.doc-sub{font-size:1.02rem; color:var(--ink-soft); max-width:60ch; margin:0 0 36px;}
+
+  .question-box{background:var(--paper-raised); border:1px solid var(--rule); border-left:4px solid var(--accent); border-radius:4px; padding:20px 24px; margin:0 0 40px; font-size:0.94rem;}
+  .question-box p{margin:0 0 10px;}
+  .question-box p:last-child{margin-bottom:0;}
+
+  section{margin:0 0 44px;}
+  .eyebrow{font-family:var(--mono); text-transform:uppercase; letter-spacing:0.13em; font-size:0.7rem; color:var(--accent); margin:0 0 8px;}
+  h2{font-family:var(--serif); font-weight:600; font-size:1.4rem; margin:0 0 14px; text-wrap:balance;}
+  p{max-width:70ch;}
+
+  .verdict{background:var(--good-soft); border:1px solid var(--good); border-radius:8px; padding:26px 28px; margin-bottom:44px;}
+  .verdict .eyebrow{color:var(--good);}
+  .verdict p{margin:0 0 12px; color:var(--ink);}
+  .verdict p:last-child{margin-bottom:0;}
+
+  .action-box{background:var(--accent-soft); border:1px solid var(--accent); border-radius:8px; padding:22px 24px; margin-bottom:44px;}
+  .action-box .eyebrow{color:var(--accent);}
+  .action-box p{margin:0; color:var(--ink); font-size:1.02rem;}
+
+  /* spectrum grid */
+  .spectrum{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin:0 0 8px;}
+  .adv-card{background:var(--paper-raised); border:1px solid var(--rule); border-radius:6px; padding:14px 16px;}
+  .adv-card .name{font-weight:600; font-size:0.9rem; margin-bottom:6px;}
+  .adv-chip{display:inline-flex; align-items:center; gap:6px; padding:2px 10px 3px; border-radius:99px; font-family:var(--mono); font-size:0.68rem; font-weight:600;}
+  .adv-chip::before{content:"●"; font-size:0.55rem;}
+  .adv-chip.fix-first{background:var(--good-soft); color:var(--good);}
+  .adv-chip.wait{background:var(--caution-soft); color:var(--caution);}
+  .adv-chip.now{background:var(--risk-soft); color:var(--risk);}
+  .adv-card .note{color:var(--ink-soft); font-size:0.82rem; margin-top:6px;}
+
+  ul.plain{padding-left:20px; margin:0 0 12px;}
+  ul.plain li{margin-bottom:8px;}
+
+  details{background:var(--paper-raised); border:1px solid var(--rule); border-radius:6px; margin-bottom:10px; padding:0;}
+  details summary{cursor:pointer; padding:14px 18px; font-weight:600; font-size:0.94rem; list-style:none; display:flex; align-items:center; gap:10px;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:"▸"; color:var(--accent); font-size:0.8rem; transition:transform 0.15s;}
+  details[open] summary::before{transform:rotate(90deg);}
+  details .body{padding:0 18px 18px; color:var(--ink-soft); font-size:0.92rem;}
+  details .body p{margin:0 0 10px;}
+
+  footer.doc-footer{border-top:1px solid var(--rule); padding-top:22px; margin-top:20px; color:var(--muted); font-size:0.8rem;}
+  footer.doc-footer p{margin:0 0 6px; max-width:none;}
+
+  @media (max-width:560px){ h1.doc-title{font-size:1.8rem;} .masthead{flex-direction:column; align-items:flex-start; gap:6px;} .masthead-meta{text-align:left;} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="wordmark">Map<span>It</span> Council</div>
+    <div class="masthead-meta">LLM Council session · 2026-07-16<br/>5 advisors · peer-reviewed</div>
+  </div>
+
+  <h1 class="doc-title">Should MapIt incorporate before launch — or is the sole-proprietorship draft ToS itself the problem?</h1>
+  <p class="doc-sub">Council verdict on the incorporation question, read against the drafted Terms of Service / Privacy Policy / Grievance Redressal Policy.</p>
+
+  <div class="question-box">
+    <p><b>The question put to the council:</b> given the drafted ToS/Privacy Policy — OLX/Quikr-style "neutral platform" language, a ₹5,000 liability cap, broad indemnification, a Grievance Officer named as Arun BN personally (personal Gmail + phone), and a legal-entity-name field still reading "[MapIt legal entity name]" — should MapIt incorporate (LLP/Pvt Ltd) before or shortly after public MVP launch, or stay an unincorporated sole proprietorship as the existing internal brief already concluded?</p>
+    <p>Prior context: an internal brief already recommended staying unincorporated until one of five triggers fires (handling money/escrow, giving Nagesh a documented stake, raising outside money, formally hiring, or scaling past people they personally know).</p>
+  </div>
+
+  <div class="verdict">
+    <p class="eyebrow">The Verdict</p>
+    <h2>The incorporation question, as asked, is a red herring — the draft document itself is what's broken</h2>
+    <p>Four of five advisors, and every one of five peer reviews, converged on the same point: this isn't actually an "incorporate vs. stay unincorporated" decision. It's a contract-law defect. A ToS that says "MapIt" caps liability at ₹5,000 and indemnifies itself is a legal nullity when there is no "MapIt" — only Arun BN, a natural person. You cannot indemnify yourself against your own negligence via a document nobody negotiated with you. Filling in the entity-name placeholder as "Arun BN, sole proprietor" doesn't fix this — it just makes explicit that every clause "protecting the platform" is Arun trying to protect Arun, which Indian courts won't honor.</p>
+    <p>The council's recommendation: <b>do not incorporate this week</b> — the prior brief's five triggers are still valid and none have fired, and the Expansionist's case for incorporating now for future optionality (fundraising, hiring, escrow) was flagged by every single peer review as answering a hypothetical question nobody asked, while ignoring the live document on the table. But <b>do not publish the current draft ToS as-is either.</b> The self-protective legal language (liability cap, indemnification, "neutral platform" framing) and Arun's personal contact details as Grievance Officer are two separate problems that both need fixing before anything goes live — independent of, and faster than, the incorporation decision.</p>
+  </div>
+
+  <section>
+    <p class="eyebrow">Where the advisors landed</p>
+    <h2>The spread</h2>
+    <div class="spectrum">
+      <div class="adv-card">
+        <div class="name">The Contrarian</div>
+        <span class="adv-chip fix-first">fix the document</span>
+        <p class="note">ToS publication is itself an unflagged 6th trigger; entity-name placeholder is the actual issue.</p>
+      </div>
+      <div class="adv-card">
+        <div class="name">First Principles</div>
+        <span class="adv-chip fix-first">fix the document</span>
+        <p class="note">"Incorporate or not" is the wrong question — incorporate (or de-fang the language) only for this specific document's coherence.</p>
+      </div>
+      <div class="adv-card">
+        <div class="name">The Expansionist</div>
+        <span class="adv-chip now">incorporate now</span>
+        <p class="note">Only dissenting voice — argues for Pvt Ltd now on future-optionality grounds (fundraising, hiring, escrow).</p>
+      </div>
+      <div class="adv-card">
+        <div class="name">The Outsider</div>
+        <span class="adv-chip fix-first">fix the document</span>
+        <p class="note">Personal Gmail/phone on a legal document reads as an alarming, avoidable exposure — don't publish it that way.</p>
+      </div>
+      <div class="adv-card">
+        <div class="name">The Executor</div>
+        <span class="adv-chip wait">wait, fix cheaply</span>
+        <p class="note">Skip incorporation (3–6 week, real-cost distraction); the document fix is a same-day, free edit. Prior brief's triggers stand.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Consensus vs. clash</p>
+    <h2>Where the council agrees, and where it doesn't</h2>
+    <p><b>Agreement (high confidence):</b> Four of five advisors, independently, converged on the same structural insight without being prompted toward it — that the draft ToS borrows OLX/Quikr's liability-shield language, but that language only works when a real corporate entity stands behind it. Right now, none does. Every peer-review pass, run from a different angle, also independently picked the Contrarian's response as the strongest for naming this mechanism precisely (self-indemnification via an unnegotiated document is legally hollow, not just risky). That's about as strong a signal as a council produces.</p>
+    <p><b>Clash:</b> The Expansionist dissents, arguing MapIt should incorporate now — not to fix the document, but because escrow, fundraising, and hiring are foreseeable next moves and cap tables can't be backdated once an investor's term sheet is live. Every peer review flagged this as the weakest response, on the grounds that it answers a different, hypothetical question and ignores the concrete artifact in front of the council. The Expansionist's underlying point isn't wrong as a business observation — it's just not an answer to whether to incorporate <i>this week</i>, for <i>this document</i>.</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">What only emerged in peer review</p>
+    <h2>Blind spots the council caught</h2>
+    <ul class="plain">
+      <li><b>The Grievance Officer role may carry statutory obligations independent of entity type.</b> Under India's IT Rules, 2021 (and potentially Consumer Protection E-Commerce Rules), a named Grievance Officer may have disclosure and response-time obligations that a sole proprietor can technically satisfy — but two separate reviewers flagged that nobody checked whether "just remove the phone number" actually satisfies the underlying rule, or whether the family-and-friends beta is even in scope for these rules yet. Worth a quick, cheap confirmation from Arun (or a lawyer) rather than assuming.</li>
+      <li><b>A role-based Grievance Officer identity was never proposed.</b> Two reviewers independently suggested the same near-zero-cost fix nobody in Round 1 raised: don't name Arun personally at all. Use a role-based email/number ("MapIt Support") instead of "Arun BN, personal Gmail, personal phone." This decouples the personal-exposure problem from the incorporation question entirely, and can be done today regardless of what happens with entity structure.</li>
+      <li><b>The fastest fix wasn't named until the peer-review round.</b> One reviewer pointed out that the actual same-day action is simpler than anything proposed in Round 1: just delete the liability cap, indemnification clause, and personal Grievance Officer contact from the draft before publishing, and ship a thinner, honest ToS. Cheaper than the Executor's insurance quote, cheaper than First Principles' "form an LLP over a weekend."</li>
+      <li><b>Nobody priced the upside of transparency.</b> One reviewer noted an angle no one raised: in a trust-scarce category (Indian classifieds, plagued by OLX/Quikr fraud), openly disclosing "Arun BN, sole proprietor, personally accountable" could be framed as a trust signal rather than pure liability exposure — radical transparency as a feature, not just as a risk to manage.</li>
+    </ul>
+  </section>
+
+  <div class="action-box">
+    <p class="eyebrow">The one thing to do first</p>
+    <p>Before publishing the ToS/Privacy Policy, do a same-day edit: replace Arun's personal Gmail/phone in the Grievance Officer fields with a role-based contact (a "MapIt Support" email works), and fill the "[MapIt legal entity name]" placeholder honestly as "Arun BN, proprietor" rather than leaving it blank or implying a company that doesn't exist. Leave the incorporation decision exactly where the prior brief left it — revisit at one of the five named triggers, not on a launch-date deadline.</p>
+  </div>
+
+  <section>
+    <p class="eyebrow">Full record</p>
+    <h2>Advisor responses &amp; peer reviews</h2>
+
+    <details>
+      <summary>The Contrarian — full response</summary>
+      <div class="body">
+        <p>Incorporation isn't the real ask here — it's a distraction from the fact that the drafted paperwork is already lying about the entity that supposedly signs it. You cannot publish a ToS that says "MapIt" limits liability to ₹5,000 and indemnifies itself when there is no "MapIt" — there's just Arun, a natural person, personally. A liability cap and indemnification clause are contracts; contracts bind the parties named in them. If the entity field says "[MapIt legal entity name]" and never gets filled in, or gets filled in as "Arun BN, sole proprietor," then every clause protecting "the platform" is actually just Arun trying to contract around his own personal liability for his own torts — which Indian courts will pierce instantly, because you cannot indemnify yourself against your own negligence via a EULA nobody negotiated.</p>
+        <p>The Grievance Officer field is the tell: Arun's personal Gmail and personal phone number, published on a live consumer-facing document, is not a policy — it's a target. The moment a real-estate dispute or fraud complaint lands, that's not "MapIt received a complaint," that's "Arun BN personally received a complaint," and every downstream email, call, and legal notice has his name and number on it, forever, indexed by whoever wants to search it.</p>
+        <p>The five-trigger brief is being quietly overridden here without anyone flagging it: this ToS publication IS a sixth trigger. You're about to hold yourself out publicly, in writing, as a platform with liability terms — that's a materially different posture than "friends testing an app," and the brief never considered it. Don't answer "incorporate or not" — answer "why is the entity field still blank on a document you're about to publish."</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>The First Principles Thinker — full response</summary>
+      <div class="body">
+        <p>Stop asking "incorporate or not" — that's a false binary that's making everyone anxious about the wrong variable. The real question is: what legal wrapper does the Grievance Officer clause and liability cap need to not be a joke?</p>
+        <p>Here's the thing nobody's saying out loud: the draft ToS already assumes corporate distance it doesn't have. "Neutral platform, not a party to transactions," a ₹5,000 liability cap, broad indemnification — that language is borrowed from OLX/Quikr, entities with actual corporate personhood standing between the company and the person who gets sued. Bolt that same language onto "Arun BN, personal email, personal phone," and you haven't created a liability shield — you've created a document that argues, in writing, that Arun personally isn't liable, signed by Arun personally. If a real estate dispute or fraud case ever tests this, that mismatch isn't a technicality, it's the whole case.</p>
+        <p>So strip the assumptions: the incorporation brief's five triggers (escrow, equity, investment, hiring, scale) are answering "when do we need a company for business reasons." That's a different question from "when do we need a company for this specific document to not be self-contradicting." The ToS is the trigger. You don't incorporate because you're launching an MVP — plenty of MVPs launch unincorporated with no ToS at all. You incorporate because you're about to publish a document that only makes legal sense if you're incorporated.</p>
+        <p>Cheapest fix, and it dissolves the whole dilemma: either (a) strip the OLX-style liability-shield language until incorporation actually happens and ship a thinner, honest ToS, or (b) form the lightest possible entity (LLP, ~few thousand rupees and a weekend) before publishing this specific draft. Don't incorporate for the business. Incorporate for the document you're about to publish.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>The Expansionist — full response</summary>
+      <div class="body">
+        <p>Wait for the escrow trigger and you're leaving money on the table right now. Here's what everyone's missing: the incorporation decision isn't a defensive question about liability caps — it's the gating item for every growth path that makes MapIt worth building at all.</p>
+        <p>Look at the five triggers in the brief: money/escrow, Nagesh's equity, outside investment, hiring, scale past your network. Those aren't independent, sequential events — they're the same event wearing five hats. Both the escrow rail and a pre-seed raise require a cap table and bank account in a legal entity's name on day one. You cannot backdate an ESOP pool or a clean cap table into a sole proprietorship after an investor's term sheet is sitting on the table.</p>
+        <p>The upside case: location-verified listings is a genuinely defensible wedge against OLX/Quikr's fraud-riddled listings. If this works, it's a category play across Indian tier-1 cities. That story is worth nothing if the first serious buyer, landlord dispute, or angel investor discovers the "company" is one guy's Gmail address.</p>
+        <p>Incorporate a Pvt Ltd now — cheap relative to the optionality it buys, and it signals seriousness to every future counterparty. Waiting for the trigger event means you scramble to incorporate while the opportunity is live, instead of being ready to seize it same-day.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>The Outsider — full response</summary>
+      <div class="body">
+        <p>I have zero idea who Arun BN is, what a Grievance Officer is supposed to be, or what RERA stands for — and that's exactly why this stands out to me: nobody in this draft has a company shield, but someone's personal Gmail and personal phone number are printed on a legal document as the point of contact for complaints. That's the detail an insider stops seeing after the tenth revision.</p>
+        <p>The liability cap of ₹5,000 and the "we're not a party to the transaction" language only protects an entity. Right now there is no entity — "[MapIt legal entity name]" is a placeholder, meaning the document is legally addressed to nobody. If a listing enables fraud or a real estate dispute lands in court, a judge doesn't see "MapIt, a neutral platform" — they see Arun BN, a person, whose name and phone number are on the very document that was supposed to protect him.</p>
+        <p>The "family and friends beta" framing feels like the actual risk-reducer here, not the incorporation question. But "publishing a ToS naming a real person as legally accountable contact" should have been trigger number six, and it's happening now, before any of the other five.</p>
+        <p>My outsider take: don't incorporate for cost reasons yet, but don't publish this ToS with Arun's personal identity on it either — that's the one irreversible, cheap-to-avoid mistake in this whole plan.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>The Executor — full response</summary>
+      <div class="body">
+        <p>Skip incorporation right now. Here's the Monday-morning test: what does incorporating actually require this week? Reserve a name, draft MOA/AOA or LLP agreement, get DSC/DIN, file with MCA, open a new bank account, engage a CA, redo the ToS entity name, redo the Grievance Officer designation. That's 3-6 weeks of paperwork and recurring cost, for two people testing product-market fit with people they know personally.</p>
+        <p>The actual blocking work today is smaller and free: fix the placeholder "[MapIt legal entity name]" — it can just say "Arun BN, proprietor" for now, that's a valid, honest legal identity, not a placeholder. Fix the Grievance Officer listing to not include a personal phone number if that bothers Arun — it can be an email-only channel, still compliant. Neither of those needs a company.</p>
+        <p>The ₹5,000 liability cap and indemnification clause are irrelevant to the incorporation question — a cap that low is decorative in front of an Indian consumer court regardless of entity type, and incorporation doesn't fix that, better drafting does.</p>
+        <p>The prior brief already did the hard thinking and gave five clear triggers. None have fired. Don't relitigate a decision you already made just because launch is making everyone nervous. The one thing I'd actually do Monday: get an insurance quote (professional indemnity / cyber liability) — cheaper than incorporation, and covers the actual tail risk better than an LLP wrapper at this stage.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Peer review highlights (5 passes, anonymized A–E)</summary>
+      <div class="body">
+        <p><b>Every single one of the five peer reviews independently picked the Contrarian's response (B) as the strongest</b> — for naming the precise legal mechanism (a self-indemnification clause signed by a natural person is legally void on its face) rather than just asserting risk, and for reframing the actual question instead of answering the false binary as given.</p>
+        <p><b>Every peer review flagged the Expansionist's response (D) as having the biggest blind spot</b> — arguing for incorporating now on pure future-optionality grounds while ignoring the concrete artifact on the table (the draft ToS itself) and overriding the prior brief's reasoning without engaging it.</p>
+        <p><b>Collectively missed by all 5 advisors, caught only in review:</b> (1) the Grievance Officer role may carry statutory obligations under IT Rules/Consumer Protection rules independent of entity type — unconfirmed whether "remove the phone number" satisfies them; (2) a role-based, non-personal Grievance Officer contact was never proposed in Round 1; (3) the fastest actual fix — deleting the liability-cap/indemnification/personal-contact language and shipping a thinner honest ToS — wasn't named until peer review; (4) nobody priced the upside of disclosing the sole-proprietorship status transparently as a trust signal in a fraud-prone category.</p>
+      </div>
+    </details>
+  </section>
+
+  <footer class="doc-footer">
+    <p>LLM Council session — 5 independent advisors (Contrarian, First Principles, Expansionist, Outsider, Executor), each peer-reviewed anonymously, synthesized above. Not legal advice — confirm Grievance Officer statutory obligations and entity-naming approach with a Karnataka-based advocate/CA before publishing.</p>
+    <p>MapIt — council report, 2026-07-16. Full transcript: council-transcript-20260716-215934.md</p>
+  </footer>
+
+</div>
+</body>
+</html>

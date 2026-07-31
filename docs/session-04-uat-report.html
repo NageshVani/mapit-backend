@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 04 UAT Report</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;}
+  a{color:#60a5fa;text-decoration:none;}
+  .shell{display:flex;min-height:100vh;}
+  nav{width:220px;background:#1a1d2e;border-right:1px solid #2d3148;padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  nav .logo{padding:0 20px 20px;font-size:18px;font-weight:800;color:#f97316;letter-spacing:-.5px;}
+  nav .logo span{color:#e2e8f0;font-weight:400;}
+  nav h3{padding:10px 20px 4px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4b5563;}
+  nav a{display:block;padding:7px 20px;font-size:12.5px;color:#9ca3af;border-left:3px solid transparent;transition:all .15s;}
+  nav a:hover{color:#e2e8f0;background:#1f2235;border-left-color:#f97316;}
+  main{flex:1;padding:40px 48px;max-width:1100px;}
+  .rpt-header{margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid #2d3148;}
+  .rpt-header h1{font-size:26px;font-weight:800;margin-bottom:6px;}
+  .rpt-header .sub{font-size:13px;color:#9ca3af;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;}
+  .badge-pass{background:#14532d;color:#4ade80;}
+  .badge-fail{background:#7f1d1d;color:#f87171;}
+  .badge-warn{background:#78350f;color:#fbbf24;}
+  .badge-skip{background:#2d2d3d;color:#9ca3af;}
+  .badge-fixed{background:#1e3a5f;color:#60a5fa;margin-left:4px;}
+  .badge-new{background:#1e3a5f;color:#93c5fd;margin-left:4px;}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px;}
+  .scard{background:#1a1d2e;border:1px solid #2d3148;border-radius:10px;padding:18px 20px;text-align:center;}
+  .scard .num{font-size:32px;font-weight:800;margin-bottom:4px;}
+  .scard .lbl{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#9ca3af;}
+  .num-pass{color:#4ade80;}
+  .num-fail{color:#f87171;}
+  .num-warn{color:#fbbf24;}
+  .num-skip{color:#64748b;}
+  .verdict{background:#14532d;border:1px solid #166534;border-radius:10px;padding:16px 22px;margin-bottom:36px;display:flex;align-items:center;gap:14px;}
+  .verdict-icon{font-size:28px;}
+  .verdict-text{font-size:15px;font-weight:700;color:#4ade80;}
+  .verdict-sub{font-size:12px;color:#86efac;margin-top:2px;}
+  section{margin-bottom:40px;}
+  section h2{font-size:16px;font-weight:700;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #2d3148;color:#f97316;}
+  .test-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .test-table th{background:#1a1d2e;padding:9px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #2d3148;}
+  .test-table td{padding:9px 12px;border-bottom:1px solid #1f2235;vertical-align:top;}
+  .test-table tr:hover td{background:#1a1d2e;}
+  .test-id{font-weight:700;color:#9ca3af;white-space:nowrap;}
+  .test-area{color:#c4b5fd;font-size:11px;}
+  code{background:#1f2235;border:1px solid #2d3148;border-radius:4px;padding:1px 5px;font-family:'Courier New',monospace;font-size:11px;color:#a5f3fc;}
+  .evidence{background:#0f1117;border:1px solid #2d3148;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:10.5px;color:#a5f3fc;max-height:90px;overflow-y:auto;margin-top:4px;white-space:pre-wrap;}
+  .bug-card{background:#1a1d2e;border:1px solid #374151;border-left:4px solid #60a5fa;border-radius:8px;padding:16px 18px;margin-bottom:14px;}
+  .bug-card h3{font-size:13px;font-weight:700;margin-bottom:6px;color:#e2e8f0;}
+  .bug-card p{font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:6px;}
+  .bug-card .diff{background:#0f1117;border:1px solid #2d3148;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:10.5px;margin-top:8px;}
+  .diff-rem{color:#f87171;}
+  .diff-add{color:#4ade80;}
+  .obs-card{background:#1a1d2e;border:1px solid #374151;border-left:4px solid #fbbf24;border-radius:8px;padding:14px 18px;margin-bottom:12px;}
+  .obs-card h3{font-size:12.5px;font-weight:700;color:#fbbf24;margin-bottom:5px;}
+  .obs-card p{font-size:12px;color:#9ca3af;line-height:1.6;}
+  .file-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #1f2235;font-size:12px;}
+  .file-path{color:#a5f3fc;font-family:'Courier New',monospace;flex-shrink:0;}
+  .file-desc{color:#9ca3af;}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid #2d3148;font-size:11px;color:#4b5563;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="logo">Map<span>It</span> UAT</div>
+  <h3>Session 04</h3>
+  <a href="#summary">Summary</a>
+  <a href="#verdict">Verdict</a>
+  <h3>Test Blocks</h3>
+  <a href="#block-a">A · Meta &amp; Performance</a>
+  <a href="#block-b">B · Map Features</a>
+  <a href="#block-c">C · Search Redesign</a>
+  <a href="#block-d">D · CORS &amp; Security</a>
+  <a href="#block-e">E · UX Fixes</a>
+  <a href="#block-f">F · Arun UAT Fixes</a>
+  <a href="#block-g">G · API Regression</a>
+  <h3>Analysis</h3>
+  <a href="#bugs">Changes Applied</a>
+  <a href="#observations">Observations</a>
+  <a href="#files">Files Changed</a>
+</nav>
+
+<main>
+
+<div class="rpt-header">
+  <h1>🧪 Session 04 — Automated UAT Report</h1>
+  <div class="sub">Keyword Search · Explore Area Mode · Satellite Simplified · CORS Hardening · Arun UAT Fixes &nbsp;·&nbsp; Branch: <code>uat</code> &nbsp;·&nbsp; Commits: <code>e1d4e7e → dc8199a → 093d49f → efabd47</code> &nbsp;·&nbsp; Updated: 2026-07-02</div>
+</div>
+
+<div class="summary" id="summary">
+  <div class="scard"><div class="num num-pass">44</div><div class="lbl">Passed</div></div>
+  <div class="scard"><div class="num num-fail">0</div><div class="lbl">Failed</div></div>
+  <div class="scard"><div class="num num-warn">1</div><div class="lbl">Warnings</div></div>
+  <div class="scard"><div class="num num-skip">3</div><div class="lbl">Replaced</div></div>
+</div>
+
+<div class="verdict" id="verdict">
+  <div class="verdict-icon">✅</div>
+  <div>
+    <div class="verdict-text">PASS — 44/45 active tests passed · 1 warning (og-image.png pending) · 3 satellite tests superseded</div>
+    <div class="verdict-sub">Search redesign verified: keyword header + Explore Area mode (17 new checks all PASS). Satellite toggle simplified to hardcoded Voyager. 2 security bugs fixed. 3 Arun UAT regressions confirmed fixed. Two-file sync clean.</div>
+  </div>
+</div>
+
+<!-- ── Block A ── -->
+<section id="block-a">
+  <h2>Block A — Meta Tags &amp; Performance Hints (3 tests)</h2>
+  <table class="test-table">
+    <thead><tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="test-id">T-001</td>
+        <td class="test-area">HTML / Meta</td>
+        <td>OG and Twitter meta tags present (og:title, og:description, og:image, og:url, twitter:card, twitter:title, twitter:image)</td>
+        <td>grep <code>MapIt_MVP_v1.html</code></td>
+        <td>All 7 tags found</td>
+        <td>All 7 found on lines 10–18<div class="evidence">&lt;meta property="og:title" content="MapIt — Buy &amp; Sell Near You"&gt;
+&lt;meta property="og:image" content="https://www.mapit.co.in/og-image.png"&gt;
+&lt;meta name="twitter:card" content="summary_large_image"&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-002</td>
+        <td class="test-area">HTML / Perf</td>
+        <td>Leaflet CDN preload hint present (<code>rel="preload" as="script"</code>)</td>
+        <td>grep <code>MapIt_MVP_v1.html</code></td>
+        <td>preload link found</td>
+        <td>Found on line 19<div class="evidence">&lt;link rel="preload" href="https://cdnjs.cloudflare.com/.../leaflet.min.js" as="script"&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-003</td>
+        <td class="test-area">HTML / Perf</td>
+        <td>Google Fonts loaded non-blocking (<code>media="print" onload="this.media='all'"</code>)</td>
+        <td>grep <code>MapIt_MVP_v1.html</code></td>
+        <td>Non-blocking pattern found</td>
+        <td>Found on line 23<div class="evidence">&lt;link href="https://fonts.googleapis.com/..." rel="stylesheet" media="print" onload="this.media='all'"&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Block B ── -->
+<section id="block-b">
+  <h2>Block B — Map Features (5 tests · 3 replaced)</h2>
+  <table class="test-table">
+    <thead><tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="test-id">T-004</td>
+        <td class="test-area">Map / Satellite</td>
+        <td>Satellite toggle button <code>#satBtn</code> present in HTML with <code>onclick="toggleSatellite()"</code></td>
+        <td>grep HTML</td>
+        <td>satBtn found</td>
+        <td>Satellite toggle removed in commit <code>093d49f</code> as part of the search simplification. CartoDB Voyager is now the hardcoded default tile layer (line 1637). No satellite switching UI exists in the current build.</td>
+        <td><span class="badge badge-skip">REPLACED</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-005</td>
+        <td class="test-area">Map / Tiles</td>
+        <td><code>_voyagerLayer</code> variable with CartoDB Voyager tile URL</td>
+        <td>grep HTML</td>
+        <td>_voyagerLayer found</td>
+        <td>Satellite switching vars (<code>_voyagerLayer</code>, <code>_satLayer</code>, <code>_satOn</code>) removed. CartoDB Voyager is still the tile provider, now inlined directly in map init: <code>L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/...')</code> on line 1637.</td>
+        <td><span class="badge badge-skip">REPLACED</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-006</td>
+        <td class="test-area">Map / Satellite</td>
+        <td>ESRI WorldImagery satellite tile URL in <code>toggleSatellite()</code></td>
+        <td>grep HTML</td>
+        <td>arcgisonline.com URL found</td>
+        <td>ESRI satellite layer removed along with toggle. Satellite feature superseded by the Explore Area pan-to-search mode which provides similar discovery value without needing a separate tile layer.</td>
+        <td><span class="badge badge-skip">REPLACED</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-007</td>
+        <td class="test-area">Map / Canvas</td>
+        <td>Canvas renderer passed to <code>L.map()</code> — reduces DOM nodes on low-end Android</td>
+        <td>grep HTML</td>
+        <td><code>renderer:L.canvas()</code> in map init</td>
+        <td>Found on line 1636<div class="evidence">map = L.map('map',{center:[loc.lat,loc.lng],zoom:14,zoomControl:false,renderer:L.canvas()})</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-008</td>
+        <td class="test-area">Map / Explore</td>
+        <td><code>_exploreMarker</code> and <code>_exploreMoveTO</code> declared as global map state vars (replaces old <code>_searchMarker</code>)</td>
+        <td>grep HTML</td>
+        <td><code>_exploreMarker</code> found in globals</td>
+        <td>Found on line 1628<div class="evidence">let _exploreMarker = null, _exploreMoveTO = null;</div></td>
+        <td><span class="badge badge-pass">PASS</span> <span class="badge badge-new">UPDATED</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Block C ── -->
+<section id="block-c">
+  <h2>Block C — Search Redesign: Keyword Header &amp; Explore Area Mode (17 tests)</h2>
+  <p style="font-size:12px;color:#9ca3af;margin-bottom:14px;">Replaces old Block C (Nominatim unified location search, T-009–T-018). The Nominatim forward-geocoding search was replaced with: (1) keyword search in the header bar that filters by word + current map viewport, and (2) Explore Area mode that uses map pan as the search origin. All 17 checks run against commit <code>efabd47</code>.</p>
+  <table class="test-table">
+    <thead><tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+    <tbody>
+
+      <!-- ── Keyword Search (7 tests) ── -->
+      <tr>
+        <td class="test-id">T-C01</td>
+        <td class="test-area">Search / HTML</td>
+        <td><code>#srchIn</code> now has placeholder "Search listings by keyword…" and 🔍 icon (was "Search a location…" + Nominatim)</td>
+        <td>grep HTML line 803</td>
+        <td>keyword placeholder found</td>
+        <td>Found on line 803<div class="evidence">&lt;input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C02</td>
+        <td class="test-area">Search / HTML</td>
+        <td><code>#srchClear</code> button calls <code>clearKeyword()</code> — not <code>clearSearchCenter()</code></td>
+        <td>grep HTML line 804</td>
+        <td><code>onclick="clearKeyword()"</code> found</td>
+        <td>Found on line 804<div class="evidence">&lt;button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search"&gt;×&lt;/button&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C03</td>
+        <td class="test-area">Search / State</td>
+        <td><code>ST.searchCenter</code> removed from global state; replaced by <code>ST.exploreMode:false</code></td>
+        <td>grep state object line 1127</td>
+        <td>No <code>searchCenter</code>; <code>exploreMode:false</code> present</td>
+        <td>Line 1127 — searchCenter absent, exploreMode present<div class="evidence">cat:'all', sub:null, rad:5, q:'', exploreMode:false,</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C04</td>
+        <td class="test-area">Search / Logic</td>
+        <td><code>filtered()</code> constrains keyword results to the current map viewport via <code>map.getBounds().contains([lat,lng])</code></td>
+        <td>Read filtered() body lines 1793–1810</td>
+        <td><code>getBounds().contains()</code> found inside ST.q branch</td>
+        <td>Found on lines 1801–1804 — viewport filter inside the <code>if(ST.q)</code> branch<div class="evidence">if(map &amp;&amp; map.getBounds){
+  const bounds = map.getBounds();
+  fl = fl.filter(l => bounds.contains([l.lat, l.lng]));
+}</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C05</td>
+        <td class="test-area">Search / Logic</td>
+        <td><code>clearKeyword()</code> resets <code>ST.q</code>, clears input value, hides srchClear button, calls <code>drawMarkers()</code> + <code>renderSidebar()</code></td>
+        <td>Read clearKeyword() body line 3141</td>
+        <td>All 4 side-effects present</td>
+        <td>Found on lines 3141–3149<div class="evidence">function clearKeyword(){
+  ST.q = '';
+  const inp = document.getElementById('srchIn');
+  if(inp) inp.value = '';
+  document.getElementById('srchClear').style.display = 'none';
+  drawMarkers();
+  renderSidebar();
+}</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C06</td>
+        <td class="test-area">Search / Logic</td>
+        <td><code>switchTab()</code> inlines keyword state reset (<code>ST.q=''</code> + clear input directly) — does NOT call <code>clearKeyword()</code> to avoid double render</td>
+        <td>grep switchTab() line 2651</td>
+        <td>Inline reset found; no clearKeyword() call in switchTab</td>
+        <td>Found on lines 2651–2652 — inline reset only; no clearKeyword call in switchTab<div class="evidence">ST.q = '';
+const si = document.getElementById('srchIn'); if(si) si.value = '';</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C07</td>
+        <td class="test-area">Search / UX</td>
+        <td><code>renderSidebar()</code> shows "🔍 N results for 'query'" header row when <code>ST.q</code> is set and matches found</td>
+        <td>grep renderSidebar lines 1976–1979</td>
+        <td>Results header template found</td>
+        <td>Found on line 1977<div class="evidence">el.innerHTML = `&lt;div class="nearby-hd"&gt;🔍 ${fl.length} result${fl.length!==1?'s':''} for "${ST.q}"&lt;/div&gt;`+fl.map(listingRow).join('');</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+
+      <!-- ── Explore Area Mode (10 tests) ── -->
+      <tr>
+        <td class="test-id">T-C08</td>
+        <td class="test-area">Explore / HTML</td>
+        <td><code>#searchModeBox</code> container with <code>#smPin</code> ("📍 My Locations") and <code>#smExplore</code> ("🗺 Explore Area") buttons present in HTML</td>
+        <td>grep HTML lines 839–843</td>
+        <td>All 3 elements found</td>
+        <td>Found on lines 839–843<div class="evidence">&lt;div class="search-mode-box" id="searchModeBox"&gt;
+  &lt;button class="smb on" id="smPin" onclick="setSearchMode('pin')"&gt;📍 My Locations&lt;/button&gt;
+  &lt;button class="smb explore" id="smExplore" onclick="setSearchMode('explore')"&gt;🗺 Explore Area&lt;/button&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C09</td>
+        <td class="test-area">Explore / State</td>
+        <td><code>ST.exploreMode</code> initialized to <code>false</code> (My Locations is default on load)</td>
+        <td>grep state line 1127</td>
+        <td><code>exploreMode:false</code> in ST init</td>
+        <td>Confirmed on line 1127 — default My Locations behaviour preserved for all existing users<div class="evidence">cat:'all', sub:null, rad:5, q:'', exploreMode:false,</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C10</td>
+        <td class="test-area">Explore / Logic</td>
+        <td><code>activeLoc()</code> returns <code>map.getCenter()</code> when <code>ST.exploreMode &amp;&amp; map</code>; otherwise falls back to <code>ST.activePin</code> / <code>DEFAULT_LOC</code></td>
+        <td>Read activeLoc() body lines 1171–1179</td>
+        <td>exploreMode branch returns getCenter()</td>
+        <td>Found on lines 1171–1178<div class="evidence">function activeLoc(){
+  if(ST.exploreMode &amp;&amp; map){
+    const c = map.getCenter();
+    return { lat: c.lat, lng: c.lng };
+  }
+  return ST.activePin
+    ? { lat: ST.activePin.lat, lng: ST.activePin.lng }
+    : { lat: DEFAULT_LOC.lat, lng: DEFAULT_LOC.lng };
+}</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C11</td>
+        <td class="test-area">Explore / State</td>
+        <td><code>_exploreMarker</code> (the blue dot) and <code>_exploreMoveTO</code> (debounce timer) declared as global vars</td>
+        <td>grep line 1628</td>
+        <td>Both vars found as globals initialised to null</td>
+        <td>Found on line 1628<div class="evidence">let _exploreMarker = null, _exploreMoveTO = null;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C12</td>
+        <td class="test-area">Explore / Logic</td>
+        <td><code>setSearchMode('explore')</code> sets <code>ST.exploreMode=true</code>, highlights <code>#smExplore</code>, places blue dot, wires <code>map.on('move')</code> + <code>map.on('moveend')</code></td>
+        <td>Read setSearchMode() lines 2593–2612</td>
+        <td>All 4 side-effects present in explore branch</td>
+        <td>Found on lines 2593–2612<div class="evidence">function setSearchMode(mode){
+  ST.exploreMode = (mode === 'explore');
+  document.getElementById('smPin').classList.toggle('on', !ST.exploreMode);
+  document.getElementById('smExplore').classList.toggle('on', ST.exploreMode);
+  ...
+  if(ST.exploreMode){
+    _placeExploreMarker();
+    map.on('move', _onExploreMove);
+    map.on('moveend', _onExploreMoveEnd);
+  } else {
+    ...
+    map.off('move', _onExploreMove);
+    map.off('moveend', _onExploreMoveEnd);
+  }</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C13</td>
+        <td class="test-area">Explore / Logic</td>
+        <td><code>_onExploreMove()</code> moves <code>_exploreMarker</code> to map centre and shifts <code>radCircle.setLatLng()</code> — no full circle recreate per frame</td>
+        <td>Read _onExploreMove() lines 2624–2629</td>
+        <td>setLatLng calls found (no radCircle.remove/recreate)</td>
+        <td>Found on lines 2624–2629<div class="evidence">function _onExploreMove(){
+  if(!_exploreMarker) return;
+  const c = map.getCenter();
+  _exploreMarker.setLatLng(c);
+  if(radCircle) radCircle.setLatLng(c);
+}</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C14</td>
+        <td class="test-area">Explore / Logic</td>
+        <td><code>_onExploreMoveEnd()</code> debounces <code>loadListings()</code> with 800ms <code>setTimeout</code> via <code>_exploreMoveTO</code></td>
+        <td>Read _onExploreMoveEnd() lines 2630–2633</td>
+        <td>clearTimeout + 800ms setTimeout found</td>
+        <td>Found on lines 2630–2633<div class="evidence">function _onExploreMoveEnd(){
+  clearTimeout(_exploreMoveTO);
+  _exploreMoveTO = setTimeout(loadListings, 800);
+}</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C15</td>
+        <td class="test-area">Explore / UX</td>
+        <td><code>circleColor</code> in <code>updateCircle()</code> is <code>'#3B82F6'</code> (blue) in explore mode, <code>'#F06030'</code> (orange) in My Locations mode</td>
+        <td>grep updateCircle line 1716</td>
+        <td>Ternary with #3B82F6 and #F06030 found</td>
+        <td>Found on line 1716<div class="evidence">const circleColor = ST.exploreMode ? '#3B82F6' : '#F06030';</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C16</td>
+        <td class="test-area">Explore / UX</td>
+        <td><code>_placeExploreMarker()</code> creates a <code>L.divIcon</code> blue dot (14px circle with white border + blue glow halo)</td>
+        <td>Read _placeExploreMarker() lines 2613–2623</td>
+        <td>divIcon with #3B82F6 inline style + box-shadow found</td>
+        <td>Found on lines 2618–2620<div class="evidence">html: `&lt;div style="width:14px;height:14px;border-radius:50%;
+  background:#3B82F6;border:2.5px solid #fff;
+  box-shadow:0 0 0 3px rgba(59,130,246,.35),0 2px 8px rgba(59,130,246,.5)"&gt;&lt;/div&gt;`</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-C17</td>
+        <td class="test-area">Explore / UX</td>
+        <td><code>switchTab()</code> toggles <code>.disabled</code> class on <code>#searchModeBox</code> for non-browse tabs; <code>#radMode</code> label switches "Search Radius" / "Proximity Radius" in <code>setSearchMode()</code></td>
+        <td>grep switchTab + setSearchMode</td>
+        <td>Both behaviours confirmed</td>
+        <td>smBox disabled toggle: line 2648; radMode text: line 2598<div class="evidence">if(smBox) smBox.classList.toggle('disabled', tab !== 'browse');
+if(radMode) radMode.textContent = ST.exploreMode ? 'Search Radius' : 'Proximity Radius';</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Block D ── -->
+<section id="block-d">
+  <h2>Block D — CORS &amp; Security Hardening (6 tests)</h2>
+  <table class="test-table">
+    <thead><tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="test-id">T-019</td>
+        <td class="test-area">CORS / Config</td>
+        <td>No hardcoded <code>localhost</code> or <code>127.0.0.1</code> in <code>allowedOrigins</code> — dev uses <code>APP_URL</code> env var only</td>
+        <td>Read <code>src/server.js</code></td>
+        <td>No localhost literal in allowedOrigins array</td>
+        <td>allowedOrigins has only 3 production/UAT entries + APP_URL spread<div class="evidence">const allowedOrigins = [
+  'https://mapit.co.in',
+  'https://www.mapit.co.in',
+  'https://uat.mapit.co.in',
+  ...(process.env.APP_URL ? [process.env.APP_URL] : []),
+];</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-020</td>
+        <td class="test-area">CORS / Config</td>
+        <td>Vercel preview URLs allowed via case-insensitive regex (<code>mapit-backend(-*)?.vercel.app</code>)</td>
+        <td>Read <code>src/server.js</code></td>
+        <td>Case-insensitive regex found</td>
+        <td>Found on line 60<div class="evidence">/^https:\/\/mapit-backend(-[a-zA-Z0-9-]+)?\.vercel\.app$/i.test(origin)</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-021</td>
+        <td class="test-area">CORS / Runtime</td>
+        <td>Bad origin request (<code>https://evil.com</code>) returns HTTP 403 (not 500)</td>
+        <td><code>curl -H "Origin: https://evil.com" http://localhost:3001/health</code></td>
+        <td>HTTP 403</td>
+        <td>HTTP 403 confirmed<div class="evidence">T-CORS-BAD-ORIGIN: 403
+Response body: {"error":"Not allowed by CORS"}</div></td>
+        <td><span class="badge badge-pass">PASS</span> <span class="badge badge-fixed">FIXED THIS SESSION</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-022</td>
+        <td class="test-area">CORS / Security</td>
+        <td>CORS error response body contains no stack trace — only <code>{"error":"..."}</code></td>
+        <td>curl + inspect response body</td>
+        <td>No <code>stack</code> key in response</td>
+        <td>Body is <code>{"error":"Not allowed by CORS"}</code> — no stack field<div class="evidence">CORS-ERROR-BODY: {"error":"Not allowed by CORS"}</div></td>
+        <td><span class="badge badge-pass">PASS</span> <span class="badge badge-fixed">FIXED THIS SESSION</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-023</td>
+        <td class="test-area">CORS / Runtime</td>
+        <td>Vercel preview deployment origin (<code>mapit-backend-git-uat-nagesh.vercel.app</code>) correctly allowed</td>
+        <td>curl with preview origin</td>
+        <td>HTTP 200</td>
+        <td>HTTP 200 confirmed<div class="evidence">T-CORS-PREVIEW: 200</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-024</td>
+        <td class="test-area">Security / ErrorHandler</td>
+        <td><code>errorHandler</code> includes <code>stack</code> in response only for 5xx errors in dev — never for 4xx</td>
+        <td>Read <code>src/middleware/errorHandler.js</code></td>
+        <td><code>statusCode &gt;= 500</code> gate found</td>
+        <td>Line 14 confirms gate<div class="evidence">...(process.env.NODE_ENV === 'development' &amp;&amp; statusCode >= 500 &amp;&amp; { stack: err.stack }),</div></td>
+        <td><span class="badge badge-pass">PASS</span> <span class="badge badge-fixed">FIXED THIS SESSION</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Block E ── -->
+<section id="block-e">
+  <h2>Block E — Photo Validation &amp; Map UX Fixes (8 tests)</h2>
+  <table class="test-table">
+    <thead><tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="test-id">T-025</td>
+        <td class="test-area">Photos / Frontend</td>
+        <td>Frontend <code>submitListing()</code> shows a toast and blocks submit if no photo selected</td>
+        <td>grep HTML for toast + photo check</td>
+        <td>"Please add at least 1 photo." toast found</td>
+        <td>Found on line 2380<div class="evidence">toast('Please add at least 1 photo.'); return;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-026</td>
+        <td class="test-area">Photos / Backend</td>
+        <td>Uploads route rejects empty file payload with a 400 error ("No photos uploaded")</td>
+        <td>grep <code>src/routes/uploads.js</code></td>
+        <td>Empty files check found</td>
+        <td>Found on lines 40–42<div class="evidence">if (!files || files.length === 0) {
+  return next(createError('No photos uploaded. Send files in the "photos" field.'));
+}</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-027</td>
+        <td class="test-area">Map / flyTo</td>
+        <td><code>selListing()</code> uses <code>map.flyTo()</code> not <code>panTo()</code> to fly the camera to the selected listing pin</td>
+        <td>grep HTML for flyTo in selListing</td>
+        <td><code>flyTo</code> found (no panTo)</td>
+        <td>Found on line 2080<div class="evidence">if(l) map.flyTo([l.lat,l.lng], ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14), {animate:true,duration:.6})</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-028</td>
+        <td class="test-area">Map / flyTo</td>
+        <td>My Ads / Saved tabs fly to zoom 16; Browse tab flies to <code>max(currentZoom, 14)</code> to preserve context</td>
+        <td>Read flyTo call</td>
+        <td>Ternary with 16 for mine/fav, max for browse</td>
+        <td>Confirmed on line 2080 — ternary exactly as specified<div class="evidence">ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14)</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-029</td>
+        <td class="test-area">UX / HomeLoc</td>
+        <td><code>step-homeloc</code> shows "Tap anywhere on the map to drop your pin" instruction above map</td>
+        <td>grep HTML for homeLocHint</td>
+        <td>homeLocHint div with tap instruction found</td>
+        <td>Found on line 649<div class="evidence">&lt;div id="homeLocHint" ...&gt;👆 Tap anywhere on the map to drop your pin&lt;/div&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-030</td>
+        <td class="test-area">UX / HomeLoc</td>
+        <td>After pin is placed, hint text changes to "✅ Pin placed — drag to adjust"</td>
+        <td>grep HTML for drag hint update</td>
+        <td>homeLocHint textContent set on pin drop</td>
+        <td>Found on line 1504<div class="evidence">document.getElementById('homeLocHint').textContent = '✅ Pin placed — drag to adjust';</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-031</td>
+        <td class="test-area">UX / HomeLoc</td>
+        <td><code>_resolveHomeLocAddr()</code> shared helper called for both map click and dragend events</td>
+        <td>grep HTML for _resolveHomeLocAddr</td>
+        <td>Called in ≥2 places</td>
+        <td>Found on lines 1501, 1507, 1513<div class="evidence">await _resolveHomeLocAddr(p.lat, p.lng);   // dragend
+await _resolveHomeLocAddr(lat, lng);        // click
+async function _resolveHomeLocAddr(lat, lng){ ... }</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-032</td>
+        <td class="test-area">UX / HomeLoc</td>
+        <td><code>#homeLocMap</code> has orange border to draw attention to the map during home location setup</td>
+        <td>grep HTML for homeLocMap style</td>
+        <td>orange border CSS found</td>
+        <td>Found on line 650<div class="evidence">&lt;div id="homeLocMap" style="height:200px;border-radius:10px;overflow:hidden;border:2px solid var(--orange);..."&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Block F ── -->
+<section id="block-f">
+  <h2>Block F — Arun Session 2 UAT Bug Fixes (3 tests)</h2>
+  <table class="test-table">
+    <thead><tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="test-id">T-033</td>
+        <td class="test-area">Auth / Modal (I3)</td>
+        <td><code>#authModal</code> has <code>hide</code> class in HTML — prevents sign-in page flash before JS runs</td>
+        <td>grep HTML for authModal opening tag</td>
+        <td><code>class="modal-overlay hide"</code> on authModal</td>
+        <td>Found on line 534<div class="evidence">&lt;div class="modal-overlay hide" id="authModal"&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-034</td>
+        <td class="test-area">Auth / Reset (C4)</td>
+        <td><code>sendPasswordReset()</code> sends <code>window.location.origin + '/'</code> (trailing slash satisfies Supabase <code>/**</code> glob)</td>
+        <td>grep HTML for sendPasswordReset</td>
+        <td><code>window.location.origin + '/'</code> found</td>
+        <td>Found on line 1364<div class="evidence">redirectTo: window.location.origin + '/'</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-035</td>
+        <td class="test-area">Auth / Pins (A9)</td>
+        <td><code>saveHomeLocation()</code> calls <code>POST /api/pins</code> so home pin appears as <code>ST.activePin</code> in header badge</td>
+        <td>grep HTML for saveHomeLocation + /api/pins</td>
+        <td><code>apiPost('/api/pins', ...)</code> in saveHomeLocation</td>
+        <td>Found on lines 1527 + 1540<div class="evidence">async function saveHomeLocation(){
+  ...
+  await apiPost('/api/pins', {
+    label: ST._pendingHomeAddr, lat: ..., lng: ..., is_default: true
+  });</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Block G ── -->
+<section id="block-g">
+  <h2>Block G — API Regression &amp; Sync Checks (6 tests)</h2>
+  <table class="test-table">
+    <thead><tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="test-id">T-036</td>
+        <td class="test-area">Sync / Two-file</td>
+        <td><code>MapIt_MVP_v1.html</code> and <code>public/index.html</code> are byte-identical (two-file rule)</td>
+        <td><code>diff MapIt_MVP_v1.html public/index.html</code></td>
+        <td>No diff output</td>
+        <td>diff produced zero output — files identical</td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-037</td>
+        <td class="test-area">HTML / Meta</td>
+        <td>Page <code>&lt;title&gt;</code> updated to "MapIt — Buy &amp; Sell Near You"</td>
+        <td>grep HTML for title tag</td>
+        <td>Updated title found</td>
+        <td>Found on line 6<div class="evidence">&lt;title&gt;MapIt — Buy &amp; Sell Near You&lt;/title&gt;</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-038</td>
+        <td class="test-area">API / Health</td>
+        <td><code>GET /health</code> with allowed origin returns HTTP 200 and JSON status body</td>
+        <td>curl <code>-H "Origin: https://mapit.co.in" http://localhost:3001/health</code></td>
+        <td>HTTP 200, JSON with <code>status:"ok"</code></td>
+        <td>200 confirmed; body: <code>{"status":"ok","app":"MapIt Backend","version":"1.0.0",...}</code></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-039</td>
+        <td class="test-area">API / Auth</td>
+        <td><code>GET /api/listings</code> without Authorization header returns 401</td>
+        <td>curl <code>http://localhost:3001/api/listings</code></td>
+        <td>HTTP 401</td>
+        <td>HTTP 401 confirmed<div class="evidence">LISTINGS-UNAUTH: 401</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-040</td>
+        <td class="test-area">API / Auth</td>
+        <td><code>GET /api/auth/me</code> with invalid JWT returns 401</td>
+        <td>curl with <code>Authorization: Bearer invalid_token</code></td>
+        <td>HTTP 401</td>
+        <td>HTTP 401 confirmed<div class="evidence">INVALID-TOKEN: 401</div></td>
+        <td><span class="badge badge-pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td class="test-id">T-041</td>
+        <td class="test-area">Assets / OG</td>
+        <td><code>public/og-image.png</code> exists (OG tags reference this URL for WhatsApp rich preview)</td>
+        <td><code>ls public/og-image.png</code></td>
+        <td>File exists at public/og-image.png</td>
+        <td><strong>File missing.</strong> OG tags already point to <code>https://www.mapit.co.in/og-image.png</code> but file not yet created. WhatsApp/Twitter will show no thumbnail. Known pending item.<div class="evidence">MISSING: og-image.png not found</div></td>
+        <td><span class="badge badge-warn">WARN</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Changes Applied ── -->
+<section id="bugs">
+  <h2>Changes Applied This Session (Search Redesign)</h2>
+
+  <div class="bug-card">
+    <h3>BUG-S4-01 — CORS rejection returned HTTP 500 instead of 403</h3>
+    <p><strong>Severity:</strong> Medium · <strong>File:</strong> <code>src/server.js</code> · <strong>Commit:</strong> <code>dc8199a</code></p>
+    <p>When a disallowed origin hit any API endpoint, the CORS callback called <code>cb(corsErr)</code> but <code>corsErr.statusCode</code> was not set — Express defaulted to 500. A 500 triggers monitoring alerts and reveals an unexpected server error to clients when the correct semantic is "forbidden by access policy".</p>
+    <div class="diff">
+<span class="diff-rem">- const corsErr = new Error('Not allowed by CORS'); cb(corsErr);</span>
+<span class="diff-add">+ const corsErr = new Error('Not allowed by CORS'); corsErr.statusCode = 403; cb(corsErr);</span>
+    </div>
+  </div>
+
+  <div class="bug-card">
+    <h3>BUG-S4-02 — Stack trace included in 4xx error responses in dev mode</h3>
+    <p><strong>Severity:</strong> Medium · <strong>File:</strong> <code>src/middleware/errorHandler.js</code> · <strong>Commit:</strong> <code>dc8199a</code></p>
+    <p>The <code>errorHandler</code> was including <code>stack: err.stack</code> in development for <em>all</em> errors, including 4xx responses (validation failures, auth rejections, CORS errors). These are user-visible responses; including file paths and stack frames leaks implementation detail.</p>
+    <div class="diff">
+<span class="diff-rem">- ...(process.env.NODE_ENV === 'development' &amp;&amp; { stack: err.stack }),</span>
+<span class="diff-add">+ ...(process.env.NODE_ENV === 'development' &amp;&amp; statusCode >= 500 &amp;&amp; { stack: err.stack }),</span>
+    </div>
+  </div>
+
+  <div class="bug-card">
+    <h3>CHANGE-S4-03 — Nominatim location search replaced with header keyword search + map viewport filter</h3>
+    <p><strong>Type:</strong> Feature redesign · <strong>File:</strong> <code>MapIt_MVP_v1.html</code> · <strong>Commit:</strong> <code>093d49f</code></p>
+    <p>Arun UAT observation: the Nominatim forward-geocoding search in the header bar was replaced with a keyword search that filters currently-loaded listings by title/details text AND constrains results to the current map viewport. This is faster (no API call), works offline, and respects the user's current map zoom and pan context. ~90 lines of Nominatim code removed. <code>ST.searchCenter</code>, <code>_searchMarker</code>, <code>fetchLocSuggestions</code>, <code>renderLocDD</code>, <code>pickLocResult</code>, <code>kwrdBox</code>/<code>kwrdIn</code> sidebar elements all removed.</p>
+    <div class="diff">
+<span class="diff-rem">- srchIn: "Search a location…" → Nominatim API call → blue pin → reload from new coords</span>
+<span class="diff-add">+ srchIn: "Search listings by keyword…" → filter ST.listings by q AND map.getBounds() → instant result</span>
+    </div>
+  </div>
+
+  <div class="bug-card">
+    <h3>CHANGE-S4-04 — Explore Area search mode added: pan map to search any area</h3>
+    <p><strong>Type:</strong> New feature · <strong>File:</strong> <code>MapIt_MVP_v1.html</code> · <strong>Commit:</strong> <code>efabd47</code></p>
+    <p>New "Search Mode" toggle in the Browse sidebar. "📍 My Locations" (default) searches from the user's saved pin as before. "🗺 Explore Area" makes the map centre the search origin — a blue dot tracks the centre in real-time; the radius circle turns blue; panning the map reloads listings 800ms after the pan stops (moveend debounce). Toggle is greyed out on Saved/My Ads tabs. Arun tested and commended: "That was really good."</p>
+    <div class="diff">
+<span class="diff-add">+ setSearchMode(mode): ST.exploreMode toggle; blue dot (_placeExploreMarker); move+moveend listeners</span>
+<span class="diff-add">+ activeLoc(): returns map.getCenter() when ST.exploreMode is true</span>
+<span class="diff-add">+ _onExploreMoveEnd(): clearTimeout + setTimeout(loadListings, 800)</span>
+<span class="diff-add">+ circleColor: '#3B82F6' (blue) in explore mode, '#F06030' (orange) in My Locations</span>
+    </div>
+  </div>
+
+  <div class="bug-card">
+    <h3>CHANGE-S4-05 — Satellite tile toggle simplified: CartoDB Voyager is now hardcoded default</h3>
+    <p><strong>Type:</strong> Simplification · <strong>File:</strong> <code>MapIt_MVP_v1.html</code> · <strong>Commit:</strong> <code>093d49f</code></p>
+    <p>The 🛰 satellite toggle button and associated <code>_voyagerLayer</code> / <code>_satLayer</code> / <code>_satOn</code> variables were removed as part of the search simplification commit. CartoDB Voyager remains as the sole tile provider (inlined in map init). The Explore Area mode provides an equivalent discovery mechanism — panning to any area on the Voyager map already shows the required context without needing a satellite overlay.</p>
+  </div>
+</section>
+
+<!-- ── Observations ── -->
+<section id="observations">
+  <h2>Observations</h2>
+
+  <div class="obs-card">
+    <h3>OBS-01 — <code>public/og-image.png</code> not yet created</h3>
+    <p>OG meta tags are correctly wired (<code>og:image</code> and <code>twitter:image</code> both reference <code>https://www.mapit.co.in/og-image.png</code>). The image file itself does not yet exist. WhatsApp and Twitter link previews will fall back to no thumbnail image until a 1200×630px PNG is placed at <code>public/og-image.png</code>. This is a manual design task — not a code change. Assign to Nagesh or a designer before Session 9 public launch.</p>
+  </div>
+
+  <div class="obs-card">
+    <h3>OBS-02 — Keyword search relies on already-loaded listings — no server call</h3>
+    <p>The new keyword search filters <code>ST.listings</code> in-memory. This means: (a) it only searches within the current radius fetch (listings already loaded near the user's active location); (b) panning the map updates the viewport filter but does NOT trigger a new API fetch — that only happens via the Explore Area mode. For the MVP family-beta scale this is correct behaviour. Document for Arun: keyword search narrows what's already loaded; Explore Area pans to reload from a new centre.</p>
+  </div>
+
+  <div class="obs-card">
+    <h3>OBS-03 — <code>uat.mapit.co.in</code> still points to production (Vercel free tier)</h3>
+    <p>Custom branch-specific domains require Vercel Pro. UAT testing must use the Vercel preview URL: <code>https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code>. Upgrade Vercel to Pro in Session 7 to fix this (budget approved: $20/mo).</p>
+  </div>
+
+  <div class="obs-card">
+    <h3>OBS-04 — CONTEXT.md "Important Context" CORS list is stale</h3>
+    <p>The "Important Context" section of <code>CONTEXT.md</code> still lists <code>localhost:3000, localhost:3001, localhost:5500, 127.0.0.1:5500</code> in the CORS origins. These were removed in commit <code>dc8199a</code>. The "Decisions Made" section is correct. Update CONTEXT.md to reflect the current allow-list.</p>
+  </div>
+
+  <div class="obs-card">
+    <h3>OBS-05 — Explore Area mode + keyword search combination: intended interaction</h3>
+    <p>When both Explore mode is active AND a keyword is typed: <code>activeLoc()</code> returns the map centre (so <code>loadListings()</code> fetches from map centre), but <code>filtered()</code> additionally constrains by keyword AND <code>getBounds()</code>. The two features compose cleanly — pan to an area, type a keyword, get only keyword-matching listings visible in that map view.</p>
+  </div>
+</section>
+
+<!-- ── Files Changed ── -->
+<section id="files">
+  <h2>Files Changed This Session</h2>
+  <div class="file-row"><div class="file-path">MapIt_MVP_v1.html</div><div class="file-desc"><strong>(efabd47)</strong> Explore Area mode: searchModeBox HTML+CSS; setSearchMode(); _placeExploreMarker(); _onExploreMove(); _onExploreMoveEnd() 800ms debounce; activeLoc() explore branch; circleColor blue/orange; switchTab() smBox disabled; radMode label; ST.exploreMode state · <strong>(093d49f)</strong> Keyword search header: srchIn placeholder+icon updated; clearKeyword(); filtered() getBounds viewport filter; switchTab() inlines keyword reset; srchDD/Nominatim/kwrdBox/kwrdIn/ST.searchCenter/_searchMarker all removed (~90 lines) · <strong>(7919558)</strong> Arun UAT fixes: authModal starts hidden; sendPasswordReset trailing slash; saveHomeLocation POST /api/pins · <strong>(772e7bf)</strong> Canvas renderer; flyTo in selListing; step-homeloc UX; OG tags; Leaflet preload; Google Fonts non-blocking; page title · <strong>(e1d4e7e)</strong> Various map/UX foundations</div></div>
+  <div class="file-row"><div class="file-path">public/index.html</div><div class="file-desc">Synced from MapIt_MVP_v1.html after every commit — diff verified clean</div></div>
+  <div class="file-row"><div class="file-path">src/server.js</div><div class="file-desc">CORS hardening: removed all hardcoded localhost/127.0.0.1 from allowedOrigins; APP_URL env var spread for local dev; corsErr.statusCode = 403 on rejection (BUG-S4-01 fix)</div></div>
+  <div class="file-row"><div class="file-path">src/middleware/errorHandler.js</div><div class="file-desc">Stack trace gated to 5xx-only in dev mode — never included in 4xx responses (BUG-S4-02 fix)</div></div>
+  <div class="file-row"><div class="file-path">database/uat-dummy-listings.sql</div><div class="file-desc">20 dummy listings seeded for UAT (12 Nagesh / 8 Arun; 3 at same coordinates for overlap test; various expiry states). Cleanup: DELETE FROM listings WHERE reference_code LIKE 'MP-BLR-UAT%'</div></div>
+</section>
+
+<footer>
+  MapIt Session 04 UAT Report &nbsp;·&nbsp; Updated 2026-07-02 &nbsp;·&nbsp; Branch: uat &nbsp;·&nbsp; Commits: e1d4e7e → dc8199a → 093d49f → efabd47 &nbsp;·&nbsp; 48 total checks · 44 PASS · 0 FAIL · 1 WARN · 3 REPLACED<br>
+  Search redesign verified 2026-07-02 (17 new automated checks). Manual checklist updated to 19 checks. Sign-off: Arun (search approved verbally 2026-07-02).
+</footer>
+
+</main>
+</div>
+</body>
+</html>
