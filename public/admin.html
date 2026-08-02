@@ -151,6 +151,12 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .ov-legend-item{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text);}
 .ov-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .ov-legend-count{margin-left:auto;color:var(--muted);font-weight:600;}
+.ov-spark-row{display:flex;align-items:flex-end;gap:10px;padding:10px 4px 0;min-height:104px;}
+.ov-spark-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0;}
+.ov-spark-count{font-size:10.5px;font-weight:700;color:var(--text);}
+.ov-spark-bar{width:100%;max-width:28px;background:var(--orange);border-radius:4px 4px 0 0;transition:height .2s ease;}
+.ov-spark-bar.zero{background:var(--border2);}
+.ov-spark-label{font-size:9.5px;color:var(--muted);white-space:nowrap;}
 
 .adm-deny, .adm-loading{max-width:420px;min-height:100vh;margin:0 auto;text-align:center;padding:0 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .adm-deny h2{font-size:18px;margin-bottom:10px;}
@@ -231,6 +237,14 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
         <div class="ov-tiles">
           <div class="ov-tile"><div class="ov-tile-num" id="ovTotalUsers">–</div><div class="ov-tile-label">Total Users</div></div>
           <div class="ov-tile"><div class="ov-tile-num" id="ovActiveUsers">–</div><div class="ov-tile-label">Active Users (30d)</div></div>
+          <div class="ov-tile"><div class="ov-tile-num" id="ovSignups7d">–</div><div class="ov-tile-label">Signups (7d)</div></div>
+          <div class="ov-tile"><div class="ov-tile-num" id="ovSignups30d">–</div><div class="ov-tile-label">Signups (30d)</div></div>
+        </div>
+        <div class="ov-chart-wrap">
+          <div class="ov-chart-title">📈 Weekly Signups — last 8 weeks</div>
+          <div class="ov-spark-row" id="ovSparkRow">
+            <div style="padding:20px;text-align:center;color:var(--muted);">Loading…</div>
+          </div>
         </div>
         <div class="ov-chart-wrap">
           <div class="ov-chart-title">📍 Listings by Area</div>
@@ -443,10 +457,36 @@ async function loadOverview(){
     _ovLoaded = true;
     document.getElementById('ovTotalUsers').textContent = data.total_users;
     document.getElementById('ovActiveUsers').textContent = data.active_users;
+    document.getElementById('ovSignups7d').textContent = data.signups?.last_7d ?? '–';
+    document.getElementById('ovSignups30d').textContent = data.signups?.last_30d ?? '–';
+    renderSignupSparkline(data.signups?.weekly || []);
     renderRegionDonut(data.regions || []);
   } catch(e){
     document.getElementById('ovChartRow').innerHTML = `<div style="padding:20px;color:var(--red);">Error: ${e.message}</div>`;
+    document.getElementById('ovSparkRow').innerHTML = `<div style="padding:20px;color:var(--red);">Error: ${e.message}</div>`;
   }
+}
+
+// Hand-rolled bar sparkline (no chart library) — same "no CDN dependency"
+// convention as the region donut. Bar height is relative to the busiest
+// week in the window so a slow week still reads as a visible sliver.
+function renderSignupSparkline(weekly){
+  const row = document.getElementById('ovSparkRow');
+  if(!weekly.length){
+    row.innerHTML = '<div style="padding:20px;color:var(--muted);">No signup data yet.</div>';
+    return;
+  }
+  const max = Math.max(1, ...weekly.map(w=>w.count));
+  row.innerHTML = weekly.map(w=>{
+    const h = Math.max(4, Math.round((w.count / max) * 72));
+    const label = new Date(`${w.week_start}T00:00:00Z`).toLocaleDateString('en-IN',{month:'short',day:'numeric'});
+    return `
+      <div class="ov-spark-col">
+        <div class="ov-spark-count">${w.count}</div>
+        <div class="ov-spark-bar${w.count===0?' zero':''}" style="height:${h}px;"></div>
+        <div class="ov-spark-label">${label}</div>
+      </div>`;
+  }).join('');
 }
 
 function renderRegionDonut(regions){
