@@ -1386,8 +1386,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ Immediate (2026-08-02):**
-1. **Nagesh is now actively working `docs/session-09a-uat-checklist-Nagesh.html`** — killed the stale plain-`node` dev server process (PID 68535, no auto-reload, was holding port 3001) at Nagesh's request so a fresh server instance can be started for testing. Nodemon (PID 64890) was left running per Nagesh's explicit choice not to kill it.
+**⬅ Immediate (2026-08-02, updated):**
+1. ✅ **Session 9a checklist fully signed off by Nagesh** — all 8 items confirmed Pass (items 5 and 6 were the fresh checks, both passed; item 6's 3 sub-cards — signup+OTP, profile setup, sign-out/sign-back-in — all passed). See UAT Status — Session 09a block below for the full record. Session 9a is now completely closed out.
 2. **Candidate follow-up from the OfferUp architecture discussion (not yet started, not yet prioritized):** fix `listings_within_radius` RPC to include `subcategory` and move radius filtering DB-side (Rule 9 gap) — the one concrete, low-cost action item that came out of the comparison. Not scheduled against a session yet.
 3. **Confirm the freelancer can now sign in / sign up on production** — the CSP fix (`675b81b`) is live via PR #8 (`8a7692f`); awaiting her retry.
 4. **Retroactive click-through recommended** for the 9 other commits promoted to `main` alongside the CSP fix in the same PR #8 batch (whoami picker, Help-modal, ToS/Privacy footer) — they'd each been individually confirmed by Nagesh earlier, but got no fresh end-to-end pass right before this merge.
@@ -1396,7 +1396,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 **⬅ Immediate (2026-07-31, superseded above):**
 1. ~~Confirm the freelancer can now sign in / sign up on production~~ — carried forward above, still open.
 2. ~~Retroactive click-through recommended for the 9 batch-promoted commits~~ — carried forward above, still open.
-3. **Nagesh completes `docs/session-09a-uat-checklist-Nagesh.html`** — now actively in progress (2026-08-02), see above.
+3. ~~Nagesh completes `docs/session-09a-uat-checklist-Nagesh.html`~~ — ✅ done 2026-08-02, see above.
 4. ~~Then decide: splash screen + Help modal content/font pass, or Session 9's paid-subscription bundle~~ — carried forward above.
 
 **⬅ Immediate (2026-07-29, superseded above):**
@@ -1804,6 +1804,6 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **Automated:** 22 PASS / 3 FAIL→FIXED / 0 WARN / 0 SKIP — the 3 failures were all in item 6 (email verification): a full authentication bypass (Supabase auto-confirms accounts regardless of the `email_confirm` flag), a broken `isNewUser` signal (a DB trigger auto-creates the profiles row before `/register` runs), and a session-invalidation bug (setting the password revokes the just-issued session). All three found via direct `curl`/diagnostic-script testing, fixed inline, and re-verified.
 - **Manual checklist:** `docs/session-09a-uat-checklist-Nagesh.html`
 - **Tester:** Nagesh
-- **Status:** Pending manual sign-off. Items 1, 2, 3, 4, 7, 8 (CORS, CSP, RLS, Sentry, OAuth redirects, service-role-key leak) pre-marked Pass — already confirmed today via automated checks or Nagesh's own dashboard/SQL checks. Items 5 (legal pages) and 6 (email verification, 3 sub-cards) are fresh checks for this pass — item 6 especially, given how many rounds of bugs it took to get working.
+- **Status:** ✅ **FULLY SIGNED OFF (2026-08-02).** All 8 items confirmed Pass by Nagesh — items 1, 2, 3, 4, 7, 8 (CORS, CSP, RLS, Sentry, OAuth redirects, service-role-key leak) were pre-marked from earlier same-day automated/dashboard checks; items 5 (legal pages live in production) and 6 (email verification, all 3 sub-cards — fresh signup+OTP, profile setup, sign-out-then-sign-back-in-with-password) were freshly re-tested and confirmed Pass in this pass. Verdict: ✅ Approve. (Checklist state lives in the file's own `localStorage`, keyed `mapit_uat_session09a_nagesh_v1` — it doesn't produce a file diff, so this CONTEXT.md entry is the durable record of the sign-off.)
 - **Covers:** All 8 Session 9a items — CORS allow-list, Helmet CSP headers, RLS on all 7 tables, Sentry error/alert monitoring, legal pages live in production, email verification, Google OAuth redirect configuration, no leaked service-role key.
-- **After sign-off:** PR #7 (`uat` → `main`) still needs merging — the fixed email-verification code is not yet live on production. Once merged, decide next: splash/Help-modal content+font pass (placeholder already in Context.md), or Session 9's paid-subscription bundle.
+- **After sign-off:** Session 9a is now fully complete — no open items. PR #7 (the email-verification fix this checklist covers) was already confirmed merged to `main` on 2026-07-31 (see Current Goal), so nothing further to promote for this specifically. Next: decide between the splash/Help-modal content+font pass (placeholder already in Context.md), Session 9's paid-subscription bundle, or the OfferUp-comparison follow-up (fix `listings_within_radius`/`subcategory`, see 2026-08-02 checkpoint).
