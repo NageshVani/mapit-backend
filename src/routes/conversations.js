@@ -13,6 +13,7 @@ const { supabaseAdmin }  = require('../config/supabase');
 const { requireAuth }    = require('../middleware/auth');
 const { createError }    = require('../middleware/errorHandler');
 const { scoreAndNotify } = require('../utils/notifySeller');
+const { logAuditEvent } = require('../utils/auditLog');
 
 const router = express.Router();
 
@@ -186,6 +187,9 @@ router.post('/:id/messages', requireAuth, async (req, res, next) => {
       .single();
 
     if (error) return next(createError(error.message));
+
+    // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
+    logAuditEvent('message_sent', req, req.user.id, { message_id: message.id, source: 'chat_messages' });
 
     // Fire-and-forget: never block or fail the response on scoring/email errors.
     // Only the buyer's first message on a listing triggers the seller notification.

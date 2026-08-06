@@ -18,6 +18,7 @@ const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 const { fuzzLocation } = require('../utils/geo');
+const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 
 const router = express.Router();
@@ -595,6 +596,9 @@ router.post('/', requireAuth, async (req, res, next) => {
     // Fire-and-forget: never block or fail listing creation on POI lookup errors.
     lookupAndStoreNearbyPois(listing.id, listing.lat, listing.lng)
       .catch(err => console.error('POI lookup pipeline failed:', err.message));
+
+    // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
+    logAuditEvent('listing_created', req, req.user.id, { listing_id: listing.id });
 
     res.status(201).json({ listing, message: 'Listing submitted for review. It will go live within 4 hours.' });
   } catch (err) { next(err); }
