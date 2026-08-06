@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MapIt — Development Effort Summary</title>
+<style>
+:root{
+  --paper:#FAF7F2;
+  --paper-raised:#FFFFFF;
+  --ink:#2B2620;
+  --muted:#7A7168;
+  --accent:#F06030;
+  --accent-deep:#C8481F;
+  --accent-wash:#FBE6DC;
+  --line:#E7E0D6;
+  --good:#3E7A5C;
+  --good-wash:#E4EFE8;
+  --pending:#A8791F;
+  --pending-wash:#F5EBD8;
+  --blocked:#B23B3B;
+  --blocked-wash:#F5E1E0;
+  --shadow: 0 1px 2px rgba(43,38,32,.06), 0 8px 24px -12px rgba(43,38,32,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#1B1815;
+    --paper-raised:#242019;
+    --ink:#EDE6DC;
+    --muted:#A79C8E;
+    --accent:#FF7A45;
+    --accent-deep:#FFA378;
+    --accent-wash:#3A2419;
+    --line:#332C24;
+    --good:#6FBE96;
+    --good-wash:#1E2C24;
+    --pending:#E0B45B;
+    --pending-wash:#2E2717;
+    --blocked:#E2857F;
+    --blocked-wash:#331E1D;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family: ui-sans-serif, "Segoe UI", "Avenir Next", -apple-system, system-ui, Roboto, Arial, sans-serif;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:900px;margin:0 auto;padding:56px 24px 96px;}
+
+.mono{font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums;}
+
+/* header */
+.doc-head{display:flex;flex-direction:column;gap:6px;padding-bottom:28px;border-bottom:2px solid var(--ink);margin-bottom:28px;}
+.eyebrow{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-deep);font-weight:700;}
+h1{font-size:clamp(28px,4vw,38px);margin:2px 0 4px;font-weight:800;letter-spacing:-0.01em;text-wrap:balance;}
+.subtitle{color:var(--muted);font-size:15.5px;max-width:60ch;}
+.meta-row{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;font-size:13px;color:var(--muted);}
+.meta-row b{color:var(--ink);}
+
+/* stat strip */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:32px;box-shadow:var(--shadow);}
+.stat{background:var(--paper-raised);padding:18px 16px;}
+.stat .num{font-family: ui-monospace, "SF Mono", Menlo, monospace;font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;color:var(--accent-deep);line-height:1.1;}
+.stat .lbl{font-size:12px;color:var(--muted);margin-top:5px;text-transform:uppercase;letter-spacing:.05em;}
+
+/* caveat box */
+.caveat{background:var(--pending-wash);border:1px solid color-mix(in srgb, var(--pending) 40%, transparent);border-radius:10px;padding:16px 18px;font-size:14px;color:var(--ink);margin-bottom:40px;}
+.caveat b{color:var(--pending);}
+
+/* session card */
+.session{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;margin-bottom:20px;box-shadow:var(--shadow);overflow:hidden;}
+.session-head{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);}
+.session-head .rail{width:5px;align-self:stretch;border-radius:3px;flex-shrink:0;}
+.rail.complete{background:var(--good);}
+.rail.partial{background:var(--pending);}
+.rail.notstarted{background:var(--blocked);}
+.session-num{font-family: ui-monospace, monospace;font-size:13px;color:var(--muted);font-weight:600;flex-shrink:0;}
+.session-title{font-weight:700;font-size:16.5px;flex:1;min-width:0;}
+.session-title span{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px;}
+.status-chip{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;}
+.status-chip.complete{background:var(--good-wash);color:var(--good);}
+.status-chip.partial{background:var(--pending-wash);color:var(--pending);}
+.status-chip.notstarted{background:var(--blocked-wash);color:var(--blocked);}
+.session-total{font-family: ui-monospace, monospace;font-size:14.5px;font-weight:700;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.session-total small{display:block;font-weight:400;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+
+table{width:100%;border-collapse:collapse;font-size:13.8px;}
+.tbl-wrap{overflow-x:auto;}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;padding:10px 20px 8px;}
+td{padding:10px 20px;border-top:1px solid var(--line);vertical-align:top;}
+td.desc{color:var(--ink);}
+td.desc .note{display:block;color:var(--muted);font-size:12.3px;margin-top:3px;}
+td.hrs{font-family: ui-monospace, monospace;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink);}
+td.hrs.na{color:var(--muted);font-style:italic;}
+th.hrs-h{text-align:right;}
+
+.callout{margin:0 20px 16px;padding:11px 14px;background:var(--accent-wash);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;font-size:13px;color:var(--ink);}
+.callout b{color:var(--accent-deep);}
+
+/* footer sections */
+.section-label{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-deep);font-weight:700;margin:44px 0 14px;}
+.extra-list{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow);}
+.extra-list ul{margin:0;padding-left:20px;}
+.extra-list li{margin-bottom:10px;font-size:14.3px;}
+.extra-list li:last-child{margin-bottom:0;}
+.extra-list li b{font-weight:600;}
+
+.grand-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:36px;padding:22px 24px;background:var(--ink);color:var(--paper);border-radius:12px;}
+.grand-total .gt-label{font-size:14px;letter-spacing:.03em;}
+.grand-total .gt-label small{display:block;color:color-mix(in srgb, var(--paper) 60%, transparent);font-size:12px;margin-top:3px;}
+.grand-total .gt-num{font-family: ui-monospace, monospace;font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);}
+
+.footnote{margin-top:28px;font-size:12.5px;color:var(--muted);max-width:70ch;}
+
+@media (max-width:640px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .session-head{flex-wrap:wrap;}
+  th,td{padding:9px 14px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="doc-head">
+    <div class="eyebrow">MapIt · Prepared for Arun</div>
+    <h1>Development Effort Summary</h1>
+    <div class="subtitle">Hours by session and work item, from the project's own planning estimates, covering MVP development through the pre-launch checklist.</div>
+    <div class="meta-row">
+      <div><b>Prepared:</b> 2026-07-29 · updated 2026-08-06</div>
+      <div><b>Coverage:</b> Session 1 → Session 9C (in progress)</div>
+      <div><b>Prepared by:</b> Nagesh, with James (Claude Code)</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">~105</div><div class="lbl">Est. hrs, Sessions 1–9C + extra work</div></div>
+    <div class="stat"><div class="num">9<span style="font-size:16px;">+3</span></div><div class="lbl">Sessions (incl. 9a/9B/9C)</div></div>
+    <div class="stat"><div class="num">10</div><div class="lbl">Sessions fully live in production</div></div>
+    <div class="stat"><div class="num">3</div><div class="lbl">Critical bugs caught in UAT before launch</div></div>
+  </div>
+
+  <div class="caveat">
+    <b>How to read this:</b> Two kinds of numbers appear below. Sessions 4–9C carry the effort estimates written into the project's own scope notes at planning time — not a stopwatch timesheet. Sessions 1–3 and the "additional work" section had no such estimates on record, so those hours are <b>back-calculated</b>: each item was sized against a comparably-scoped, already-estimated item elsewhere in the project (e.g. a page rebuild sized against the /admin page build, a bug-fix pass sized against similar fix cycles), using the build detail recorded in the project's own session notes as the basis. They're marked <span class="mono" style="font-size:12px;">(calc.)</span> throughout. Several items ran well past their original estimate once real debugging started (flagged inline) — those callouts matter more than the raw numbers.
+  </div>
+
+  <!-- SESSION 1 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S1</div>
+      <div class="session-title">Foundation &amp; Housekeeping<span>CLAUDE.md rules, folder structure, migrations, branch strategy</span></div>
+      <div class="status-chip complete">Complete</div>
+      <div class="session-total">~6.0 hrs<small>calc. — 8 items</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Git config fix (global email)</td><td class="hrs">0.1</td></tr>
+      <tr><td class="desc">MapIt_MVP_v1.html created from prototype (2,603 lines) + two-file sync to public/</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">CLAUDE.md v4.0 authored — 12 collaboration rules</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">docs/architecture.md — stack, branch strategy, decisions, budget</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">docs/ux-audit.md — 30-issue audit across typography/colour/spacing/forms/auth/map</td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">3 migration files pre-written (001 auth, 002 listings, 003 chat schema)</td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">.env.example — all current + upcoming env vars documented</td><td class="hrs">0.25</td></tr>
+      <tr><td class="desc">Commit + push to uat</td><td class="hrs">0.1</td></tr>
+    </table></div>
+    <div class="callout"><b>Estimate basis:</b> no hour figures were logged for this session — it predates the per-item estimation habit adopted from Session 4 onward. Sized here against comparable documentation/schema-design items from later sessions (e.g. the Session 8 grievance-log migration, the Session 4 architecture-level scoping).</div>
+  </div>
+
+  <!-- SESSION 2 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S2</div>
+      <div class="session-title">Auth Modal<span>Email+password, Google OAuth, OTP, ToS, home location, nickname, password reset</span></div>
+      <div class="status-chip complete">Complete</div>
+      <div class="session-total">~15.6 hrs<small>calc. — 14 items</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Auth modal full rebuild — step-auth, step-profile+ToS, new step-homeloc map picker, ~10 new JS functions, 6 new/updated backend routes</td><td class="hrs">6.0</td></tr>
+      <tr><td class="desc">Google OAuth redirectTo fix<span class="note">3 separate root causes diagnosed across frontend, backend, and Supabase config</span></td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">Migration 001 applied + verified in Supabase production</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Supabase delete FK diagnosis</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Nickname system (Create Account, Change Nickname, display priority)</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">Password reset flow (redirectTo fix, new steps, PUT /api/auth/password)</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">Splash flash fix (loading splash at 5 transition points)</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Onboarding UX (font size, copy trim)</td><td class="hrs">0.3</td></tr>
+      <tr><td class="desc">OTP rate-limit fix</td><td class="hrs">0.3</td></tr>
+      <tr><td class="desc">"MapIt User" display-name root-cause fix</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Google OAuth Supabase Dashboard configuration</td><td class="hrs">0.25</td></tr>
+      <tr><td class="desc">CORS fix (uat + localhost origins)</td><td class="hrs">0.25</td></tr>
+      <tr><td class="desc">UAT automated tests + 4 frontend bug fixes</td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">Retrospective UAT report + 66-test interactive checklist (1,610 lines)</td><td class="hrs">1.5</td></tr>
+    </table></div>
+    <div class="callout"><b>Estimate basis:</b> no hour figures on record. This is the single biggest MVP build in the project — a full auth system (password + Google OAuth + OTP + password reset + home-location picker) plus three distinct debugging passes. Sized as roughly 2× Session 6's real-time chat build (4 hrs), which is the closest documented comparison in scope and complexity.</div>
+  </div>
+
+  <!-- SESSION 3 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S3</div>
+      <div class="session-title">Listing Lifecycle<span>Reference codes, expiry, show_phone, views_count, delete, edit, landing screen</span></div>
+      <div class="status-chip complete">Complete</div>
+      <div class="session-total">~6.25 hrs<small>calc. — 4 items</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Listing lifecycle build — reference codes, expiry, show_phone, views_count, delete, edit</td><td class="hrs">3.5</td></tr>
+      <tr><td class="desc">Session 3 UAT manual-checklist fixes (multiple commits)</td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">Arun's Session 2 UAT failures fixed (A9/C4/I3)</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">uat → main promotion to production</td><td class="hrs">0.25</td></tr>
+    </table></div>
+    <div class="callout"><b>Estimate basis:</b> no hour figures on record. Sized against Session 6's admin-moderation build (2 hrs) scaled up for the wider CRUD surface (create/edit/delete/expire/view-count) plus a documented UAT fix cycle comparable to Session 04B's.</div>
+  </div>
+
+  <!-- SESSION 4 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S4</div>
+      <div class="session-title">Unified Location Search + Map UX + Security<span>Location/category/keyword search, tile upgrade, satellite toggle, CORS hardening</span></div>
+      <div class="status-chip complete">Complete</div>
+      <div class="session-total">6.25 hrs<small>11 items</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Buyer search: location + category + keyword search bar</td><td class="hrs">3.0</td></tr>
+      <tr><td class="desc">CartoDB Voyager tile provider</td><td class="hrs">0.17</td></tr>
+      <tr><td class="desc">Satellite / Hybrid map toggle</td><td class="hrs">0.75</td></tr>
+      <tr><td class="desc">PostGIS GiST index verification</td><td class="hrs">0.25</td></tr>
+      <tr><td class="desc">My Ads pin visible on map (flyTo)</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Minimum 1 photo required</td><td class="hrs">0.33</td></tr>
+      <tr><td class="desc">Canvas renderer for map pins</td><td class="hrs">0.17</td></tr>
+      <tr><td class="desc">Simpler pin-drop UX + hint labels</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">CORS localhost removal</td><td class="hrs">0.08</td></tr>
+      <tr><td class="desc">Open Graph / WhatsApp share meta tags</td><td class="hrs">0.33</td></tr>
+      <tr><td class="desc">Leaflet preload + non-blocking Google Fonts</td><td class="hrs">0.17</td></tr>
+    </table></div>
+    <div class="callout"><b>Not counted here:</b> email verification was originally scoped in this session but actually built (and debugged at length) in Session 9a — see below, where its real effort belongs.</div>
+  </div>
+
+  <!-- extra 04B/04C -->
+  <div class="extra-list" style="margin-bottom:20px;">
+    <ul>
+      <li><b>Session 04B</b> (2026-07-08/09) — Arun's UAT follow-up fixes (keyword-clear button, password-reset redirect, ToS-gated Continue, bigger home-location map, Add-Location rebuild). Not in the original plan, no hour estimate on record — a full extra fix cycle driven by real UAT findings.</li>
+      <li><b>Session 04C</b> (2026-07-09/11) — merged duplicate Name/Nickname signup fields; built the home-location text-search box (switched provider from Nominatim to Photon mid-build after a real coverage gap was found). No hour estimate on record.</li>
+    </ul>
+  </div>
+
+  <!-- SESSION 5 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S5</div>
+      <div class="session-title">Notifications, POI &amp; Map UX Depth<span>Seller email, POI proximity, pin popups, tooltips, Help modal, feedback rating</span></div>
+      <div class="status-chip complete">Complete — all 10 items live</div>
+      <div class="session-total">16.83 hrs<small>11 of 12 items</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Seller notification email on "I'm Interested"<span class="note">Built earlier and folded in; no hour figure logged at scope time</span></td><td class="hrs na">n/a</td></tr>
+      <tr><td class="desc">Listing expiry notification email (cron route)</td><td class="hrs">2.0</td></tr>
+      <tr><td class="desc">RLS policy full audit (all tables)</td><td class="hrs">2.0</td></tr>
+      <tr><td class="desc">POI proximity on listing post (Overpass API)</td><td class="hrs">4.0</td></tr>
+      <tr><td class="desc">Same-location pin popup (stacked listings)</td><td class="hrs">2.0</td></tr>
+      <tr><td class="desc">GPS confirmation preview map in post form</td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">Pin tooltip on first tap</td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">Default view preference (map vs list)</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">Help modal (lightweight)</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Orphaned photo cleanup job</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">Structured feedback form upgrade</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">Supabase Auth email template branding</td><td class="hrs">0.33</td></tr>
+    </table></div>
+  </div>
+
+  <!-- SESSION 6 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S6</div>
+      <div class="session-title">Real-Time Chat + Content Moderation<span>Buyer↔seller chat, Report Listing, admin moderation queue</span></div>
+      <div class="status-chip complete">Complete — 21/21 UAT checks pass</div>
+      <div class="session-total">7.5 hrs<small>3 items</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Real-time chat (conversations/chat_messages, Realtime)</td><td class="hrs">4.0</td></tr>
+      <tr><td class="desc">"Report Listing" button + reports table</td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">Admin content moderation API enhancements</td><td class="hrs">2.0</td></tr>
+    </table></div>
+    <div class="callout"><b>Ran over estimate:</b> two real navigation/tab-state bugs were found and fixed mid-build (Inbox routing to the wrong tab, My Ads showing stale pins) — not in the original 7.5 hr scope.</div>
+  </div>
+
+  <!-- SESSION 7 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S7</div>
+      <div class="session-title">Security Hardening<span>Sentry monitoring, Helmet CSP, legal pages (Terms/Privacy)</span></div>
+      <div class="status-chip complete">Complete, live in production</div>
+      <div class="session-total">4.25 hrs<small>4 items</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Sentry error monitoring</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Legal pages — Terms of Service + Privacy Policy<span class="note">Plus Arun's own legal review time, not engineering hours</span></td><td class="hrs">2.0</td></tr>
+      <tr><td class="desc">Helmet CSP re-enablement with real allowlist</td><td class="hrs">1.5</td></tr>
+      <tr><td class="desc">Sentry alert configuration</td><td class="hrs">0.25</td></tr>
+    </table></div>
+    <div class="callout">Terms/Privacy content itself went through a separate drafting effort outside this figure — an LLM Council review of the incorporation question, two full draft revisions (v0.2 → v0.3), and Arun's own sign-off pass. See "Additional work" below.</div>
+  </div>
+
+  <!-- SESSION 8 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S8</div>
+      <div class="session-title">Admin Dashboard + Performance + UX Polish<span>/admin page, suspend enforcement, grievance log, clustering, overview dashboard</span></div>
+      <div class="status-chip complete">Complete — 37/39 automated checks pass</div>
+      <div class="session-total">12.58 hrs<small>7 of 11 items estimated</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">/admin page + real admin-role gate + modal migration</td><td class="hrs">4.5</td></tr>
+      <tr><td class="desc">Suspend/Reinstate — real enforcement<span class="note">Scope grew mid-build; no separate hour figure logged</span></td><td class="hrs na">n/a</td></tr>
+      <tr><td class="desc">Grievance log (IT Rules 2021 dual-deadline tracking)<span class="note">Iterated 3 times on UI per Nagesh's feedback; no hour figure logged</span></td><td class="hrs na">n/a</td></tr>
+      <tr><td class="desc">Reported-chat visibility</td><td class="hrs">1.75</td></tr>
+      <tr><td class="desc">Bulk listing cleanup tool</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">Lighthouse mobile performance audit</td><td class="hrs">1.0</td></tr>
+      <tr><td class="desc">robots.txt + sitemap.xml</td><td class="hrs">0.33</td></tr>
+      <tr><td class="desc">Marker clustering (Leaflet.markercluster)</td><td class="hrs">2.0</td></tr>
+      <tr><td class="desc">Visual/UX polish pass (top 5 audit findings)</td><td class="hrs">2.0</td></tr>
+      <tr><td class="desc">Admin Overview dashboard (stat tiles + SVG donut)<span class="note">Built from a shared visual reference; no hour figure logged</span></td><td class="hrs na">n/a</td></tr>
+      <tr><td class="desc">"Explore Area" search bar<span class="note">Reused existing search plumbing; no hour figure logged</span></td><td class="hrs na">n/a</td></tr>
+    </table></div>
+    <div class="callout"><b>Biggest session by real effort:</b> item 1 alone went through 5 separate live UAT rounds with Nagesh (CSS cascade bugs, a stuck loading screen, tab-bar redesign) before it shipped — the largest single-item variance from its original estimate in the whole project.</div>
+  </div>
+
+  <!-- SESSION 9a -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S9a</div>
+      <div class="session-title">Pre-Launch Readiness Checklist<span>Free-tier verification pass — CORS, CSP, RLS, Sentry, legal pages, email verification, OAuth, key leaks</span></div>
+      <div class="status-chip complete">Complete — signed off 2026-08-02, merged to main</div>
+      <div class="session-total">1.67 hrs<small>as scoped — see callout</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">CORS allow-list check</td><td class="hrs">0.17</td></tr>
+      <tr><td class="desc">Helmet CSP header check (production)</td><td class="hrs">0.17</td></tr>
+      <tr><td class="desc">RLS enabled on all 7 tables, re-confirmed</td><td class="hrs">0.33</td></tr>
+      <tr><td class="desc">Sentry test error → alert firing</td><td class="hrs">0.17</td></tr>
+      <tr><td class="desc">Legal pages live in production</td><td class="hrs">0.17</td></tr>
+      <tr><td class="desc">Email verification end-to-end<span class="note">See callout — this is where the real hours went</span></td><td class="hrs">0.25</td></tr>
+      <tr><td class="desc">Google OAuth redirect URLs confirmed</td><td class="hrs">0.17</td></tr>
+      <tr><td class="desc">No leaked service-role key</td><td class="hrs">0.25</td></tr>
+    </table></div>
+    <div class="callout"><b>This is the one figure in the whole document you should ignore.</b> The email-verification check was scoped at 15 minutes but uncovered a genuine full authentication bypass (Supabase silently auto-confirming accounts) plus two follow-on bugs — a multi-day debugging effort spanning several sessions, fixed and re-verified end to end. Small estimate, largest real find of the project.</div>
+  </div>
+
+  <!-- SESSION 9B -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail complete"></div>
+      <div class="session-num">S9B</div>
+      <div class="session-title">Location Privacy / Anti-Doxxing<span>Buyer-facing location fuzzing, seller exact-location opt-in</span></div>
+      <div class="status-chip complete">Complete — UAT-passed, merged to main</div>
+      <div class="session-total">5.0 hrs<small>real planning estimate, range 4–6</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Tier 1 core fix — display_lat/display_lng migration (010/011), seeded fuzzing utility (fuzzLocation, verified for determinism), buyer-facing response gating across list/single/saved reads, seller "Show my exact pin to buyers" opt-in checkbox, live click-test with two real accounts<span class="note">Tier 2 extras (meet-up-point suggestions, blur-circle overlay) deliberately deferred, not in this figure</span></td><td class="hrs">5.0</td></tr>
+    </table></div>
+    <div class="callout">Scoped 2026-08-05 at ~4–6 hrs for the Tier 1 core fix — this is the actual planning-time estimate, not back-calculated. A real correction was made mid-scope to the source doc's own suggestion: it proposed enforcing the exact/fuzzed split via Postgres RLS, but MapIt's backend reads/writes listings exclusively through the service-role client (bypasses RLS) — the real enforcement point is the Express route's response shape, not a DB policy. Documented, not fixed: the edit-listing form didn't pre-fill the seller's actual show_exact_location/show_phone choice on reopen — closed later, see Session 9C card.</div>
+  </div>
+
+  <!-- SESSION 9C -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail partial"></div>
+      <div class="session-num">S9C</div>
+      <div class="session-title">Mandatory Phone OTP + Email OTP<span>WhatsApp Business API OTP (pivoted from SMS/DLT 2026-08-06) — 1 of 8 build items done</span></div>
+      <div class="status-chip partial">In progress — blocked on BSP choice</div>
+      <div class="session-total">0.5 hrs<small>calc. — 1 of 8 items built</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">1. profiles.phone_verified migration<span class="note">phone column already existed (migration 001) as unverified free text; this adds the flag the OTP routes will set. Built, run, live-verified.</span></td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">2. Backend send/verify OTP routes wrapping the chosen BSP's API<span class="note">Blocked on a live BSP account + an approved Meta authentication template</span></td><td class="hrs na">—</td></tr>
+      <tr><td class="desc">3. Frontend step-verify-phone (mirrors existing email-OTP UX)<span class="note">No dependency — could start against a stub, not yet begun</span></td><td class="hrs na">—</td></tr>
+      <tr><td class="desc">4. Registration gating on phone_verified AND email_verified<span class="note">No dependency, not yet begun</span></td><td class="hrs na">—</td></tr>
+      <tr><td class="desc">5. Confirm Terms/Privacy already discloses phone-number collection<span class="note">Needs Arun's sign-off on any wording change, not yet begun</span></td><td class="hrs na">—</td></tr>
+      <tr><td class="desc">6. Add BSP API key env var name to .env.example<span class="note">Not yet begun</span></td><td class="hrs na">—</td></tr>
+      <tr><td class="desc">7. Confirm build stays on free tier (per-OTP BSP cost only)<span class="note">Not yet begun</span></td><td class="hrs na">—</td></tr>
+      <tr><td class="desc">8. Document the no-SMS-fallback design decision in the UAT plan<span class="note">Not yet begun</span></td><td class="hrs na">—</td></tr>
+    </table></div>
+    <div class="callout"><b>Channel pivot, 2026-08-06:</b> switched from an Indian SMS aggregator over DLT to WhatsApp Business API OTP via a BSP (Interakt/Gupshup/Wati/Twilio, still being researched) — this replaces the DLT/GST-registration blocker with a materially lighter Meta Business Verification path (no incorporation needed to start sending OTPs on the Limited Access Tier). Items 2–8 have no per-item planning estimate on record yet (only an aggregate figure for the pre-pivot SMS/DLT version of this session, now superseded) — shown here without invented numbers rather than guessed. Nagesh and Arun are separately exploring Private Limited incorporation, which would also resolve the Terms of Service's current sole-proprietorship/personal-name framing (item 5) and position MapIt for future fundraising — a decision expected to take some time, running in parallel with the BSP research.</div>
+  </div>
+
+  <!-- SESSION 9 -->
+  <div class="session">
+    <div class="session-head">
+      <div class="rail notstarted"></div>
+      <div class="session-num">S9</div>
+      <div class="session-title">Bundled Subscription Upgrades + Launch Gate<span>Vercel/Supabase/Resend paid tiers, cron wiring, PgBouncer, soft-open</span></div>
+      <div class="status-chip notstarted">Not started</div>
+      <div class="session-total">~2.6 hrs<small>engineering only</small></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Item</th><th class="hrs-h">Est. hrs</th></tr>
+      <tr><td class="desc">Vercel Free → Pro upgrade</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Supabase Free → Pro upgrade</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Vercel deployment/error-rate alerts</td><td class="hrs">0.25</td></tr>
+      <tr><td class="desc">Supabase PgBouncer connection pooler</td><td class="hrs">0.33</td></tr>
+      <tr><td class="desc">Enable Supabase Storage CDN</td><td class="hrs">0.17</td></tr>
+      <tr><td class="desc">Verify backup + PITR configuration</td><td class="hrs">0.5</td></tr>
+      <tr><td class="desc">Final check: expiry cron firing correctly</td><td class="hrs">0.33</td></tr>
+      <tr><td class="desc">Resend plan upgrade → Starter<span class="note">Dashboard task, not engineering time</span></td><td class="hrs na">n/a</td></tr>
+      <tr><td class="desc">Soft-open (48 hrs, 10–20 outside testers)<span class="note">Monitoring window, not a build task</span></td><td class="hrs na">n/a</td></tr>
+    </table></div>
+  </div>
+
+  <div class="section-label">Additional work outside the numbered session plan</div>
+  <div class="tbl-wrap extra-list" style="padding:0;">
+    <table>
+      <tr><th style="padding-left:22px;">Item</th><th class="hrs-h" style="padding-right:22px;">Est. hrs</th></tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>Terms of Service / Privacy Policy drafting</b><span class="note">LLM Council review of the incorporation question (5 advisors, peer-reviewed) → v0.3 thin-draft rewrite (liability cap removed, indemnification replaced, Grievance Officer de-personalized) → v1.0 finalization, publish-cleanup, and a later stamp-removal + footer-overlap CSS fix</span></td>
+        <td class="hrs" style="padding-right:22px;">4.0</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>User Guide page</b><span class="note">New 679-line standalone page, 15 feature topics each with numbered steps + an annotated SVG mockup; iterated twice on placement (Help modal → Create Account form + profile menu) and through 3 rounds of bug fixes/polish</span></td>
+        <td class="hrs" style="padding-right:22px;">5.5</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>Splash screen / Help modal font-size pass</b><span class="note">~38 CSS rules reworked for readability across the whole left-panel browsing surface, scoped and confirmed with Nagesh first, per Arun's feedback</span></td>
+        <td class="hrs" style="padding-right:22px;">1.75</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>Admin-route security audit</b><span class="note">Confirmed every admin route across 5 files is properly gated server-side, closing a gap flagged earlier in the project — audit only, no code changes needed</span></td>
+        <td class="hrs" style="padding-right:22px;">0.75</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>Per-session UAT documentation</b><span class="note">A report + manual checklist generated for each of 6 sessions' sign-off (04, 05, 06, 07, 08, 09a), each needing its own automated test pass — ≈0.9 hr average × 6 occurrences</span></td>
+        <td class="hrs" style="padding-right:22px;">5.5</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>docs/ + database/ folder reorganization</b><span class="note">49 files categorized into subfolders (uat/legal/business/technical/research/other/screenshots; migrations/scripts), two new local index pages regenerated, plus the live /terms route's hardcoded path found and fixed</span></td>
+        <td class="hrs" style="padding-right:22px;">1.25</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>listings_within_radius / subcategory RPC fix</b><span class="note">Long-standing known gap (Rule 9) — redefined the RPC to return only id+distance instead of a hardcoded column list that silently dropped subcategory; hit and fixed a real Postgres function-overload conflict mid-fix; added a GiST index; live-verified against 45 real listings</span></td>
+        <td class="hrs" style="padding-right:22px;">1.5</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>IT Rules 2021 audit_log compliance table</b><span class="note">New table (RLS enabled, no policies — service-role only), fire-and-forget event capture wired into 4 route files across 5 call sites (signup, login ×2, listing_created, message_sent ×2); live-verified insert/delete round-trip</span></td>
+        <td class="hrs" style="padding-right:22px;">1.75</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>Edit-listing show_phone/show_exact_location pre-fill fix</b><span class="note">Closed the gap flagged (not fixed) in the Session 9B card above</span></td>
+        <td class="hrs" style="padding-right:22px;">0.4</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>Splash + Help modal font pass, targeted follow-up</b><span class="note">Separate from the broader left-panel pass logged above — this round specifically bumped the splash hero/bullets and Help modal heading/list sizes, plus softened a splash claim ("exact GPS pin") that Session 9B's fuzzing had made inaccurate</span></td>
+        <td class="hrs" style="padding-right:22px;">0.5</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>Listing-detail price/pill overlap — investigated, found already fixed</b><span class="note">Built a live CSS reproduction of the exact reported layout; confirmed no overlap under current code, most likely resolved as a side effect of Session 8's UX polish pass. No code change made.</span></td>
+        <td class="hrs" style="padding-right:22px;">0.25</td>
+      </tr>
+      <tr>
+        <td class="desc" style="padding-left:22px;"><b>PR/branch management across 4 PRs</b><span class="note">Rescoping a PR mid-flight to separate Session 9B/admin-tiles/reorg from the RPC fix + 9C migration, via a pinned release branch, to keep each merge to main scoped to what was actually reviewed</span></td>
+        <td class="hrs" style="padding-right:22px;">0.3</td>
+      </tr>
+    </table>
+  </div>
+  <div class="callout" style="margin:16px 0 0;">
+    <b>Estimate basis:</b> none of these had a planning-time hour figure since none were part of the original 9-session scope. Each is sized from the build detail in its own session-note entry — the number of iteration rounds, bug fixes, and re-verification passes actually recorded — rather than a fresh guess.
+  </div>
+
+  <div class="grand-total">
+    <div class="gt-label">Total estimate<small>Sessions 1 through 9C + additional work · excludes Session 9 (not started)</small></div>
+    <div class="gt-num">~105 hrs</div>
+  </div>
+
+  <div class="footnote">Sessions 4–9C use the hour estimates written into the project's own scope notes (<code>CONTEXT.md</code>) at the time each item was planned, where one exists — Session 9C's un-built items (2–8) have none on record yet and are shown without an invented figure rather than guessed. Sessions 1–3 and the additional-work section above had no such figures on record, so those are back-calculated against comparably-scoped, already-estimated items elsewhere in the project — marked <span class="mono" style="font-size:12px;">(calc.)</span> on each session card. Real hours are still likely higher: Sessions 04B/04C (UAT fix cycles) remain unestimated, and every item flagged inline as running over its original estimate took more than the number shown.</div>
+
+</div>
+</body>
+</html>
