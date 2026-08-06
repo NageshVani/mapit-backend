@@ -9,6 +9,7 @@ const rateLimit  = require('express-rate-limit');
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { requireAuth, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
+const { logAuditEvent } = require('../utils/auditLog');
 
 const router = express.Router();
 
@@ -86,6 +87,9 @@ router.post('/signin', async (req, res, next) => {
     const { session, user } = data;
     const { data: profile } = await supabaseAdmin
       .from('profiles').select('*').eq('id', user.id).maybeSingle();
+
+    // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
+    logAuditEvent('login', req, user.id);
 
     res.json({ session, user, profile: profile || null, isNewUser: !profile });
   } catch (err) {
@@ -291,6 +295,9 @@ router.post('/verify-otp', otpLimiter, async (req, res, next) => {
     const { data: profile } = await supabaseAdmin
       .from('profiles').select('*').eq('id', user.id).maybeSingle();
 
+    // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
+    logAuditEvent('login', req, user.id);
+
     res.json({ session, user, profile: profile || null, isNewUser: !profile });
   } catch (err) {
     next(err);
@@ -332,6 +339,9 @@ router.post('/register', requireAuth, async (req, res, next) => {
       .single();
 
     if (error) return next(createError(error.message));
+
+    // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
+    logAuditEvent('signup', req, req.user.id);
 
     // Mark legacy invite code as used if provided
     if (invite_code) {
