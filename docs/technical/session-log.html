@@ -888,6 +888,248 @@
     </div>
   </article>
 
+  <article class="log-entry" data-cat="docs">
+    <div class="entry-dot" data-cat="docs"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#23</span>
+        <span class="cat-badge cat-docs">docs</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="docs">/resume</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Read <code>Context.md</code>, gave a Session Resume Summary (goal, done, next steps, blockers) and asked for direction before proceeding</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="feat">
+    <div class="entry-dot" data-cat="feat"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#24</span>
+        <span class="cat-badge cat-feat">feat</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="feat">Commit the docs/database reorg; push uat→main and open a PR for Session 9B; start Session 9C build item 1 (phone_verified migration); review all items and advise which are subscription-independent</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Committed the docs/database reorg (<code>d06131c</code>), pushed to <code>uat</code>, opened PR #9</li>
+        <li>Wrote <code>database/migrations/012-phone-verified.sql</code> (Session 9C build item 1) — not run yet</li>
+        <li>Reviewed the full open-items backlog and flagged which had no Vercel Pro/Supabase Pro/WhatsApp-BSP dependency</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="config">
+    <div class="entry-dot" data-cat="config"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#25</span>
+        <span class="cat-badge cat-config">config</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="config">PR #9 — let's just do Session 9B + admin tiles + reorg (rescope after uat moved past the intended scope)</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Closed PR #9, created <code>release/session-9b-admin-reorg</code> pinned at <code>d06131c</code>, opened PR #10 from it</li>
+        <li>Later merged PR #10 into <code>main</code> (<code>1c4283c</code>) once directed to promote the remaining commits</li>
+        <li>Opened PR #11 for the two commits left on <code>uat</code> (RPC fix + Session 9C migration), merged separately (<code>4290271</code>)</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="question">
+    <div class="entry-dot" data-cat="question"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#26</span>
+        <span class="cat-badge cat-question">question</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="question">Please brief what's tested, complete, and committed from Session 9B and 9C</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Gave a status brief: 9B fully built/tested/merged to main; 9C only build item 1 done, items 2–8 not started, item 2 blocked on BSP choice</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="docs">
+    <div class="entry-dot" data-cat="docs"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#27</span>
+        <span class="cat-badge cat-docs">docs</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="docs">Please provide SQL to run in Supabase to complete the (phone_verified) migration; confirmed run afterward</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Gave the <code>ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone_verified...</code> statement + verify query</li>
+        <li>Live-verified after Nagesh ran it: all 31 existing <code>profiles</code> rows have the column, defaulted false</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="feat">
+    <div class="entry-dot" data-cat="feat"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#28</span>
+        <span class="cat-badge cat-feat">feat</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="feat">The BSP/DLT decision will take time — let's finish all todos not linked to any subscription</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Proposed an ordered plan: listing-detail CSS overlap, edit-listing pre-fill fix, .env.example placeholder, IT Rules audit_log table, splash/Help modal font pass</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="fix">
+    <div class="entry-dot" data-cat="fix"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#29</span>
+        <span class="cat-badge cat-fix">fix</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="fix">Yes, let's do the listings_within_radius/subcategory fix</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Wrote <code>database/migrations/013-listings-within-radius-rpc.sql</code>, redefining the RPC to return only <code>(id, distance_m)</code></li>
+        <li>Refactored <code>src/routes/listings.js</code>'s <code>GET /</code> to call the RPC then <code>select('*').in('id', ids)</code> for full rows</li>
+        <li>Hit and fixed a real <code>PGRST203</code> function-overload conflict (old <code>integer</code> vs. new <code>double precision</code> radius_m) mid-fix</li>
+        <li>Live-verified: 45 active listings matched with correct distances, <code>subcategory</code> present</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="fix">
+    <div class="entry-dot" data-cat="fix"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#30</span>
+        <span class="cat-badge cat-fix">fix</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="fix">Listing-detail price/pill CSS overlap — please fix</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Built a static reproduction of the exact reported layout using the live CSS/markup — no overlap under current code</li>
+        <li>Concluded it was already fixed, most likely a side effect of Session 8's UX polish pass — no code change made</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="fix">
+    <div class="entry-dot" data-cat="fix"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#31</span>
+        <span class="cat-badge cat-fix">fix</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="fix">Edit-listing show_phone/show_exact_location pre-fill fix, .env.example SENTRY_DSN, IT Rules audit_log table, splash/Help modal font pass — continue through the plan</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Fixed <code>editListing()</code> to pre-fill <code>show_phone</code>/<code>show_exact_location</code> from the listing's actual saved values</li>
+        <li><code>.env.example</code> SENTRY_DSN — blocked, Claude denied <code>.env*</code> access at the permission-settings level, needs Nagesh</li>
+        <li>Built <code>audit_log</code> table (migration 014, RLS enabled, no policies) + <code>src/utils/auditLog.js</code>, wired into 5 call sites across 4 route files; live-verified</li>
+        <li>Splash hero/bullets + Help modal heading/list font sizes bumped; softened a splash claim ("Exact GPS pin") made inaccurate by Session 9B's fuzzing</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="config">
+    <div class="entry-dot" data-cat="config"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#32</span>
+        <span class="cat-badge cat-config">config</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="config">Yes, push PR #11 with the remaining 2 commits; yes, push to uat → main for the edit-listing/audit_log/font-pass batch</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Merged PR #11 (<code>4290271</code>) and later PR #12 (<code>e1bb817</code>) covering the edit-listing fix, audit_log, and font pass</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="docs">
+    <div class="entry-dot" data-cat="docs"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#33</span>
+        <span class="cat-badge cat-docs">docs</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="docs">Can we convert the 'Development Effort Summary' as an HTML file and place it under an appropriate folder under docs/? Update index.html accordingly.</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Updated the private Artifact with Sessions 9B/9C and today's additional-work items; grand total ~94→~105 hrs</li>
+        <li>Wrote <code>docs/business/mapit-development-effort-summary.html</code> as a standalone repo file, linked it from <code>docs/index.html</code></li>
+        <li>Merged via PR #13 (<code>245b17f</code>)</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="docs">
+    <div class="entry-dot" data-cat="docs"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#34</span>
+        <span class="cat-badge cat-docs">docs</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="docs">Run checkpoint skill; ensure no items are left that could be built without subscription or WhatsApp BSP setup; brief the todos left and the subscription required for each</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Updated <code>Context.md</code> across all sections (Current Goal, Completed, In Progress, Key Files, Open Issues, Decisions, Next Steps), committed <code>c399763</code></li>
+        <li>Audited remaining items — found only <code>.env.example</code>'s SENTRY_DSN blocked on Nagesh directly, plus 4 Session 9C sub-items (3, 5, 7, 8) buildable now, flagging item 4's gating logic as unsafe to wire live before the BSP exists</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="question">
+    <div class="entry-dot" data-cat="question"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#35</span>
+        <span class="cat-badge cat-question">question</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="question">Hold everything until BSP/Pvt Ltd decisions land. Where can I view the screenshots taken by you?</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Explained the session's verification screenshots (splash, Help modal, CSS-overlap repro) were temporary and deleted after use — none saved to <code>docs/screenshots/</code></li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="log-entry" data-cat="refactor">
+    <div class="entry-dot" data-cat="refactor"></div>
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="msg-num">#36</span>
+        <span class="cat-badge cat-refactor">refactor</span>
+        <span class="entry-time">2026-08-06</span>
+      </div>
+      <div class="user-msg" data-cat="refactor">Save future screenshots into docs/screenshots/session-XX/; is session-log.html up to date, can it be updated and moved into docs/; do root-level files need to stay there; if not, organize them</div>
+      <div class="summary-label">Changes &amp; Actions</div>
+      <ul class="summary-list">
+        <li>Appended entries #23–35 covering this whole conversation, then this closing entry (#36)</li>
+        <li>Moved <code>session-log.html</code> → <code>docs/technical/session-log.html</code> via <code>git mv</code>; updated the <code>/sessionlog</code> skill and <code>docs/index.html</code> to point at the new path</li>
+        <li>Audited every root-level file against actual tooling dependencies (dotenv, npm, Vercel, git, Claude Code, the Two-File Rule) — found 6 files with no real dependency on staying at root</li>
+        <li>Moved <code>Draft TOS Deepseek.md</code> → <code>docs/legal/</code> and <code>MapIt_Demo 30052026.html</code> → <code>docs/other/</code> (both confirmed unreferenced by any live code); flagged <code>Session_Log.md</code> (empty), 4 old message-export scripts, and 2 gitignored secret-adjacent files for a separate per-file decision</li>
+      </ul>
+    </div>
+  </article>
+
   <!-- LOG_ENTRIES_END -->
 </div>
 
