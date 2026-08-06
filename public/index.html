@@ -3121,6 +3121,14 @@ async function editListing(id){
     if(txEl) txEl.checked = true;
   }
 
+  // Pre-fill show_phone / show_exact_location from the listing's actual saved
+  // values — previously these silently reset to the form's hardcoded HTML
+  // defaults ('always' / unchecked) on every edit, regardless of what the
+  // seller had actually chosen.
+  const phoneEl = document.querySelector(`input[name="showPhone"][value="${l.show_phone||'always'}"]`);
+  if(phoneEl) phoneEl.checked = true;
+  document.getElementById('postShowExactLocation').checked = !!l.show_exact_location;
+
   // Pre-populate location dropdown with listing's current location
   const sel = document.getElementById('postLocation');
   sel.innerHTML = '';
