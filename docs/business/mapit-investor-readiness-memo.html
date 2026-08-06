@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MapIt — Investor Readiness Memo</title>
+<style>
+  :root{
+    --bg:#EEF1F0;
+    --surface:#FFFFFF;
+    --surface-2:#E3E7E4;
+    --line:#D3D8D4;
+    --ink:#16201C;
+    --ink-soft:#52625A;
+    --accent:#F06030;
+    --accent-deep:#C8481E;
+    --accent-wash:#F0603014;
+    --teal:#2B6E63;
+    --teal-wash:#2B6E6314;
+    --amber:#A9720C;
+    --amber-wash:#A9720C14;
+    --shadow: 0 1px 2px rgba(22,32,28,.04), 0 8px 24px rgba(22,32,28,.06);
+    --serif: "Iowan Old Style","Palatino Linotype","URW Palladio L",Georgia,"Times New Roman",serif;
+    --sans: -apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    --mono: ui-monospace,"SF Mono","Cascadia Code","Roboto Mono","Liberation Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#12181A;
+      --surface:#182124;
+      --surface-2:#1F2A2D;
+      --line:#2B3639;
+      --ink:#E7ECE9;
+      --ink-soft:#9BAAA3;
+      --accent:#FF7A47;
+      --accent-deep:#FFA073;
+      --accent-wash:#FF7A4720;
+      --teal:#57B39F;
+      --teal-wash:#57B39F1F;
+      --amber:#E0AA4E;
+      --amber-wash:#E0AA4E1F;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12181A; --surface:#182124; --surface-2:#1F2A2D; --line:#2B3639;
+    --ink:#E7ECE9; --ink-soft:#9BAAA3; --accent:#FF7A47; --accent-deep:#FFA073;
+    --accent-wash:#FF7A4720; --teal:#57B39F; --teal-wash:#57B39F1F;
+    --amber:#E0AA4E; --amber-wash:#E0AA4E1F;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#EEF1F0; --surface:#FFFFFF; --surface-2:#E3E7E4; --line:#D3D8D4;
+    --ink:#16201C; --ink-soft:#52625A; --accent:#F06030; --accent-deep:#C8481E;
+    --accent-wash:#F0603014; --teal:#2B6E63; --teal-wash:#2B6E6314;
+    --amber:#A9720C; --amber-wash:#A9720C14;
+    --shadow: 0 1px 2px rgba(22,32,28,.04), 0 8px 24px rgba(22,32,28,.06);
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+    font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent-wash); }
+  a{ color:var(--accent-deep); }
+  :root[data-theme="dark"] a, @media (prefers-color-scheme:dark){ a{ color:var(--accent); } }
+
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;
+  }
+
+  .page{ max-width:1180px; margin:0 auto; padding:0 24px 96px; }
+
+  /* ---------- Memo header ---------- */
+  header.memo{
+    padding:48px 0 28px; border-bottom:1px solid var(--line);
+    display:grid; gap:20px;
+  }
+  .memo-kicker{
+    font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent-deep); display:flex; align-items:center; gap:8px;
+  }
+  .memo-kicker .pin{ font-size:13px; }
+  h1.memo-title{
+    font-family:var(--serif); font-weight:600; font-size:clamp(28px,4vw,42px);
+    margin:0; text-wrap:balance; letter-spacing:-0.01em;
+  }
+  .memo-fields{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px 32px;
+    font-family:var(--mono); font-size:13px; color:var(--ink-soft);
+    padding-top:6px;
+  }
+  .memo-fields dt{ text-transform:uppercase; letter-spacing:.08em; font-size:10.5px; color:var(--ink-soft); }
+  .memo-fields dd{ margin:2px 0 0; color:var(--ink); font-family:var(--sans); }
+
+  .disclaimer{
+    margin-top:6px; font-size:13px; color:var(--ink-soft); border-left:2px solid var(--line);
+    padding-left:12px; max-width:64ch;
+  }
+
+  /* ---------- Layout: TOC + content ---------- */
+  .layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:56px; padding-top:36px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns:1fr; } }
+
+  nav.toc{ position:sticky; top:24px; display:flex; flex-direction:column; gap:2px; }
+  @media (max-width:860px){
+    nav.toc{ position:static; flex-direction:row; flex-wrap:wrap; gap:8px 14px; padding-bottom:8px; border-bottom:1px solid var(--line); margin-bottom:8px; }
+  }
+  nav.toc a{
+    font-family:var(--mono); font-size:12.5px; color:var(--ink-soft); text-decoration:none;
+    padding:6px 8px; border-radius:6px; display:flex; gap:8px; align-items:baseline;
+  }
+  nav.toc a:hover{ color:var(--ink); background:var(--surface-2); }
+  nav.toc a .ref{ color:var(--accent-deep); }
+  nav.toc .toc-label{ font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); padding:0 8px 6px; }
+
+  main{ min-width:0; display:flex; flex-direction:column; gap:64px; }
+
+  /* ---------- Section chrome ---------- */
+  section{ scroll-margin-top:24px; }
+  .sec-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:6px; }
+  .ref-tag{
+    font-family:var(--mono); font-size:12px; color:var(--accent-deep); background:var(--accent-wash);
+    border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    padding:2px 8px; border-radius:5px; flex:none;
+  }
+  h2{
+    font-family:var(--serif); font-weight:600; font-size:clamp(22px,3vw,28px); margin:0;
+    text-wrap:balance; letter-spacing:-0.005em;
+  }
+  .sec-dek{ color:var(--ink-soft); font-size:15px; max-width:66ch; margin:10px 0 28px; }
+  h3{ font-family:var(--serif); font-weight:600; font-size:18px; margin:0 0 8px; }
+  p{ margin:0 0 14px; max-width:68ch; }
+  p.tight{ margin-bottom:8px; }
+  ul, ol{ margin:0 0 14px; padding-left:22px; max-width:64ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:650; }
+  .muted{ color:var(--ink-soft); }
+
+  /* ---------- Snapshot stat tiles ---------- */
+  .snapshot-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden;
+  }
+  .tile{ background:var(--surface); padding:16px 18px; display:flex; flex-direction:column; gap:6px; }
+  .tile .label{ font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); }
+  .tile .value{ font-family:var(--mono); font-size:20px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .tile .value.small{ font-size:15px; font-family:var(--sans); font-weight:600; }
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:11px;
+    padding:2px 8px; border-radius:99px; width:fit-content;
+  }
+  .pill.live{ background:var(--teal-wash); color:var(--teal); }
+  .pill.pending{ background:var(--amber-wash); color:var(--amber); }
+
+  /* ---------- Callout / margin note ---------- */
+  .callout{
+    border-left:3px solid var(--accent); background:var(--surface); border-radius:0 10px 10px 0;
+    padding:14px 18px; margin:18px 0; box-shadow:var(--shadow); max-width:68ch;
+  }
+  .callout .callout-label{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--accent-deep); margin-bottom:6px; display:block;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout.teal{ border-left-color:var(--teal); }
+  .callout.teal .callout-label{ color:var(--teal); }
+
+  /* ---------- Tables ---------- */
+  .table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; margin:16px 0 24px; }
+  table{ border-collapse:collapse; width:100%; min-width:520px; background:var(--surface); }
+  caption{ text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); padding:10px 16px; border-bottom:1px solid var(--line); }
+  th, td{ text-align:left; padding:10px 16px; font-size:14px; border-bottom:1px solid var(--line); vertical-align:top; }
+  thead th{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; background:var(--surface-2); }
+  tbody tr:last-child td{ border-bottom:none; }
+  td.num, th.num{ font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+  /* ---------- Timeline (short/mid/long) ---------- */
+  .horizon{ display:grid; gap:20px; grid-template-columns:repeat(3,1fr); margin-top:8px; }
+  @media (max-width:760px){ .horizon{ grid-template-columns:1fr; } }
+  .horizon-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px;
+    box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px;
+  }
+  .horizon-card .span{ font-family:var(--mono); font-size:11px; color:var(--ink-soft); letter-spacing:.04em; }
+  .horizon-card h4{ font-family:var(--serif); font-size:17px; margin:0; }
+  .horizon-card ul{ margin:4px 0 0; padding-left:18px; font-size:13.5px; }
+  .horizon-card li{ margin-bottom:7px; }
+  .horizon-card.now{ border-color:color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  .horizon-card.now .span{ color:var(--accent-deep); }
+
+  /* ---------- Definition rows (Q&A style) ---------- */
+  .qa{ display:flex; flex-direction:column; gap:4px; margin-bottom:22px; }
+  .qa .q{ font-family:var(--mono); font-size:12px; color:var(--ink-soft); }
+
+  /* ---------- Footer ---------- */
+  footer{
+    margin-top:72px; padding-top:20px; border-top:1px solid var(--line);
+    font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);
+    display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    section{ }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="memo">
+    <div class="memo-kicker"><span class="pin">📍</span> MapIt — Strategy Memo</div>
+    <h1 class="memo-title">Investor readiness, after the TruYou pivot</h1>
+    <dl class="memo-fields">
+      <div><dt>To</dt><dd>Nagesh &amp; Arun</dd></div>
+      <div><dt>Re</dt><dd>Fundraising, in light of the phone-verification decision</dd></div>
+      <div><dt>Prepared</dt><dd>2026-08-02</dd></div>
+      <div><dt>Status</dt><dd>Bangalore closed beta · Sessions 1–9a complete</dd></div>
+    </dl>
+    <p class="disclaimer">This is a working strategy memo, not legal, tax, or investment advice. The incorporation and trademark sections in particular should get a CA/company-secretary and trademark-agent pass before you file anything — same posture as the earlier ToS decision to skip advocate review for launch, not a template for this decision too.</p>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Sections">
+      <div class="toc-label">Contents</div>
+      <a href="#snapshot"><span class="ref">§0</span> Where MapIt stands</a>
+      <a href="#trigger"><span class="ref">§0.1</span> Why this memo now</a>
+      <a href="#diligence"><span class="ref">§A</span> What investors diligence</a>
+      <a href="#equity"><span class="ref">§B</span> How much equity</a>
+      <a href="#horizons"><span class="ref">§C</span> Short / mid / long term</a>
+      <a href="#registration"><span class="ref">§D</span> Registering MapIt</a>
+      <a href="#nextsteps"><span class="ref">§E</span> What to do this month</a>
+    </nav>
+
+    <main>
+
+      <section id="snapshot">
+        <div class="sec-head"><span class="ref-tag">§0</span><h2>Where MapIt stands today</h2></div>
+        <p class="sec-dek">Pulled from CONTEXT.md — this is the baseline any investor conversation, and any equity math, has to start from.</p>
+
+        <div class="snapshot-grid">
+          <div class="tile">
+            <span class="label">Build progress</span>
+            <span class="value">Sessions 1–9a</span>
+            <span class="pill live">● complete, signed off</span>
+          </div>
+          <div class="tile">
+            <span class="label">Live market</span>
+            <span class="value small">Bangalore only</span>
+            <span class="muted" style="font-size:12px;">family &amp; friends closed beta</span>
+          </div>
+          <div class="tile">
+            <span class="label">Monthly infra cost</span>
+            <span class="value">$0</span>
+            <span class="muted" style="font-size:12px;">Vercel + Supabase + Resend, all free tier</span>
+          </div>
+          <div class="tile">
+            <span class="label">Identity verification</span>
+            <span class="value small">Email OTP only</span>
+            <span class="pill pending">○ phone OTP planned</span>
+          </div>
+          <div class="tile">
+            <span class="label">Legal foundation</span>
+            <span class="value small">ToS/Privacy v1.0</span>
+            <span class="muted" style="font-size:12px;">live, Arun-approved, grievance officer named</span>
+          </div>
+          <div class="tile">
+            <span class="label">Current entity</span>
+            <span class="value small">Sole proprietorship</span>
+            <span class="muted" style="font-size:12px;">Arun BN, trading as MapIt</span>
+          </div>
+        </div>
+
+        <div class="callout">
+          <span class="callout-label">Read this as the honest starting point</span>
+          <p>Everything below assumes a pre-revenue, single-city, closed-beta product with a working trust &amp; moderation stack (chat, reporting, grievance log, admin ops tooling) but no phone verification, no revenue line, and no company that can legally hold equity yet. That is a normal, fundable pre-seed position in India — but it changes which of the four questions below you can answer with confidence today versus after Bangalore's public soft-open.</p>
+        </div>
+      </section>
+
+      <section id="trigger">
+        <div class="sec-head"><span class="ref-tag">§0.1</span><h2>Why this memo exists now</h2></div>
+        <p>The original plan — bootstrap for ~6 months on Arun and Nagesh's own funding, prove Bangalore demand, <em>then</em> raise — assumed the trust &amp; safety bar was "email OTP is enough for a beta." Researching OfferUp's TruYou program changed that: a real name and government ID plus phone match is now treated as table stakes for a stranger-to-stranger marketplace with a physical meetup, not a nice-to-have. MapIt's own architecture already reflects that instinct — GPS-exact listings, a grievance log built to IT Rules 2021 timelines, admin moderation — so phone verification is a continuation of a pattern already set, not a new philosophy.</p>
+        <p>The complication is cost, not conviction: phone OTP means a Twilio (or comparable) SMS bill that scales with signups, which breaks the "$0/month until Session 9" budget discipline the project has held since Session 1. That single new recurring line item is what's pushing the conversation from <em>bootstrap six months, then talk to investors</em> to <em>raise a small round first, so the trust layer isn't the thing that gets cut when money is tight.</em></p>
+      </section>
+
+      <section id="diligence">
+        <div class="sec-head"><span class="ref-tag">§A</span><h2>What investors will actually look for</h2></div>
+        <p class="sec-dek">For a hyperlocal C2C marketplace specifically — not a generic SaaS checklist. Ranked by what a seed-stage investor in this category weighs first.</p>
+
+        <div class="qa">
+          <span class="q">A.1 — Liquidity in one city, not total signups</span>
+          <p>The single metric that matters most for a marketplace is whether a listing in Bangalore actually gets a buyer response and a completed meetup — not how many people downloaded or registered. Investors in this category will ask for a <strong>match rate</strong> (listings that get at least one genuine "I'm Interested"), a <strong>time-to-first-response</strong>, and a <strong>repeat-seller rate</strong> (do people who sold once come back to sell again). MapIt already has the plumbing to produce these numbers (interest notes, chat threads, admin overview dashboard) — the gap isn't tooling, it's real transaction volume from a public Bangalore audience rather than family and friends.</p>
+        </div>
+
+        <div class="qa">
+          <span class="q">A.2 — Trust &amp; safety as infrastructure, not a feature</span>
+          <p>This is the direct payoff of the TruYou research. An investor who has seen a marketplace fail on fraud or safety incidents will look specifically for: identity verification stronger than email, a reporting/moderation path (MapIt has this — Session 6 report-listing + Session 8 reported-chat visibility), a grievance/complaint SLA (MapIt has this — the 24-hour/15-day IT Rules grievance log), and evidence the founders treat this as core, not an afterthought. Phone verification closes the one visible gap in an otherwise unusually complete trust stack for an MVP this size.</p>
+        </div>
+
+        <div class="qa">
+          <span class="q">A.3 — A monetization thesis, even pre-revenue</span>
+          <p>Nobody expects revenue at this stage, but they will expect a specific answer to "how does this make money once it works" — not "we'll figure it out." Reasonable levers already implied by the product: a per-listing or subscription fee once density is proven, promoted/featured listings, a paid trust badge (phone+ID verified sellers rank higher — this doubles as a trust <em>and</em> monetization feature), and eventually a facilitation fee on higher-value categories like vehicles and real estate where MapIt already has dedicated listing schemas.</p>
+        </div>
+
+        <div class="qa">
+          <span class="q">A.4 — Team-market fit</span>
+          <p>Two founders, one technical and shipping fast (nine build sessions, a working chat/moderation/admin stack, largely solo), one with Bangalore ground presence, legal judgment, and investor relations instinct already exercised (the ToS/incorporation research, UAT sign-off discipline). That division of labor is exactly what seed investors look for in a hyperlocal product — someone has to be physically present where the liquidity has to happen.</p>
+        </div>
+
+        <div class="qa">
+          <span class="q">A.5 — A market size story that survives scrutiny</span>
+          <p>India's C2C classifieds market is large but crowded (OLX, Quikr, Facebook Marketplace, and a long tail of category apps) and mostly free-to-use, which is exactly why undifferentiated growth pitches get rejected. The defensible story is narrower: <strong>exact-GPS, hyperlocal trust</strong> as the wedge — starting in one dense, high-income city (Bangalore) where "who am I actually meeting, and how far away are they, really" is a felt problem existing apps answer poorly (locality-only or self-reported location, minimal verification).</p>
+        </div>
+
+        <div class="qa">
+          <span class="q">A.6 — A cap table and legal foundation they can actually invest into</span>
+          <p>This is the one that blocks everything else regardless of how good the metrics look: a sole proprietorship cannot issue shares. See §D — this has to be fixed before a term sheet, not after.</p>
+        </div>
+
+        <div class="callout teal">
+          <span class="callout-label">What's already diligence-ready</span>
+          <p>Don't undersell this: ToS/Privacy live and Arun-approved, a real grievance-officer contact under IT Rules 2021, RLS-audited data access, Sentry error monitoring, and an admin ops console most seed-stage MVPs don't have yet. Lead with it — it's evidence of founder discipline, which investors read as a proxy for execution risk.</p>
+        </div>
+      </section>
+
+      <section id="equity">
+        <div class="sec-head"><span class="ref-tag">§B</span><h2>How much equity to offer</h2></div>
+        <p class="sec-dek">Short answer: don't fix a number yet — fix the <em>instrument</em>, and size the raise to the next real proof point, not to a valuation you can't defend today.</p>
+
+        <p>At this stage (single-city, pre-revenue, no phone verification live yet), MapIt is a <strong>pre-seed</strong>, not a seed, company by Indian market convention — even though the product itself is unusually far along for that stage. Pricing a priced equity round now forces a valuation conversation you don't have the metrics to win. The standard move at this stage in India is a convertible instrument that <em>defers</em> valuation to your next real round:</p>
+
+        <ul>
+          <li><strong>CCPS (Compulsorily Convertible Preference Shares)</strong> — the Companies Act–native instrument Indian investors are most comfortable with; converts to equity at the next priced round, usually with a valuation cap and discount.</li>
+          <li><strong>Convertible Note / CCD (Compulsorily Convertible Debenture)</strong> — functionally similar to a US SAFE, but SAFEs themselves aren't a recognized instrument under Indian company law, so Indian angel/pre-seed rounds use a CCD dressed the same way (cap + discount, converts later).</li>
+        </ul>
+        <p>Either way, this only becomes possible once MapIt is a Private Limited Company (§D) — a sole proprietorship cannot issue either instrument.</p>
+
+        <div class="table-wrap">
+          <table>
+            <caption>Typical Indian pre-seed / seed sizing, for reference</caption>
+            <thead>
+              <tr><th>Stage</th><th>Typical raise</th><th class="num">Typical dilution</th><th>What it should buy</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Pre-seed (MapIt today)</td>
+                <td>₹50L – ₹1.5Cr</td>
+                <td class="num">8 – 12%</td>
+                <td>Phone verification live, Bangalore public soft-open, first 90 days of real liquidity data</td>
+              </tr>
+              <tr>
+                <td>Seed (next milestone)</td>
+                <td>₹2Cr – ₹5Cr</td>
+                <td class="num">12 – 18%</td>
+                <td>Proven match-rate/retention in Bangalore, first monetization pilot, 1–2 city expansion</td>
+              </tr>
+              <tr>
+                <td>Series A (later)</td>
+                <td>₹15Cr+</td>
+                <td class="num">15 – 20%</td>
+                <td>Multi-city, revenue growing, unit economics proven</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <span class="callout-label">The actual recommendation</span>
+          <p>Raise only what closes the trust-layer gap and buys 9–12 months of real Bangalore data — not a number that "feels safe." A ₹75L–1Cr pre-seed via CCD/CCPS, priced with a cap rather than a fixed valuation, at roughly <strong>8–10% dilution</strong>, funds phone verification (Twilio), a small ops/support hire for Arun in Bangalore, and a public soft-open — without giving away seed-stage equity for pre-seed-stage proof. Reserve an <strong>ESOP pool of 10–15%</strong> at incorporation (§D) so future hires don't dilute you again later.</p>
+        </div>
+      </section>
+
+      <section id="horizons">
+        <div class="sec-head"><span class="ref-tag">§C</span><h2>Short, mid, and long term plan</h2></div>
+        <p class="sec-dek">Built around the actual living arrangement: Arun full weekday presence in Bangalore now, Nagesh continuing to build from UAE until the business genuinely needs him on the ground.</p>
+
+        <div class="horizon">
+          <div class="horizon-card now">
+            <span class="span">0 – 6 months</span>
+            <h4>Prove Bangalore, close the trust gap</h4>
+            <ul>
+              <li>Ship phone/SMS OTP verification (Twilio), reusing the existing email-OTP UX pattern</li>
+              <li>Complete Session 9's bundled paid-infra upgrade (Vercel/Supabase/Resend) so the app can hold real public traffic</li>
+              <li>Move from family/friends closed beta to a real Bangalore public soft-open (Arun leads this, on the ground)</li>
+              <li>Instrument and start tracking match-rate, repeat-seller rate, and time-to-response — the numbers §A said investors need</li>
+              <li>Convert to a Private Limited Company and file the MapIt trademark (§D) — do this <em>before</em> any investor conversation gets serious, not during</li>
+              <li>Build the pitch deck from real Bangalore numbers, not projections</li>
+            </ul>
+          </div>
+          <div class="horizon-card">
+            <span class="span">6 – 18 months</span>
+            <h4>Close a round, start monetizing</h4>
+            <ul>
+              <li>Raise the pre-seed/seed round sized in §B, once trust-layer + early liquidity data exist</li>
+              <li>Arun hires MapIt's first Bangalore ops/support person; Nagesh continues shipping from UAE</li>
+              <li>Pilot the first monetization lever — most likely a paid verified-seller badge or promoted listings, since both reuse trust infrastructure already built</li>
+              <li>Expand to 1–2 adjacent cities (Chennai, Hyderabad, or Coimbatore are natural next steps) reusing the Bangalore playbook rather than a new build</li>
+            </ul>
+          </div>
+          <div class="horizon-card">
+            <span class="span">18 – 36+ months</span>
+            <h4>Scale and diversify</h4>
+            <ul>
+              <li>Multi-city presence across South India, moving toward pan-India</li>
+              <li>Revenue diversification: category-specific facilitation (vehicles, real estate) beyond simple listing fees</li>
+              <li>Revisit Nagesh's location once team size and Bangalore operating complexity genuinely require it — not before</li>
+              <li>Series A readiness: proven unit economics, multi-city retention, a real revenue line</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="registration">
+        <div class="sec-head"><span class="ref-tag">§D</span><h2>Registering MapIt — product and company</h2></div>
+        <p class="sec-dek">Two separate filings with different purposes: a trademark protects the <em>name and brand</em>; company incorporation creates the <em>legal entity</em> that can hold that trademark, sign contracts, and issue equity.</p>
+
+        <h3>D.1 — Trademark the MapIt name</h3>
+        <p>File with the Indian Trade Marks Registry under <strong>Class 35</strong> (marketplace/advertising services) and <strong>Class 42</strong> (the software/platform itself) — most consumer apps file both. Run a clearance search first; "MapIt" is short and descriptive-adjacent, so confirm nothing conflicting is already registered before spending on filing. You can use the ™ symbol the moment an application is filed; ® is only correct after registration completes, which typically takes 12–24 months if unopposed. File this under the new company's name (D.2), not Arun's personal name, so the brand asset sits inside the entity investors will actually hold shares in.</p>
+
+        <h3>D.2 — Incorporate a Private Limited Company</h3>
+        <p>You've already looked at this question once — the earlier LLM-council review (comparing Sole Proprietorship / LLP / Pvt Ltd) concluded a thin sole-proprietorship structure was <em>right for the ToS-liability question specifically</em>. That conclusion doesn't carry over here: fundraising adds a new, harder constraint that overrides it —</p>
+        <div class="callout">
+          <span class="callout-label">Why a sole proprietorship blocks fundraising specifically</span>
+          <p>A sole proprietorship has no legal identity separate from Arun. It cannot issue shares, cannot have a cap table, and gives Arun unlimited personal liability for anything the business does. No institutional angel or seed fund in India will invest into one. This is not a reversal of the earlier ToS decision — it's a different question (liability shield for users vs. ability to hold equity) getting a different answer.</p>
+        </div>
+        <p>The standard path: incorporate a <strong>Private Limited Company</strong> via the MCA's SPICe+ form, registered office in Bangalore, minimum 2 directors and 2 shareholders (Arun and Nagesh both work), each needing a DIN and DSC. The existing sole-proprietorship business — the app, the domain, the trademark once filed, any existing contracts — gets moved into the new company via a <strong>Business Transfer Agreement</strong> (a "slump sale"), so nothing has to be rebuilt from scratch.</p>
+
+        <div class="table-wrap">
+          <table>
+            <caption>What changes once incorporated</caption>
+            <thead><tr><th>Area</th><th>Before (sole proprietorship)</th><th>After (Pvt Ltd)</th></tr></thead>
+            <tbody>
+              <tr><td>Liability</td><td>Unlimited, personal to Arun</td><td>Capped at company's assets</td></tr>
+              <tr><td>Can issue equity</td><td>No</td><td>Yes — required for any raise</td></tr>
+              <tr><td>Annual compliance</td><td>Minimal</td><td>ROC filings, statutory audit, CA/CS retainer — budget roughly ₹75,000–1,50,000/yr</td></tr>
+              <tr><td>Founders' status</td><td>Arun is "the business"</td><td>Both become directors/employees; salaries carry TDS/payroll obligations</td></tr>
+              <tr><td>Foreign investment</td><td>Not applicable</td><td>100% FDI is allowed via the automatic route for a marketplace-model e-commerce entity — <strong>provided MapIt never owns or sells inventory itself</strong>, only facilitates listings between buyers and sellers, which is already how the product works today</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="tight muted">This last point matters even for informal money: if a foreign angel invests, or if Nagesh personally routes funds in from the UAE, the same FDI marketplace-model rule applies — keep it in mind as a constraint on product decisions (e.g., never let MapIt itself become a seller of record for any listing), not just a paperwork detail.</p>
+      </section>
+
+      <section id="nextsteps">
+        <div class="sec-head"><span class="ref-tag">§E</span><h2>What to actually do this month</h2></div>
+        <ol>
+          <li>Get a CA and a company-secretary quote for the Pvt Ltd conversion + first-year compliance — this is the one filing with a real clock on it, since nothing in §B or §D.1 can close without it.</li>
+          <li>Run the trademark clearance search for "MapIt" before filing.</li>
+          <li>Scope and build phone/SMS OTP verification (Twilio) as the next engineering session — it's now both a product requirement and the headline trust-story for investor conversations.</li>
+          <li>Start logging match-rate and repeat-seller numbers now, even at closed-beta volume, so there's a real trend line by the time a pitch deck gets built.</li>
+        </ol>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <span>MapIt — internal strategy memo</span>
+    <span>Sources: CONTEXT.md (Sessions 1–9a), OfferUp/TruYou research discussion, Indian company-law &amp; FDI marketplace-model conventions</span>
+  </footer>
+</div>
+</body>
+</html>

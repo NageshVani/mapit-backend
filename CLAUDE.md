@@ -156,8 +156,8 @@ Server entry          : server.js
 Auth middleware       : src/middleware/auth.js
 Supabase client       : src/config/supabase.js
 API routes            : src/routes/ (auth, listings, messages, pins, uploads, users)
-Migrations            : database/migrations/ (numbered SQL files)
-Docs                  : docs/ (architecture.md, ux-audit.md, screenshots/)
+Migrations            : database/migrations/ (numbered SQL files); one-off scripts in database/scripts/
+Docs                  : docs/ (see docs/index.html) — subfolders: uat/, legal/, business/, technical/, research/, other/, screenshots/
 Session history       : CONTEXT.md
 Environment template  : .env.example
 ```

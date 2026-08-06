@@ -1,0 +1,110 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Roman;\f1\froman\fcharset0 Times-Bold;\f2\fmodern\fcharset0 Courier;
+\f3\froman\fcharset0 Times-Italic;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid1\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}
+{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid201\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid3}
+{\list\listtemplateid4\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid301\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid4}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}{\listoverride\listid4\listoverridecount0\ls4}}
+\margl1440\margr1440\vieww25340\viewh11880\viewkind0
+\deftab720
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\fs36 \cf0 \expnd0\expndtw0\kerning0
+This is a smart catch to make before launch \'97 exact-pin doxxing is one of the most common trust-killers for hyperlocal marketplaces, and it's a solvable UX/architecture problem rather than a fundamental flaw in the model. Here's how I'd think about it for MapIt specifically, given your Leaflet.js + Supabase stack.\
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f1\b \cf0 The core fix: separate "display location" from "exact location"\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b0 \cf0 Right now it sounds like the seller's precise pin is what gets rendered on the map and shown to buyers. The standard fix used by Nextdoor, Facebook Marketplace, OfferUp, and Craigslist is 
+\f1\b progressive location disclosure
+\f0\b0 :\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls1\ilvl0
+\f1\b \cf0 \kerning1\expnd0\expndtw0 {\listtext	1	}\expnd0\expndtw0\kerning0
+Public view (default):
+\f0\b0  Show only an obscured/fuzzed location \'97 a ~200-500m radius circle or a snapped-to-neighborhood centroid, not the exact pin. Buyers see "near Indiranagar, 12th Main" rather than the seller's exact building.\
+\ls1\ilvl0
+\f1\b \kerning1\expnd0\expndtw0 {\listtext	2	}\expnd0\expndtw0\kerning0
+After contact is initiated:
+\f0\b0  Once a buyer messages the seller in-app, the seller can choose to share more precision, or better \'97 both parties agree on a 
+\f1\b meeting point
+\f0\b0  (a public place) rather than the seller's home address ever being exposed.\
+\ls1\ilvl0
+\f1\b \kerning1\expnd0\expndtw0 {\listtext	3	}\expnd0\expndtw0\kerning0
+Exact coordinates never leave the backend
+\f0\b0  unless the seller explicitly opts to reveal them for a specific transaction.\
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f1\b \cf0 Implementation approach for your stack\
+\pard\pardeftab720\sa240\partightenfactor0
+\cf0 Database:
+\f0\b0  Store two location fields per listing \'97\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls2\ilvl0
+\f2 \cf0 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+exact_location
+\f0  (geography/point, RLS-restricted to the listing owner only, never selectable by anon/authenticated buyer roles)\
+\ls2\ilvl0
+\f2 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+display_location
+\f0  (a fuzzed point, computed once at listing-creation time, e.g. by adding a randomized offset of 150-400m within a circle, or snapping to the centroid of a geohash cell/locality polygon)\
+\pard\pardeftab720\sa240\partightenfactor0
+\cf0 You already did a full RLS audit \'97 this is a natural extension: add a policy so 
+\f2 exact_location
+\f0  is only readable by the listing's 
+\f2 seller_id
+\f0 , and everyone else (including buyers) only gets 
+\f2 display_location
+\f0  via a view or RPC function.\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b \cf0 Map rendering (Leaflet):
+\f0\b0  Render the fuzzed point as either:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls3\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+A 
+\f1\b circle/blur radius
+\f0\b0  overlay instead of a sharp pin (visually signals "approximate area," which also sets buyer expectations correctly), or\
+\ls3\ilvl0\kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+A pin 
+\f1\b snapped to a fixed grid cell
+\f0\b0  (simpler, deterministic, no randomness to manage)\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f1\b \cf0 Fuzzing method:
+\f0\b0  A fixed random offset per listing (seeded once, stored) is safer than fuzzing on every page load \'97 random-per-request fuzzing can actually be reverse-engineered by triangulating multiple loads. Generate once, store 
+\f2 display_location
+\f0 , done.\
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f1\b \cf0 Product/UX layer on top of the technical fix\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\partightenfactor0
+\ls4\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Seller-chosen precision:
+\f0\b0  Let sellers pick "show exact area" vs "show only locality name" \'97 gives them control, which also reduces listing-abandonment from privacy anxiety.\
+\ls4\ilvl0
+\f1\b \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Suggested meet-up spots:
+\f0\b0  For handoffs, nudge both parties toward well-known public landmarks (a mall, metro station, caf\'e9) rather than home addresses \'97 this is also a safety feature beyond just privacy.\
+\ls4\ilvl0
+\f1\b \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+In-app chat only until both parties opt in to share contact/exact location
+\f0\b0  \'97 keeps phone numbers and addresses out of the flow until trust is established.\
+\ls4\ilvl0
+\f1\b \kerning1\expnd0\expndtw0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+Trust signals
+\f0\b0  (verified phone/email, transaction history, ratings) reduce the 
+\f3\i need
+\f0\i0  for buyers to see exact location as a proxy for trust \'97 worth pairing with this.\
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f1\b \cf0 Why this matters for your launch specifically\
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b0 \cf0 Given MapIt's positioning as hyperlocal, over-fuzzing hurts the core value prop (nearby discovery), so the balance is: fuzzy enough to prevent doorstep-tracking (~200-400m is usually enough to not pinpoint a specific residence in dense Bangalore neighborhoods) but tight enough that "near me" search still feels meaningfully local.\
+Want me to draft this as a spec doc (data model + RLS policy changes + Leaflet rendering notes) you and Arun can drop straight into your Notion tracker?\
+}

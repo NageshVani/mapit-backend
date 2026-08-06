@@ -173,12 +173,12 @@ app.get('/admin', (req, res) => {
 });
 
 // ── Legal pages ──────────────────────────────────────────────
-// Terms and Privacy are one combined document (docs/terms-privacy-draft2.html,
+// Terms and Privacy are one combined document (docs/legal/terms-privacy-draft2.html,
 // finalized v1.0, approved by Arun 2026-07-21) — Part I is Terms, Part II is
 // Privacy. /privacy redirects to the same file's Privacy anchor (#p1) rather
 // than duplicating the document, so there's only one file to keep in sync.
 app.get('/terms', (req, res) => {
-  res.sendFile(path.join(__dirname, '../docs/terms-privacy-draft2.html'));
+  res.sendFile(path.join(__dirname, '../docs/legal/terms-privacy-draft2.html'));
 });
 app.get('/privacy', (req, res) => {
   res.redirect('/terms#p1');
