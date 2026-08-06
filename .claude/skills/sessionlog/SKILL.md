@@ -1,8 +1,8 @@
 ---
-description: Generate or update a formatted HTML session log (session-log.html) in the project root. Appends every user message and a summary of changes made, with timestamps. Run anytime — safe to re-run, it always appends, never overwrites history.
+description: Generate or update a formatted HTML session log at docs/technical/session-log.html. Appends every user message and a summary of changes made, with timestamps. Run anytime — safe to re-run, it always appends, never overwrites history.
 ---
 
-Your job is to generate or update `session-log.html` in the project root.
+Your job is to generate or update `docs/technical/session-log.html` (moved here from the project root on 2026-08-06 as part of a root-folder cleanup).
 
 ## Step 1 — Collect the data
 
@@ -22,9 +22,9 @@ Only include entries since the LAST time this command was run (check the log for
 
 ---
 
-## Step 2 — Write or append to session-log.html
+## Step 2 — Write or append to docs/technical/session-log.html
 
-If `session-log.html` does NOT exist, create it with the full HTML template below, then inject the entries.
+If `docs/technical/session-log.html` does NOT exist, create it with the full HTML template below, then inject the entries.
 
 If it ALREADY exists, find the comment `<!-- LOG_ENTRIES_END -->` and insert new `<article>` blocks just before it. Do not touch anything else in the file.
 
@@ -615,7 +615,7 @@ Replace:
 
 After writing the file, reply with:
 ```
-✅ session-log.html updated
+✅ docs/technical/session-log.html updated
    Added: X new entries (#N to #M)
    Total entries: Y
-   Open session-log.html in your browser to review.
+   Open docs/technical/session-log.html in your browser to review.
