@@ -788,6 +788,16 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
             Want to save this area? <span style="color:var(--orange);cursor:pointer;font-weight:600;" onclick="closePostModal();openPinsModal()">Add to My Locations →</span>
           </div>
         </div>
+        <!-- Location precision -->
+        <div class="form-group">
+          <label class="tx-radio-lbl" style="display:flex;align-items:flex-start;gap:8px;">
+            <input type="checkbox" id="postShowExactLocation" style="margin-top:3px;">
+            <span>
+              <span style="font-weight:600;">📍 Show my exact pin to buyers</span><br>
+              <span style="font-size:11px;color:var(--muted);line-height:1.4;">Off by default — buyers see an approximate area (within ~150-400m), not your exact location. Only turn this on if you're comfortable with your precise address being visible.</span>
+            </span>
+          </label>
+        </div>
       </div>
       <!-- FULL WIDTH: description + submit -->
       <div class="post-col-full">
@@ -3355,6 +3365,7 @@ async function submitListing(){
   }
 
   const show_phone = document.querySelector('input[name="showPhone"]:checked')?.value || 'always';
+  const show_exact_location = document.getElementById('postShowExactLocation').checked;
   btn.disabled=true; btn.textContent = ST.editingId ? 'Updating…' : 'Submitting…';
   try {
     const payload = {
@@ -3366,6 +3377,7 @@ async function submitListing(){
       details,
       specs: [],
       show_phone,
+      show_exact_location,
     };
 
     let data;

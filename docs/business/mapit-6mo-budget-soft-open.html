@@ -1,0 +1,431 @@
+<title>MapIt — 6-Month Bangalore Soft-Open Budget</title>
+<style>
+  :root {
+    --bg: #F1F3EE;
+    --bg-raised: #FFFFFF;
+    --ink: #1C2621;
+    --ink-soft: #4B5850;
+    --ink-faint: #7B887F;
+    --line: #D8DDD3;
+    --accent: #2C6E63;
+    --accent-soft: #E4EEEA;
+    --rust: #B65C2E;
+    --rust-soft: #F4E7DD;
+    --good: #2F7D4F;
+    --good-soft: #E4F0E7;
+    --warn: #A8791F;
+    --warn-soft: #F6EEDC;
+    --crit: #B23B3B;
+    --crit-soft: #F6E4E1;
+    --shadow: 0 1px 2px rgba(28,38,33,0.06), 0 8px 24px -12px rgba(28,38,33,0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11160F;
+      --bg-raised: #182019;
+      --ink: #E9EDE6;
+      --ink-soft: #AEBAB0;
+      --ink-faint: #78857B;
+      --line: #2A342C;
+      --accent: #6FBBAA;
+      --accent-soft: #1E332E;
+      --rust: #E0916A;
+      --rust-soft: #33261D;
+      --good: #6FBB8A;
+      --good-soft: #1B2E20;
+      --warn: #D8B267;
+      --warn-soft: #332A18;
+      --crit: #E08787;
+      --crit-soft: #332020;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11160F; --bg-raised: #182019; --ink: #E9EDE6; --ink-soft: #AEBAB0; --ink-faint: #78857B;
+    --line: #2A342C; --accent: #6FBBAA; --accent-soft: #1E332E; --rust: #E0916A; --rust-soft: #33261D;
+    --good: #6FBB8A; --good-soft: #1B2E20; --warn: #D8B267; --warn-soft: #332A18; --crit: #E08787; --crit-soft: #332020;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  :root[data-theme="light"] {
+    --bg: #F1F3EE; --bg-raised: #FFFFFF; --ink: #1C2621; --ink-soft: #4B5850; --ink-faint: #7B887F;
+    --line: #D8DDD3; --accent: #2C6E63; --accent-soft: #E4EEEA; --rust: #B65C2E; --rust-soft: #F4E7DD;
+    --good: #2F7D4F; --good-soft: #E4F0E7; --warn: #A8791F; --warn-soft: #F6EEDC; --crit: #B23B3B; --crit-soft: #F6E4E1;
+    --shadow: 0 1px 2px rgba(28,38,33,0.06), 0 8px 24px -12px rgba(28,38,33,0.18);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+  h1, h2, h3 { font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif; text-wrap: balance; }
+
+  header.masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  h1 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .subhead {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 60ch;
+  }
+  .meta-row {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+  .meta-row span { white-space: nowrap; }
+
+  section { margin-bottom: 44px; }
+  .section-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+  }
+
+  /* Assumptions callout */
+  .callout {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    box-shadow: var(--shadow);
+  }
+  .callout strong { color: var(--ink); }
+  .callout ul { margin: 8px 0 0; padding-left: 20px; }
+  .callout li { margin-bottom: 4px; }
+
+  /* KPI strip */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .kpi {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 16px 14px;
+    box-shadow: var(--shadow);
+  }
+  .kpi .label {
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .kpi .value {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 21px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .kpi .sub {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    margin-top: 3px;
+  }
+
+  /* Budget table */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-raised); box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  thead th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  thead th.num, td.num { text-align: right; }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14.5px;
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, td.currency {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  td .item-name { font-weight: 600; color: var(--ink); }
+  td .item-note { display: block; color: var(--ink-faint); font-size: 12.5px; margin-top: 2px; }
+  tr.subtotal td { background: var(--accent-soft); font-weight: 600; }
+  tr.total td { background: var(--accent-soft); font-weight: 700; font-size: 15.5px; border-top: 2px solid var(--accent); }
+  .usd { color: var(--ink-faint); font-weight: 400; font-size: 12.5px; }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+  .tag.rust { background: var(--rust-soft); color: var(--rust); }
+  .tag.good { background: var(--good-soft); color: var(--good); }
+
+  .footnote {
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-top: 12px;
+    padding-left: 14px;
+    border-left: 2px solid var(--line);
+  }
+
+  /* Playbook split */
+  .playbook {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .plan-card {
+    border-radius: 10px;
+    padding: 22px 22px 20px;
+    border: 1px solid var(--line);
+  }
+  .plan-card.up { background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 35%, var(--line)); }
+  .plan-card.down { background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 35%, var(--line)); }
+  .plan-card h3 {
+    margin: 0 0 3px;
+    font-size: 18px;
+  }
+  .plan-card.up h3 { color: var(--good); }
+  .plan-card.down h3 { color: var(--crit); }
+  .plan-card .trigger {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .plan-card ol {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .plan-card li { margin-bottom: 10px; }
+  .plan-card li:last-child { margin-bottom: 0; }
+  .plan-card li strong { display: block; margin-bottom: 2px; }
+  .plan-card li span { color: var(--ink-soft); font-size: 13px; }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (max-width: 640px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .playbook { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">MapIt — Internal Budget Memo</div>
+    <h1>Six months, Bangalore soft-open</h1>
+    <p class="subhead">Infrastructure and tools only — no incorporation, legal, or founder compensation. Sized for a bootstrapped runway, not a raise.</p>
+    <div class="meta-row">
+      <span>Prepared 2026-08-03</span>
+      <span>·</span>
+      <span>Scope: Bangalore soft-open</span>
+      <span>·</span>
+      <span>FX: ₹83 / US$1 (approx.)</span>
+    </div>
+  </header>
+
+  <section>
+    <p class="section-label">Assumptions</p>
+    <div class="callout">
+      <strong>Signup ramp:</strong> 50 → 100 → 200 → 300 → 400 → 500 across months 1–6, ~1,550 signups total — a soft-open curve, not a marketing push.
+      <ul>
+        <li><strong>OTP volume:</strong> 1.3 SMS attempts per signup (covers resends) ≈ 2,015 OTP messages over 6 months.</li>
+        <li><strong>SMS provider:</strong> an India-registered aggregator (MSG91-class — no monthly fee, prepaid wallet, ₹0.15–0.25/OTP), not Twilio. Twilio's India route runs ₹9–14 per OTP after forex and per-verification fees — 60–80× the local rate for the identical message.</li>
+        <li><strong>DLT registration</strong> (TRAI Principal Entity) is a carrier-level requirement, not provider-specific — it's paid once regardless of which aggregator is chosen.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-label">At a glance</p>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="label">6-month total</div>
+        <div class="value">₹34,100</div>
+        <div class="sub">≈ US$411</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Avg. monthly burn</div>
+        <div class="value">₹5,690</div>
+        <div class="sub">≈ US$69 / mo</div>
+      </div>
+      <div class="kpi">
+        <div class="label">One-time (DLT)</div>
+        <div class="value">₹6,962</div>
+        <div class="sub">≈ US$84, renews yearly</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Cost per signup</div>
+        <div class="value">₹22</div>
+        <div class="sub">at 1,550 signups</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-label">Line items</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="num">Rate</th>
+            <th class="num">6-month cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="item-name">Vercel Pro</span><span class="item-note">Hosting — confirm this is already active from Session 7</span></td>
+            <td class="num">$20/mo</td>
+            <td class="num currency">₹9,960<span class="usd"> · $120</span></td>
+          </tr>
+          <tr>
+            <td><span class="item-name">Supabase Pro</span><span class="item-note">DB + storage — Rule 11 ties this to Session 9, not yet started; see lean variant below</span></td>
+            <td class="num">$25/mo</td>
+            <td class="num currency">₹12,450<span class="usd"> · $150</span></td>
+          </tr>
+          <tr>
+            <td><span class="item-name">Resend</span><span class="item-note">Transactional email — free tier, review past 80 emails/day</span></td>
+            <td class="num">$0</td>
+            <td class="num currency">₹0<span class="usd"> · $0</span></td>
+          </tr>
+          <tr>
+            <td><span class="item-name">Sentry</span><span class="item-note">Error monitoring — free plan, confirmed continuing</span></td>
+            <td class="num">$0</td>
+            <td class="num currency">₹0<span class="usd"> · $0</span></td>
+          </tr>
+          <tr>
+            <td><span class="item-name">Domain renewal</span><span class="item-note">mapit.co.in — confirm actual renewal date/cost</span></td>
+            <td class="num">~$15/yr</td>
+            <td class="num currency">₹1,250<span class="usd"> · $15</span></td>
+          </tr>
+          <tr>
+            <td><span class="item-name">DLT registration</span><span class="item-note">TRAI Principal Entity, one-time <span class="tag rust">One-time</span></span></td>
+            <td class="num">₹5,900 + GST</td>
+            <td class="num currency">₹6,962<span class="usd"> · $84</span></td>
+          </tr>
+          <tr>
+            <td><span class="item-name">SMS OTP (India aggregator)</span><span class="item-note">2,015 messages <span class="tag good">Twilio swapped out</span></span></td>
+            <td class="num">₹0.20/SMS</td>
+            <td class="num currency">₹403<span class="usd"> · $5</span></td>
+          </tr>
+          <tr class="subtotal">
+            <td>Subtotal</td>
+            <td class="num"></td>
+            <td class="num currency">₹31,025<span class="usd"> · $374</td>
+          </tr>
+          <tr class="subtotal">
+            <td>Contingency (10%)</td>
+            <td class="num"></td>
+            <td class="num currency">₹3,100<span class="usd"> · $37</td>
+          </tr>
+          <tr class="total">
+            <td>Total, 6 months</td>
+            <td class="num"></td>
+            <td class="num currency">₹34,125<span class="usd"> · $411</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="footnote">
+      <strong>Lean variant:</strong> if Supabase stays on the free tier until Session 9 actually kicks off (only 2 of the 6 months at Pro), the total drops to roughly <strong>₹25,800 (≈$311)</strong>. Everything else in the table is unaffected. This is the more likely number if Session 9 lands mid-window rather than at month 1.
+    </p>
+  </section>
+
+  <section>
+    <p class="section-label">How to proceed from here</p>
+    <div class="playbook">
+      <div class="plan-card up">
+        <h3>↑ If it takes off</h3>
+        <div class="trigger">Trigger: signups tracking meaningfully above the 500/month curve, or Supabase/Vercel usage alerts firing before month-end</div>
+        <ol>
+          <li><strong>Re-negotiate SMS rate.</strong><span>Most India aggregators drop from ~₹0.20 to ~₹0.12–0.15/OTP past 10k messages/month — ask before you're forced to.</span></li>
+          <li><strong>Watch Supabase egress and connections first, not storage.</strong><span>Photo uploads and realtime chat connections hit limits before raw row count does — set a usage alert, don't wait for an outage.</span></li>
+          <li><strong>Set a Vercel spend cap.</strong><span>Pro overage billing is uncapped by default — add a budget alert so a traffic spike is a notification, not a surprise invoice.</span></li>
+          <li><strong>Throttle with an allowlist, not a rewrite.</strong><span>If infra can't keep pace, a temporary invite/waitlist gate buys weeks without touching code.</span></li>
+          <li><strong>Treat rapid growth as the trigger to revisit the incorporation/CA conversation.</strong><span>That's a separate budget line (memo §E) — this pass deliberately excluded it, but growth is exactly the signal that reopens it.</span></li>
+        </ol>
+      </div>
+      <div class="plan-card down">
+        <h3>↓ If it stalls</h3>
+        <div class="trigger">Trigger: signups tracking well under the ramp curve by month 3, or engagement (repeat logins, listings posted) not following signups</div>
+        <ol>
+          <li><strong>Know the real fixed floor.</strong><span>Only the domain (~₹1,250/yr) is unavoidable. Vercel, Supabase, and SMS all step back to ₹0 on their own tiers — nothing here is a locked-in contract.</span></li>
+          <li><strong>Downgrade Supabase before it auto-pauses.</strong><span>Free-tier projects pause after a week of inactivity — plan the downgrade deliberately so you're not recovering from an unplanned pause mid-debug.</span></li>
+          <li><strong>SMS wallet already fails safe.</strong><span>Prepaid, no monthly commitment — stop topping up and spend stops with it. Nothing to actively cancel.</span></li>
+          <li><strong>Let DLT lapse, don't renew.</strong><span>It's an annual fee tied to actually sending SMS — if OTP login isn't running, there's nothing to keep registered.</span></li>
+          <li><strong>Set one hard checkpoint, not a slow drift.</strong><span>Pick a single date (e.g., end of month 3) to compare real signups against this ramp assumption and decide — continue, pause, or shut down — rather than letting the decision happen by default.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>MapIt — internal planning document, not for external distribution</span>
+    <span>Figures are planning estimates, not vendor quotes</span>
+  </footer>
+
+</div>

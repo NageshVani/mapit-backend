@@ -6,7 +6,7 @@
 // PUT  /api/grievances/:id/resolve     — mark resolved (15-day IT Rules deadline)
 // ============================================================
 // Grievances arrive via Arun's personal email (Grievance Officer contact,
-// see docs/terms-privacy-draft2.html) — there's no automatic capture path,
+// see docs/legal/terms-privacy-draft2.html) — there's no automatic capture path,
 // so every row here is entered manually by an admin. All routes are
 // requireAuth + requireAdmin; the deliberate no-RLS-policy table
 // (008-grievance-log.sql) means only this file's service-role client can

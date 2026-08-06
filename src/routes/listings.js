@@ -13,10 +13,11 @@
 // POST   /api/listings/:id/feedback — submit feedback on a listing
 // ============================================================
 const express         = require('express');
+const crypto          = require('crypto');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
-const { haversineM }  = require('../utils/geo');
+const { haversineM, fuzzLocation } = require('../utils/geo');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 
 const router = express.Router();
@@ -31,6 +32,31 @@ function generateRefCode() {
   let code = 'MP-BLR-';
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
+}
+
+// Resolves what location a viewer is allowed to see for a listing: the
+// owner always sees their own exact lat/lng (needed to edit the pin); any
+// other viewer sees exact only if the seller opted in via
+// show_exact_location, otherwise the fuzzed display point. display_lat/lng
+// is normally pre-computed at write time, but falls back to computing it
+// here for any row that predates migration 010 — safe because fuzzLocation
+// is deterministic (same listing id always yields the same fuzzed point).
+function resolveListingLocation(listing, viewerId) {
+  const isOwner = !!viewerId && listing.seller_id === viewerId;
+  const exact = isOwner || !!listing.show_exact_location;
+  let lat = listing.lat, lng = listing.lng;
+  if (!exact) {
+    if (listing.display_lat != null && listing.display_lng != null) {
+      lat = listing.display_lat;
+      lng = listing.display_lng;
+    } else {
+      const fuzzed = fuzzLocation(listing.lat, listing.lng, listing.id);
+      lat = fuzzed.lat;
+      lng = fuzzed.lng;
+    }
+  }
+  const { display_lat, display_lng, ...rest } = listing;
+  return { ...rest, lat, lng, location_is_exact: exact };
 }
 
 // ── GET pending listings (admin review) ──────────────────────
@@ -391,7 +417,7 @@ router.get('/', requireAuth, async (req, res, next) => {
 
     // Compose response
     const result = paginated.map(l => ({
-      ...l,
+      ...resolveListingLocation(l, req.user.id),
       cover_photo: photosMap[l.id] || null,
       seller:      sellersMap[l.seller_id] || null,
     }));
@@ -436,7 +462,7 @@ router.get('/saved/all', requireAuth, async (req, res, next) => {
     if (error) return next(createError(error.message));
 
     const listings = (saved || []).map(s => ({
-      ...s.listings,
+      ...resolveListingLocation(s.listings, req.user.id),
       saved_at: s.saved_at,
     }));
 
@@ -482,7 +508,7 @@ router.get('/:id', requireAuth, async (req, res, next) => {
 
     res.json({
       listing: {
-        ...listing,
+        ...resolveListingLocation(listing, req.user.id),
         photos: photos || [],
         seller: seller || null,
         is_saved: !!saved,
@@ -494,13 +520,13 @@ router.get('/:id', requireAuth, async (req, res, next) => {
 // ── POST create listing ───────────────────────────────────────
 // POST /api/listings
 // Body: { category, subcategory, title, description, price, price_label,
-//         lat, lng, address, specs, details, show_phone }
+//         lat, lng, address, specs, details, show_phone, show_exact_location }
 router.post('/', requireAuth, async (req, res, next) => {
   try {
     const {
       category, subcategory, title, description,
       price, price_label,
-      lat, lng, address, specs, details, show_phone,
+      lat, lng, address, specs, details, show_phone, show_exact_location,
     } = req.body;
 
     // Validation
@@ -517,25 +543,37 @@ router.post('/', requireAuth, async (req, res, next) => {
     const phoneVisibility = validShowPhone.includes(show_phone) ? show_phone : 'always';
     const now = new Date();
 
+    // Generated up front (rather than left to the DB default) so the fuzz
+    // offset below can be seeded by it in the same insert — avoids a
+    // second round-trip to compute display_lat/lng after the row exists.
+    const listingId = crypto.randomUUID();
+    const exactLat = parseFloat(lat), exactLng = parseFloat(lng);
+    const fuzzed = fuzzLocation(exactLat, exactLng, listingId);
+    const showExactLocation = show_exact_location === true || show_exact_location === 'true';
+
     const { data: listing, error } = await supabaseAdmin
       .from('listings')
       .insert({
-        seller_id:      req.user.id,
+        id:                   listingId,
+        seller_id:            req.user.id,
         category,
         subcategory,
-        title:          title.trim(),
-        description:    description?.trim() || null,
-        price:          parseFloat(price) || 0,
-        price_label:    price_label?.trim() || null,
-        lat:            parseFloat(lat),
-        lng:            parseFloat(lng),
-        address:        address?.trim() || null,
-        specs:          specs || [],
-        details:        details || {},
-        status:         'pending',
-        reference_code: generateRefCode(),
-        expires_at:     new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        show_phone:     phoneVisibility,
+        title:                title.trim(),
+        description:          description?.trim() || null,
+        price:                parseFloat(price) || 0,
+        price_label:          price_label?.trim() || null,
+        lat:                  exactLat,
+        lng:                  exactLng,
+        display_lat:          fuzzed.lat,
+        display_lng:          fuzzed.lng,
+        show_exact_location:  showExactLocation,
+        address:              address?.trim() || null,
+        specs:                specs || [],
+        details:              details || {},
+        status:               'pending',
+        reference_code:       generateRefCode(),
+        expires_at:           new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        show_phone:           phoneVisibility,
       })
       .select()
       .single();
@@ -559,7 +597,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     // Ensure listing belongs to current user
     const { data: existing } = await supabaseAdmin
       .from('listings')
-      .select('seller_id')
+      .select('seller_id, lat, lng')
       .eq('id', id)
       .single();
 
@@ -570,7 +608,8 @@ router.put('/:id', requireAuth, async (req, res, next) => {
 
     const allowedFields = [
       'title', 'description', 'price', 'price_label',
-      'address', 'specs', 'details', 'category', 'subcategory', 'lat', 'lng', 'show_phone',
+      'address', 'specs', 'details', 'category', 'subcategory', 'lat', 'lng',
+      'show_phone', 'show_exact_location',
     ];
     const updates = {};
     allowedFields.forEach(f => {
@@ -580,6 +619,22 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     if (Object.keys(updates).length === 0) {
       return next(createError('No valid fields to update.'));
     }
+
+    if (updates.show_exact_location !== undefined) {
+      updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';
+    }
+
+    // Moving the pin invalidates the previously-fuzzed display point —
+    // recompute it from the (possibly partially) updated coordinates, still
+    // seeded by the same listing id so the offset stays stable going forward.
+    if (updates.lat !== undefined || updates.lng !== undefined) {
+      const newLat = updates.lat !== undefined ? parseFloat(updates.lat) : existing.lat;
+      const newLng = updates.lng !== undefined ? parseFloat(updates.lng) : existing.lng;
+      const fuzzed = fuzzLocation(newLat, newLng, id);
+      updates.display_lat = fuzzed.lat;
+      updates.display_lng = fuzzed.lng;
+    }
+
     // Re-submit for review whenever the owner edits
     updates.status = 'pending';
 

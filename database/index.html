@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MapIt — Database Script Index</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--deep:#1a2332;--panel:#f7f8fa;--accent:#2563eb;--muted:#5F6773;--border:#e2e5ea;}
+  *{box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:0;padding:2.5rem 1.5rem;background:var(--panel);color:var(--deep);line-height:1.5;}
+  .wrap{max-width:880px;margin:0 auto;}
+  h1{font-size:1.6rem;margin:0 0 .25rem;}
+  .sub{color:var(--muted);font-size:.92rem;margin:0 0 2rem;}
+  h2{font-size:1.05rem;margin:2.2rem 0 .8rem;padding-bottom:.4rem;border-bottom:2px solid var(--border);}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  th,td{text-align:left;padding:.6rem .8rem;font-size:.88rem;border-bottom:1px solid var(--border);vertical-align:top;}
+  th{background:#eef1f5;font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.02em;}
+  tr:last-child td{border-bottom:none;}
+  a{color:var(--accent);text-decoration:none;font-weight:600;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem;}
+  a:hover{text-decoration:underline;}
+  .desc{color:var(--deep);}
+  .meta{color:var(--muted);font-size:.8rem;white-space:nowrap;}
+  .note{background:#fff8e6;border:1px solid #f0d98c;border-radius:8px;padding:.9rem 1.1rem;font-size:.85rem;color:#6b5b1a;margin-top:2rem;}
+  @media (prefers-color-scheme: dark){
+    :root{--deep:#e8eaed;--panel:#14181f;--accent:#7fb0ff;--muted:#9aa3af;--border:#2a2f3a;}
+    body{background:var(--panel);}
+    table{background:#1b202b;}
+    th{background:#20262f;}
+    .note{background:#2a2410;border-color:#5a4c1a;color:#e0d090;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>MapIt — Database Script Index</h1>
+  <p class="sub">Local reference only — not served by the app. Links are relative; open this file directly from <code>database/index.html</code>. Every script is Supabase-SQL-Editor-run manually (Rule 10) — always uat first, then production, unless noted otherwise.</p>
+
+  <h2>📐 Schema Migrations (numbered, run once, in order)</h2>
+  <table>
+    <tr><th>File</th><th>Description</th><th>Session</th></tr>
+    <tr><td><a href="migrations/001-mvp-auth-schema.sql">001</a></td><td class="desc">MVP auth columns on <code>profiles</code> — replaces invite-code auth with email+password / Google OAuth / OTP.</td><td class="meta">Session 2</td></tr>
+    <tr><td><a href="migrations/002-mvp-listings-schema.sql">002</a></td><td class="desc">Listing lifecycle columns — reference code, expiry, phone-visibility toggle, city reference, view counter.</td><td class="meta">Session 3</td></tr>
+    <tr><td><a href="migrations/003-chat-schema.sql">003</a></td><td class="desc"><code>conversations</code> + <code>chat_messages</code> — real-time buyer↔seller chat, replaces one-tap Express Interest.</td><td class="meta">Session 6</td></tr>
+    <tr><td><a href="migrations/004-lead-scoring.sql">004</a></td><td class="desc">Nullable columns on <code>messages</code> to persist the Claude spam/genuine verdict on interest notes.</td><td class="meta">Session 5</td></tr>
+    <tr><td><a href="migrations/005-feedback-rating.sql">005</a></td><td class="desc">Optional 1–5 star rating on feedback submissions.</td><td class="meta">Session 5</td></tr>
+    <tr><td><a href="migrations/006-listing-reports.sql">006</a></td><td class="desc"><code>listing_reports</code> — buyer flag (Fake/Wrong price/Spam/Offensive) + note on a listing.</td><td class="meta">Session 6</td></tr>
+    <tr><td><a href="migrations/007-user-suspension.sql">007</a></td><td class="desc"><code>profiles.suspended</code> flag — one-click suspend from the admin Reports tab.</td><td class="meta">Session 6</td></tr>
+    <tr><td><a href="migrations/008-grievance-log.sql">008</a></td><td class="desc"><code>grievances</code> table — IT Rules 2021 Rule 3(2) acknowledge/resolve deadline tracking.</td><td class="meta">Session 8</td></tr>
+    <tr><td><a href="migrations/009-report-chat-views.sql">009</a></td><td class="desc">Read-only chat-thread view tied to a listing report, for admin review.</td><td class="meta">Session 8</td></tr>
+    <tr><td><a href="migrations/010-listing-display-location.sql">010</a></td><td class="desc">Adds fuzzed <code>display_lat</code>/<code>display_lng</code> per listing — anti-doxxing, separate from exact seller coordinates.</td><td class="meta">Session 9B</td></tr>
+    <tr><td><a href="migrations/011-listing-show-exact-location.sql">011</a></td><td class="desc">Seller opt-in (<code>show_exact_location</code>, default false) to reveal exact coordinates to buyers.</td><td class="meta">Session 9B</td></tr>
+  </table>
+
+  <h2>🧰 One-off Scripts <code style="font-size:.75rem;color:var(--muted);font-weight:400;">database/scripts/</code> (data cleanup / verification, not schema migrations)</h2>
+  <table>
+    <tr><th>File</th><th>Description</th><th>Session</th></tr>
+    <tr><td><a href="scripts/cleanup-test-alias-accounts.sql">cleanup-test-alias-accounts.sql</a></td><td class="desc">Removes throwaway <code>nagesh.aadi+xxxx@gmail.com</code> test accounts from email-verification testing. Pattern can never match the real account.</td><td class="meta">Session 9a</td></tr>
+    <tr><td><a href="scripts/reset-invite-code-profiles.sql">reset-invite-code-profiles.sql</a></td><td class="desc">Resets nickname/full-name/home-location for family/friends who joined via the old invite-code flow, so they go through real onboarding.</td><td class="meta">Session 8 follow-up</td></tr>
+    <tr><td><a href="scripts/session-9a-rls-check.sql">session-9a-rls-check.sql</a></td><td class="desc">Read-only re-confirmation that no RLS regressions occurred since the Session 5 audit.</td><td class="meta">Session 9a</td></tr>
+    <tr><td><a href="scripts/uat-dummy-listings.sql">uat-dummy-listings.sql</a></td><td class="desc">Seed script — dummy listings for UAT/demo data.</td><td class="meta">Pre-launch UAT</td></tr>
+  </table>
+
+  <div class="note">⚠️ Rule 10 reminder: always include a <code>WHERE</code> clause on any <code>DELETE</code>/<code>UPDATE</code> run from these files, check the schema before assuming a column exists, and run uat before production.</div>
+</div>
+</body>
+</html>
