@@ -104,8 +104,12 @@ If DB changes were made (in Supabase SQL Editor), note them in CONTEXT.md.
     Architecture Guide before adding any auth-adjacent code
 
 ## Rule 9 — Known Constraints (Do Not Change Without Flagging)
-  - Listings query uses JS haversineM() filter (not listings_within_radius RPC)
-    → RPC does not return `subcategory` column
+  - Listings query uses the `listings_within_radius` RPC for DB-side radius
+    filtering (fixed 2026-08-06, migration 013) — the RPC returns only
+    `(id, distance_m)`, and the backend does a follow-up `select('*')` for
+    full rows, so every column (including `subcategory`) is always present.
+    `haversineM()` (`src/utils/geo.js`) is no longer used for this query —
+    still used by `poiLookup.js`.
   - Helmet CSP disabled globally (contentSecurityPolicy: false)
     → Required for inline scripts + CDN resources (Leaflet, Google Fonts, Font Awesome)
   - Admin detection: nagesh.aadi@gmail.com / arun.bn1@gmail.com — no invite codes in MVP

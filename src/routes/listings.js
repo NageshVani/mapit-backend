@@ -17,7 +17,7 @@ const crypto          = require('crypto');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
-const { haversineM, fuzzLocation } = require('../utils/geo');
+const { fuzzLocation } = require('../utils/geo');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 
 const router = express.Router();
@@ -342,22 +342,34 @@ router.get('/', requireAuth, async (req, res, next) => {
     let listings;
 
     if (lat && lng) {
-      // Fetch all active listings and filter by radius in JS.
-      // (Avoids relying on the listings_within_radius RPC which may not return
-      // all columns like subcategory, causing wrong category icons on the frontend.)
-      const { data, error } = await supabaseAdmin
-        .from('listings')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (error) return next(createError(error.message));
+      // DB-side radius filter via the listings_within_radius RPC (migration 013)
+      // — returns only (id, distance_m), so the follow-up `select('*')` below
+      // always carries every listings column (subcategory included) without
+      // the RPC needing its own hardcoded column list to stay in sync.
       const rM = Math.min(parseInt(radius), 999000);
       const uLat = parseFloat(lat), uLng = parseFloat(lng);
-      listings = (data || [])
-        .map(l => ({ ...l, distance_m: haversineM(uLat, uLng, l.lat, l.lng) }))
-        .filter(l => l.distance_m <= rM)
-        .sort((a, b) => a.distance_m - b.distance_m);
+
+      const { data: nearby, error: rpcError } = await supabaseAdmin
+        .rpc('listings_within_radius', { user_lat: uLat, user_lng: uLng, radius_m: rM });
+
+      if (rpcError) return next(createError(rpcError.message));
+
+      const distanceById = new Map((nearby || []).map(r => [r.id, r.distance_m]));
+      const ids = [...distanceById.keys()];
+
+      if (!ids.length) {
+        listings = [];
+      } else {
+        const { data, error } = await supabaseAdmin
+          .from('listings')
+          .select('*')
+          .in('id', ids);
+
+        if (error) return next(createError(error.message));
+        listings = (data || [])
+          .map(l => ({ ...l, distance_m: distanceById.get(l.id) }))
+          .sort((a, b) => a.distance_m - b.distance_m);
+      }
     } else {
       // No location — return all active listings
       const { data, error } = await supabaseAdmin
