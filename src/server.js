@@ -147,10 +147,14 @@ app.get('/health', (req, res) => {
 // Frontend needs the Supabase URL + anon key to open a Realtime connection
 // for live chat. The anon key is meant to be public (RLS is the real
 // boundary) — never expose SUPABASE_SERVICE_ROLE_KEY here.
+// cartoApiKey (added 2026-08-29): CARTO started requiring a key on its free
+// basemap tiles — also a public-by-design key (embedded in browser tile
+// requests), same trust model as the Supabase anon key above, not a secret.
 app.get('/api/config', (req, res) => {
   res.json({
     supabaseUrl:      process.env.SUPABASE_URL,
     supabaseAnonKey:  process.env.SUPABASE_ANON_KEY,
+    cartoApiKey:      process.env.CARTO_API_KEY || '',
   });
 });
 
