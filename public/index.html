@@ -1038,15 +1038,51 @@ const API_URL = (() => {
 })();
 
 // ═══════════════════════════════════════════════
+// RUNTIME CONFIG — public-by-design values (Supabase anon key, CARTO tile
+// key, Mapbox token) fetched once from the backend rather than hardcoded
+// into this file.
+// Fetched eagerly at load time (not lazily on first use) so it's usually
+// already resolved by the time initMap() needs a tile URL.
+// ═══════════════════════════════════════════════
+let RUNTIME_CFG = null;
+const runtimeCfgPromise = fetch(`${API_URL}/api/config`).then(r=>r.json()).then(cfg=>{
+  RUNTIME_CFG = cfg;
+  return cfg;
+}).catch(()=>({}));
+
+// CARTO's free basemap tiles started requiring an API key (2026-08-29) —
+// same public-key trust model as the Supabase anon key below, not a secret.
+// Builds the tile URL with whatever key is currently known; callers that
+// run before the config fetch resolves should re-apply this via
+// tileLayer.setUrl(cartoTileUrl()) once runtimeCfgPromise settles.
+// Superseded by mapboxTileUrl() below (Session 9D, 2026-08-29) — kept
+// defined, unused, as a one-line rollback if the Mapbox switch needs undoing.
+function cartoTileUrl(){
+  const key = RUNTIME_CFG && RUNTIME_CFG.cartoApiKey;
+  const base = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  return key ? `${base}?key=${key}` : base;
+}
+
+// Active basemap provider as of Session 9D (2026-08-29) — CARTO's raster
+// tile product was deprecated/degraded (missing residential-street labels),
+// so all 4 map inits now use Mapbox's raster Static/Streets tiles instead.
+// Mapbox tiles are 512px (vs. CARTO's 256px) — every L.tileLayer() call
+// using this URL must also set {tileSize:512, zoomOffset:-1} or the map
+// renders zoomed-out/blurry. Token is a Mapbox *public* token (pk.*), same
+// public-by-design trust model as cartoApiKey/supabaseAnonKey above.
+function mapboxTileUrl(){
+  const token = RUNTIME_CFG && RUNTIME_CFG.mapboxToken;
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/512/{z}/{x}/{y}{r}?access_token=${token}`;
+}
+
 // SUPABASE CLIENT — Realtime chat only (all writes still go through the
 // backend REST API above). Anon key is safe to expose — RLS is the boundary.
-// ═══════════════════════════════════════════════
 let sbClient = null;
 let sbClientPromise = null;
 function getSbClient(){
   if(sbClient) return Promise.resolve(sbClient);
   if(sbClientPromise) return sbClientPromise;
-  sbClientPromise = fetch(`${API_URL}/api/config`).then(r=>r.json()).then(cfg=>{
+  sbClientPromise = runtimeCfgPromise.then(cfg=>{
     sbClient = supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
     return sbClient;
   });
@@ -1821,7 +1857,8 @@ function initHomeLocMap(){
   const center = ST.activePin ? [ST.activePin.lat, ST.activePin.lng] : [12.9716, 77.5946];
   setTimeout(()=>{
     _homeLocMap = L.map('homeLocMap', { zoomControl: true, attributionControl: false }).setView(center, 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(_homeLocMap);
+    const _homeLocTiles = L.tileLayer(mapboxTileUrl(),{tileSize:512,zoomOffset:-1,maxZoom:20}).addTo(_homeLocMap);
+    runtimeCfgPromise.then(()=>_homeLocTiles.setUrl(mapboxTileUrl()));
     _homeLocMap.on('click', async e=>{
       const { lat, lng } = e.latlng;
       _placeHomeLocPin(lat, lng);
@@ -2053,10 +2090,11 @@ let _userMarker = null;
 function initMap(){
   const loc = activeLoc();
   map = L.map('map',{center:[loc.lat,loc.lng],zoom:14,zoomControl:false,renderer:L.canvas()});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> © <a href="https://carto.com">CARTO</a>',
-    subdomains:'abcd',maxZoom:20,
+  const _mainTiles = L.tileLayer(mapboxTileUrl(),{
+    attribution:'© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    tileSize:512,zoomOffset:-1,maxZoom:20,
   }).addTo(map);
+  runtimeCfgPromise.then(()=>_mainTiles.setUrl(mapboxTileUrl()));
   L.control.zoom({position:'bottomright'}).addTo(map);
 
   listingCluster = L.markerClusterGroup({
@@ -2970,7 +3008,8 @@ function initPostPickerMap(){
     if(!el) return;
     const loc = activeLoc();
     _postPickerMap = L.map('postPickerMap', { zoomControl: true, attributionControl: false }).setView([loc.lat, loc.lng], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(_postPickerMap);
+    const _postPickerTiles = L.tileLayer(mapboxTileUrl(),{tileSize:512,zoomOffset:-1,maxZoom:20}).addTo(_postPickerMap);
+    runtimeCfgPromise.then(()=>_postPickerTiles.setUrl(mapboxTileUrl()));
     _postPickerMap.on('click', async e=>{
       const { lat, lng } = e.latlng;
       _placePostLocPin(lat, lng);
@@ -3201,7 +3240,8 @@ function initAddPinMap(){
   const center = ST.activePin ? [ST.activePin.lat, ST.activePin.lng] : [12.9716, 77.5946];
   setTimeout(()=>{
     _addPinMap = L.map('addPinMap', { zoomControl: true, attributionControl: false }).setView(center, 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20}).addTo(_addPinMap);
+    const _addPinTiles = L.tileLayer(mapboxTileUrl(),{tileSize:512,zoomOffset:-1,maxZoom:20}).addTo(_addPinMap);
+    runtimeCfgPromise.then(()=>_addPinTiles.setUrl(mapboxTileUrl()));
     _addPinMap.on('click', async e=>{
       const { lat, lng } = e.latlng;
       await _placeAddPin(lat, lng);
