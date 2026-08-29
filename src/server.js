@@ -79,7 +79,12 @@ app.use(helmet({
       // the emoji divIcons the main map's listing pins use) — missed in the
       // original Session 7 CSP audit since it only showed up as a broken
       // image, not a console error.
-      imgSrc:      ["'self'", 'data:', 'https://*.basemaps.cartocdn.com', 'https://cdnjs.cloudflare.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
+      // api.mapbox.com (added 2026-08-29): Session 9D basemap switch away
+      // from CARTO's raster tiles, which are now a deprecated legacy product
+      // with degraded residential-street labels. cartocdn.com kept alongside
+      // it (cartoTileUrl() is still defined in the frontend, unused, as a
+      // one-line rollback path if the Mapbox switch needs to be undone).
+      imgSrc:      ["'self'", 'data:', 'https://*.basemaps.cartocdn.com', 'https://api.mapbox.com', 'https://cdnjs.cloudflare.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
       connectSrc:  ["'self'", 'https://api.mapit.co.in', 'https://nominatim.openstreetmap.org', 'https://photon.komoot.io', ...(supabaseHost ? [`https://${supabaseHost}`, `wss://${supabaseHost}`] : [])],
       objectSrc:   ["'none'"],
       baseUri:     ["'self'"],
@@ -150,11 +155,15 @@ app.get('/health', (req, res) => {
 // cartoApiKey (added 2026-08-29): CARTO started requiring a key on its free
 // basemap tiles — also a public-by-design key (embedded in browser tile
 // requests), same trust model as the Supabase anon key above, not a secret.
+// mapboxToken (added 2026-08-29, Session 9D): the active basemap provider as
+// of this change — a Mapbox *public* access token (pk.*), also meant to be
+// embedded client-side (same trust model), never a secret token (sk.*).
 app.get('/api/config', (req, res) => {
   res.json({
     supabaseUrl:      process.env.SUPABASE_URL,
     supabaseAnonKey:  process.env.SUPABASE_ANON_KEY,
     cartoApiKey:      process.env.CARTO_API_KEY || '',
+    mapboxToken:      process.env.MAPBOX_ACCESS_TOKEN || '',
   });
 });
 
