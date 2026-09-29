@@ -1,0 +1,263 @@
+<title>WhatsApp Business Registration Guide</title>
+<meta charset="utf-8">
+<style>
+  body {
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    line-height: 1.6;
+    color: #1c2530;
+    background: #f7f8f9;
+  }
+  h1 { font-size: 1.75rem; margin-bottom: 4px; }
+  .sub { color: #5a6a78; margin-top: 0; margin-bottom: 10px; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 30px;
+  }
+  .pill {
+    background: #e2f0ef; color: #0f6f73;
+    padding: 3px 12px; border-radius: 999px;
+    font-size: 0.8rem; font-weight: 600;
+  }
+  h2 {
+    font-size: 1.2rem;
+    margin-top: 44px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #0f6f73;
+    color: #0f6f73;
+  }
+  h3 { font-size: 1.02rem; color: #1c2530; margin-top: 22px; }
+  .card {
+    background: #fff;
+    border: 1px solid #e0e4e7;
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 14px 0;
+  }
+  .owner-block, .provider-block {
+    background: #fff;
+    border: 1px solid #e0e4e7;
+    border-left: 4px solid #0f6f73;
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 12px 0;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    background: #0f6f73;
+    color: #fff;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+  .step-row { display: flex; align-items: flex-start; margin: 10px 0; }
+  .step-row p { margin: 0; }
+  ol.steps { padding-left: 0; list-style: none; counter-reset: step; }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 10px 0 10px 40px;
+    border-bottom: 1px solid #eef0f1;
+  }
+  ol.steps > li:last-child { border-bottom: none; }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 8px;
+    background: #0f6f73; color: #fff;
+    width: 24px; height: 24px; border-radius: 50%;
+    font-size: 0.82rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  code, pre {
+    font-family: "SF Mono", "IBM Plex Mono", Consolas, monospace;
+    font-size: 0.9em;
+  }
+  code:not(pre code) {
+    background: #eef1f2;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .warn {
+    background: #fbeee2;
+    border-left: 4px solid #b5651d;
+    padding: 12px 18px;
+    margin: 14px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .note {
+    background: #e8eef4;
+    border-left: 4px solid #3a5a7a;
+    padding: 12px 18px;
+    margin: 14px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .good {
+    background: #e7f4ea;
+    border-left: 4px solid #2e7d46;
+    padding: 12px 18px;
+    margin: 14px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e0e4e7; font-size: 0.93rem; }
+  th { color: #5a6a78; font-weight: 600; }
+  .footer {
+    margin-top: 60px;
+    color: #8a97a3;
+    font-size: 0.85rem;
+    border-top: 1px solid #e0e4e7;
+    padding-top: 14px;
+  }
+  a { color: #0f6f73; }
+</style>
+
+<h1>WhatsApp Business Registration Guide</h1>
+<p class="sub">MapIt — WhatsApp Business Platform setup for Session 9C phone-OTP verification</p>
+<div class="meta">
+  <span class="pill">Written 2026-09-29</span>
+  <span class="pill">BSP: MSG91</span>
+  <span class="pill">SIM owner: Arun</span>
+  <span class="pill">Entity: Nakshe Ventures (PAN in hand)</span>
+</div>
+
+<div class="note">
+  <strong>Who does what:</strong> Arun obtains the new Indian SIM (Airtel or Jio) and carries out the registration
+  steps below. This document is written so it can be followed start-to-finish without needing to re-derive any of
+  the reasoning behind each step.
+</div>
+
+<h2>1. The overall plan — 250/day now, 1,000/day soon after</h2>
+<div class="card">
+  <p>MapIt will launch its Bangalore soft-open on WhatsApp's <strong>unverified tier (250 OTP conversations per
+  24 hours)</strong> — plenty for an initial soft-open. Separately, Meta <strong>Business Verification</strong>
+  (which requires legal business documents — Nakshe Ventures' PAN, already in hand) raises that ceiling to
+  <strong>1,000/day</strong> once approved.</p>
+  <div class="good">
+    <strong>Key optimization:</strong> don't wait until after launch to start Business Verification. Submit it
+    <em>immediately after the WhatsApp Business Account (WABA) is created</em> (Step 6 below), in parallel with
+    going live at 250/day. Verification review (a few days to ~2 weeks) runs independently and doesn't interrupt
+    OTP sending on the unverified tier. By the time MapIt is actually scaling toward the 250/day ceiling,
+    verification will likely have already cleared and the tier raises itself automatically — no manual step needed
+    at "after launch."
+  </div>
+</div>
+
+<h2>2. Getting the SIM — provider &amp; plan type</h2>
+<div class="owner-block">
+  <p><strong>Owner:</strong> Arun. <strong>Provider:</strong> Airtel or Jio (either is fine — see below).
+  <strong>Plan type: postpaid, not prepaid.</strong></p>
+</div>
+<table>
+  <tr><th>Provider</th><th>Recommendation</th></tr>
+  <tr><td><strong>Airtel</strong></td><td>Preferred — strong, reliable Bangalore coverage; business-postpaid KYC onboarding tends to be smoother for a single "utility" number like this.</td></tr>
+  <tr><td><strong>Jio</strong></td><td>Equally fine — widest 4G coverage, cheapest plans. Pick this if Arun already has an easier KYC path with Jio.</td></tr>
+  <tr><td><strong>Vi (Vodafone Idea)</strong></td><td>Not recommended — less consistent network reliability in Bangalore for something that needs to stay continuously reachable.</td></tr>
+</table>
+<div class="warn">
+  <strong>Postpaid matters here.</strong> Once this number is claimed by the WhatsApp Business Platform (Step 5),
+  it will never again be used as an ordinary phone — no calls, no SMS, no consumer WhatsApp app. A prepaid SIM with
+  no recharge activity risks being <strong>deactivated by the telecom after ~90 days of inactivity</strong>, and
+  the number can be recycled — which would silently break the WABA. Postpaid with auto-pay avoids this entirely
+  for a trivial monthly cost (~₹200–400).
+</div>
+<p>Functional requirement: the number only needs to be able to receive <strong>one SMS or voice-call OTP</strong>,
+during registration (Step 5). After that, it is a WhatsApp-only number.</p>
+
+<h2>3. What NOT to do with the new SIM</h2>
+<div class="warn">
+  <strong>Do not insert the SIM into a phone and open WhatsApp or WhatsApp Business (the consumer apps) with this
+  number — ever, not even briefly.</strong> If either consumer app is activated on this number, Meta enforces a
+  mandatory <strong>24-hour teardown wait</strong> before the number can be moved to the Business Platform.
+  Go straight to Step 5 below with this number, skipping the consumer apps entirely.
+</div>
+
+<h2>4. Step-by-step registration procedure</h2>
+
+<h3>Step 1 — Create the Meta Business Portfolio</h3>
+<ol class="steps">
+  <li>Go to <a href="https://business.facebook.com" target="_blank">business.facebook.com</a> using Nagesh's (or a shared MapIt) Facebook account.</li>
+  <li>Create a Business Portfolio named <strong>"MapIt"</strong> — this is the consumer-facing brand name that should appear to users.</li>
+  <li>Add <code>mapit.co.in</code> as the business website and <code>contactus@mapit.co.in</code> as the business email — both already live, which smooths every later verification step.</li>
+</ol>
+
+<h3>Step 2 — Set up MSG91 (the chosen BSP)</h3>
+<ol class="steps">
+  <li>Sign up / log in at <a href="https://msg91.com" target="_blank">msg91.com</a>.</li>
+  <li>Activate the <strong>WhatsApp</strong> product in the MSG91 dashboard.</li>
+  <li>MSG91 provides an <strong>Embedded Signup</strong> flow that drives the entire Meta onboarding from inside their dashboard — no need to touch Meta's raw developer console directly.</li>
+</ol>
+
+<h3>Step 3 — Run Embedded Signup (creates the WABA)</h3>
+<ol class="steps">
+  <li>Inside MSG91's WhatsApp onboarding, log in with the Meta/Facebook account and select the Business Portfolio from Step 1.</li>
+  <li>Enter the new phone number. Meta sends a verification code by <strong>SMS or voice call</strong> to that SIM — enter the code to confirm. <em>(This is the one moment the number needs to function as an actual phone.)</em></li>
+  <li>Fill in the WhatsApp Business Profile: display name (<code>MapIt</code>), category (e.g. "Shopping &amp; Retail" or "Classifieds"), a short description, and optionally a business address.</li>
+  <li>Completing this creates the <strong>WhatsApp Business Account (WABA)</strong> under the MapIt Business Portfolio, with MSG91 attached as the Tech Provider/BSP.</li>
+</ol>
+
+<h3>Step 4 — Display name review</h3>
+<div class="card">
+  <p>The display name is reviewed separately from the phone number itself — usually <strong>1–3 days</strong>.
+  Keep it simple and exactly matching the business identity (<code>MapIt</code>) to avoid rejection or a
+  resubmission cycle.</p>
+</div>
+
+<h3>Step 5 — Submit the OTP template for approval</h3>
+<div class="card">
+  <p>In WhatsApp Manager (accessible via the MSG91 dashboard or Meta Business Suite), create a new template:</p>
+  <table>
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td>Category</td><td><strong>Authentication</strong></td></tr>
+    <tr><td>Language</td><td>English (add more later if needed)</td></tr>
+    <tr><td>Content</td><td>Meta's standard OTP format — verification code + expiry, optionally a "copy code" button</td></tr>
+  </table>
+  <p>Authentication-category templates are low-customization and typically approve in
+  <strong>hours to about a day</strong>.</p>
+</div>
+
+<h3>Step 6 — Live at 250/day</h3>
+<div class="good">
+  Once the display name (Step 4) and the template (Step 5) are both approved, the number is fully live on the
+  unverified tier. MSG91 exposes a send/verify API that gets wired into MapIt's backend — that integration work is
+  Session 9C's build item, tracked separately in <code>CONTEXT.md</code> and running in parallel with, not blocking, this registration process.
+</div>
+
+<h3>Step 7 — Submit Business Verification now, in parallel</h3>
+<ol class="steps">
+  <li>In Meta Business Manager → Business Settings → Security Center → <strong>Start Verification</strong>.</li>
+  <li>Provide: Nakshe Ventures' PAN, a matching business address proof (bank statement, utility bill, or the firm's registration certificate), and confirm the legal business name matches exactly across every document and the Business Portfolio.</li>
+  <li>Domain ownership of <code>mapit.co.in</code> may also be requested — either a DNS TXT record (Namecheap access needed) or a confirmed email at that domain (<code>contactus@mapit.co.in</code> already exists and works).</li>
+  <li>Review typically takes a few days to ~2 weeks. Once approved, the ceiling raises from 250/day to 1,000/day automatically — no further action needed.</li>
+</ol>
+
+<h2>5. One naming decision to lock in before Step 1</h2>
+<div class="note">
+  Register the Business Portfolio/WABA display name as <strong>"MapIt"</strong> (the consumer-facing brand), but
+  list <strong>Nakshe Ventures</strong> as the legal entity during Business Verification (Step 7). This is the
+  standard trade-name-vs-legal-entity pattern and avoids Meta's reviewers flagging a business-name mismatch.
+</div>
+
+<h2>6. Quick checklist</h2>
+<div class="card">
+  <table>
+    <tr><th>Item</th><th>Owner</th></tr>
+    <tr><td>Get postpaid SIM (Airtel or Jio), do not activate consumer WhatsApp on it</td><td>Arun</td></tr>
+    <tr><td>Create Meta Business Portfolio ("MapIt")</td><td>Nagesh</td></tr>
+    <tr><td>Sign up with MSG91, run Embedded Signup</td><td>Nagesh/Arun</td></tr>
+    <tr><td>Verify phone number via SMS/voice OTP</td><td>Arun (has the SIM)</td></tr>
+    <tr><td>Submit display name + OTP template for approval</td><td>Nagesh</td></tr>
+    <tr><td>Submit Business Verification with Nakshe Ventures' PAN</td><td>Nagesh/Arun</td></tr>
+    <tr><td>Wire MSG91's send/verify API into MapIt backend (Session 9C item 2)</td><td>Claude / Nagesh — separate build track</td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  MapIt-Backend · <code>docs/technical/whatsapp-business-registration-guide.html</code> · written 2026-09-29.
+  See <code>CONTEXT.md</code> Session 9C for the code-side build items this registration unblocks.
+</div>

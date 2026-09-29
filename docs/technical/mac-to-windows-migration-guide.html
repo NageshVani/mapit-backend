@@ -1,0 +1,187 @@
+<title>Mac → Windows Migration Guide</title>
+<meta charset="utf-8">
+<style>
+  body {
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    line-height: 1.55;
+    color: #1c2530;
+    background: #f7f8f9;
+  }
+  h1 { font-size: 1.7rem; margin-bottom: 4px; }
+  .sub { color: #5a6a78; margin-top: 0; margin-bottom: 28px; }
+  h2 {
+    font-size: 1.15rem;
+    margin-top: 40px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #0f6f73;
+    color: #0f6f73;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #e0e4e7;
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 14px 0;
+  }
+  .step-num {
+    display: inline-block;
+    background: #0f6f73;
+    color: #fff;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+  code, pre {
+    font-family: "SF Mono", "IBM Plex Mono", Consolas, monospace;
+    font-size: 0.9em;
+  }
+  pre {
+    background: #1c2530;
+    color: #e8ecef;
+    padding: 12px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+  code:not(pre code) {
+    background: #eef1f2;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .warn {
+    background: #fbeee2;
+    border-left: 4px solid #b5651d;
+    padding: 10px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .note {
+    background: #e8eef4;
+    border-left: 4px solid #3a5a7a;
+    padding: 10px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .footer {
+    margin-top: 60px;
+    color: #8a97a3;
+    font-size: 0.85rem;
+    border-top: 1px solid #e0e4e7;
+    padding-top: 14px;
+  }
+  a { color: #0f6f73; }
+</style>
+
+<h1>Mac → Windows Migration Guide</h1>
+<p class="sub">MapIt-Backend development environment · written 2026-09-27 · use when the new Windows PC arrives</p>
+
+<div class="note">
+  <strong>Core principle:</strong> don't copy the project folder across machines. Recreate the environment from
+  the sources of truth — the GitHub repo and your own secrets in Vercel/your password manager — rather than
+  dragging over macOS-specific files (<code>.DS_Store</code>, absolute paths, a <code>node_modules</code> folder
+  compiled for the wrong OS) that can silently break on Windows.
+</div>
+
+<h2>1. Install prerequisites on the Windows PC</h2>
+<div class="card">
+  <p><span class="step-num">1</span><strong>Git for Windows</strong> (includes Git Bash) — <a href="https://git-scm.com/download/win">git-scm.com/download/win</a></p>
+  <p><span class="step-num">2</span><strong>Node.js</strong> — match the version this Mac is on. Check it here first:</p>
+  <pre>node -v</pre>
+  <p>Install the same major version on Windows (nvm-windows if you want to manage multiple versions later).</p>
+  <p><span class="step-num">3</span><strong>VS Code</strong> (or your editor) + the <strong>Claude Code</strong> extension/CLI.</p>
+  <p><span class="step-num">4</span><strong>GitHub CLI</strong> (<code>gh</code>) — same tool you already use for PRs.</p>
+</div>
+
+<h2>2. Re-establish GitHub authentication</h2>
+<div class="card">
+  <p>Don't copy SSH keys or tokens across machines — generate fresh ones on the new PC instead.</p>
+  <pre>gh auth login</pre>
+  <p>If you also use raw <code>git</code> over SSH, generate a new key pair on Windows (<code>ssh-keygen</code>) and add
+  the public key to your GitHub account under Settings → SSH and GPG keys.</p>
+</div>
+
+<h2>3. Clone the repo fresh</h2>
+<div class="card">
+  <pre>git clone https://github.com/NageshVani/mapit-backend.git
+cd mapit-backend
+git checkout uat</pre>
+  <p>This brings over the full commit history plus everything already tracked in git — including
+  <code>CLAUDE.md</code> and <code>CONTEXT.md</code>, so Claude Code on the new machine has full project context
+  immediately.</p>
+</div>
+
+<h2>4. Install dependencies</h2>
+<div class="card">
+  <pre>npm install</pre>
+  <div class="warn">
+    Never copy the <code>node_modules</code> folder itself from the Mac — any native/compiled modules are built
+    per-operating-system and will fail silently or loudly on Windows. Always reinstall from
+    <code>package.json</code>.
+  </div>
+</div>
+
+<h2>5. Recreate <code>.env</code> — the one step that needs care</h2>
+<div class="card">
+  <p><code>.env</code> is git-ignored on purpose (Rule 8 of <code>CLAUDE.md</code>) and was never committed, so the
+  clone above will <em>not</em> bring it over. You have to rebuild it by hand:</p>
+  <p><span class="step-num">1</span>Copy <code>.env.example</code> to <code>.env</code> on the new machine — it has
+  every variable name, just no values.</p>
+  <p><span class="step-num">2</span>Fill in each real value. The fastest legitimate source is the
+  <strong>Vercel dashboard</strong> → your project → Settings → Environment Variables (Production/Preview) — every
+  key MapIt uses in production is already sitting there, so you're copying, not memorizing.</p>
+  <p><span class="step-num">3</span>Anything not in Vercel (e.g. a purely-local dev value) — pull from your password
+  manager.</p>
+  <div class="warn">
+    Do <strong>not</strong> transfer the raw <code>.env</code> file itself across machines by email, AirDrop, USB
+    drive, or chat — that moves an unencrypted secrets file (including
+    <code>SUPABASE_SERVICE_ROLE_KEY</code>) outside your control. Re-typing/copy-pasting each value from Vercel's
+    dashboard into a fresh file on the new machine is the safe path.
+  </div>
+</div>
+
+<h2>6. Re-authenticate the CLIs you use</h2>
+<div class="card">
+  <p><strong>Vercel CLI</strong></p>
+  <pre>npm i -g vercel
+vercel login</pre>
+  <p><strong>Supabase CLI</strong> (if you use it locally for migrations/scripts)</p>
+  <pre>npm i -g supabase
+supabase login</pre>
+</div>
+
+<h2>7. Sanity-check the environment</h2>
+<div class="card">
+  <pre>npm run dev</pre>
+  <p>Confirm:</p>
+  <p><span class="step-num">✓</span>the server boots on the expected port (default <code>3001</code>)</p>
+  <p><span class="step-num">✓</span><code>GET /api/config</code> returns the expected public keys (Supabase anon key, Mapbox token)</p>
+  <p><span class="step-num">✓</span>the frontend loads at <code>localhost:3001</code> and the map renders</p>
+  <p><span class="step-num">✓</span>you can sign in with a test account (confirms Supabase Auth + <code>.env</code> values are correct)</p>
+</div>
+
+<h2>8. Retire the Mac's copy of the secrets</h2>
+<div class="card">
+  <p>Once the Windows setup is confirmed working, if the Mac is being repurposed, sold, or handed off — delete its
+  local <code>.env</code> file, and rotate any key you're not fully sure about (Supabase service-role key,
+  Mapbox token). Don't leave production secrets sitting on a machine you no longer control.</p>
+</div>
+
+<h2>What does <em>not</em> need special handling</h2>
+<div class="card">
+  <p>Everything actually durable about the project — code, migrations, <code>CLAUDE.md</code>, <code>CONTEXT.md</code>,
+  every doc in <code>docs/</code> — already lives in the GitHub repo and comes over free with <code>git clone</code>.
+  The "migration" is really just: re-authenticate, re-type secrets, reinstall dependencies. Nothing about the
+  project's structure needs to change to make this move possible.</p>
+</div>
+
+<div class="footer">
+  MapIt-Backend · <code>docs/technical/mac-to-windows-migration-guide.html</code> · written 2026-09-27, ahead of a
+  Windows PC purchase. See <code>CONTEXT.md</code> for the decision to build with this migration in mind while
+  still on the Mac.
+</div>
