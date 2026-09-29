@@ -20,6 +20,7 @@ const { createError } = require('../middleware/errorHandler');
 const { fuzzLocation } = require('../utils/geo');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
+const { scoreListing } = require('../utils/contentModeration');
 
 const router = express.Router();
 
@@ -70,7 +71,14 @@ router.get('/pending/all', requireAuth, requireAdmin, async (req, res, next) => 
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
     if (error) return next(createError(error.message));
-    res.json({ listings: listings || [] });
+    // Session 9E: flagged listings sort first (a signal for the human
+    // reviewer, not an auto-reject gate) — cheap in-JS sort rather than a
+    // second query, same pattern as the admin Overview dashboard's other
+    // cheap-query-plus-JS-aggregation stats. created_at DESC is preserved
+    // within each group since Array.sort is stable in Node.
+    const sorted = (listings || []).slice().sort((a, b) =>
+      (b.moderation_verdict === 'flagged' ? 1 : 0) - (a.moderation_verdict === 'flagged' ? 1 : 0));
+    res.json({ listings: sorted });
   } catch (err) { next(err); }
 });
 
@@ -596,6 +604,17 @@ router.post('/', requireAuth, async (req, res, next) => {
     // Fire-and-forget: never block or fail listing creation on POI lookup errors.
     lookupAndStoreNearbyPois(listing.id, listing.lat, listing.lng)
       .catch(err => console.error('POI lookup pipeline failed:', err.message));
+
+    // Fire-and-forget: never block or fail listing creation on moderation
+    // errors (migration 015, Session 9E). Flagged/clean is a sort signal
+    // for the human admin reviewer, not an auto-approve/auto-reject gate —
+    // the listing goes to the normal 'pending' review queue either way.
+    scoreListing(listing.title, listing.description)
+      .then(({ verdict, reason }) => supabaseAdmin
+        .from('listings')
+        .update({ moderation_verdict: verdict, moderation_reason: reason, moderation_scored_at: new Date().toISOString() })
+        .eq('id', listing.id))
+      .catch(err => console.error('Content moderation pipeline failed:', err.message));
 
     // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
     logAuditEvent('listing_created', req, req.user.id, { listing_id: listing.id });

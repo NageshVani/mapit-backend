@@ -9,6 +9,7 @@ const express         = require('express');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
+const { draftFeedbackReply } = require('../utils/feedbackDraft');
 
 const router = express.Router();
 
@@ -24,6 +25,29 @@ router.put('/feedback/:id/resolve', requireAuth, requireAdmin, async (req, res, 
       .single();
     if (error) return next(createError(error.message));
     res.json({ feedback: data });
+  } catch (err) { next(err); }
+});
+
+// ── Draft an AI reply to a feedback item (admin) ─────────────
+// POST /api/users/feedback/:id/draft-reply
+// Returns a draft reply string only — never saved, never sent. Arun/Nagesh
+// review and edit it in the existing reply textarea before sending via the
+// separate, already-existing "Send Reply" button/route.
+router.post('/feedback/:id/draft-reply', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { data: feedback, error } = await supabaseAdmin
+      .from('feedback')
+      .select('type, description, rating')
+      .eq('id', req.params.id)
+      .single();
+    if (error) return next(createError(error.message));
+    if (!feedback) return next(createError('Feedback not found.', 404));
+
+    const draft = await draftFeedbackReply(feedback);
+    if (draft == null) {
+      return next(createError('Could not generate a draft reply right now — please write one manually.', 502));
+    }
+    res.json({ draft });
   } catch (err) { next(err); }
 });
 
