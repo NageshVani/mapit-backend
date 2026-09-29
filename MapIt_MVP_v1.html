@@ -1143,18 +1143,18 @@ function getSbClient(){
 // ═══════════════════════════════════════════════
 const CATS = [
   { id:'all', lbl:'All',             ico:'🗺️', col:'#F06030', subs:[] },
-  { id:'re',  lbl:'Real Estate',     ico:'🏠',  col:'#F06030', subs:['All Types','Plots','Individual House','Builder Flat','Apartment','Commercial Building'] },
+  { id:'re',  lbl:'Real Estate',     ico:'🏠',  col:'#F06030', subs:['All Types','Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space'] },
   { id:'veh', lbl:'Vehicles',        ico:'🚗',  col:'#3B82F6', subs:['All Types','Cars','2 Wheelers','Cycles','Trucks & Commercial'] },
   { id:'hh',  lbl:'Household Items', ico:'🏡',  col:'#22C55E', subs:['All Types','Electronic Appliances','Furniture','Home Decor'] },
 ];
 const SUBCAT_MAP = {
-  re:  ['Plots','Individual House','Builder Flat','Apartment','Commercial Building'],
+  re:  ['Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space'],
   veh: ['Cars','2 Wheelers','Cycles','Trucks & Commercial'],
   hh:  ['Electronic Appliances','Furniture','Home Decor'],
 };
 const CAT_EMOJI = { re:'🏠', veh:'🚗', hh:'🏡' };
 const SUBCAT_EMOJI = {
-  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬',
+  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬','Office Space':'💼',
   'Cars':'🚗','2 Wheelers':'🛵','Cycles':'🚲','Trucks & Commercial':'🚛',
   'Electronic Appliances':'📺','Furniture':'🛋️','Home Decor':'🎨',
 };
@@ -1167,6 +1167,7 @@ const TITLE_PLACEHOLDER = {
     'Builder Flat':        '2BHK Builder Flat, 3rd Floor, Park-Facing',
     'Apartment':           '2BHK Apartment in Prestige Society, Koramangala',
     'Commercial Building': '3-Storey Commercial Building on Main Road',
+    'Office Space':        'Plug-and-Play Office Space, 20 Seats, Indiranagar',
   },
   veh: {
     'Cars':               'Maruti Swift 2019 – Single Owner, 28k Kms',
@@ -1230,6 +1231,26 @@ const LISTING_FIELDS = {
       { id:'floors',      label:'No. of Floors',              type:'number' },
       { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
       { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
+    ],
+    // Added 2026-09-29 (Session 9D item 8) — fields drafted by Nagesh, using
+    // the Bare Shell → Plug-and-Play furnishing scale common to Indian
+    // commercial office leasing rather than the residential
+    // Furnished/Semi/Unfurnished scale used elsewhere in this app.
+    'Office Space':        [
+      { id:'carpet_area',        label:'Carpet Area (sq ft)',            type:'number', starred:true },
+      { id:'super_built_up_area',label:'Super Built-up Area (sq ft)',    type:'number' },
+      { id:'floor_no',           label:'Floor Number',                   type:'number' },
+      { id:'total_floors',       label:'Total No. of Floors',            type:'number' },
+      { id:'furnishing',         label:'Furnishing Status',              type:'select', options:['Bare Shell','Warm Shell','Semi-Furnished','Fully Furnished','Plug-and-Play'], starred:true },
+      { id:'seats',              label:'Number of Seats',                type:'number' },
+      { id:'rooms',              label:'Number of Rooms',                type:'number' },
+      { id:'washrooms',          label:'Washrooms',                      type:'number' },
+      { id:'ac',                 label:'Air Conditioning',               type:'select', options:['Yes','No'] },
+      { id:'lift',               label:'Lift Access',                    type:'select', options:['Yes','No'] },
+      { id:'parking',            label:'Parking Available',              type:'select', options:['Yes','No'] },
+      { id:'facing',             label:'Facing',                         type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'] },
+      { id:'age',                label:'Age of Building (years)',        type:'number' },
+      { id:'total_price',        label:'Total Price (₹)',                type:'number', starred:true },
     ],
   },
   veh: {
