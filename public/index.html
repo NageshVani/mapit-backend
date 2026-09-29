@@ -1124,6 +1124,17 @@ function _applyRegionBounds(map){
   map.setMinZoom(map.getBoundsZoom(MAPIT_REGION_BOUNDS, false));
 }
 
+// Session 9F (2026-09-29) — fire-and-forget ping on each map init, one per
+// Leaflet surface. This is the only server-side proxy for Mapbox tile-
+// request volume that exists (Mapbox itself has no usage API at all) —
+// logged into the existing audit_log table, read back by the admin
+// Cost & Usage tab's estimate. Never awaited, never surfaces an error to
+// the user — a failed ping just means one fewer data point for an
+// internal estimate, never something worth interrupting map loading for.
+function _pingMapLoad(surface){
+  apiPost('/api/admin/map-load-ping', { surface }).catch(()=>{});
+}
+
 // SUPABASE CLIENT — Realtime chat only (all writes still go through the
 // backend REST API above). Anon key is safe to expose — RLS is the boundary.
 let sbClient = null;
@@ -1986,6 +1997,7 @@ function initHomeLocMap(){
     });
     _homeLocMap.invalidateSize();
     _applyRegionBounds(_homeLocMap);
+    _pingMapLoad('home');
   }, 120);
 }
 
@@ -2218,6 +2230,7 @@ function initMap(){
   runtimeCfgPromise.then(()=>_mainTiles.setUrl(mapboxTileUrl()));
   L.control.zoom({position:'bottomright'}).addTo(map);
   _applyRegionBounds(map);
+  _pingMapLoad('browse');
 
   listingCluster = L.markerClusterGroup({
     maxClusterRadius: 60,       // px — tight-ish, only clusters pins that would actually overlap/crowd
@@ -3139,6 +3152,7 @@ function initPostPickerMap(){
     });
     _postPickerMap.invalidateSize();
     _applyRegionBounds(_postPickerMap);
+    _pingMapLoad('post');
   }, 120);
 }
 
@@ -3371,6 +3385,7 @@ function initAddPinMap(){
     });
     _addPinMap.invalidateSize();
     _applyRegionBounds(_addPinMap);
+    _pingMapLoad('addpin');
   }, 120);
 }
 
