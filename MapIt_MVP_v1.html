@@ -658,6 +658,32 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       </button>
     </div>
 
+    <!-- Step: Phone number entry (Session 9D item 2 — UI scaffold ahead of Session 9C's
+         real WhatsApp BSP routes; NOT yet inserted into the live registration chain.
+         See the JS comment above sendPhoneOtp() for how to wire it in. -->
+    <div class="modal-step" id="step-phone-number">
+      <div id="phoneNumError" class="modal-error" style="display:none"></div>
+      <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📱 Verify your phone number</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll send a 6-digit code via WhatsApp to confirm it's really you.</div>
+      <label class="modal-label">Phone Number</label>
+      <input class="modal-input" id="phoneVerifyInput" type="tel" placeholder="+91 98765 43210"/>
+      <button class="modal-btn" id="sendPhoneOtpBtn" onclick="sendPhoneOtp()">
+        <span>Send WhatsApp Code</span> <span>→</span>
+      </button>
+    </div>
+
+    <!-- Step: Phone OTP verify (stub) -->
+    <div class="modal-step" id="step-phone-otp">
+      <div id="phoneOtpError" class="modal-error" style="display:none"></div>
+      <div class="otp-hint">We sent a 6-digit code via WhatsApp to<br><b id="phoneOtpLabel"></b></div>
+      <label class="modal-label">Enter Code</label>
+      <input class="modal-input otp-input" id="phoneOtpInput" placeholder="000000" maxlength="6" inputmode="numeric"/>
+      <button class="modal-btn" id="verifyPhoneOtpBtn" onclick="verifyPhoneOtp()">
+        <span>Verify Phone</span> <span>→</span>
+      </button>
+      <div class="modal-link" onclick="sendPhoneOtp()">Didn't get a code? <span>Resend</span></div>
+    </div>
+
     <!-- Step: Home location picker -->
     <div class="modal-step" id="step-homeloc">
       <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📍 Set your home area</div>
@@ -1073,6 +1099,29 @@ function cartoTileUrl(){
 function mapboxTileUrl(){
   const token = RUNTIME_CFG && RUNTIME_CFG.mapboxToken;
   return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/512/{z}/{x}/{y}{r}?access_token=${token}`;
+}
+
+// Session 9D item 7 (2026-08-31) — Bangalore-first launch: restrict every map
+// surface to Bangalore + ~100km radius so users can't pan/zoom out to empty
+// or irrelevant regions. This is the smallest rectangular lat/lng box that
+// fully contains a 100km-radius circle centered on Bangalore (12.9716,
+// 77.5946) — 100km ÷ ~111km/° latitude ≈ 0.90° lat; 100km ÷ (~111.3km/° ×
+// cos(13°)) ≈ 0.92° lng. Viewport/UX-level only, as scoped with Nagesh — no
+// server-side listing-coordinate validation (a separate future item if
+// out-of-region listings actually turn up).
+const MAPIT_REGION_BOUNDS = L.latLngBounds([12.07, 76.67], [13.87, 78.52]);
+
+// Applied to every Leaflet map instance (browse map, home-location picker,
+// post-listing picker, add-pin picker) right after it's created and sized.
+// `maxBoundsViscosity: 1.0` is a hard stop, not an elastic bounce — the map
+// simply won't pan past the box. `setMinZoom()` is computed from the box
+// itself (via getBoundsZoom) rather than a fixed number, so zooming out
+// can't shrink the bounded box down to a speck of empty space regardless of
+// the viewer's screen size.
+function _applyRegionBounds(map){
+  map.setMaxBounds(MAPIT_REGION_BOUNDS);
+  map.options.maxBoundsViscosity = 1.0;
+  map.setMinZoom(map.getBoundsZoom(MAPIT_REGION_BOUNDS, false));
 }
 
 // SUPABASE CLIENT — Realtime chat only (all writes still go through the
@@ -1841,6 +1890,56 @@ async function saveProfile(){
   } catch(e){ toast('Could not save profile: ' + e.message); }
 }
 
+// ── Phone OTP verification (Session 9D item 2 — UI scaffold only) ──────────
+// Built ahead of Session 9C's real WhatsApp BSP (MSG91) send/verify routes.
+// Both functions below are wired against a STUBBED response — no real
+// network call is made and no real OTP is ever sent. This step is NOT yet
+// inserted into the live registration chain: saveProfile() above still goes
+// straight to step-homeloc, unchanged, so no real signup is affected.
+// To wire this in once the MSG91 routes exist: change saveProfile()'s
+// `goToStep('step-homeloc')` to `goToStep('step-phone-number')`, replace the
+// stubbed delays below with real calls to
+// POST /api/auth/otp/phone/send and POST /api/auth/otp/phone/verify, and
+// keep verifyPhoneOtp()'s success path advancing to step-homeloc as it does now.
+let _stubPhoneNumber = '';
+async function sendPhoneOtp(){
+  const phone = document.getElementById('phoneVerifyInput').value.trim();
+  hideErr('phoneNumError');
+  if(!phone || phone.replace(/\D/g,'').length < 10){ showErr('phoneNumError','Please enter a valid phone number.'); return; }
+  const btn = document.getElementById('sendPhoneOtpBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
+  try {
+    // STUB — simulates the future MSG91 send-OTP call; no real message is sent.
+    await new Promise(r => setTimeout(r, 500));
+    _stubPhoneNumber = phone;
+    document.getElementById('phoneOtpLabel').textContent = phone;
+    goToStep('step-phone-otp');
+    document.getElementById('phoneOtpInput').focus();
+  } catch(e){
+    showErr('phoneNumError', e.message);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<span>Send WhatsApp Code</span><span>→</span>';
+  }
+}
+
+async function verifyPhoneOtp(){
+  const token = document.getElementById('phoneOtpInput').value.trim();
+  hideErr('phoneOtpError');
+  if(token.length !== 6){ showErr('phoneOtpError','Please enter the 6-digit code sent via WhatsApp.'); return; }
+  const btn = document.getElementById('verifyPhoneOtpBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
+  try {
+    // STUB — any 6-digit code is accepted; no real verification happens yet.
+    await new Promise(r => setTimeout(r, 500));
+    goToStep('step-homeloc');
+    initHomeLocMap();
+  } catch(e){
+    showErr('phoneOtpError','Invalid or expired code. Please try again.');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<span>Verify Phone</span><span>→</span>';
+  }
+}
+
 // ── Home location picker ─────────────────────────────────────────
 let _homeLocMap = null, _homeLocMarker = null, _homeLocCoords = null;
 
@@ -1865,6 +1964,7 @@ function initHomeLocMap(){
       await _resolveHomeLocAddr(lat, lng);
     });
     _homeLocMap.invalidateSize();
+    _applyRegionBounds(_homeLocMap);
   }, 120);
 }
 
@@ -2096,6 +2196,7 @@ function initMap(){
   }).addTo(map);
   runtimeCfgPromise.then(()=>_mainTiles.setUrl(mapboxTileUrl()));
   L.control.zoom({position:'bottomright'}).addTo(map);
+  _applyRegionBounds(map);
 
   listingCluster = L.markerClusterGroup({
     maxClusterRadius: 60,       // px — tight-ish, only clusters pins that would actually overlap/crowd
@@ -3016,6 +3117,7 @@ function initPostPickerMap(){
       await _resolvePostLocAddr(lat, lng);
     });
     _postPickerMap.invalidateSize();
+    _applyRegionBounds(_postPickerMap);
   }, 120);
 }
 
@@ -3247,6 +3349,7 @@ function initAddPinMap(){
       await _placeAddPin(lat, lng);
     });
     _addPinMap.invalidateSize();
+    _applyRegionBounds(_addPinMap);
   }, 120);
 }
 
