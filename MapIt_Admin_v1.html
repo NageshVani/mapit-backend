@@ -73,6 +73,10 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .fbv-reply-input:focus{border-color:var(--orange);}
 .fbv-send-btn{padding:7px 14px;background:var(--orange);color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;white-space:nowrap;}
 .fbv-send-btn:hover{background:var(--orange2);}
+/* Session 9E — AI draft-reply button, secondary/muted vs. the orange Send Reply button so it never reads as the primary action */
+.fbv-draft-btn{padding:7px 12px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;white-space:nowrap;}
+.fbv-draft-btn:hover{border-color:var(--orange);color:var(--orange);}
+.fbv-draft-btn:disabled{opacity:.5;cursor:default;}
 .fbv-resolve-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.07);color:var(--green);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
 .fbv-resolve-btn:hover{background:rgba(34,197,94,.18);}
 
@@ -87,6 +91,8 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .admin-reason-sel{font-size:11px;font-family:'Outfit',sans-serif;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--deep);color:var(--text);margin-left:6px;}
 .admin-suspend-btn{padding:6px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
 .admin-suspend-btn:hover{background:var(--red);color:#fff;}
+/* Session 9E — flagged-listing badge in the pending queue; a sort/attention signal for the human reviewer, not a verdict of guilt */
+.admin-flag-badge{display:inline-block;padding:2px 8px;border-radius:5px;background:rgba(240,96,48,.12);color:var(--orange);font-size:10.5px;font-weight:700;margin-left:6px;vertical-align:middle;}
 .admin-suspend-btn.reinstate{border-color:var(--green);color:var(--green);}
 .admin-suspend-btn.reinstate:hover{background:var(--green);color:#fff;}
 .admin-suspend-btn:disabled{opacity:.4;cursor:default;}
@@ -597,7 +603,7 @@ async function loadPendingListings(){
     }
     document.getElementById('adminList').innerHTML = list.map(l=>`
       <div class="admin-item" id="admin-item-${l.id}">
-        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}${l.moderation_verdict==='flagged'?`<span class="admin-flag-badge" title="${(l.moderation_reason||'').replace(/"/g,'&quot;')}">🚩 Flagged${l.moderation_reason?': '+l.moderation_reason:''}</span>`:''}</div>
         <div class="admin-item-meta">
           <span>${l.subcategory||l.category}</span>
           <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
@@ -808,6 +814,7 @@ function renderFeedbackView(){
       <div class="fbv-text">"${f.description}"</div>
       <div class="fbv-reply-row">
         <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.created_for||f.profile?.full_name||'this user'}…"></textarea>
+        <button class="fbv-draft-btn" id="fbv-draft-btn-${i}" onclick="draftFeedbackReplyBtn('${f.id}',${i})">✨ Draft Reply</button>
         <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${((f.created_for||f.profile?.full_name||'Someone').replace(/'/g,"\\'"))}')">💬 Send Reply</button>
       </div>
       <div class="fbv-actions">
@@ -826,6 +833,21 @@ async function sendFeedbackReply(feedbackId, idx, receiverId, name){
     document.getElementById('fbv-reply-'+idx).value = '';
     toast(`✅ Reply sent to ${name} — they will see it in their Inbox.`);
   } catch(e){ toast('Could not send reply: '+e.message); }
+}
+
+// Session 9E — fills the reply textarea with an AI-drafted reply for
+// Arun/Nagesh to review and edit; never sends anything itself, that's
+// still the separate "💬 Send Reply" button above.
+async function draftFeedbackReplyBtn(feedbackId, idx){
+  const btn = document.getElementById('fbv-draft-btn-'+idx);
+  const original = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '⏳ Drafting…';
+  try {
+    const data = await apiPost(`/api/users/feedback/${feedbackId}/draft-reply`, {});
+    const input = document.getElementById('fbv-reply-'+idx);
+    if(input) input.value = data.draft;
+  } catch(e){ toast('Could not draft a reply: '+e.message); }
+  finally { btn.disabled = false; btn.innerHTML = original; }
 }
 
 async function resolveFeedback(id){
