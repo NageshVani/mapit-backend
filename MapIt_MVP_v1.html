@@ -1240,14 +1240,14 @@ const LISTING_FIELDS = {
       { id:'carpet_area',        label:'Carpet Area (sq ft)',            type:'number', starred:true },
       { id:'super_built_up_area',label:'Super Built-up Area (sq ft)',    type:'number' },
       { id:'floor_no',           label:'Floor Number',                   type:'number' },
-      { id:'total_floors',       label:'Total No. of Floors',            type:'number' },
       { id:'furnishing',         label:'Furnishing Status',              type:'select', options:['Bare Shell','Warm Shell','Semi-Furnished','Fully Furnished','Plug-and-Play'], starred:true },
-      { id:'seats',              label:'Number of Seats',                type:'number' },
-      { id:'rooms',              label:'Number of Rooms',                type:'number' },
-      { id:'washrooms',          label:'Washrooms',                      type:'number' },
-      { id:'ac',                 label:'Air Conditioning',               type:'select', options:['Yes','No'] },
-      { id:'lift',               label:'Lift Access',                    type:'select', options:['Yes','No'] },
-      { id:'parking',            label:'Parking Available',              type:'select', options:['Yes','No'] },
+      // Nagesh's 2026-09-29 revision: washrooms/AC/lift/parking collapsed
+      // from 4 separate fields into one free-text field with a tip, rather
+      // than 4 separate Yes/No selects — same "no multi-select field type
+      // exists yet" constraint as before, so this uses the existing
+      // type:'text' + placeholder pattern (already used by brand/model
+      // fields above) instead.
+      { id:'essentials',         label:'Other Essentials',               type:'text', placeholder:'e.g. 2 Washrooms, AC, Lift, Covered Parking' },
       { id:'facing',             label:'Facing',                         type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'] },
       { id:'age',                label:'Age of Building (years)',        type:'number' },
       { id:'total_price',        label:'Total Price (₹)',                type:'number', starred:true },
