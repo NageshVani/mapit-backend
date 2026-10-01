@@ -57,7 +57,10 @@ function resolveListingLocation(listing, viewerId) {
       lng = fuzzed.lng;
     }
   }
-  const { display_lat, display_lng, ...rest } = listing;
+  // Moderation fields (migration 015) are admin-only — strip them from every
+  // buyer/seller-facing response. The admin queue reads them via /pending/all,
+  // which doesn't go through this function.
+  const { display_lat, display_lng, moderation_verdict, moderation_reason, moderation_scored_at, ...rest } = listing;
   return { ...rest, lat, lng, location_is_exact: exact };
 }
 
