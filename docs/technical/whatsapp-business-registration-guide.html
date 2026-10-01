@@ -121,6 +121,7 @@
 <p class="sub">MapIt — WhatsApp Business Platform setup for Session 9C phone-OTP verification</p>
 <div class="meta">
   <span class="pill">Written 2026-09-29</span>
+  <span class="pill">Revised 2026-09-30</span>
   <span class="pill">BSP: MSG91</span>
   <span class="pill">SIM owner: Arun</span>
   <span class="pill">Entity: Nakshe Ventures (PAN in hand)</span>
@@ -132,19 +133,31 @@
   the reasoning behind each step.
 </div>
 
-<h2>1. The overall plan — 250/day now, 1,000/day soon after</h2>
+<div class="warn">
+  <strong>Revised 2026-09-30 — the order of steps changed.</strong> The original version (2026-09-29) said MapIt could
+  go live on the unverified 250/day tier and run Business Verification in parallel. That is <strong>no longer true for
+  OTP</strong>: when we tried to save the OTP template in MSG91, it failed with <em>"This WhatsApp business account does
+  not have permission to create message template"</em>. MSG91's own help page confirms the cause — under Meta's current
+  policy, <strong>Business Verification is mandatory before any Authentication (OTP) template can be created</strong>
+  (<a href="https://msg91.com/help/whatsapp/what-is-the-resolution-of-the-error-" target="_blank">MSG91 help</a>).
+  Business Verification is now Step 5 and sits on the critical path; the OTP template moves to Step 6.
+</div>
+
+<h2>1. The overall plan — verify first, then OTP goes live</h2>
 <div class="card">
-  <p>MapIt will launch its Bangalore soft-open on WhatsApp's <strong>unverified tier (250 OTP conversations per
-  24 hours)</strong> — plenty for an initial soft-open. Separately, Meta <strong>Business Verification</strong>
-  (which requires legal business documents — Nakshe Ventures' PAN, already in hand) raises that ceiling to
-  <strong>1,000/day</strong> once approved.</p>
+  <p>Meta <strong>Business Verification</strong> (legal business documents for Nakshe Ventures) must be
+  <strong>approved before</strong> the OTP (Authentication) template can even be created. There is no
+  "go live unverified" path for OTP any more. Once verification clears and the template is approved, MapIt can
+  send OTPs; messaging limits then scale up automatically with volume and quality.</p>
+  <div class="warn">
+    <strong>Don't work around it by filing the OTP as a "Utility" or "Marketing" template.</strong> Meta
+    re-classifies or rejects templates that carry a verification code, and repeated rejections can hurt the
+    account's quality rating.
+  </div>
   <div class="good">
-    <strong>Key optimization:</strong> don't wait until after launch to start Business Verification. Submit it
-    <em>immediately after the WhatsApp Business Account (WABA) is created</em> (Step 6 below), in parallel with
-    going live at 250/day. Verification review (a few days to ~2 weeks) runs independently and doesn't interrupt
-    OTP sending on the unverified tier. By the time MapIt is actually scaling toward the 250/day ceiling,
-    verification will likely have already cleared and the tier raises itself automatically — no manual step needed
-    at "after launch."
+    <strong>Timing matters:</strong> MSG91's Titan plan is free only until 31 Oct 2026, then ₹500/month
+    (Section 6). Submit Business Verification as early as possible so the free months aren't used up while
+    waiting. Recent reports put document-based review at about <strong>3–7 business days</strong>.
   </div>
 </div>
 
@@ -160,21 +173,21 @@
   <tr><td><strong>Vi (Vodafone Idea)</strong></td><td>Not recommended — less consistent network reliability in Bangalore for something that needs to stay continuously reachable.</td></tr>
 </table>
 <div class="warn">
-  <strong>Postpaid matters here.</strong> Once this number is claimed by the WhatsApp Business Platform (Step 5),
+  <strong>Postpaid matters here.</strong> Once this number is claimed by the WhatsApp Business Platform (Step 3),
   it will never again be used as an ordinary phone — no calls, no SMS, no consumer WhatsApp app. A prepaid SIM with
   no recharge activity risks being <strong>deactivated by the telecom after ~90 days of inactivity</strong>, and
   the number can be recycled — which would silently break the WABA. Postpaid with auto-pay avoids this entirely
   for a trivial monthly cost (~₹200–400).
 </div>
 <p>Functional requirement: the number only needs to be able to receive <strong>one SMS or voice-call OTP</strong>,
-during registration (Step 5). After that, it is a WhatsApp-only number.</p>
+during registration (Step 3). After that, it is a WhatsApp-only number.</p>
 
 <h2>3. What NOT to do with the new SIM</h2>
 <div class="warn">
   <strong>Do not insert the SIM into a phone and open WhatsApp or WhatsApp Business (the consumer apps) with this
   number — ever, not even briefly.</strong> If either consumer app is activated on this number, Meta enforces a
   mandatory <strong>24-hour teardown wait</strong> before the number can be moved to the Business Platform.
-  Go straight to Step 5 below with this number, skipping the consumer apps entirely.
+  Go straight to Step 3 below with this number, skipping the consumer apps entirely.
 </div>
 
 <h2>4. Step-by-step registration procedure</h2>
@@ -208,7 +221,42 @@ during registration (Step 5). After that, it is a WhatsApp-only number.</p>
   resubmission cycle.</p>
 </div>
 
-<h3>Step 5 — Submit the OTP template for approval</h3>
+<h3>Step 5 — Business Verification (must be approved before Step 6)</h3>
+<p>Meta checks the <strong>legal name</strong> separately from the <strong>address / phone number</strong>. One
+document does not need to cover all of them.</p>
+<table>
+  <tr><th>What Meta checks</th><th>What to use</th></tr>
+  <tr><td>Legal name — <strong>Nakshe Ventures</strong></td><td><strong>PAN card</strong> + <strong>Partnership deed</strong> (both in hand) ✅</td></tr>
+  <tr><td>Phone number / address</td><td>A second document linking the firm's name to a phone number/address — see the options below</td></tr>
+</table>
+<ol class="steps">
+  <li><strong>First, fix Business Info.</strong> In Business Settings → Business Info, set the <strong>legal business
+  name to exactly "Nakshe Ventures"</strong>, matching the deed and PAN character for character. The portfolio / WhatsApp
+  display name stays "MapIt"; that is allowed (Section 5). A legal-name mismatch is the most common rejection reason.</li>
+  <li>Then go to Business Settings → Security Center → <strong>Start Verification</strong> and upload the PAN card and
+  partnership deed for the legal name.</li>
+  <li><strong>Phone number: none of our current documents shows one.</strong> Try these in order:
+    <ol type="a">
+      <li><strong>Nakshe Ventures' current-account bank statement</strong>: on Meta's accepted India list, and Indian
+      bank statements usually print the registered mobile number. Make sure the number in Business Info is
+      <em>exactly</em> the number on the statement.</li>
+      <li><strong>Confirm contact by email or domain instead of phone.</strong> When the upload screen asks what each
+      document proves, tick only name (and address, if shown). Then pick <strong>email</strong>
+      (<code>contactus@mapit.co.in</code>, already working) or <strong>domain</strong> (DNS TXT record on
+      <code>mapit.co.in</code>, Namecheap access needed) when asked to confirm contact.</li>
+      <li><strong>Udyam (MSME) registration</strong>: "Udyog Aadhar" is on Meta's India list, and the Udyam form
+      collects a mobile number + email. It is <strong>free and instant</strong> at
+      <code>udyamregistration.gov.in</code> using the managing partner's Aadhaar. It's not confirmed that the printed
+      certificate shows the mobile number, so treat this as a backup.
+      <strong>Only use the <code>.gov.in</code> site</strong>. Most search results are paid lookalike sites.</li>
+      <li><strong>A phone bill in the firm's name</strong>: a postpaid bill addressed to Nakshe Ventures proves both
+      name and number, but the first bill takes about a month. Use this only if the options above fail.</li>
+    </ol>
+  </li>
+  <li>Review typically takes <strong>3–7 business days</strong>. Watch the Security Center for requests for more documents.</li>
+</ol>
+
+<h3>Step 6 — Submit the OTP template for approval (only after Step 5 is approved)</h3>
 <div class="card">
   <p>In WhatsApp Manager (accessible via the MSG91 dashboard or Meta Business Suite), create a new template:</p>
   <table>
@@ -221,43 +269,60 @@ during registration (Step 5). After that, it is a WhatsApp-only number.</p>
   <strong>hours to about a day</strong>.</p>
 </div>
 
-<h3>Step 6 — Live at 250/day</h3>
+<h3>Step 7 — Recharge and go live</h3>
 <div class="good">
-  Once the display name (Step 4) and the template (Step 5) are both approved, the number is fully live on the
-  unverified tier. MSG91 exposes a send/verify API that gets wired into MapIt's backend — that integration work is
-  Session 9C's build item, tracked separately in <code>CONTEXT.md</code> and running in parallel with, not blocking, this registration process.
+  Once Business Verification (Step 5), the display name (Step 4) and the template (Step 6) are all approved, add
+  WhatsApp balance in MSG91 (Section 6) and the number is live for OTP. MSG91 exposes a send/verify API that gets wired
+  into MapIt's backend. That integration is Session 9C's build item, tracked separately in <code>CONTEXT.md</code>.
 </div>
-
-<h3>Step 7 — Submit Business Verification now, in parallel</h3>
-<ol class="steps">
-  <li>In Meta Business Manager → Business Settings → Security Center → <strong>Start Verification</strong>.</li>
-  <li>Provide: Nakshe Ventures' PAN, a matching business address proof (bank statement, utility bill, or the firm's registration certificate), and confirm the legal business name matches exactly across every document and the Business Portfolio.</li>
-  <li>Domain ownership of <code>mapit.co.in</code> may also be requested — either a DNS TXT record (Namecheap access needed) or a confirmed email at that domain (<code>contactus@mapit.co.in</code> already exists and works).</li>
-  <li>Review typically takes a few days to ~2 weeks. Once approved, the ceiling raises from 250/day to 1,000/day automatically — no further action needed.</li>
-</ol>
 
 <h2>5. One naming decision to lock in before Step 1</h2>
 <div class="note">
   Register the Business Portfolio/WABA display name as <strong>"MapIt"</strong> (the consumer-facing brand), but
-  list <strong>Nakshe Ventures</strong> as the legal entity during Business Verification (Step 7). This is the
+  set <strong>Nakshe Ventures</strong> as the legal business name in Business Info and during Business Verification (Step 5). This is the
   standard trade-name-vs-legal-entity pattern and avoids Meta's reviewers flagging a business-name mismatch.
 </div>
 
-<h2>6. Quick checklist</h2>
+<h2>6. MSG91 billing — Titan plan &amp; balance</h2>
 <div class="card">
   <table>
-    <tr><th>Item</th><th>Owner</th></tr>
-    <tr><td>Get postpaid SIM (Airtel or Jio), do not activate consumer WhatsApp on it</td><td>Arun</td></tr>
-    <tr><td>Create Meta Business Portfolio ("MapIt")</td><td>Nagesh</td></tr>
-    <tr><td>Sign up with MSG91, run Embedded Signup</td><td>Nagesh/Arun</td></tr>
-    <tr><td>Verify phone number via SMS/voice OTP</td><td>Arun (has the SIM)</td></tr>
-    <tr><td>Submit display name + OTP template for approval</td><td>Nagesh</td></tr>
-    <tr><td>Submit Business Verification with Nakshe Ventures' PAN</td><td>Nagesh/Arun</td></tr>
-    <tr><td>Wire MSG91's send/verify API into MapIt backend (Session 9C item 2)</td><td>Claude / Nagesh — separate build track</td></tr>
+    <tr><th>Item</th><th>Details</th></tr>
+    <tr><td>Plan</td><td><strong>WhatsApp Titan</strong>, the only plan MSG91 documents (no cheaper tier found). ₹0/month for the
+    first 2 months, then <strong>₹500/month per number from 1 Nov 2026</strong>
+    (<a href="https://msg91.com/help/whatsapp/whatsapp-pricing-" target="_blank">MSG91 Titan</a>).</td></tr>
+    <tr><td>Per-OTP cost</td><td>About <strong>₹0.115 + 18% GST</strong> per authentication message, Meta's rate passed through with no MSG91 markup.</td></tr>
+    <tr><td>Balance needed?</td><td><strong>Not yet.</strong> Template creation/approval is free. WhatsApp balance is only needed once OTPs are actually sent (Step 7).</td></tr>
+  </table>
+  <div class="warn">
+    <strong>Turn OFF "Balance auto recharge" until go-live.</strong> It was set to recharge whenever the balance
+    drops below ₹100, and the balance is already ₹0. There is no reason to let it charge anything before OTPs are
+    being sent. Turn it back on at launch.
+  </div>
+  <div class="note">
+    <strong>Reminder ~25 Oct 2026:</strong> if Business Verification hasn't cleared by then, ask MSG91 support to
+    extend the free period or pause the plan before the ₹500/month billing starts.
+    <br><strong>Longer term (Session 9C decision):</strong> Meta's Cloud API used directly has no platform fee, only
+    per-message charges. That saves about ₹6,000/year, but needs more backend work (webhooks, token rotation).
+  </div>
+</div>
+
+<h2>7. Quick checklist</h2>
+<div class="card">
+  <table>
+    <tr><th>Item</th><th>Owner</th><th>Status (30 Sep)</th></tr>
+    <tr><td>Get postpaid SIM (Airtel or Jio), do not activate consumer WhatsApp on it</td><td>Arun</td><td>✅ Done</td></tr>
+    <tr><td>Create Meta Business Portfolio ("MapIt")</td><td>Nagesh</td><td>✅ Done</td></tr>
+    <tr><td>Sign up with MSG91, run Embedded Signup</td><td>Nagesh/Arun</td><td>✅ Done (Titan plan active)</td></tr>
+    <tr><td>Turn off MSG91 balance auto-recharge until go-live</td><td>Nagesh</td><td>⏳ To do</td></tr>
+    <tr><td>Set legal name "Nakshe Ventures" in Business Info</td><td>Nagesh/Arun</td><td>⏳ To do</td></tr>
+    <tr><td>Submit Business Verification (PAN + deed, plus a bank statement or email/domain confirmation for phone)</td><td>Nagesh/Arun</td><td>⏳ To do. <strong>Blocks the OTP template</strong></td></tr>
+    <tr><td>Submit OTP template for approval (after verification)</td><td>Nagesh</td><td>🚫 Blocked on verification</td></tr>
+    <tr><td>Recharge WhatsApp balance, re-enable auto-recharge, go live</td><td>Nagesh</td><td>🚫 Blocked</td></tr>
+    <tr><td>Wire MSG91's send/verify API into MapIt backend (Session 9C item 2)</td><td>Claude / Nagesh</td><td>Separate build track</td></tr>
   </table>
 </div>
 
 <div class="footer">
-  MapIt-Backend · <code>docs/technical/whatsapp-business-registration-guide.html</code> · written 2026-09-29.
+  MapIt-Backend · <code>docs/technical/whatsapp-business-registration-guide.html</code> · written 2026-09-29, revised 2026-09-30 (verification-first order, phone-number document options, MSG91 billing).
   See <code>CONTEXT.md</code> Session 9C for the code-side build items this registration unblocks.
 </div>
