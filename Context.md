@@ -1789,6 +1789,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
+**⬅ Immediate (2026-10-03, later — 9E signed off, T-014 fixed, Option C decided):**
+- **9E manual checklist: COMPLETE.** Nagesh reported all items OK (3a/3b, 4a and 5a were the remaining ones).
+- **T-014 fixed and committed** on `fix/admin-escape-listing-fields` (`6467df1`), **not yet merged to uat or pushed**. The scope grew beyond the original note: the Pending, Reports, Feedback, Grievances and Cleanup tabs were all unescaped, and the description field too. `escapeHtmlAdm()` now escapes `& < > " '`. Send Reply no longer embeds the user's name in the `onclick` JS. Verified: the inline script parses (`node --check`), the escaper neutralises an `<img onerror>` payload, and a re-scan finds no unescaped user fields. **Live UAT still needed:** create a listing titled `<b>T014</b><img src=x onerror=alert('XSS')>` on the uat preview, open Admin → Pending, and check it shows as literal text with no alert box. Then delete it.
+- **Decision (Nagesh, 2026-10-03): Anthropic key = Option C.** (1) Show the seller email's `[Unscreened]` prefix and warning banner only when the verdict is `spam`, not when it is `unscreened` (`src/utils/notifySeller.js`). (2) Add `ANTHROPIC_API_KEY` to Vercel **Production** at the `uat → main` merge. The cost cap stays as the $5 prepaid credit with auto-reload off. Change (1) is a separate small fix, still to build.
+- **Session 9C needs the MSG91 sample curl** (authkey removed). Nagesh says he asked earlier whether it was required and never got a clear yes. **Answer: yes**, or a screenshot of MSG91's template "API/Code" panel. Without it, the endpoint, integrated number, template name and namespace would be guesses.
+- **Out of scope, logged:** error toasts in admin.html still show `e.message` unescaped (low risk, server-generated). The main frontend `MapIt_MVP_v1.html` has not been audited for the same pattern.
+
 **⬅ Immediate (2026-10-03):**
 1. **Nagesh: finish the 9E manual checklist.** 3a/3b with a fresh buyer account (e.g. `nagesh.aadi+buyer1@gmail.com`, save the password in Passwords) or use Forgot password on an old one; 4a recheck Console Usage later; 5a delete both TEST listings.
 2. **T-014 fix** (on Nagesh's go-ahead): `fix/admin-escape-listing-fields` → `escapeHtmlAdm()` on all user/model fields → sync `MapIt_Admin_v1.html` ↔ `public/admin.html` → push uat.
