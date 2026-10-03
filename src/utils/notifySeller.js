@@ -10,6 +10,7 @@ const { scoreLead } = require('./leadScoring');
 // Fire-and-forget: called without await from scoreAndNotify() below. A Resend
 // outage or missing RESEND_API_KEY must never fail the message send.
 // `verdict` only changes cosmetic wording — the email always sends regardless.
+// Only 'spam' adds the warning banner + subject prefix (Option C, 2026-10-03).
 async function notifySellerOfInterest(listing, buyerId, messageContent, verdict = 'unscreened') {
   const [{ data: sellerAuth }, { data: buyerProfile }] = await Promise.all([
     supabaseAdmin.auth.admin.getUserById(listing.seller_id),
@@ -22,10 +23,13 @@ async function notifySellerOfInterest(listing, buyerId, messageContent, verdict 
   const buyerName = escapeHtml(buyerProfile?.nickname || 'A buyer');
   const title     = escapeHtml(listing.title);
 
-  const flagBanner = verdict === 'genuine'
-    ? ''
-    : `<p style="margin:0 0 8px;padding:6px 10px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;color:#9a3412;font-size:12px;">⚠️ This message hasn't been automatically verified as genuine buyer interest — review before sharing personal details.</p>`;
-  const subjectPrefix = verdict === 'genuine' ? '' : '[Unscreened] ';
+  // Warn only on a positive 'spam' verdict. 'unscreened' (no key, timeout,
+  // API error) stays silent — a warning on every email teaches sellers to ignore it.
+  const isSpam = verdict === 'spam';
+  const flagBanner = isSpam
+    ? `<p style="margin:0 0 8px;padding:6px 10px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;color:#9a3412;font-size:12px;">⚠️ This message looks like possible spam — review it carefully before sharing any personal details.</p>`
+    : '';
+  const subjectPrefix = isSpam ? '[Possible spam] ' : '';
 
   await sendEmail({
     to:      sellerEmail,
