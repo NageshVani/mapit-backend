@@ -635,15 +635,15 @@ async function loadPendingListings(){
     }
     document.getElementById('adminList').innerHTML = list.map(l=>`
       <div class="admin-item" id="admin-item-${l.id}">
-        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}${l.moderation_verdict==='flagged'?`<span class="admin-flag-badge" title="${(l.moderation_reason||'').replace(/"/g,'&quot;')}">🚩 Flagged${l.moderation_reason?': '+l.moderation_reason:''}</span>`:''}</div>
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${escapeHtmlAdm(l.title)}${l.moderation_verdict==='flagged'?`<span class="admin-flag-badge" title="${escapeHtmlAdm(l.moderation_reason||'')}">🚩 Flagged${l.moderation_reason?': '+escapeHtmlAdm(l.moderation_reason):''}</span>`:''}</div>
         <div class="admin-item-meta">
-          <span>${l.subcategory||l.category}</span>
-          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
-          <span>👤 ${l.seller?.full_name||l.profiles?.full_name||'Unknown'}</span>
-          <span>📍 ${l.address||'No address'}</span>
+          <span>${escapeHtmlAdm(l.subcategory||l.category)}</span>
+          <span>₹ ${escapeHtmlAdm(l.price_label||fmtPrice(l.price))}</span>
+          <span>👤 ${escapeHtmlAdm(l.seller?.full_name||l.profiles?.full_name||'Unknown')}</span>
+          <span>📍 ${escapeHtmlAdm(l.address||'No address')}</span>
           <span style="color:var(--muted);">${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
         </div>
-        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${l.description.slice(0,120)}${l.description.length>120?'…':''}</div>`:''}
+        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${escapeHtmlAdm(l.description.slice(0,120))}${l.description.length>120?'…':''}</div>`:''}
         <div>
           <button class="admin-approve-btn" onclick="approveAdminListing('${l.id}')">✅ Approve & Go Live</button>
           <button class="admin-reject-btn" onclick="rejectAdminListing('${l.id}')">🗑 Remove</button>
@@ -711,13 +711,13 @@ async function loadReportsQueue(){
         `<option value="${rr.id}" ${rr.id===r.reason?'selected':''}>${rr.label}</option>`).join('');
       return `
       <div class="admin-item" id="report-item-${r.id}">
-        <div class="admin-item-title">🚩 ${listing ? listing.title : '(listing deleted)'}</div>
+        <div class="admin-item-title">🚩 ${listing ? escapeHtmlAdm(listing.title) : '(listing deleted)'}</div>
         <div class="admin-item-meta">
-          <span>Reason: ${(REPORT_REASONS.find(rr=>rr.id===r.reason)||{}).label||r.reason}</span>
-          <span>👤 Reported by ${reporter ? (reporter.nickname||reporter.full_name||'Unknown') : 'Unknown'}</span>
+          <span>Reason: ${escapeHtmlAdm((REPORT_REASONS.find(rr=>rr.id===r.reason)||{}).label||r.reason)}</span>
+          <span>👤 Reported by ${reporter ? escapeHtmlAdm(reporter.nickname||reporter.full_name||'Unknown') : 'Unknown'}</span>
           <span style="color:var(--muted);">${new Date(r.created_at).toLocaleDateString('en-IN')}</span>
         </div>
-        ${r.note?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">"${r.note}"</div>`:''}
+        ${r.note?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">"${escapeHtmlAdm(r.note)}"</div>`:''}
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
           <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>
           <select class="admin-reason-sel" id="report-reason-${r.id}">${reasonOpts}</select>
@@ -776,10 +776,10 @@ function closeReportChat(){
   document.getElementById('chatviewOverlay').classList.add('hide');
 }
 
+// T-014: escape every user/model-supplied value before it goes into innerHTML.
+// Covers & < > " ' so it is safe both as element text and inside quoted attributes.
 function escapeHtmlAdm(s){
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // ═══════════════════════════════════════════════
@@ -837,17 +837,17 @@ function renderFeedbackView(){
   el.innerHTML = list.map((f,i)=>`
     <div class="fbv-item ${f.status==='resolved'?'resolved':''}" id="fbv-card-${f.id}">
       <div class="fbv-meta">
-        <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${f.type}</span>
+        <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${escapeHtmlAdm(f.type)}</span>
         ${f.rating ? `<span class="fbv-type" style="color:var(--orange);background:rgba(240,96,48,.1);">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>` : ''}
-        <span class="fbv-name">👤 ${f.created_for||f.profile?.full_name||'Unknown'}</span>
+        <span class="fbv-name">👤 ${escapeHtmlAdm(f.created_for||f.profile?.full_name||'Unknown')}</span>
         ${f.status==='resolved'?'<span class="fbv-resolved-badge">✅ Resolved</span>':''}
         <span class="fbv-time">${f.created_at?new Date(f.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span>
       </div>
-      <div class="fbv-text">"${f.description}"</div>
+      <div class="fbv-text">"${escapeHtmlAdm(f.description)}"</div>
       <div class="fbv-reply-row">
-        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.created_for||f.profile?.full_name||'this user'}…"></textarea>
+        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${escapeHtmlAdm(f.created_for||f.profile?.full_name||'this user')}…"></textarea>
         <button class="fbv-draft-btn" id="fbv-draft-btn-${i}" onclick="draftFeedbackReplyBtn('${f.id}',${i})">✨ Draft Reply</button>
-        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${((f.created_for||f.profile?.full_name||'Someone').replace(/'/g,"\\'"))}')">💬 Send Reply</button>
+        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}')">💬 Send Reply</button>
       </div>
       <div class="fbv-actions">
         ${f.status !== 'resolved' ? `<button class="fbv-resolve-btn" onclick="resolveFeedback('${f.id}')">✅ Mark as Resolved</button>` : ''}
@@ -856,7 +856,9 @@ function renderFeedbackView(){
     </div>`).join('');
 }
 
-async function sendFeedbackReply(feedbackId, idx, receiverId, name){
+async function sendFeedbackReply(feedbackId, idx, receiverId){
+  const fb = _fbAll.find(f=>f.id===feedbackId);
+  const name = fb?.created_for || fb?.profile?.full_name || 'Someone';
   const txt = document.getElementById('fbv-reply-'+idx)?.value.trim();
   if(!txt){ toast('Please type a reply first.'); return; }
   if(!receiverId){ toast('Cannot find this user — no receiver ID.'); return; }
@@ -943,14 +945,14 @@ async function loadGrievances(){
       <div class="admin-item" id="grv-item-${g.id}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
           <div>
-            <div class="admin-item-title">${g.complainant_name}${g.complainant_contact?` · ${g.complainant_contact}`:''}</div>
+            <div class="admin-item-title">${escapeHtmlAdm(g.complainant_name)}${g.complainant_contact?` · ${escapeHtmlAdm(g.complainant_contact)}`:''}</div>
             <div class="admin-item-meta">
               <span>Received ${new Date(g.received_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span>
             </div>
           </div>
           <div class="grv-badges" style="text-align:right;margin-bottom:0;flex-shrink:0;">${grvBadges(g)}</div>
         </div>
-        <div style="font-size:11.5px;color:var(--text);line-height:1.6;margin-bottom:8px;">"${g.note}"</div>
+        <div style="font-size:11.5px;color:var(--text);line-height:1.6;margin-bottom:8px;">"${escapeHtmlAdm(g.note)}"</div>
         <div>
           ${!g.acknowledged_at ? `<button class="admin-dismiss-btn" onclick="acknowledgeGrievance('${g.id}')">✓ Mark Acknowledged</button>` : ''}
           ${g.status!=='resolved' ? `<button class="fbv-resolve-btn" onclick="resolveGrievanceEntry('${g.id}')">✅ Mark Resolved</button>` : ''}
@@ -1059,11 +1061,11 @@ function clnItemHtml(l, sub){
     <div class="cln-item">
       <input type="checkbox" onchange="toggleClnSelect('${l.id}', this.checked)">
       <div class="cln-item-body">
-        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${escapeHtmlAdm(l.title)}</div>
         <div class="admin-item-meta">
-          <span>${l.subcategory||l.category}</span>
-          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
-          <span>👤 ${l.profiles?.full_name||'Unknown'}</span>
+          <span>${escapeHtmlAdm(l.subcategory||l.category)}</span>
+          <span>₹ ${escapeHtmlAdm(l.price_label||fmtPrice(l.price))}</span>
+          <span>👤 ${escapeHtmlAdm(l.profiles?.full_name||'Unknown')}</span>
           <span style="color:var(--muted);">${sub}</span>
         </div>
       </div>
