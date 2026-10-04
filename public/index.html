@@ -719,30 +719,33 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       </button>
     </div>
 
-    <!-- Step: Phone number entry (Session 9D item 2 — UI scaffold ahead of Session 9C's
-         real WhatsApp BSP routes; NOT yet inserted into the live registration chain.
-         See the JS comment above sendPhoneOtp() for how to wire it in. -->
+    <!-- Step: Phone number entry (Session 9C — WhatsApp OTP via MSG91).
+         Shown after the profile step for new signups, and before posting
+         for accounts that still need it. See sendPhoneOtp(). -->
     <div class="modal-step" id="step-phone-number">
       <div id="phoneNumError" class="modal-error" style="display:none"></div>
       <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📱 Verify your phone number</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll send a 6-digit code via WhatsApp to confirm it's really you.</div>
-      <label class="modal-label">Phone Number</label>
-      <input class="modal-input" id="phoneVerifyInput" type="tel" placeholder="+91 98765 43210"/>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll send a 6-digit code via WhatsApp to confirm it's really you. Needed before you post a listing.</div>
+      <label class="modal-label">Indian Mobile Number (+91)</label>
+      <input class="modal-input" id="phoneVerifyInput" type="tel" placeholder="98765 43210" autocomplete="tel"/>
       <button class="modal-btn" id="sendPhoneOtpBtn" onclick="sendPhoneOtp()">
         <span>Send WhatsApp Code</span> <span>→</span>
       </button>
+      <div class="modal-link" onclick="skipPhoneVerify()">No WhatsApp right now? <span>Verify later</span></div>
     </div>
 
-    <!-- Step: Phone OTP verify (stub) -->
+    <!-- Step: Phone OTP verify -->
     <div class="modal-step" id="step-phone-otp">
       <div id="phoneOtpError" class="modal-error" style="display:none"></div>
       <div class="otp-hint">We sent a 6-digit code via WhatsApp to<br><b id="phoneOtpLabel"></b></div>
       <label class="modal-label">Enter Code</label>
-      <input class="modal-input otp-input" id="phoneOtpInput" placeholder="000000" maxlength="6" inputmode="numeric"/>
+      <input class="modal-input otp-input" id="phoneOtpInput" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code"/>
       <button class="modal-btn" id="verifyPhoneOtpBtn" onclick="verifyPhoneOtp()">
         <span>Verify Phone</span> <span>→</span>
       </button>
       <div class="modal-link" onclick="sendPhoneOtp()">Didn't get a code? <span>Resend</span></div>
+      <div class="modal-link" onclick="goToStep('step-phone-number')">Wrong number? <span>Change it</span></div>
+      <div class="modal-link" onclick="skipPhoneVerify()"><span>Verify later</span></div>
     </div>
 
     <!-- Step: Home location picker -->
@@ -2004,58 +2007,90 @@ async function saveProfile(){
     ST._pendingFullName = null; ST._pendingNickname = null;
     const uid = ST.user?.id;
     if(uid) saveToMultiSessions(uid, { session: ST.session, name: full_name, nickname, initials: getInitials(nickname), email: ST.user?.email });
-    goToStep('step-homeloc');
-    initHomeLocMap();
+    openPhoneVerify('signup', phone);
   } catch(e){ toast('Could not save profile: ' + e.message); }
 }
 
-// ── Phone OTP verification (Session 9D item 2 — UI scaffold only) ──────────
-// Built ahead of Session 9C's real WhatsApp BSP (MSG91) send/verify routes.
-// Both functions below are wired against a STUBBED response — no real
-// network call is made and no real OTP is ever sent. This step is NOT yet
-// inserted into the live registration chain: saveProfile() above still goes
-// straight to step-homeloc, unchanged, so no real signup is affected.
-// To wire this in once the MSG91 routes exist: change saveProfile()'s
-// `goToStep('step-homeloc')` to `goToStep('step-phone-number')`, replace the
-// stubbed delays below with real calls to
-// POST /api/auth/otp/phone/send and POST /api/auth/otp/phone/verify, and
-// keep verifyPhoneOtp()'s success path advancing to step-homeloc as it does now.
-let _stubPhoneNumber = '';
+// ── Phone OTP verification (Session 9C — WhatsApp via MSG91) ─────────────
+// Two entry points share the same two modal steps:
+//   'signup' — after saveProfile(); success or "Verify later" continues to
+//              step-homeloc, exactly where signup went before 9C.
+//   'post'   — openPostModal() gate for accounts that must verify before
+//              posting; success reopens the post form, "Verify later" closes.
+// The server enforces the same rule (POST /api/listings → 403), so this is
+// UX only — the user is asked up front instead of after filling the form.
+let _phoneVerifyCtx = 'signup';
+function openPhoneVerify(ctx, prefill){
+  _phoneVerifyCtx = ctx;
+  hideErr('phoneNumError'); hideErr('phoneOtpError');
+  document.getElementById('phoneVerifyInput').value = prefill || ST.profile?.phone || '';
+  document.getElementById('phoneOtpInput').value = '';
+  document.getElementById('authModal').classList.remove('hide');
+  goToStep('step-phone-number');
+}
+function _finishPhoneVerify(){
+  if(_phoneVerifyCtx === 'post'){
+    document.getElementById('authModal').classList.add('hide');
+    openPostModal();
+  } else {
+    goToStep('step-homeloc');
+    initHomeLocMap();
+  }
+}
+function skipPhoneVerify(){
+  if(_phoneVerifyCtx === 'post'){
+    document.getElementById('authModal').classList.add('hide');
+    toast('You can verify any time — just tap Post a Listing again.');
+  } else {
+    toast("No problem — we'll ask again before you post a listing.");
+    goToStep('step-homeloc');
+    initHomeLocMap();
+  }
+}
 async function sendPhoneOtp(){
+  // Also used by "Resend" on the code step — show errors on whichever step is open.
+  const onCodeStep = document.getElementById('step-phone-otp').classList.contains('active');
+  const errId = onCodeStep ? 'phoneOtpError' : 'phoneNumError';
   const phone = document.getElementById('phoneVerifyInput').value.trim();
-  hideErr('phoneNumError');
-  if(!phone || phone.replace(/\D/g,'').length < 10){ showErr('phoneNumError','Please enter a valid phone number.'); return; }
+  hideErr('phoneNumError'); hideErr('phoneOtpError');
+  if(!phone || phone.replace(/\D/g,'').length < 10){ showErr('phoneNumError','Please enter a valid 10-digit mobile number.'); goToStep('step-phone-number'); return; }
   const btn = document.getElementById('sendPhoneOtpBtn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
   try {
-    // STUB — simulates the future MSG91 send-OTP call; no real message is sent.
-    await new Promise(r => setTimeout(r, 500));
-    _stubPhoneNumber = phone;
-    document.getElementById('phoneOtpLabel').textContent = phone;
+    const data = await apiPost('/api/auth/otp/phone/send', { phone });
+    if(data.already_verified){
+      ST.profile = { ...ST.profile, phone_verified: true };
+      toast('This number is already verified ✓');
+      _finishPhoneVerify();
+      return;
+    }
+    document.getElementById('phoneOtpLabel').textContent = data.phone_masked;
+    if(onCodeStep) toast('New code sent on WhatsApp');
     goToStep('step-phone-otp');
+    document.getElementById('phoneOtpInput').value = '';
     document.getElementById('phoneOtpInput').focus();
   } catch(e){
-    showErr('phoneNumError', e.message);
+    showErr(errId, e.message);
   } finally {
-    btn.disabled = false; btn.innerHTML = '<span>Send WhatsApp Code</span><span>→</span>';
+    btn.disabled = false; btn.innerHTML = '<span>Send WhatsApp Code</span> <span>→</span>';
   }
 }
 
 async function verifyPhoneOtp(){
   const token = document.getElementById('phoneOtpInput').value.trim();
   hideErr('phoneOtpError');
-  if(token.length !== 6){ showErr('phoneOtpError','Please enter the 6-digit code sent via WhatsApp.'); return; }
+  if(!/^\d{6}$/.test(token)){ showErr('phoneOtpError','Please enter the 6-digit code sent via WhatsApp.'); return; }
   const btn = document.getElementById('verifyPhoneOtpBtn');
   btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
   try {
-    // STUB — any 6-digit code is accepted; no real verification happens yet.
-    await new Promise(r => setTimeout(r, 500));
-    goToStep('step-homeloc');
-    initHomeLocMap();
+    const data = await apiPost('/api/auth/otp/phone/verify', { code: token });
+    ST.profile = data.profile;
+    toast('Phone verified ✓');
+    _finishPhoneVerify();
   } catch(e){
-    showErr('phoneOtpError','Invalid or expired code. Please try again.');
+    showErr('phoneOtpError', e.message || 'Invalid or expired code. Please try again.');
   } finally {
-    btn.disabled = false; btn.innerHTML = '<span>Verify Phone</span><span>→</span>';
+    btn.disabled = false; btn.innerHTML = '<span>Verify Phone</span> <span>→</span>';
   }
 }
 
@@ -3262,7 +3297,15 @@ async function checkShareUrl(){
 let postPickerLat = activeLoc().lat;
 let postPickerLng = activeLoc().lng;
 
-function openPostModal(){
+async function openPostModal(){
+  // Session 9C gate — ask for WhatsApp verification before the form, not after.
+  // Fail open on a network error: POST /api/listings enforces it regardless.
+  if(!ST.profile?.phone_verified){
+    try {
+      const s = await apiGet('/api/auth/otp/phone/status');
+      if(s.required){ openPhoneVerify('post'); return; }
+    } catch(_){}
+  }
   ST.editingId = null;
   document.getElementById('postSubmitBtn').textContent = 'Submit for Review 🚀';
   document.getElementById('postModal').classList.remove('hide');

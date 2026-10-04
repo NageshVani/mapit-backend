@@ -12,6 +12,7 @@ const { requireAuth, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 const { logAuditEvent } = require('../utils/auditLog');
 const { sendWhatsAppOtp, normalizeIndianMobile, maskPhone } = require('../utils/whatsappOtp');
+const { needsPhoneVerification } = require('../utils/phoneGate');
 
 const router = express.Router();
 
@@ -336,6 +337,21 @@ function hashPhoneOtp(userId, phone, code) {
   return crypto.createHash('sha256').update(`${userId}:${phone}:${code}`).digest('hex');
 }
 
+// GET /api/auth/otp/phone/status — frontend pre-check before opening the
+// post form, so a user isn't gated only after filling the whole form.
+router.get('/otp/phone/status', requireAuth, async (req, res, next) => {
+  try {
+    const { data: profile, error } = await supabaseAdmin
+      .from('profiles').select('phone, phone_verified').eq('id', req.user.id).maybeSingle();
+    if (error) return next(createError(error.message));
+    res.json({
+      phone_verified: !!profile?.phone_verified,
+      required:       needsPhoneVerification(req.user, profile),
+      phone_masked:   profile?.phone_verified && profile.phone ? maskPhone(profile.phone) : null,
+    });
+  } catch (err) { next(err); }
+});
+
 // POST /api/auth/otp/phone/send   body: { phone }
 router.post('/otp/phone/send', phoneSendLimiter, requireAuth, async (req, res, next) => {
   try {
@@ -495,20 +511,25 @@ router.post('/register', requireAuth, async (req, res, next) => {
     const AVATAR_COLORS = ['#F06030', '#3B82F6', '#22C55E', '#F59E0B', '#8B5CF6', '#EC4899'];
     const avatar_color  = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
 
+    const row = {
+      id:            req.user.id,
+      full_name:     full_name.trim(),
+      nickname:      nickname.trim(),
+      phone:         phone || null,
+      avatar_color,
+      auth_provider: auth_provider || 'email',
+      agreed_tos_at: new Date().toISOString(),
+    };
+    // Session 9C: a WhatsApp-verified phone may only change through the OTP
+    // routes — a repeat register call must not swap it while phone_verified
+    // stays true. (upsert only updates the columns it is given.)
+    const { data: existing } = await supabaseAdmin
+      .from('profiles').select('phone_verified').eq('id', req.user.id).maybeSingle();
+    if (existing?.phone_verified) delete row.phone;
+
     const { data: profile, error } = await supabaseAdmin
       .from('profiles')
-      .upsert(
-        {
-          id:            req.user.id,
-          full_name:     full_name.trim(),
-          nickname:      nickname.trim(),
-          phone:         phone || null,
-          avatar_color,
-          auth_provider: auth_provider || 'email',
-          agreed_tos_at: new Date().toISOString(),
-        },
-        { onConflict: 'id' }
-      )
+      .upsert(row, { onConflict: 'id' })
       .select()
       .single();
 
