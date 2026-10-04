@@ -55,9 +55,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;display:none;}
 .srch-clear:hover{color:var(--text);}
 .hsp{flex:1;}
-.loc-badge{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:11.5px;color:var(--muted);flex-shrink:0;cursor:pointer;transition:border-color .18s;}
-.loc-badge:hover{border-color:var(--orange);}
-.loc-badge b{color:var(--orange);}
 .modetog{display:flex;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:3px;gap:2px;flex-shrink:0;}
 .mbt{padding:5px 16px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;}
 .mbt.on{background:var(--orange);color:#fff;}
@@ -95,6 +92,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 /* Session 9G — search mode + radius live in the header; radius is a dropdown chip */
 .hdr-filters{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .hdr-break{display:none;}
+.pin-box{position:relative;display:flex;flex:0 1 auto;min-width:0;}
+#smExplore{flex:0 0 auto;}
+.pin-box .smb{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;}
+#activePinLabel{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;}
+.smb-k{font-weight:500;opacity:.85;}
+.pmi{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;border-radius:6px;background:transparent;color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-align:left;}
+.pmi:hover{background:var(--card);}
+.pmi.on{color:var(--orange);}
+.pmi-tick{width:14px;flex-shrink:0;}
+.pmi-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pmi.manage{color:var(--muted);font-weight:500;border-top:1px solid var(--border);border-radius:0 0 6px 6px;margin-top:4px;padding-top:10px;}
 .rad-box{position:relative;flex-shrink:0;}
 .rad-chip{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;transition:border-color .18s;}
 .rad-chip:hover,.rad-chip[aria-expanded="true"]{border-color:var(--orange);}
@@ -245,7 +253,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #viewToggle{display:flex;}
   /* Phone header: row 1 = logo · search · avatar; row 2 = mode · radius · Browse/Post */
   #hdr{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:8px 12px;}
-  .beta-tag,.loc-badge,.hsp,.uav-chip,#radMode,.hide-sm{display:none;}
+  .beta-tag,.hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
+  #activePinLabel{max-width:110px;}
   .srch{max-width:none;min-width:0;}
   .uav-wrap{order:2;}
   .hdr-break{display:block;order:3;flex-basis:100%;height:0;}
@@ -254,6 +263,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   .smb{padding:5px 6px;font-size:11.5px;}
   .rad-chip{padding:6px 9px;}
   .rad-menu{left:auto;right:0;}
+  .pin-box{flex:1 1 auto;}
+  .pin-menu{left:0;right:auto;max-width:calc(100vw - 24px);}
   .modetog{order:5;}
   .mbt{padding:5px 10px;}
 }
@@ -913,10 +924,16 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
     <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
   </div>
+  <div class="hsp"></div>
   <div class="hdr-break"></div>
   <div class="hdr-filters">
     <div class="smode-tog" id="searchModeBox">
-      <button class="smb on" id="smPin" onclick="setSearchMode('pin')" title="Show listings around your saved location">📍 Near me</button>
+      <div class="pin-box" id="pinBox">
+        <button class="smb on" id="smPin" type="button" onclick="onMyLocationClick(event)" aria-haspopup="true" aria-expanded="false" title="Listings around your saved location — tap to change it">
+          📍 <span class="smb-k">My location ·</span> <b id="activePinLabel">My location</b> <span class="rad-caret">▾</span>
+        </button>
+        <div class="rad-menu pin-menu" id="pinMenu" role="menu"></div>
+      </div>
       <button class="smb explore" id="smExplore" onclick="setSearchMode('explore')" title="Pan the map or search any area">🗺 Explore</button>
     </div>
     <div class="rad-box" id="radBox">
@@ -934,9 +951,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </div>
   </div>
   <div class="hsp"></div>
-  <div class="loc-badge" title="Your active location" style="cursor:default;">
-    📍 <b id="activePinLabel">Koramangala</b>
-  </div>
   <div class="modetog">
     <button class="mbt on" data-m="buy" onclick="setMode(this)">Browse</button>
     <button class="mbt" data-m="post" onclick="setMode(this)">➕ Post<span class="hide-sm"> a Listing</span></button>
@@ -2251,19 +2265,54 @@ document.addEventListener('click', e => {
     document.getElementById('uavMenu').classList.remove('open');
   }
   if(!document.getElementById('radBox').contains(e.target)) closeRadMenu();
+  if(!document.getElementById('pinBox').contains(e.target)) closePinMenu();
 });
 
 // ── Radius dropdown chip (Session 9G) ──
 function toggleRadMenu(e){
   e.stopPropagation();
+  closePinMenu();
   const open = document.getElementById('radMenu').classList.toggle('open');
   document.getElementById('radChip').setAttribute('aria-expanded', open);
+}
+// ── My location dropdown (Session 9G) ──
+// In Explore mode the button just switches back to "Near me"; when already
+// active it opens the saved-locations menu. Labels are user-typed, so items
+// are built with textContent, never innerHTML.
+function onMyLocationClick(e){
+  e.stopPropagation();
+  if(ST.exploreMode){ setSearchMode('pin'); return; }
+  const menu = document.getElementById('pinMenu');
+  if(menu.classList.contains('open')){ closePinMenu(); return; }
+  closeRadMenu();
+  menu.innerHTML = '';
+  ST.userPins.forEach(p=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pmi' + (p.id===ST.activePin?.id ? ' on' : '');
+    const tick = document.createElement('span'); tick.className = 'pmi-tick'; tick.textContent = p.id===ST.activePin?.id ? '✓' : '';
+    const name = document.createElement('span'); name.className = 'pmi-name'; name.textContent = p.label;
+    b.append(tick, name);
+    b.onclick = () => { closePinMenu(); if(p.id!==ST.activePin?.id) setDefaultPin(p.id, true); };
+    menu.appendChild(b);
+  });
+  const m = document.createElement('button');
+  m.type = 'button'; m.className = 'pmi manage';
+  m.textContent = ST.userPins.length ? '＋ Add or manage locations…' : '＋ Set your location…';
+  m.onclick = () => { closePinMenu(); openPinsModal(); };
+  menu.appendChild(m);
+  menu.classList.add('open');
+  document.getElementById('smPin').setAttribute('aria-expanded','true');
+}
+function closePinMenu(){
+  document.getElementById('pinMenu').classList.remove('open');
+  document.getElementById('smPin').setAttribute('aria-expanded','false');
 }
 function closeRadMenu(){
   document.getElementById('radMenu').classList.remove('open');
   document.getElementById('radChip').setAttribute('aria-expanded', 'false');
 }
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeRadMenu(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ closeRadMenu(); closePinMenu(); } });
 
 // The header wraps to two rows on phones, so #main's height follows the
 // header's real height instead of assuming 56px. Leaflet must be told when
@@ -3740,10 +3789,10 @@ function renderPinsList(){
     </div>`).join('');
 }
 
-async function setDefaultPin(id){
+async function setDefaultPin(id, skipConfirm){
   const candidate = ST.userPins.find(p=>p.id===id);
   if(!candidate) return;
-  if(!confirm(`Set "${candidate.label}" as your active location?`)) return;
+  if(!skipConfirm && !confirm(`Set "${candidate.label}" as your active location?`)) return;
   try {
     await apiPut(`/api/pins/${id}/default`,{});
     await loadAndRenderPins(); // this now syncs ST.activePin, marker, map via the updated function
