@@ -55,9 +55,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;display:none;}
 .srch-clear:hover{color:var(--text);}
 .hsp{flex:1;}
-.modetog{display:flex;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:3px;gap:2px;flex-shrink:0;}
-.mbt{padding:5px 16px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;}
-.mbt.on{background:var(--orange);color:#fff;}
+.post-btn{padding:8px 16px;border-radius:8px;border:none;background:var(--orange);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;flex-shrink:0;transition:background .18s;}
+.post-btn:hover{background:var(--orange2);}
 .uav-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;position:relative;flex-shrink:0;}
 .uav-chip{font-size:12px;font-weight:600;color:var(--text);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .uav{width:36px;height:36px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;flex-shrink:0;box-shadow:0 0 0 2px rgba(240,96,48,.3);letter-spacing:.5px;}
@@ -251,7 +250,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #viewToggle{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:900;}
 @media(max-width:768px){
   #viewToggle{display:flex;}
-  /* Phone header: row 1 = logo · search · avatar; row 2 = mode · radius · Browse/Post */
+  /* Phone header: row 1 = logo · search · avatar; row 2 = mode · radius · Post */
   #hdr{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:8px 12px;}
   .beta-tag,.hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
   #activePinLabel{max-width:110px;}
@@ -265,14 +264,13 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   .rad-menu{left:auto;right:0;}
   .pin-box{flex:1 1 auto;}
   .pin-menu{left:0;right:auto;max-width:calc(100vw - 24px);}
-  .modetog{order:5;}
-  .mbt{padding:5px 10px;}
+  .post-btn{order:5;padding:8px 12px;}
 }
 @media(max-width:380px){
   .cat-lbl{white-space:normal;text-align:center;line-height:1.2;max-width:64px;}
   .cat-btn{padding:7px 4px;}
   .smb{padding:5px 4px;font-size:11px;}
-  .mbt{padding:5px 8px;}
+  .post-btn{padding:8px 10px;}
   #sb{width:100%;}
   #main.view-list #mapc{display:none;}
   #main.view-map #sb{display:none;}
@@ -953,10 +951,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </div>
   </div>
   <div class="hsp"></div>
-  <div class="modetog">
-    <button class="mbt on" data-m="buy" onclick="setMode(this)">Browse</button>
-    <button class="mbt" data-m="post" onclick="setMode(this)">➕ Post<span class="hide-sm"> a Listing</span></button>
-  </div>
+  <button class="post-btn" type="button" onclick="openPostModal()">➕ Post<span class="hide-sm"> a Listing</span></button>
   <div class="uav-wrap" id="uavBtn" onclick="toggleAvatarMenu()">
     <span class="uav-chip" id="uavChipName"></span>
     <div class="uav">
@@ -2346,6 +2341,9 @@ let _userMarker = null;
 function initMap(){
   const loc = activeLoc();
   map = L.map('map',{center:[loc.lat,loc.lng],zoom:14,zoomControl:false,renderer:L.canvas()});
+  // Session 9G — drop Leaflet's optional "🇺🇦 Leaflet |" prefix. The Mapbox and
+  // OpenStreetMap credits on the tile layer below are required by their terms — keep them.
+  map.attributionControl.setPrefix(false);
   const _mainTiles = L.tileLayer(mapboxTileUrl(),{
     attribution:'© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>',
     tileSize:512,zoomOffset:-1,maxZoom:20,
@@ -3385,8 +3383,6 @@ function closePostModal(){
   ST.editingId = null;
   document.getElementById('postModal').classList.add('hide');
   if(_postPickerMap){ _postPickerMap.remove(); _postPickerMap = null; _postPickerMarker = null; _postPickerCoords = null; }
-  // Always return the header to Browse-active state
-  document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on', b.dataset.m==='buy'));
 }
 
 async function editListing(id){
@@ -3952,11 +3948,6 @@ document.addEventListener('click', (e) => {
   const box = document.getElementById('exploreSearchBox');
   if(box && !box.contains(e.target)) document.getElementById('exploreSearchDD').classList.add('hide');
 });
-function setMode(btn){
-  document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on',b===btn));
-  if(btn.dataset.m==='post') openPostModal();
-  else { switchTab('browse'); if(ST.selId) closeDetail(); }
-}
 // Mobile map/list single-pane view toggle (Session 5 item 6, Tester-3a).
 // Only visually meaningful on narrow screens (see #main.view-map/.view-list
 // CSS) — harmless no-op on desktop, which always shows both panes.
