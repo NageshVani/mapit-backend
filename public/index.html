@@ -269,6 +269,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   .mbt{padding:5px 10px;}
 }
 @media(max-width:380px){
+  .cat-lbl{white-space:normal;text-align:center;line-height:1.2;max-width:64px;}
+  .cat-btn{padding:7px 4px;}
   .smb{padding:5px 4px;font-size:11px;}
   .mbt{padding:5px 8px;}
   #sb{width:100%;}
@@ -930,7 +932,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="smode-tog" id="searchModeBox">
       <div class="pin-box" id="pinBox">
         <button class="smb on" id="smPin" type="button" onclick="onMyLocationClick(event)" aria-haspopup="true" aria-expanded="false" title="Listings around your saved location — tap to change it">
-          📍 <span class="smb-k">My location ·</span> <b id="activePinLabel">My location</b> <span class="rad-caret">▾</span>
+          📍 <span class="smb-k">My location ·</span> <b id="activePinLabel">Set location</b> <span class="rad-caret">▾</span>
         </button>
         <div class="rad-menu pin-menu" id="pinMenu" role="menu"></div>
       </div>
@@ -1205,7 +1207,7 @@ const CATS = [
 // transaction filter. CATS above stays the data model (colours, labels, post form).
 const BROWSE_CHIPS = [
   { id:'all',  cat:'all', txn:null,   lbl:'All',             ico:'🗺️' },
-  { id:'rent', cat:'re',  txn:'Rent', lbl:'Rent',            ico:'🔑' },
+  { id:'rent', cat:'re',  txn:'Rent', lbl:'Rent Property',   ico:'🔑' },
   { id:'buy',  cat:'re',  txn:'Sell', lbl:'Buy Property',    ico:'🏠' },
   { id:'veh',  cat:'veh', txn:null,   lbl:'Vehicles',        ico:'🚗' },
   { id:'hh',   cat:'hh',  txn:null,   lbl:'Household',       ico:'🏡' },
