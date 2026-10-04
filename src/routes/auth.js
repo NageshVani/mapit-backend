@@ -4,12 +4,14 @@
 // ============================================================
 console.log('[auth.js] Auth router loaded');
 
+const crypto    = require('crypto');
 const express   = require('express');
 const rateLimit  = require('express-rate-limit');
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { requireAuth, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 const { logAuditEvent } = require('../utils/auditLog');
+const { sendWhatsAppOtp, normalizeIndianMobile, maskPhone } = require('../utils/whatsappOtp');
 
 const router = express.Router();
 
@@ -302,6 +304,178 @@ router.post('/verify-otp', otpLimiter, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// ── WhatsApp phone OTP (Session 9C) ──────────────────────────
+// MapIt generates the code and stores only its sha256 hash in phone_otps
+// (migration 016); MSG91 just delivers it. Proves the logged-in user owns
+// the number — it is NOT a login method. India +91 only for MVP.
+// phone_otps rows double as the per-user rate counter: the send route
+// inserts its row FIRST, then counts, so two near-simultaneous taps can't
+// both slip past the cooldown — the later one sees the earlier and backs out.
+const PHONE_OTP_TTL_MS       = 10 * 60 * 1000;
+const PHONE_OTP_COOLDOWN_MS  = 60 * 1000;
+const PHONE_OTP_DAILY_CAP    = 5;
+const PHONE_OTP_MAX_ATTEMPTS = 5;
+
+// Per-IP backstop on top of the per-user limits above. Separate from
+// otpLimiter so wrong guesses on verify don't eat into the email-OTP budget.
+const phoneSendLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many code requests from this network. Please wait 1 hour.' },
+});
+const phoneVerifyLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  message: { error: 'Too many attempts from this network. Please wait 1 hour.' },
+});
+
+// Bound to user + phone, so a hash from one row can't be replayed for another.
+function hashPhoneOtp(userId, phone, code) {
+  return crypto.createHash('sha256').update(`${userId}:${phone}:${code}`).digest('hex');
+}
+
+// POST /api/auth/otp/phone/send   body: { phone }
+router.post('/otp/phone/send', phoneSendLimiter, requireAuth, async (req, res, next) => {
+  try {
+    if (!req.user.email_confirmed_at) {
+      return res.status(403).json({ error: 'Please verify your email first.' });
+    }
+    const phone = normalizeIndianMobile(req.body?.phone);
+    if (!phone) {
+      return res.status(400).json({ error: 'Enter a valid Indian mobile number (10 digits, starting 6–9).' });
+    }
+
+    const { data: profile, error: profErr } = await supabaseAdmin
+      .from('profiles').select('phone, phone_verified').eq('id', req.user.id).maybeSingle();
+    if (profErr) return next(createError(profErr.message));
+    if (!profile) return res.status(400).json({ error: 'Please complete your profile first.' });
+    if (profile.phone_verified && profile.phone === phone) {
+      return res.json({ success: true, already_verified: true, phone_masked: maskPhone(phone) });
+    }
+
+    const { data: taken, error: takenErr } = await supabaseAdmin
+      .from('profiles').select('id')
+      .eq('phone', phone).eq('phone_verified', true).neq('id', req.user.id)
+      .limit(1);
+    if (takenErr) return next(createError(takenErr.message));
+    if (taken.length) {
+      return res.status(409).json({ error: 'This number is already verified on another MapIt account.' });
+    }
+
+    const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+    const { data: row, error: insErr } = await supabaseAdmin
+      .from('phone_otps')
+      .insert({
+        user_id:    req.user.id,
+        phone,
+        code_hash:  hashPhoneOtp(req.user.id, phone, code),
+        expires_at: new Date(Date.now() + PHONE_OTP_TTL_MS).toISOString(),
+      })
+      .select('id, created_at')
+      .single();
+    if (insErr) return next(createError(insErr.message));
+
+    // Rate check AFTER our own insert (see header comment).
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: recent, error: recErr } = await supabaseAdmin
+      .from('phone_otps').select('id, created_at')
+      .eq('user_id', req.user.id).gte('created_at', dayAgo)
+      .order('created_at', { ascending: false });
+    if (recErr) return next(createError(recErr.message));
+
+    const others    = recent.filter(r => r.id !== row.id);
+    const lastOther = others[0] && new Date(others[0].created_at).getTime();
+    const tooSoon   = lastOther && new Date(row.created_at).getTime() - lastOther < PHONE_OTP_COOLDOWN_MS;
+    if (tooSoon || recent.length > PHONE_OTP_DAILY_CAP) {
+      await supabaseAdmin.from('phone_otps').delete().eq('id', row.id);
+      if (tooSoon) {
+        const retry_after = Math.ceil((lastOther + PHONE_OTP_COOLDOWN_MS - Date.now()) / 1000);
+        return res.status(429).json({ error: `Please wait ${Math.max(retry_after, 1)}s before requesting another code.`, retry_after });
+      }
+      return res.status(429).json({ error: 'Daily limit reached for WhatsApp codes. Try again tomorrow, or verify later.' });
+    }
+
+    const sent = await sendWhatsAppOtp(phone, code);
+    if (!sent.ok) {
+      // Keep the row (it still counts toward the cooldown/cap) but make it unusable.
+      await supabaseAdmin.from('phone_otps')
+        .update({ expires_at: new Date().toISOString() }).eq('id', row.id);
+      return res.status(503).json({ error: 'Could not send the WhatsApp code right now. Please try again shortly, or verify later.' });
+    }
+
+    res.json({ success: true, phone_masked: maskPhone(phone), expires_in: PHONE_OTP_TTL_MS / 1000 });
+  } catch (err) { next(err); }
+});
+
+// POST /api/auth/otp/phone/verify   body: { code }
+// The phone is taken from the latest phone_otps row, never from the body —
+// so a user can't receive a code on one number and claim another.
+router.post('/otp/phone/verify', phoneVerifyLimiter, requireAuth, async (req, res, next) => {
+  try {
+    const code = String(req.body?.code ?? '').trim();
+    if (!/^\d{6}$/.test(code)) {
+      return res.status(400).json({ error: 'Please enter the 6-digit code sent via WhatsApp.' });
+    }
+
+    const { data: otp, error: otpErr } = await supabaseAdmin
+      .from('phone_otps').select('*')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1).maybeSingle();
+    if (otpErr) return next(createError(otpErr.message));
+    if (!otp || otp.consumed_at || new Date(otp.expires_at) <= new Date()) {
+      return res.status(400).json({ error: 'This code has expired. Please request a new one.' });
+    }
+    if (otp.attempts >= PHONE_OTP_MAX_ATTEMPTS) {
+      return res.status(429).json({ error: 'Too many wrong attempts. Please request a new code.' });
+    }
+
+    // Count the attempt BEFORE comparing. The `.eq('attempts', …)` guard makes
+    // parallel guesses race for the same slot — only one wins, the rest retry.
+    const { data: bumped, error: bumpErr } = await supabaseAdmin
+      .from('phone_otps')
+      .update({ attempts: otp.attempts + 1 })
+      .eq('id', otp.id).eq('attempts', otp.attempts)
+      .select('id');
+    if (bumpErr) return next(createError(bumpErr.message));
+    if (!bumped.length) {
+      return res.status(409).json({ error: 'Please try again.' });
+    }
+
+    const expected = Buffer.from(otp.code_hash, 'hex');
+    const actual   = Buffer.from(hashPhoneOtp(req.user.id, otp.phone, code), 'hex');
+    if (!crypto.timingSafeEqual(expected, actual)) {
+      const left = PHONE_OTP_MAX_ATTEMPTS - (otp.attempts + 1);
+      return res.status(400).json({
+        error: left > 0 ? `Incorrect code. ${left} attempt${left === 1 ? '' : 's'} left.` : 'Incorrect code. Please request a new one.',
+      });
+    }
+
+    const { data: profile, error: upErr } = await supabaseAdmin
+      .from('profiles')
+      .update({ phone: otp.phone, phone_verified: true })
+      .eq('id', req.user.id)
+      .select()
+      .single();
+    if (upErr) {
+      // 23505 = uniq_profiles_verified_phone: another account verified this
+      // number between our send-time check and now.
+      if (upErr.code === '23505') {
+        return res.status(409).json({ error: 'This number is already verified on another MapIt account.' });
+      }
+      return next(createError(upErr.message));
+    }
+
+    await supabaseAdmin.from('phone_otps')
+      .update({ consumed_at: new Date().toISOString() }).eq('id', otp.id);
+
+    // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
+    logAuditEvent('phone_verified', req, req.user.id);
+
+    res.json({ success: true, profile });
+  } catch (err) { next(err); }
 });
 
 // ── Register — new user profile setup ────────────────────────
