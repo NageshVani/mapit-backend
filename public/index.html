@@ -43,11 +43,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.45);}
 
 /* ── HEADER ── */
-#hdr{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
+#hdr{min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
 .beta-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
-.srch{flex:1;max-width:400px;position:relative;}
+.srch{flex:1;max-width:260px;min-width:140px;position:relative;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14.5px;opacity:.5;}
 #srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 30px 8px 32px;color:var(--text);font-size:14.5px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 #srchIn:focus{border-color:var(--orange);}
@@ -76,7 +76,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .uav-name{font-size:11px;font-weight:600;color:var(--muted2);padding:6px 12px 4px;border-bottom:1px solid var(--border);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
 
 /* ── LAYOUT ── */
-#main{display:flex;height:calc(100vh - 56px);}
+#main{display:flex;height:calc(100vh - var(--hdr-h,56px));}
 
 /* ── SIDEBAR ── */
 #sb{width:var(--sb-w);flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
@@ -92,20 +92,27 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .spill{padding:4px 11px;border-radius:20px;border:1px solid var(--border2);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .18s;color:var(--muted);background:transparent;}
 .spill:hover{background:var(--card);color:var(--text);}
 .spill.on{background:var(--orange);border-color:var(--orange);color:#fff;}
-.rad-box{padding:9px 12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
-.rad-hd{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
-.rad-hd span{color:var(--orange);}
-.rad-btns{display:flex;gap:4px;overflow-x:auto;}
-.rbt{flex:1;min-width:44px;padding:5px 0;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;}
-.rbt:hover{background:var(--card);color:var(--text);}
-.rbt.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+/* Session 9G — search mode + radius live in the header; radius is a dropdown chip */
+.hdr-filters{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.hdr-break{display:none;}
+.rad-box{position:relative;flex-shrink:0;}
+.rad-chip{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;transition:border-color .18s;}
+.rad-chip:hover,.rad-chip[aria-expanded="true"]{border-color:var(--orange);}
+.rad-chip b{color:var(--orange);font-weight:700;}
+.rad-caret{font-size:10px;}
+.rad-menu{position:absolute;top:100%;left:0;margin-top:6px;background:var(--panel);border:1px solid var(--border2);border-radius:10px;padding:6px;min-width:200px;box-shadow:var(--shadow);display:none;flex-direction:column;gap:2px;z-index:910;}
+.rad-menu.open{display:flex;}
+.rbt{display:flex;justify-content:space-between;align-items:baseline;gap:10px;width:100%;padding:8px 10px;border:none;border-radius:6px;background:transparent;color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-align:left;}
+.rbt small{font-weight:400;color:var(--muted);font-size:11px;}
+.rbt:hover{background:var(--card);}
+.rbt.on{background:var(--orange);color:#fff;}
+.rbt.on small{color:rgba(255,255,255,.85);}
 .rad-box.disabled{opacity:.4;pointer-events:none;}
 /* ── SEARCH MODE TOGGLE ── */
-.search-mode-box{padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.search-mode-box.disabled{opacity:.4;pointer-events:none;}
+#searchModeBox.disabled{opacity:.4;pointer-events:none;}
 .smode-hd{font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
 .smode-tog{display:flex;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:3px;gap:2px;}
-.smb{flex:1;padding:5px 8px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;white-space:nowrap;}
+.smb{flex:1;padding:5px 10px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;white-space:nowrap;}
 .smb:hover{color:var(--text);background:rgba(0,0,0,.05);}
 .smb.on{background:var(--orange);color:#fff;}
 .smb.on.explore{background:var(--blue);}
@@ -236,6 +243,23 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #viewToggle{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:900;}
 @media(max-width:768px){
   #viewToggle{display:flex;}
+  /* Phone header: row 1 = logo · search · avatar; row 2 = mode · radius · Browse/Post */
+  #hdr{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:8px 12px;}
+  .beta-tag,.loc-badge,.hsp,.uav-chip,#radMode,.hide-sm{display:none;}
+  .srch{max-width:none;min-width:0;}
+  .uav-wrap{order:2;}
+  .hdr-break{display:block;order:3;flex-basis:100%;height:0;}
+  .hdr-filters{order:4;flex:1;min-width:0;gap:6px;}
+  .hdr-filters #searchModeBox{flex:1;min-width:0;}
+  .smb{padding:5px 6px;font-size:11.5px;}
+  .rad-chip{padding:6px 9px;}
+  .rad-menu{left:auto;right:0;}
+  .modetog{order:5;}
+  .mbt{padding:5px 10px;}
+}
+@media(max-width:380px){
+  .smb{padding:5px 4px;font-size:11px;}
+  .mbt{padding:5px 8px;}
   #sb{width:100%;}
   #main.view-list #mapc{display:none;}
   #main.view-map #sb{display:none;}
@@ -889,13 +913,33 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
     <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
   </div>
+  <div class="hdr-break"></div>
+  <div class="hdr-filters">
+    <div class="smode-tog" id="searchModeBox">
+      <button class="smb on" id="smPin" onclick="setSearchMode('pin')" title="Show listings around your saved location">📍 Near me</button>
+      <button class="smb explore" id="smExplore" onclick="setSearchMode('explore')" title="Pan the map or search any area">🗺 Explore</button>
+    </div>
+    <div class="rad-box" id="radBox">
+      <button class="rad-chip" id="radChip" type="button" onclick="toggleRadMenu(event)" aria-haspopup="true" aria-expanded="false">
+        <span id="radMode">Within</span> <b id="radLbl">5 km</b> <span class="rad-caret">▾</span>
+      </button>
+      <div class="rad-menu" id="radMenu" role="menu">
+        <button class="rbt" data-r="1" onclick="setRad(1)">1 km <small>walking distance</small></button>
+        <button class="rbt" data-r="3" onclick="setRad(3)">3 km</button>
+        <button class="rbt on" data-r="5" onclick="setRad(5)">5 km</button>
+        <button class="rbt" data-r="10" onclick="setRad(10)">10 km</button>
+        <button class="rbt" data-r="50" onclick="setRad(50)">Region <small>50 km</small></button>
+        <button class="rbt" data-r="999" onclick="setRad(999)">Whole city</button>
+      </div>
+    </div>
+  </div>
   <div class="hsp"></div>
   <div class="loc-badge" title="Your active location" style="cursor:default;">
     📍 <b id="activePinLabel">Koramangala</b>
   </div>
   <div class="modetog">
     <button class="mbt on" data-m="buy" onclick="setMode(this)">Browse</button>
-    <button class="mbt" data-m="post" onclick="setMode(this)">➕ Post a Listing</button>
+    <button class="mbt" data-m="post" onclick="setMode(this)">➕ Post<span class="hide-sm"> a Listing</span></button>
   </div>
   <div class="uav-wrap" id="uavBtn" onclick="toggleAvatarMenu()">
     <span class="uav-chip" id="uavChipName"></span>
@@ -925,23 +969,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <aside id="sb">
     <div class="cat-row" id="catRow"></div>
     <div class="sub-row" id="subRow"></div>
-    <div class="search-mode-box" id="searchModeBox">
-      <div class="smode-hd">Search Mode</div>
-      <div class="smode-tog">
-        <button class="smb on" id="smPin" onclick="setSearchMode('pin')">📍 My Locations</button>
-        <button class="smb explore" id="smExplore" onclick="setSearchMode('explore')">🗺 Explore Area</button>
-      </div>
-    </div>
-    <div class="rad-box">
-      <div class="rad-hd"><span id="radMode">Proximity Radius</span> <span id="radLbl">5 km</span></div>
-      <div class="rad-btns">
-        <button class="rbt" onclick="setRad(3)">3 km</button>
-        <button class="rbt on" onclick="setRad(5)">5 km</button>
-        <button class="rbt" onclick="setRad(10)">10 km</button>
-        <button class="rbt" onclick="setRad(999)">City</button>
-        <button class="rbt" onclick="setRad(50)">Region</button>
-      </div>
-    </div>
     <div class="tab-bar">
       <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse')">📍 Listings <span class="tab-count" id="cnt-badge">0</span></button>
       <button class="tab-btn" id="tab-fav" onclick="switchTab('fav')">❤ Saved <span class="tab-count" id="fav-badge">0</span></button>
@@ -1006,7 +1033,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="help-scroll">
     <ul style="margin:14px 0 4px;padding-left:20px;line-height:1.6;font-size:16.5px;color:var(--text);">
       <li>🗺 <b>Browse:</b> listings near you appear as pins on the map (or the list, on mobile) — tap a pin to view details, filter by category and distance in the sidebar</li>
-      <li>🌍 <b>Explore Area:</b> want to browse a different neighborhood instead of your own? Switch to <b>Explore Area</b> in the sidebar and search any place</li>
+      <li>🌍 <b>Explore Area:</b> want to browse a different neighborhood instead of your own? Tap <b>🗺 Explore</b> in the top bar and search any place</li>
       <li>➕ <b>Post:</b> tap <b>Post a Listing</b> in the header to list a home, vehicle, or item</li>
       <li>❤ <b>Save:</b> tap the heart icon on any listing to save it — find it later in the <b>Saved</b> tab</li>
       <li>🤝 <b>Contact a seller:</b> open a listing and tap <b>I'm Interested</b> to send them a message</li>
@@ -2213,7 +2240,29 @@ document.addEventListener('click', e => {
   if(!document.getElementById('uavBtn').contains(e.target)){
     document.getElementById('uavMenu').classList.remove('open');
   }
+  if(!document.getElementById('radBox').contains(e.target)) closeRadMenu();
 });
+
+// ── Radius dropdown chip (Session 9G) ──
+function toggleRadMenu(e){
+  e.stopPropagation();
+  const open = document.getElementById('radMenu').classList.toggle('open');
+  document.getElementById('radChip').setAttribute('aria-expanded', open);
+}
+function closeRadMenu(){
+  document.getElementById('radMenu').classList.remove('open');
+  document.getElementById('radChip').setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeRadMenu(); });
+
+// The header wraps to two rows on phones, so #main's height follows the
+// header's real height instead of assuming 56px. Leaflet must be told when
+// its container is resized, or tiles render with grey gaps.
+new ResizeObserver(() => {
+  const h = document.getElementById('hdr').offsetHeight;
+  document.documentElement.style.setProperty('--hdr-h', h + 'px');
+  if(typeof map !== 'undefined' && map) map.invalidateSize();
+}).observe(document.getElementById('hdr'));
 
 // ═══════════════════════════════════════════════
 // MAP
@@ -3712,8 +3761,10 @@ function setSub(s){
 }
 function setRad(r){
   ST.rad=r;
-  document.getElementById('radLbl').textContent = r>=999?'City-wide':r===50?'Region':r+' km';
-  document.querySelectorAll('.rbt').forEach((b,i)=>b.classList.toggle('on',[3,5,10,999,50][i]===r));
+  document.getElementById('radLbl').textContent = r>=999?'whole city':r+' km';
+  // match by each option's own data-r value, not its position in the menu
+  document.querySelectorAll('.rbt').forEach(b=>b.classList.toggle('on',Number(b.dataset.r)===r));
+  closeRadMenu();
   updateCircle();
   const loc=activeLoc();
   if(r<999&&radCircle) map.fitBounds(radCircle.getBounds(),{padding:[30,30],animate:true});
@@ -3724,8 +3775,6 @@ function setSearchMode(mode){
   ST.exploreMode = (mode === 'explore');
   document.getElementById('smPin').classList.toggle('on', !ST.exploreMode);
   document.getElementById('smExplore').classList.toggle('on', ST.exploreMode);
-  const radMode = document.getElementById('radMode');
-  if(radMode) radMode.textContent = ST.exploreMode ? 'Search Radius' : 'Proximity Radius';
   const searchBox = document.getElementById('exploreSearchBox');
   if(ST.exploreMode){
     _placeExploreMarker();
