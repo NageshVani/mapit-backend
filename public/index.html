@@ -82,7 +82,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #sb{width:var(--sb-w);flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .cat-row{display:flex;gap:4px;padding:10px 10px 6px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
 .cat-row::-webkit-scrollbar{display:none;}
-.cat-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 10px;border-radius:10px;cursor:pointer;min-width:58px;flex-shrink:0;border:1.5px solid transparent;transition:all .18s;}
+.cat-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 6px;border-radius:10px;cursor:pointer;min-width:54px;flex-shrink:0;border:1.5px solid transparent;transition:all .18s;}
 .cat-btn:hover{background:var(--card);}
 .cat-btn.on{background:var(--card);border-color:var(--orange);}
 .cat-ico{font-size:19px;}
@@ -792,8 +792,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <div class="form-group" id="txTypeGroup" style="display:none;margin-top:14px;">
           <label class="form-label">Transaction Type</label>
           <div class="tx-radio-row">
-            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell" checked> Sell</label>
-            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Rent"> Rent</label>
+            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Rent" checked> Rent</label>
+            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell"> Sell</label>
           </div>
         </div>
         <!-- Dynamic category-specific fields (rendered as 2-col subgrid via CSS) -->
@@ -1186,6 +1186,16 @@ const CATS = [
   { id:'veh', lbl:'Vehicles',        ico:'🚗',  col:'#3B82F6', subs:['All Types','Cars','2 Wheelers','Cycles','Trucks & Commercial'] },
   { id:'hh',  lbl:'Household Items', ico:'🏡',  col:'#22C55E', subs:['All Types','Electronic Appliances','Furniture','Home Decor'] },
 ];
+// Session 9G — sidebar chips. Real Estate is split into Rent and Buy Property
+// (rent is the most-searched in Bangalore); both map to category 're' plus a
+// transaction filter. CATS above stays the data model (colours, labels, post form).
+const BROWSE_CHIPS = [
+  { id:'all',  cat:'all', txn:null,   lbl:'All',             ico:'🗺️' },
+  { id:'rent', cat:'re',  txn:'Rent', lbl:'Rent',            ico:'🔑' },
+  { id:'buy',  cat:'re',  txn:'Sell', lbl:'Buy Property',    ico:'🏠' },
+  { id:'veh',  cat:'veh', txn:null,   lbl:'Vehicles',        ico:'🚗' },
+  { id:'hh',   cat:'hh',  txn:null,   lbl:'Household',       ico:'🏡' },
+];
 const SUBCAT_MAP = {
   re:  ['Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space'],
   veh: ['Cars','2 Wheelers','Cycles','Trucks & Commercial'],
@@ -1423,7 +1433,7 @@ function listingRow(l){
 // ═══════════════════════════════════════════════
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
-  cat:'all', sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
+  cat:'all', chip:'all', txn:null, sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
   selId:null, tab:'browse', editingId:null,
   chatOpen:false, chatMsgs:[], chatConvId:null, chatChannel:null,
   conversationsByListing: new Map(), // listing_id -> conversation, buyer's own conversations only
@@ -2585,6 +2595,7 @@ async function loadListings(){
   try {
     let url = `/api/listings?lat=${loc.lat}&lng=${loc.lng}&radius=${radiusM}`;
     if(ST.cat !== 'all') url += `&category=${ST.cat}`;
+    if(ST.txn) url += `&txn=${ST.txn}`;
     if(ST.sub && ST.sub !== 'All Types') url += `&subcategory=${encodeURIComponent(ST.sub)}`;
     const data = await apiGet(url);
     // Enrich with distance
@@ -2777,8 +2788,8 @@ async function removeFav(id){
 // CATEGORIES
 // ═══════════════════════════════════════════════
 function renderCats(){
-  document.getElementById('catRow').innerHTML = CATS.map(c=>`
-    <div class="cat-btn ${ST.cat===c.id?'on':''}" onclick="setCat('${c.id}')">
+  document.getElementById('catRow').innerHTML = BROWSE_CHIPS.map(c=>`
+    <div class="cat-btn ${ST.chip===c.id?'on':''}" onclick="setCat('${c.id}')">
       <span class="cat-ico">${c.ico}</span>
       <span class="cat-lbl">${c.lbl}</span>
     </div>`).join('');
@@ -3153,6 +3164,9 @@ function openPostModal(){
   document.getElementById('postSubmitBtn').textContent = 'Submit for Review 🚀';
   document.getElementById('postModal').classList.remove('hide');
   updatePostSubcats(); // also triggers renderDynamicFields
+  // Session 9G — Real Estate defaults to Rent for every new listing
+  const rentEl = document.querySelector('input[name="txType"][value="Rent"]');
+  if(rentEl) rentEl.checked = true;
   // Populate location dropdown from saved pins + manual option
   const sel = document.getElementById('postLocation');
   sel.innerHTML = '';
@@ -3751,7 +3765,8 @@ async function deletePin(id){
 // CONTROLS
 // ═══════════════════════════════════════════════
 function setCat(id){
-  ST.cat=id; ST.sub=null; ST.selId=null;
+  const chip = BROWSE_CHIPS.find(c=>c.id===id) || BROWSE_CHIPS[0];
+  ST.chip=chip.id; ST.cat=chip.cat; ST.txn=chip.txn; ST.sub=null; ST.selId=null;
   renderCats(); loadListings();
 }
 function setSub(s){

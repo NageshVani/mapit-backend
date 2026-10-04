@@ -337,8 +337,18 @@ router.post('/cleanup/bulk-delete', requireAuth, requireAdmin, async (req, res, 
   } catch (err) { next(err); }
 });
 
+// Session 9G — Real Estate transaction type ('Rent' | 'Sell'), stored in
+// details.transaction_type by the post form. Legacy/seed rows predate that
+// field: a 'per month' price label means Rent, anything else Sell. Mirrors
+// isRental() in the frontend so pins and filters always agree.
+function listingTxn(l) {
+  const t = l.details?.transaction_type;
+  if (t === 'Rent' || t === 'Sell') return t;
+  return /per\s*month|\/\s*month|monthly/i.test(l.price_label || '') ? 'Rent' : 'Sell';
+}
+
 // ── GET listings with radius filter ──────────────────────────
-// GET /api/listings?lat=12.93&lng=77.62&radius=5000&category=re&subcategory=Buy&q=flat
+// GET /api/listings?lat=12.93&lng=77.62&radius=5000&category=re&subcategory=Buy&q=flat&txn=Rent
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const {
@@ -346,6 +356,7 @@ router.get('/', requireAuth, async (req, res, next) => {
       radius    = 5000,   // metres — default 5 km
       category,
       subcategory,
+      txn,                // 'Rent' | 'Sell' — Real Estate only (Session 9G)
       q,                  // search query
       limit     = 50,
       offset    = 0,
@@ -400,6 +411,11 @@ router.get('/', requireAuth, async (req, res, next) => {
     }
     if (subcategory && subcategory !== 'All Types') {
       listings = listings.filter(l => l.subcategory === subcategory);
+    }
+    // Only the two known values are honoured; anything else is ignored rather
+    // than echoed, so a crafted ?txn= cannot change behaviour.
+    if (txn === 'Rent' || txn === 'Sell') {
+      listings = listings.filter(l => l.category === 're' && listingTxn(l) === txn);
     }
     if (q) {
       const ql = q.toLowerCase();
