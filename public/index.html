@@ -153,7 +153,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-info-thumb{width:64px;height:64px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;overflow:hidden;border:1px solid var(--border2);}
 .ld-info-mid{flex:1;min-width:0;}
 .ld-info-ttl{font-size:16.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;margin-bottom:3px;}
-.ld-info-price{font-size:20px;font-weight:700;color:var(--orange);font-family:'JetBrains Mono',monospace;line-height:1;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ld-info-price{font-size:18px;font-weight:700;color:var(--orange);font-family:'JetBrains Mono',monospace;line-height:1;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* long prices (₹85.0L, ₹1.25Cr) step down so they fit beside the action buttons */
+.ld-info-price.sm{font-size:15px;}
+.per-mo{font-size:11px;font-weight:600;letter-spacing:0;margin-left:1px;}
 .ld-info-neg{font-size:11px;font-weight:600;color:var(--muted);margin-top:3px;}
 .ld-info-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .ld-photo-strip{display:flex;align-items:center;gap:6px;padding:8px 13px 0;border-top:1px solid var(--border2);}
@@ -228,6 +231,27 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
 /* ── MAP ── */
 #mapc{flex:1;position:relative;overflow:hidden;}
+/* Session 9G — desktop collapsible sidebar: a ‹/› handle on the map's left
+   edge shrinks #sb to a 64px icon rail. Phones keep the List/Map toggle. */
+#sb{transition:width .22s ease;}
+.sb-handle{position:absolute;top:14px;left:0;z-index:650;width:22px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--border2);border-left:none;border-radius:0 8px 8px 0;box-shadow:2px 2px 8px rgba(0,0,0,.12);color:var(--muted);font-size:18px;font-weight:700;line-height:1;cursor:pointer;padding:0;transition:color .15s;}
+.sb-handle:hover{color:var(--orange);}
+.sb-handle:focus-visible{outline:2px solid var(--orange);outline-offset:2px;}
+@media(min-width:769px){
+  #main.sb-collapsed #sb{width:64px;}
+  #main.sb-collapsed .cat-row{flex-direction:column;align-items:stretch;padding:8px 6px;gap:4px;overflow:visible;}
+  #main.sb-collapsed .cat-btn{min-width:0;padding:8px 0;}
+  /* !important: renderCats() sets the sub-row's display inline */
+  #main.sb-collapsed .cat-lbl,#main.sb-collapsed .sub-row,#main.sb-collapsed .tab-lbl,
+  #main.sb-collapsed .fb-lbl,#main.sb-collapsed #sb-content{display:none !important;}
+  #main.sb-collapsed .tab-bar{flex-direction:column;border-top:1px solid var(--border);border-bottom:none;padding:6px;gap:4px;}
+  #main.sb-collapsed .tab-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;margin:0;font-size:15px;border-radius:8px;}
+  #main.sb-collapsed .tab-btn.on{border-radius:8px;}
+  #main.sb-collapsed .feedback-strip{margin-top:auto;padding:8px 0;}
+  #main.sb-collapsed .feedback-btn{padding:6px 10px;}
+}
+@media(max-width:768px){.sb-handle{display:none;}}
+@media(prefers-reduced-motion:reduce){#sb{transition:none;}}
 #map{width:100%;height:100%;}
 .leaflet-control-zoom{border:none !important;box-shadow:0 2px 10px rgba(0,0,0,.12) !important;}
 .leaflet-control-zoom a{background:var(--card) !important;color:var(--text) !important;border:1px solid var(--border2) !important;font-size:16px !important;}
@@ -981,17 +1005,18 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="cat-row" id="catRow"></div>
     <div class="sub-row" id="subRow"></div>
     <div class="tab-bar">
-      <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse')">📍 Listings <span class="tab-count" id="cnt-badge">0</span></button>
-      <button class="tab-btn" id="tab-fav" onclick="switchTab('fav')">❤ Saved <span class="tab-count" id="fav-badge">0</span></button>
-      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📋 My Listings <span class="tab-count" id="mine-badge">0</span></button>
+      <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse');expandFromRail()" title="Listings"><span class="tab-ico">📍</span><span class="tab-lbl"> Listings</span> <span class="tab-count" id="cnt-badge">0</span></button>
+      <button class="tab-btn" id="tab-fav" onclick="switchTab('fav');expandFromRail()" title="Saved"><span class="tab-ico">❤</span><span class="tab-lbl"> Saved</span> <span class="tab-count" id="fav-badge">0</span></button>
+      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine');expandFromRail()" title="My Listings"><span class="tab-ico">📋</span><span class="tab-lbl"> My Listings</span> <span class="tab-count" id="mine-badge">0</span></button>
     </div>
     <div id="sb-content"></div>
     <div class="feedback-strip">
-      <button class="feedback-btn" onclick="openFeedbackModal()">💡 Share Feedback</button>
+      <button class="feedback-btn" onclick="openFeedbackModal()" title="Share Feedback"><span>💡</span><span class="fb-lbl">Share Feedback</span></button>
     </div>
   </aside>
 
   <div id="mapc">
+    <button class="sb-handle" id="sbHandle" type="button" onclick="toggleSidebar()" aria-label="Collapse side panel" title="Collapse side panel" aria-expanded="true">‹</button>
     <div id="map"></div>
     <div class="cnt-mini"><b id="mapCnt">0</b> pins visible</div>
     <div id="hoverCard"><div class="hc-inner" id="hcInner"></div></div>
@@ -2265,6 +2290,31 @@ document.addEventListener('click', e => {
   if(!document.getElementById('pinBox').contains(e.target)) closePinMenu();
 });
 
+// ── Collapsible sidebar, desktop only (Session 9G) ──
+// The user's own collapse/expand is remembered per browser. Opening a listing
+// from the rail expands the panel temporarily (ST.sbAutoOpened) and closing
+// that listing folds it back.
+const SB_COLLAPSED_KEY = 'mapit_sb_collapsed';
+const isDesktop = () => window.matchMedia('(min-width:769px)').matches;
+function isSidebarCollapsed(){ return document.getElementById('main').classList.contains('sb-collapsed'); }
+function setSidebarCollapsed(collapsed, persist=true){
+  document.getElementById('main').classList.toggle('sb-collapsed', collapsed);
+  const h = document.getElementById('sbHandle');
+  const label = collapsed ? 'Expand side panel' : 'Collapse side panel';
+  h.textContent = collapsed ? '›' : '‹';
+  h.title = label; h.setAttribute('aria-label', label); h.setAttribute('aria-expanded', String(!collapsed));
+  if(persist){ try { localStorage.setItem(SB_COLLAPSED_KEY, collapsed ? '1' : '0'); } catch(_){} }
+  // Leaflet must re-measure after the width animation, or the newly exposed strip stays grey
+  setTimeout(() => { if(map) map.invalidateSize(); }, 260);
+}
+function toggleSidebar(){ ST.sbAutoOpened = false; setSidebarCollapsed(!isSidebarCollapsed()); }
+function expandSidebarForDetail(){
+  if(isDesktop() && isSidebarCollapsed()){ ST.sbAutoOpened = true; setSidebarCollapsed(false, false); }
+}
+// Tab icons in the rail show lists, so they open the panel (a deliberate choice, remembered)
+function expandFromRail(){ if(isDesktop() && isSidebarCollapsed()){ ST.sbAutoOpened = false; setSidebarCollapsed(false); } }
+try { if(localStorage.getItem(SB_COLLAPSED_KEY) === '1') setSidebarCollapsed(true, false); } catch(_){}
+
 // ── Radius dropdown chip (Session 9G) ──
 function toggleRadMenu(e){
   e.stopPropagation();
@@ -2838,7 +2888,7 @@ async function removeFav(id){
 // ═══════════════════════════════════════════════
 function renderCats(){
   document.getElementById('catRow').innerHTML = BROWSE_CHIPS.map(c=>`
-    <div class="cat-btn ${ST.chip===c.id?'on':''}" onclick="setCat('${c.id}')">
+    <div class="cat-btn ${ST.chip===c.id?'on':''}" onclick="setCat('${c.id}')" title="${c.lbl}">
       <span class="cat-ico">${c.ico}</span>
       <span class="cat-lbl">${c.lbl}</span>
     </div>`).join('');
@@ -2902,7 +2952,7 @@ function renderSidebar(){
         <div class="ld-info-thumb"><span>${listingEmoji(l)}</span></div>
         <div class="ld-info-mid">
           <div class="ld-info-ttl">${l.title}</div>
-          <div class="ld-info-price">${priceText(l)}</div>
+          <div class="ld-info-price${fmtPrice(l.price).length>=6?' sm':''}">${l.price>0 ? fmtPrice(l.price)+(isRental(l)?'<span class="per-mo">/mo</span>':'') : '<span class="per-mo">Price on request</span>'}</div>
           ${/negotiable/i.test(l.price_label||'') ? '<div class="ld-info-neg">Negotiable</div>' : ''}
         </div>
         <div class="ld-info-actions">
@@ -2982,6 +3032,7 @@ function renderSidebar(){
 // LISTING SELECTION
 // ═══════════════════════════════════════════════
 async function selListing(id, keepTab=false){
+  expandSidebarForDetail();
   ST.selId=id; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatMsgs=[]; ST.chatConvId=null;
   if(!keepTab){
     ST.tab='browse';
@@ -3017,6 +3068,8 @@ async function selListing(id, keepTab=false){
 function closeDetail(){
   ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
+  // If the panel only opened to show this listing, fold it back to the rail
+  if(ST.sbAutoOpened){ ST.sbAutoOpened=false; setSidebarCollapsed(true, false); }
 }
 
 // ═══════════════════════════════════════════════
