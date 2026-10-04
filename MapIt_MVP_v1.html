@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MapIt — Buy &amp; Sell Near You</title>
+<title>MapIt — Geo-based Marketplace</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<meta name="description" content="MapIt is a location-first marketplace for Bangalore. Browse listings by exact GPS pin, post your ad for free, and connect with nearby buyers and sellers.">
+<meta name="description" content="MapIt — Geo-based Marketplace. Browse homes, vehicles and household items in Bangalore on a live map, post your ad for free, and connect with nearby buyers and sellers.">
 <!-- Open Graph / WhatsApp / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.mapit.co.in/">
-<meta property="og:title" content="MapIt — Buy &amp; Sell Near You">
-<meta property="og:description" content="Browse real estate, vehicles, and household items on an interactive map. Every listing has an exact GPS pin. Free to post.">
+<meta property="og:title" content="MapIt — Geo-based Marketplace">
+<meta property="og:description" content="Geo-based Marketplace: browse real estate, vehicles and household items near you on an interactive map. Free to post.">
 <meta property="og:image" content="https://www.mapit.co.in/og-image.png">
 <!-- Twitter / X card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MapIt — Buy &amp; Sell Near You">
-<meta name="twitter:description" content="Location-first marketplace for Bangalore. Browse by map, post for free.">
+<meta name="twitter:title" content="MapIt — Geo-based Marketplace">
+<meta name="twitter:description" content="Geo-based Marketplace for Bangalore. Browse by map, post for free.">
 <meta name="twitter:image" content="https://www.mapit.co.in/og-image.png">
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
@@ -386,16 +386,16 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .modal-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:36px 32px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);}
 .modal-logo{font-family:'Playfair Display',serif;font-size:28px;color:var(--text);text-align:center;margin-bottom:6px;}
 .modal-logo em{font-style:normal;color:var(--orange);}
-.modal-sub{font-size:12.5px;color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.6;}
-.modal-label{font-size:11px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;display:block;}
-.modal-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;margin-bottom:14px;}
+.modal-sub{font-size:15px;font-weight:600;letter-spacing:.3px;color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.6;}
+.modal-label{font-size:12.5px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.modal-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;color:var(--text);font-size:16px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;margin-bottom:14px;}
 .modal-input:focus{border-color:var(--orange);}
 .modal-input::placeholder{color:var(--muted);}
 .modal-input.otp-input{font-size:22px;letter-spacing:8px;text-align:center;font-weight:700;}
-.modal-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.modal-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:13px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
 .modal-btn:hover{background:var(--orange2);}
 .modal-btn:disabled{opacity:.5;cursor:not-allowed;}
-.modal-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px;cursor:pointer;}
+.modal-link{text-align:center;font-size:13.5px;color:var(--muted);margin-top:14px;cursor:pointer;}
 .modal-link span{color:var(--orange);font-weight:600;}
 .modal-link span:hover{text-decoration:underline;}
 .modal-step{display:none;}
@@ -411,7 +411,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .otp-hint{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px;}
 .otp-hint b{color:var(--text);}
 .auth-tabs{display:flex;gap:0;margin-bottom:20px;border:1.5px solid var(--border2);border-radius:8px;overflow:hidden;}
-.auth-tab{flex:1;padding:9px 0;background:none;border:none;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;}
+.auth-tab{flex:1;padding:10px 0;background:none;border:none;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;}
 .auth-tab.active{background:var(--orange);color:#fff;}
 .auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:11.5px;}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border2);}
@@ -548,15 +548,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .whoami{position:fixed;inset:0;background:var(--panel);z-index:1300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
 .whoami.hide{display:none;}
 .whoami-av{width:72px;height:72px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:6px;box-shadow:0 0 0 4px rgba(240,96,48,.2);}
-.whoami-tag{font-size:12px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600;}
+.whoami-tag{font-size:13.5px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600;}
 .whoami-name{font-size:26px;font-weight:700;color:var(--text);margin-bottom:4px;}
 .whoami-btns{display:flex;flex-direction:column;gap:10px;width:270px;margin-top:14px;}
 .whoami-yes{background:var(--orange);color:#fff;border:none;padding:13px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .15s;}
 .whoami-yes:hover{background:var(--orange2);}
-.whoami-no{background:transparent;color:var(--muted);border:1.5px solid var(--border2);padding:13px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
+.whoami-no{background:transparent;color:var(--muted);border:1.5px solid var(--border2);padding:14px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
 .whoami-no:hover{border-color:var(--orange);color:var(--orange);}
 .whoami-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:460px;max-height:55vh;overflow-y:auto;padding:2px;}
-@media (max-width:520px){.whoami-grid{grid-template-columns:1fr;max-width:280px;}}
+@media (max-width:520px){.whoami-grid{grid-template-columns:1fr;max-width:280px;}
+  /* Session 9G (Arun) — match the name cards instead of running edge to edge (inline max-width is 460px) */
+  #whoamiScreen .whoami-no{max-width:280px!important;}}
 .whoami-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.28);color:#fff;
   display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;cursor:pointer;transition:background .15s;}
 .whoami-remove:hover{background:rgba(0,0,0,.5);}
@@ -566,6 +568,15 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .splash.hide{display:none;}
 .splash-logo{font-family:'Playfair Display',serif;font-size:52px;color:var(--text);}
 .splash-logo em{font-style:normal;color:var(--orange);}
+/* Session 9G (Arun) — grouped-listing bubbles: yellow fill + red number for every
+   size (the library default green blends into parks). White ring + shadow keep
+   them distinct from yellow highways. #B91C1C on #FACC15 ≈ 4.3:1 contrast, which
+   passes WCAG for bold text; brighter reds read poorly on yellow. */
+.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background-color:rgba(250,204,21,.35)!important;}
+.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background-color:#FACC15!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);}
+.marker-cluster span{color:#B91C1C;font-weight:800;font-size:14px;}
+/* Session 9G (Arun) — tagline under the MapIt wordmark on full-screen brand screens */
+.brand-tagline{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.4px;}
 .splash-msg{font-size:17.5px;color:var(--muted);text-align:center;max-width:420px;line-height:1.9;}
 .splash-msg ul{text-align:left;padding-left:20px;margin-top:12px;line-height:2.4;}
 .splash-btn{background:var(--orange);color:#fff;border:none;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:6px;}
@@ -588,8 +599,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
 <!-- ── WHO AM I (shared device — multi-user picker) ── -->
 <div class="whoami hide" id="whoamiScreen">
-  <div class="splash-logo" style="margin-bottom:4px;">Map<em>It</em></div>
-  <div class="whoami-tag">Who's using MapIt?</div>
+  <div class="splash-logo" style="margin-bottom:0;">Map<em>It</em></div>
+  <div class="brand-tagline">Geo-based Marketplace</div>
+  <div class="whoami-tag" style="margin-top:14px;">Who's using MapIt?</div>
   <div id="whoamiUserList" class="whoami-grid" style="margin-top:18px;"></div>
   <button class="whoami-no" onclick="signInAsSomeoneElse()" style="width:100%;max-width:460px;margin-top:12px;">+ New person / first-time login</button>
 </div>
@@ -597,6 +609,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <!-- ── SPLASH ── -->
 <div class="splash hide" id="splashScreen">
   <div class="splash-logo">Map<em>It</em></div>
+  <div class="brand-tagline" style="margin-top:-10px;">Geo-based Marketplace</div>
   <div class="splash-msg" id="splashMsg">Loading your map…</div>
 </div>
 
@@ -604,7 +617,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="modal-overlay hide" id="authModal">
   <div class="modal-box">
     <div class="modal-logo" id="modalLogo">Map<em>It</em></div>
-    <div class="modal-sub" id="modalSub">Bangalore's location-first marketplace</div>
+    <div class="modal-sub" id="modalSub">Geo-based Marketplace</div>
 
     <!-- Step 0: Landing — value proposition for first-time visitors -->
     <div class="modal-step" id="step-landing">
@@ -647,7 +660,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div id="authError" class="modal-error" style="display:none"></div>
       <div id="registerMandatoryNote" style="display:none;font-size:11px;color:var(--muted);margin:-2px 0 10px;">All fields are mandatory *</div>
       <label class="modal-label">Email <span style="color:var(--orange);">*</span></label>
-      <input class="modal-input" id="authEmail" type="email" placeholder="your@email.com" autocomplete="email" oninput="_updateRegisterBtnState()"/>
+      <input class="modal-input" id="authEmail" type="email" placeholder="yourname@email.com" autocomplete="email" oninput="_updateRegisterBtnState()"/>
       <label class="modal-label">Password <span style="color:var(--orange);">*</span></label>
       <div style="position:relative;margin-bottom:14px;">
         <input class="modal-input" id="authPassword" type="password" placeholder="••••••••" style="margin-bottom:0;padding-right:44px;" autocomplete="current-password" oninput="_updateAuthPwdHint()"/>
@@ -680,7 +693,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="modal-step" id="step-email">
       <div id="emailError" class="modal-error" style="display:none"></div>
       <label class="modal-label">Email Address</label>
-      <input class="modal-input" id="emailInput" type="email" placeholder="your@email.com"/>
+      <input class="modal-input" id="emailInput" type="email" placeholder="yourname@email.com"/>
       <button class="modal-btn" id="sendOtpBtn" onclick="sendOtp()">
         <span>Send Login Code</span> <span>→</span>
       </button>
@@ -841,15 +854,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         </div>
         <!-- Photos -->
         <div class="form-group">
-          <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5)</span></label>
+          <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5 · optional for Plots)</span></label>
           <input type="file" class="form-input" id="postPhotos" accept="image/*" multiple style="padding:8px;cursor:pointer;"/>
         </div>
         <!-- Phone visibility -->
         <div class="form-group">
           <label class="form-label">📞 Show Phone Number to Buyers</label>
           <div class="tx-radio-row" style="flex-direction:column;gap:8px;">
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="always" checked> Always</label>
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement"> On Agreement</label>
+            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement" checked> On Agreement</label>
             <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
           </div>
         </div>
@@ -1422,14 +1434,14 @@ function renderWhoamiScreen(){
     return `
     <div style="position:relative;">
       <button class="whoami-yes" onclick="continueAs('${uid}')" title="${displayName}"
-        style="display:flex;align-items:center;gap:8px;text-align:left;padding:8px 10px;border-radius:10px;min-width:0;width:100%;box-sizing:border-box;">
-        <div style="width:30px;height:30px;border-radius:50%;background:var(--orange);display:flex;align-items:center;
-          justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.5px;">
+        style="display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:10px;min-width:0;width:100%;box-sizing:border-box;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--orange);display:flex;align-items:center;
+          justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.5px;">
           ${displayInit}
         </div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName}</div>
-          <div style="font-size:9.5px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.invite_code||''}</div>
+          <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName}</div>
+          <div style="font-size:11px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.invite_code||''}</div>
         </div>
       </button>
       <span class="whoami-remove" onclick="removeMultiSession('${uid}', event)" title="Remove ${displayName} from this device">✕</span>
@@ -3270,6 +3282,10 @@ function openPostModal(){
   // Session 9G — Real Estate defaults to Rent for every new listing
   const rentEl = document.querySelector('input[name="txType"][value="Rent"]');
   if(rentEl) rentEl.checked = true;
+  // Session 9G (Arun) — phone visibility defaults to On Agreement for every new
+  // listing, even if the last listing edited was set to Never.
+  const phoneDefault = document.querySelector('input[name="showPhone"][value="on_agreement"]');
+  if(phoneDefault) phoneDefault.checked = true;
   // Populate location dropdown from saved pins + manual option
   const sel = document.getElementById('postLocation');
   sel.innerHTML = '';
@@ -3480,7 +3496,7 @@ async function editListing(id){
   // values — previously these silently reset to the form's hardcoded HTML
   // defaults ('always' / unchecked) on every edit, regardless of what the
   // seller had actually chosen.
-  const phoneEl = document.querySelector(`input[name="showPhone"][value="${l.show_phone||'always'}"]`);
+  const phoneEl = document.querySelector(`input[name="showPhone"][value="${l.show_phone==='never'?'never':'on_agreement'}"]`);
   if(phoneEl) phoneEl.checked = true;
   document.getElementById('postShowExactLocation').checked = !!l.show_exact_location;
 
@@ -3713,7 +3729,9 @@ async function submitListing(){
   if(!title){ toast('Please enter a title.'); return; }
   if(!subcategory){ toast('Please select a listing type (e.g. Cars, 2 Wheelers).'); return; }
   if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
-  if(!ST.editingId && document.getElementById('postPhotos').files.length === 0){
+  // Session 9G (Arun): an empty plot often has nothing worth photographing,
+  // so Plots may be posted without a photo. Every other type still needs one.
+  if(!ST.editingId && subcategory !== 'Plots' && document.getElementById('postPhotos').files.length === 0){
     toast('Please add at least 1 photo.'); return;
   }
 
@@ -3730,7 +3748,7 @@ async function submitListing(){
     toast('Please select or enter a location.'); return;
   }
 
-  const show_phone = document.querySelector('input[name="showPhone"]:checked')?.value || 'always';
+  const show_phone = document.querySelector('input[name="showPhone"]:checked')?.value || 'on_agreement';
   const show_exact_location = document.getElementById('postShowExactLocation').checked;
   btn.disabled=true; btn.textContent = ST.editingId ? 'Updating…' : 'Submitting…';
   try {
@@ -3882,10 +3900,19 @@ function setRad(r){
   document.querySelectorAll('.rbt').forEach(b=>b.classList.toggle('on',Number(b.dataset.r)===r));
   closeRadMenu();
   updateCircle();
-  const loc=activeLoc();
-  if(r<999&&radCircle) map.fitBounds(radCircle.getBounds(),{padding:[30,30],animate:true});
-  else{const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180);map.fitBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]],{padding:[20,20],animate:true});}
+  fitMapToRadius();
   loadListings();
+}
+// Frame the map on the active search area: the radius circle, or a ~25 km box
+// for "Whole city". fly=true animates like the Explore search jump (Session 9G,
+// Arun: returning from Explore to My location must pan + zoom back).
+function fitMapToRadius(fly){
+  const loc=activeLoc();
+  let bounds, pad;
+  if(ST.rad<999&&radCircle){ bounds=radCircle.getBounds(); pad=[30,30]; }
+  else{ const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180); bounds=L.latLngBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]]); pad=[20,20]; }
+  if(fly) map.flyToBounds(bounds,{padding:pad,duration:.8});
+  else map.fitBounds(bounds,{padding:pad,animate:true});
 }
 function setSearchMode(mode){
   ST.exploreMode = (mode === 'explore');
@@ -3911,6 +3938,7 @@ function setSearchMode(mode){
     }
   }
   updateCircle();
+  if(!ST.exploreMode) fitMapToRadius(true);
   loadListings();
 }
 function _placeExploreMarker(){
