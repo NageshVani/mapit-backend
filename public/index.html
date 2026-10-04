@@ -557,8 +557,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .whoami-no:hover{border-color:var(--orange);color:var(--orange);}
 .whoami-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:460px;max-height:55vh;overflow-y:auto;padding:2px;}
 @media (max-width:520px){.whoami-grid{grid-template-columns:1fr;max-width:280px;}
-  /* Session 9G (Arun) — match the name cards instead of running edge to edge (inline max-width is 460px) */
-  #whoamiScreen .whoami-no{max-width:280px!important;}}
+  /* Session 9G (Arun) — match the name cards instead of running edge to edge (inline max-width is 460px).
+     276 = the grid's 280px minus its 2px padding on each side. */
+  #whoamiScreen .whoami-no{max-width:276px!important;}}
 .whoami-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.28);color:#fff;
   display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;cursor:pointer;transition:background .15s;}
 .whoami-remove:hover{background:rgba(0,0,0,.5);}
@@ -570,11 +571,12 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .splash-logo em{font-style:normal;color:var(--orange);}
 /* Session 9G (Arun) — grouped-listing bubbles: yellow fill + red number for every
    size (the library default green blends into parks). White ring + shadow keep
-   them distinct from yellow highways. #B91C1C on #FACC15 ≈ 4.3:1 contrast, which
-   passes WCAG for bold text; brighter reds read poorly on yellow. */
+   them distinct from yellow highways. #991B1B on #FACC15 = 5.4:1 contrast, which
+   passes WCAG AA for normal text (#B91C1C was only 4.2:1). Brighter reds read
+   poorly on yellow. */
 .marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background-color:rgba(250,204,21,.35)!important;}
 .marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background-color:#FACC15!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);}
-.marker-cluster span{color:#B91C1C;font-weight:800;font-size:14px;}
+.marker-cluster span{color:#991B1B;font-weight:800;font-size:14px;}
 /* Session 9G (Arun) — tagline under the MapIt wordmark on full-screen brand screens */
 .brand-tagline{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.4px;}
 .splash-msg{font-size:17.5px;color:var(--muted);text-align:center;max-width:420px;line-height:1.9;}
