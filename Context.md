@@ -1789,6 +1789,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
+**⬅ Immediate (2026-10-04) — Session 9G (UI polish), all 5 items built on `feat/session-9g-ui-polish`, NOT yet pushed:**
+- Requested by Nagesh + Arun after reviewing the look. Decisions (AskUserQuestion, 2026-10-03): **two chips** (Rent / Buy Property), **All** stays the opening view, **dropdown radius chip**, **post form defaults to Rent**.
+- `352f1a0` (#2 + #5): pins and cards always show the real price via `priceText()`/`isRental()`, never free text. Rentals get `/mo`, "Negotiable" is a small note in the details, and no price shows "Price on request". The cause was the UAT dummy listings (`price_label` = 'negotiable' ×11, 'per month' ×3). "My Ads" is renamed "My Listings" (tab, Help, User Guide).
+- `b79a3ed` (#3 + #4): the Near me | Explore toggle and a "Within 5 km ▾" dropdown (1 / 3 / 5 / 10 km, Region 50 km, Whole city) moved into the header. Search width 400 → 260px. On phones the header is two rows, and `#main` height follows the real header via ResizeObserver plus `map.invalidateSize()`.
+- `ce144bb` (#1): chips are All | 🔑 Rent | 🏠 Buy Property | Vehicles | Household. The backend `GET /api/listings` accepts `txn=Rent|Sell`; `listingTxn()` falls back to a 'per month' label for seed rows, so **no DB update is needed**.
+- Verified locally: both inline scripts parse, unit tests pass for `priceText` and `listingTxn`, and headless screenshots via Chrome DevTools emulation at 1280 / 390 / 360px show no horizontal overflow. Screenshots are in `docs/screenshots/session-9g/` (2 before, 5 after). **Not yet click-tested while logged in with real listings.**
+- **Out of scope, logged:** the User Guide's SVG mockups still draw the old sidebar (radius buttons, search-mode box). Headless Chrome has a 500px minimum window width, so use CDP `Emulation.setDeviceMetricsOverride` for phone shots (iframes are blocked by the frame-ancestors header).
+- **Then:** Session 9C (MSG91 WhatsApp OTP) still needs the MSG91 sample curl with the authkey removed.
+
 **⬅ Immediate (2026-10-03, later — 9E signed off, T-014 fixed, Option C decided):**
 - **9E manual checklist: COMPLETE.** Nagesh reported all items OK (3a/3b, 4a and 5a were the remaining ones).
 - **T-014 fixed and committed** on `fix/admin-escape-listing-fields` (`6467df1`), **not yet merged to uat or pushed**. The scope grew beyond the original note: the Pending, Reports, Feedback, Grievances and Cleanup tabs were all unescaped, and the description field too. `escapeHtmlAdm()` now escapes `& < > " '`. Send Reply no longer embeds the user's name in the `onclick` JS. Verified: the inline script parses (`node --check`), the escaper neutralises an `<img onerror>` payload, and a re-scan finds no unescaped user fields. **Live UAT still needed:** create a listing titled `<b>T014</b><img src=x onerror=alert('XSS')>` on the uat preview, open Admin → Pending, and check it shows as literal text with no alert box. Then delete it.
