@@ -2627,3 +2627,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - Tester: Nagesh
 - Screenshots: docs/screenshots/session-9g/uat-*.png (7)
 - Status: Pending manual sign-off (plus Arun's design review)
+
+## UAT Status — Session 09g Round 2 (Arun's review)
+- Report: docs/uat/session-09g-r2-uat-report.html (generated 2026-10-04 against uat @ 3bee4c8)
+- Automated: 30 PASS / 0 FAIL / 1 WARN / 1 SKIP→manual; round-1 suite re-run 28/28
+- Fixed inline (3bee4c8): cluster number #B91C1C → #991B1B (4.22:1 → 5.43:1, WCAG AA for 14px text); New-person button 280 → 276px to match the cards
+- WARN (pre-existing): self-typed names (pin labels, who-am-I nicknames) rendered as HTML; in the pre-launch innerHTML audit
+- Manual checklist: docs/uat/session-09g-r2-uat-checklist-Nagesh.html (17 items, 8 sections; step 6a posts a TEST Plot, deleted in 8a)
+- Tester: Nagesh
+- Screenshots: docs/screenshots/session-9g/uat-r2-*.png (6)
+- Status: Pending manual sign-off

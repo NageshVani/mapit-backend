@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 09g (round 2) UAT Report</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;}
+  a{color:#60a5fa;text-decoration:none;}
+  .shell{display:flex;min-height:100vh;}
+  nav{width:230px;background:#1a1d2e;border-right:1px solid #2d3148;padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  nav .logo{padding:0 20px 20px;font-size:18px;font-weight:800;color:#f97316;letter-spacing:-.5px;}
+  nav .logo span{color:#e2e8f0;font-weight:400;}
+  nav h3{padding:10px 20px 4px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4b5563;}
+  nav a{display:block;padding:6px 20px;font-size:12px;color:#9ca3af;border-left:3px solid transparent;transition:all .15s;}
+  nav a:hover{color:#e2e8f0;background:#1f2235;border-left-color:#f97316;}
+  main{flex:1;padding:40px 48px;max-width:1150px;}
+  .rpt-header{margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid #2d3148;}
+  .rpt-header h1{font-size:26px;font-weight:800;margin-bottom:6px;}
+  .rpt-header .sub{font-size:13px;color:#9ca3af;line-height:1.7;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;}
+  .badge-pass{background:#14532d;color:#4ade80;}
+  .badge-fail{background:#7f1d1d;color:#f87171;}
+  .badge-warn{background:#78350f;color:#fbbf24;}
+  .badge-skip{background:#2d2d3d;color:#9ca3af;}
+  .badge-fixed{background:#1e3a5f;color:#60a5fa;margin-left:4px;}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px;}
+  .scard{background:#1a1d2e;border:1px solid #2d3148;border-radius:10px;padding:18px 20px;text-align:center;}
+  .scard .num{font-size:32px;font-weight:800;margin-bottom:4px;}
+  .scard .lbl{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#9ca3af;}
+  .num-pass{color:#4ade80;}
+  .num-fail{color:#f87171;}
+  .num-warn{color:#fbbf24;}
+  .num-skip{color:#64748b;}
+  .verdict{background:#1e3a5f;border:1px solid #2c5a8f;border-radius:10px;padding:16px 22px;margin-bottom:36px;display:flex;align-items:center;gap:14px;}
+  .verdict-icon{font-size:28px;}
+  .verdict-text{font-size:15px;font-weight:700;color:#60a5fa;}
+  .verdict-sub{font-size:12px;color:#bfdbfe;margin-top:2px;line-height:1.6;}
+  section{margin-bottom:40px;}
+  section h2{font-size:16px;font-weight:700;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #2d3148;color:#f97316;}
+  section .item-status{font-size:11px;color:#9ca3af;margin:8px 0 14px;}
+  .test-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .test-table th{background:#1a1d2e;padding:9px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #2d3148;}
+  .test-table td{padding:9px 12px;border-bottom:1px solid #1f2235;vertical-align:top;}
+  .test-table tr:hover td{background:#1a1d2e;}
+  .test-id{font-weight:700;color:#9ca3af;white-space:nowrap;}
+  .test-area{color:#c4b5fd;font-size:11px;}
+  code{background:#1f2235;border:1px solid #2d3148;border-radius:4px;padding:1px 5px;font-family:'Courier New',monospace;font-size:11px;color:#a5f3fc;}
+  .evidence{background:#0f1117;border:1px solid #2d3148;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:10.5px;color:#a5f3fc;max-height:260px;overflow-y:auto;margin-top:8px;white-space:pre-wrap;}
+  .obs-card{background:#1a1d2e;border:1px solid #374151;border-left:4px solid #fbbf24;border-radius:8px;padding:14px 18px;margin-bottom:12px;}
+  .obs-card.crit{border-left-color:#f87171;}
+  .obs-card h3{font-size:12.5px;font-weight:700;color:#fbbf24;margin-bottom:5px;}
+  .obs-card.crit h3{color:#f87171;}
+  .obs-card p{font-size:12px;color:#9ca3af;line-height:1.6;}
+  .file-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #1f2235;font-size:12px;}
+  .file-path{color:#a5f3fc;font-family:'Courier New',monospace;flex-shrink:0;}
+  .file-desc{color:#9ca3af;}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid #2d3148;font-size:11px;color:#4b5563;}
+  .shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:10px;}
+  .shots a{display:block;background:#1a1d2e;border:1px solid #2d3148;border-radius:8px;padding:8px;font-size:11px;color:#9ca3af;}
+  .shots img{width:100%;height:150px;object-fit:cover;object-position:top;border-radius:5px;margin-bottom:6px;background:#0f1117;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="logo">Map<span>It</span> UAT</div>
+  <h3>Session 09g · Round 2</h3>
+  <a href="#summary">Summary</a>
+  <a href="#verdict">Verdict</a>
+  <h3>Arun's Review Items</h3>
+  <a href="#block-1">1 · Tagline &amp; Tab Title</a>
+  <a href="#block-2">2–3 · Sign-in Text &amp; Placeholder</a>
+  <a href="#block-6">6 · Show Phone Options</a>
+  <a href="#block-7">7 · Explore → My Location</a>
+  <a href="#block-8">8 · Plots Without Photo</a>
+  <a href="#block-9">9 · Cluster Colours</a>
+  <h3>Platform</h3>
+  <a href="#block-k">K · Regression / Config</a>
+  <h3>Findings</h3>
+  <a href="#block-w">W · Warnings &amp; Manual-only</a>
+  <a href="#observations">Observations</a>
+  <a href="#screens">Screenshots</a>
+  <a href="#files">Files Covered</a>
+</nav>
+
+<main>
+  <div class="rpt-header">
+    <h1>Session 09g (Round 2) — UAT Report: Arun's Review Changes</h1>
+    <div class="sub">Automated QA pass on the 7 changes built from Arun's review (items 1, 2, 3, 6, 7, 8, 9). Items 4 and 5 were decisions, not builds: "Verify later" stays (9C), and the profile view with re-authentication goes to 9C / Session 9I. Tested against the live uat preview (<code>mapit-backend-git-uat-nagesh-n-arun.vercel.app</code>, deployed commit <code>3bee4c8</code>) with headless Chrome at 1280px, 390px and 360px, a throwaway test account, and a throwaway listing (both deleted afterwards). The full 28-check 9G suite from round 1 was re-run as regression. Generated 2026-10-04.</div>
+  </div>
+
+  <section id="summary">
+    <div class="summary">
+      <div class="scard"><div class="num num-pass">30</div><div class="lbl">Passed</div></div>
+      <div class="scard"><div class="num num-fail">0</div><div class="lbl">Failed (2 fixed inline)</div></div>
+      <div class="scard"><div class="num num-warn">1</div><div class="lbl">Warning (pre-existing)</div></div>
+      <div class="scard"><div class="num num-skip">1</div><div class="lbl">Skipped → Manual</div></div>
+    </div>
+  </section>
+
+  <section id="verdict">
+    <div class="verdict">
+      <div class="verdict-icon">✅</div>
+      <div>
+        <div class="verdict-text">Overall Verdict: PASS. Ready for Nagesh's manual click-test.</div>
+        <div class="verdict-sub">All 7 changes work on live uat, and the round-1 9G suite still passes 28/28. Two small problems were found and <b>fixed inline</b> (commit <code>3bee4c8</code>, re-tested on uat): (a) the red number on the yellow cluster bubbles was <b>4.22:1</b> contrast, just under the accessibility minimum of 4.5:1 for 14px text, so the red is now a little deeper (<code>#991B1B</code>, <b>5.43:1</b>); (b) the "+ New person" button was 4px wider than the name cards on phones and is now exactly the same width. The one warning is the older saved-name display issue from round 1. Whether the new sizes and colours <i>look</i> right is a human call, so it's on the checklist.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="block-1">
+    <h2>1 · Tagline "Geo-based Marketplace" &amp; Tab Title</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-001</td><td class="test-area">Tab title</td><td>Browser tab reads <b>MapIt — Geo-based Marketplace</b></td><td>Headless Chrome (uat)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-002</td><td class="test-area">Who's using MapIt?</td><td>"Geo-based Marketplace" sits under the MapIt name</td><td>Headless Chrome 390px</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-003</td><td class="test-area">Sign in</td><td>Tagline under MapIt in the sign-in window (was "Bangalore's location-first marketplace")</td><td>Headless Chrome</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-004</td><td class="test-area">Loading screen</td><td>The "Loading your map…" screen shows the tagline too</td><td>Headless Chrome</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-005</td><td class="test-area">Search / link previews</td><td>Description, og:title/description and twitter:title/description all say "Geo-based Marketplace"</td><td><code>curl</code> page head</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-006</td><td class="test-area">Accuracy</td><td>No leftover "location-first" text, and no "exact GPS pin" claim (untrue since buyers see an approximate location)</td><td><code>grep</code> live page</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">&lt;title&gt;MapIt — Geo-based Marketplace&lt;/title&gt;
+description: "MapIt — Geo-based Marketplace. Browse homes, vehicles and household items in Bangalore on a live map…"
+og:title / twitter:title: "MapIt — Geo-based Marketplace" | "location-first" / "exact GPS pin" mentions: 0</div>
+  </section>
+
+  <section id="block-2">
+    <h2>2–3 · Larger Sign-in Text &amp; Email Placeholder</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-007</td><td class="test-area">Who's using MapIt?</td><td>Saved names 12px → <b>15px</b> (avatar circle 30 → 36px)</td><td>Computed style</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-008</td><td class="test-area">New person button</td><td>"+ New person / first-time login" 14px → <b>16px</b></td><td>Computed style</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-009</td><td class="test-area">New person / 390px</td><td>Button exactly as wide as the name cards (276px), no longer edge to edge</td><td>Bounding box</td><td><span class="badge badge-pass">PASS</span><span class="badge badge-fixed">FIXED</span></td></tr>
+      <tr><td class="test-id">T-010</td><td class="test-area">New person / 360px</td><td>Same at 360px</td><td>Bounding box</td><td><span class="badge badge-pass">PASS</span><span class="badge badge-fixed">FIXED</span></td></tr>
+      <tr><td class="test-id">T-011</td><td class="test-area">Sign in</td><td>Field text 14 → <b>16px</b>, labels 11 → 12.5px, Sign In / Create Account tabs 13 → 15px, button 14 → 16px, links 12 → 13.5px</td><td>Computed style</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-012</td><td class="test-area">Create Account</td><td>Same larger fields; nothing spills sideways</td><td>Computed style + width</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-013</td><td class="test-area">Layout / 390px</td><td>Sign-in window has no sideways scroll with the bigger text</td><td><code>scrollWidth</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-014</td><td class="test-area">Layout / 360px</td><td>Same at 360px</td><td><code>scrollWidth</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-015</td><td class="test-area">Placeholder</td><td>Email fields read <b>yourname@email.com</b> (Sign in and the email-code screen)</td><td>DOM</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">input 16 · label 12.5 · tab 15 · button 16 · link 13.5   |   names 15px · new-person 16px
+round 1 of this pass: button 280px vs cards 276px (grid has 2px padding) → fixed to 276px in 3bee4c8 → re-test 276 / 276</div>
+  </section>
+
+  <section id="block-6">
+    <h2>6 · Show Phone Number: On Agreement / Never only</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-016</td><td class="test-area">Post form</td><td>Only <b>On Agreement</b> and <b>Never</b>; On Agreement pre-selected</td><td>Headless Chrome</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-017</td><td class="test-area">Post form</td><td>A new post goes back to On Agreement even if Never was picked last time</td><td>Headless Chrome</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-018</td><td class="test-area">Server (uat)</td><td>Editing a listing to <code>always</code> is refused (400) with a clear message</td><td>API call on a throwaway listing</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-019</td><td class="test-area">Server (uat)</td><td>A junk value (<code>&lt;script&gt;</code>) is refused (400). Before this change the edit route accepted <i>any</i> value.</td><td>API call</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-020</td><td class="test-area">Server (uat)</td><td><code>never</code> accepted (200) and saved</td><td>API call + DB read</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-021</td><td class="test-area">Database</td><td>No listing left on "always" after Nagesh's SQL (37 On Agreement, 4 Never)</td><td>Supabase count</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">PUT show_phone=always → 400 "show_phone must be one of: on_agreement, never"
+PUT show_phone=&lt;script&gt; → 400   |   PUT show_phone=never → 200, saved=never
+DB: {"on_agreement":37,"never":4}  (a 5th "never" during the run was the test listing, deleted afterwards)</div>
+  </section>
+
+  <section id="block-7">
+    <h2>7 · Explore → 📍 My Location pans and zooms back</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-022</td><td class="test-area">Map</td><td>Explore → move the map to Nelamangala → tap 📍 My location → the map flies back and frames Koramangala (centre 12.9352, 77.6245)</td><td>Headless Chrome, map centre + bounds</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-8">
+    <h2>8 · Plots can be posted without a photo</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-023</td><td class="test-area">Post / Plots</td><td>A Plot with no photo passes the form check and is sent to the server</td><td>Headless Chrome. The send was intercepted, so nothing was saved.</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-024</td><td class="test-area">Post / others</td><td>An Apartment with no photo is still stopped: "Please add at least 1 photo"</td><td>Headless Chrome</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-025</td><td class="test-area">Form label</td><td>Photos label reads "(up to 5 · optional for Plots)"</td><td>DOM text on live uat. The first attempt failed only because the label is shown in CAPITALS; the test was fixed.</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-9">
+    <h2>9 · Grouped-listing bubbles: yellow + red</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-026</td><td class="test-area">Map</td><td>All bubble sizes are yellow (<code>#FACC15</code>) with a bold red number and a white ring (8 bubbles checked)</td><td>Computed style</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-027</td><td class="test-area">Readability</td><td>Number colour against yellow meets accessibility contrast (WCAG AA ≥ 4.5:1 for 14px text)</td><td>Contrast calculation</td><td><span class="badge badge-pass">PASS</span><span class="badge badge-fixed">FIXED</span></td></tr>
+    </table>
+    <div class="evidence">first pass: #B91C1C on #FACC15 = 4.22:1 → below 4.5:1 (14px bold is not "large text" under WCAG)
+alternatives: #991B1B 5.43 · #A11212 5.25 · #9F1239 5.23 → chose #991B1B (still clearly red)
+re-test on uat after 3bee4c8: span color rgb(153, 27, 27), weight 800, ring rgb(255,255,255) 2px</div>
+  </section>
+
+  <section id="block-k">
+    <h2>K · Regression / Config (commit <code>3bee4c8</code>)</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-028</td><td class="test-area">9G suite</td><td>All 28 round-1 browser checks still pass on uat: chips, prices, header dropdowns, saved-location menu, sidebar rail, detail row, phone layouts</td><td>Re-run of the round-1 script</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-029</td><td class="test-area">Deploy</td><td>Live page is identical to <code>public/index.html</code> at <code>3bee4c8</code>, apart from Vercel's toolbar script</td><td><code>curl</code> + <code>diff</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-030</td><td class="test-area">Two-File Rule + syntax</td><td><code>MapIt_MVP_v1.html</code> = <code>public/index.html</code>; the inline script and <code>listings.js</code> parse</td><td><code>diff</code>, <code>node --check</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">round-1 suite: 28/28 browser checks passed
+deployed vs 3bee4c8: 1 line differs (vercel.live feedback script) | two-file identical | parse OK</div>
+  </section>
+
+  <section id="block-w">
+    <h2>W · Warnings &amp; Manual-only</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-031</td><td class="test-area">Security (pre-existing)</td><td>Same as round-1 T-045: names the user typed themselves (saved-location labels, and the nicknames on the who-am-I cards) are shown as HTML, not plain text. They're only visible on the user's own device, so the risk is low. It's on the pre-launch <code>innerHTML</code> audit list and not part of Arun's items.</td><td>Source review</td><td><span class="badge badge-warn">WARN</span></td></tr>
+      <tr><td class="test-id">T-032</td><td class="test-area">Look &amp; feel</td><td>Whether the new sizes, tagline placement and yellow/red bubbles <i>look</i> right on a real phone and laptop, and whether the bubbles stand out from parks and roads</td><td>A human judgement call. Covered by the checklist.</td><td><span class="badge badge-skip">SKIP → MANUAL</span></td></tr>
+    </table>
+  </section>
+
+  <section id="observations">
+    <h2>💡 Observations</h2>
+    <div class="obs-card">
+      <h3>OBS-01: The bigger fields also fix iPhone "zoom on tap"</h3>
+      <p>iPhone Safari zooms the whole page in when you tap a text field smaller than 16px. The sign-in fields are now exactly 16px, so that zoom no longer happens. Worth noticing during the phone test.</p>
+    </div>
+    <div class="obs-card">
+      <h3>OBS-02: "On Agreement" has no effect yet</h3>
+      <p>Buyers are never shown a seller's phone number today, whatever the setting. Item 6 tidies the choice, but the actual "share my number when I agree" feature is planned for Session 9I. Testers shouldn't expect to see a phone number on any listing.</p>
+    </div>
+    <div class="obs-card">
+      <h3>OBS-03: Link previews may show the old title for a while</h3>
+      <p>WhatsApp and other apps cache link previews. A link shared before today may still show "Buy &amp; Sell Near You" until the app refreshes its cache. Also, <code>og-image.png</code> is a picture and was not changed. If it has old wording printed on it, it needs a new image.</p>
+    </div>
+  </section>
+
+  <section id="screens">
+    <h2>📸 Screenshots from this pass (live uat)</h2>
+    <div class="item-status">Saved in <code>docs/screenshots/session-9g/</code> (prefix <code>uat-r2-</code>). Before/after pairs from the build are the <code>before-*</code> / <code>after-*</code> files in the same folder.</div>
+    <div class="shots">
+      <a href="../screenshots/session-9g/uat-r2-phone-390-whoami.png"><img src="../screenshots/session-9g/uat-r2-phone-390-whoami.png" alt=""/>Who's using MapIt? (390px)</a>
+      <a href="../screenshots/session-9g/uat-r2-phone-390-signin.png"><img src="../screenshots/session-9g/uat-r2-phone-390-signin.png" alt=""/>Sign in (390px)</a>
+      <a href="../screenshots/session-9g/uat-r2-phone-390-create-account.png"><img src="../screenshots/session-9g/uat-r2-phone-390-create-account.png" alt=""/>Create Account (390px)</a>
+      <a href="../screenshots/session-9g/uat-r2-desktop-1280-post-show-phone.png"><img src="../screenshots/session-9g/uat-r2-desktop-1280-post-show-phone.png" alt=""/>Post form: Show phone</a>
+      <a href="../screenshots/session-9g/uat-r2-desktop-1280-map-clusters.png"><img src="../screenshots/session-9g/uat-r2-desktop-1280-map-clusters.png" alt=""/>Yellow/red bubbles</a>
+      <a href="../screenshots/session-9g/uat-r2-desktop-1280-back-to-my-location.png"><img src="../screenshots/session-9g/uat-r2-desktop-1280-back-to-my-location.png" alt=""/>Back to My location</a>
+    </div>
+  </section>
+
+  <section id="files">
+    <h2>📂 Files Covered</h2>
+    <div class="file-row"><div class="file-path">MapIt_MVP_v1.html · public/index.html</div><div class="file-desc">Tagline and tab title, head meta tags, sign-in font sizes, placeholder, show-phone options and reset, <code>fitMapToRadius()</code>, Plots photo rule, cluster CSS</div></div>
+    <div class="file-row"><div class="file-path">src/routes/listings.js</div><div class="file-desc"><code>SHOW_PHONE_OPTIONS = ['on_agreement','never']</code>, enforced on create and edit</div></div>
+    <div class="file-row"><div class="file-path">Supabase (manual SQL)</div><div class="file-desc"><code>UPDATE listings SET show_phone='on_agreement' WHERE show_phone='always'</code>, run by Nagesh, 30 rows</div></div>
+    <div class="file-row"><div class="file-path">Commits</div><div class="file-desc"><code>b799b34</code> (Arun's review) · <code>3bee4c8</code> (contrast + button width fixes from this pass)</div></div>
+  </section>
+
+  <footer>
+    MapIt UAT · Session 09g Round 2 (Arun's review) · Branch uat @ 3bee4c8 · Report generated 2026-10-04 · Automated pass by Claude Code (James) · 32 checks: 30 pass (2 fixed inline), 0 fail, 1 warn (pre-existing), 1 manual-only
+  </footer>
+</main>
+</div>
+</body>
+</html>
