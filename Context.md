@@ -1804,6 +1804,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
   - The collapsed state is stored in `localStorage` key `mapit_sb_collapsed` (try/catch). `map.invalidateSize()` runs 260ms after the toggle.
   - The collapsed rules need `!important`, because `renderCats()` sets the sub-row's display inline.
   - **Detail price fixes, found while testing:** the rental price was clipped to `₹25K/…`, so `/mo` is now a small `.per-mo` suffix and the price drops to 18px. **Pre-existing:** crore prices were clipped to `₹1.25…`, so prices of 6+ characters use `.ld-info-price.sm` (15px). Verified in the headless preview: auto-expand gives 379px and closing re-collapses to 63px.
+- **Listing detail action row (Nagesh, 2026-10-04):** the I'm Interested / Chat / Edit button plus ♡ 🚩 🔗 moved out of the title row into their own full-width row beneath it. The primary button is now solid (green, or blue for Edit), labelled on one line (`🤝 I'm Interested`, `💬 Chat with seller`, `✏️ Edit Listing`). The title wraps to 2 lines (`-webkit-line-clamp:2`) instead of being cut to "Tata T…". It sits directly under the title card, not after the description as Nagesh's sketch arrow suggested, so the interest-note box still opens right below it. Offered to move it if preferred.
 - **Then:** Session 9C (MSG91 WhatsApp OTP) still needs the MSG91 sample curl with the authkey removed.
 
 **⬅ Immediate (2026-10-03, later — 9E signed off, T-014 fixed, Option C decided):**
