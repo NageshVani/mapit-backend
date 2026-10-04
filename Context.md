@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
 
-- **Last updated:** 2026-10-03 11:12, checkpoint (**4 docs commits pushed, `origin/uat` at `3b83256`; `.env.example` placeholders committed as `4f90540`, not pushed.** Previous: 2026-10-03 11:04, **Session 9E UAT: automated pass 17/1/1/2, manual 1a–1c + 2a PASS; T-014 admin-page XSS found (not fixed); Meta verification approved; MSG91 OTP template + `MSG91_AUTH_KEY` (Preview only) done.** Previous: 2026-10-01 21:42, **Session 9E key setup done; migration 015 run; moderation-field leak fixed and pushed to `origin/uat` (`e922dee`). Click-test deferred to 2026-10-02 by Nagesh. Later the same evening: Haiku 4.5 urgency corrected (Active, ≥60 days' notice, stay on it); migration 007 reminder added; price-box overlap marked resolved per Nagesh; listing_reports RLS puzzle explained (parked); 9C waiting on Meta verification.** Anthropic $5 prepaid credit bought (auto-reload off = effective $5 cap; Console offers no monthly $ spend limit, only rate/token limits). Admin key deliberately SKIPPED (Console admin keys have no scopes = full org admin). Single regular key `mapit-uat` in Vercel **Preview only**; production stays keyless until a launch decision.)
+- **Last updated:** 2026-10-04 11:35, checkpoint (**Session 9G UI polish fully on `origin/uat` at `c68d208`; T-014 fixed + UAT-passed; Option C part 1 shipped; 9E manual checklist complete.** Awaiting Arun's 9G review, then the `uat → main` PR; 9C waits on the MSG91 sample curl.)
+- **Last updated (previous):** 2026-10-03 11:12, checkpoint (**4 docs commits pushed, `origin/uat` at `3b83256`; `.env.example` placeholders committed as `4f90540`, not pushed.** Previous: 2026-10-03 11:04, **Session 9E UAT: automated pass 17/1/1/2, manual 1a–1c + 2a PASS; T-014 admin-page XSS found (not fixed); Meta verification approved; MSG91 OTP template + `MSG91_AUTH_KEY` (Preview only) done.** Previous: 2026-10-01 21:42, **Session 9E key setup done; migration 015 run; moderation-field leak fixed and pushed to `origin/uat` (`e922dee`). Click-test deferred to 2026-10-02 by Nagesh. Later the same evening: Haiku 4.5 urgency corrected (Active, ≥60 days' notice, stay on it); migration 007 reminder added; price-box overlap marked resolved per Nagesh; listing_reports RLS puzzle explained (parked); 9C waiting on Meta verification.** Anthropic $5 prepaid credit bought (auto-reload off = effective $5 cap; Console offers no monthly $ spend limit, only rate/token limits). Admin key deliberately SKIPPED (Console admin keys have no scopes = full org admin). Single regular key `mapit-uat` in Vercel **Preview only**; production stays keyless until a launch decision.)
 - **Last updated (previous):** 2026-09-30, checkpoint (**WhatsApp/MSG91 onboarding hit a blocker: MSG91 refused to save the OTP template ("This WhatsApp business account does not have permission to create message template"). Root cause confirmed via MSG91's own help page: Meta now requires Business Verification BEFORE any Authentication template can be created, so the old "go live unverified at 250/day, verify in parallel" plan is wrong for OTP. Registration guide revised to a verification-first order; phone-number document options and MSG91 Titan billing documented.** No code changed. Anthropic key setup (previous item) still pending, paused so Nagesh could ask these questions first.)
 - **Last updated (previous):** 2026-09-29 (later still), checkpoint (**Anthropic Console setup for Session 9E/9F walked through with Nagesh — Organization confirmed already present (auto-created "Individual Org"), converted to a Team-type org and renamed to "Nakshe Ventures" (no seat fee triggered), but key creation is blocked pending billing setup — plan still shows "Evaluation access", not pay-as-you-go.** No code changed this round; purely an external Anthropic Console walkthrough. Nagesh paused here for the day — resume tomorrow at "Set up billing" on the API keys page. Full detail in Current Goal, Completed This Session, Open Issues, Next Steps.)
 - **Last updated (previous):** 2026-09-29 (absolute final), checkpoint (**Sessions 9D/9E/9F pushed to `origin/uat`; WhatsApp Business Verification document question resolved (PAN confirmed accepted, NOC is not); Jio pricing sourced; Session 9's 10-item scope recapped for Nagesh.** No code changed this round. Full detail in Current Goal, Completed This Session, Decisions Made, Next Steps.)
@@ -93,6 +94,13 @@
 ---
 
 ## 🎯 Current Goal
+
+**Update (2026-10-04) — Session 9G (UI polish) is complete and on `uat` (`c68d208`); waiting for Arun's review, then the `uat → main` PR, then Session 9C.**
+- **Review link:** `https://mapit-backend-git-uat-nagesh-n-arun.vercel.app`. `uat.mapit.co.in` still serves **production**, so don't use it for uat review.
+- **Session 9C** (MSG91 WhatsApp OTP) is blocked only on Nagesh pasting the OTP template's sample curl with the authkey removed.
+- **Dev machine move:** Nagesh is moving to a new Windows 11 Lenovo (checklist artifact `claude.ai/artifact/6W7Wf8kXwaW1gs9Sc6FA82`); the old C340 is being wiped for Arun. Write commands for Windows from now on (memory saved).
+
+Prior status, superseded above (2026-10-03):
 
 **Update (2026-10-03) — Finishing the Session 9E manual click-test; Session 9C is now unblocked.**
 - **Git (later 2026-10-03):** 4 docs commits pushed (`origin/uat` → `3b83256`). `.env.example` placeholders committed locally as `4f90540`, **not pushed** until Nagesh says push. Claude did not read it (`.env*` blocked); Nagesh confirmed it has no real values. 4 lines added, versus the expected 3 placeholders.
@@ -453,6 +461,18 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+
+- ✅ **9E manual checklist COMPLETE (2026-10-03, Nagesh).** All remaining items (3a/3b, 4a, 5a) reported OK.
+- ✅ **T-014 admin stored XSS fixed (`6467df1`) + UAT PASS (2026-10-03).** `escapeHtmlAdm()` now escapes `& < > " '` and wraps every user/AI field in the Pending, Reports, Feedback, Grievances and Cleanup tabs. Send Reply no longer embeds the user's name in `onclick`. Nagesh confirmed `<img onerror>` renders as literal text.
+- ✅ **Option C part 1 (`ee5ca06`, pushed):** the seller email adds the warning banner and `[Possible spam]` prefix only when the verdict is `spam`; `unscreened` sends clean.
+- ✅ **Session 9G #5 + #2 (`352f1a0`):** My Ads → My Listings; `priceText()`/`isRental()` show the real price everywhere (+`/mo` for rent, "Price on request").
+- ✅ **Session 9G #3 + #4 (`b79a3ed`):** Near me/Explore + "Within 5 km ▾" radius dropdown moved to the header; search width 400 → 260px; two-row phone header.
+- ✅ **Session 9G #1 (`ce144bb`):** All | Rent | Buy Property | Vehicles | Household chips; backend `txn=Rent|Sell` filter; post form defaults to Rent.
+- ✅ **9G follow-ups (`2ede28b`, `4eaf239`, `ce89dbe`):** combined "📍 My location · <place> ▾" dropdown, centered; "Rent Property" label; Browse removed (single ＋ Post a Listing); optional Leaflet credit dropped.
+- ✅ **Collapsible desktop sidebar (`fcddf42`):** ‹/› handle, 64px icon rail, auto-expand on pin click and re-collapse on close, remembered in localStorage; detail price clipping fixed.
+- ✅ **Listing detail action row (`c68d208`):** I'm Interested/Chat/Edit + ♡🚩🔗 in their own full-width row; title wraps to 2 lines.
+- ✅ **All 9G pushed to `origin/uat` (2026-10-04, `c68d208`), Vercel deploy success verified each time.**
+- ✅ **Windows 11 migration checklist published** as an artifact (Mac → new Lenovo, plus C340 reset for Arun). Advised that the C340 Node.js uninstall is harmless.
 
 - ✅ **Pushed 4 docs commits to `origin/uat` (2026-10-03).** `8c16153`, `a0a5a43`, `912af4e`, `3b83256` (9E UAT report/checklist + checkpoint)
 - ✅ **`.env.example` placeholders committed (2026-10-03, `4f90540`, local only).** `ANTHROPIC_API_KEY=`, `SENTRY_DSN=`, `MSG91_AUTH_KEY=` added by Nagesh; closes the long-open SENTRY_DSN placeholder item
@@ -1018,6 +1038,11 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| Session 9G (UI polish) | ✅ Built + on `origin/uat` (`c68d208`); awaiting Arun's review | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js`, `public/user-guide.html` | 13 commits; screenshots in `docs/screenshots/session-9g/` |
+| T-014 admin XSS fix | ✅ Done, UAT PASS 2026-10-03 | `MapIt_Admin_v1.html`/`public/admin.html` | Must ship in the `uat → main` PR |
+| Option C (Anthropic key + spam-only warning) | 🟡 Part 1 done (`ee5ca06`); part 2 = Nagesh adds `ANTHROPIC_API_KEY` to Vercel Production at the main merge | `src/utils/notifySeller.js` | Cost cap = $5 prepaid, auto-reload off |
+| Session 9E manual UAT | ✅ Complete 2026-10-03 | — | Supersedes the 🟡 9E row below |
+| Session 9C (WhatsApp OTP) | ⏸ Waiting on the MSG91 sample curl (authkey removed) | — | Then build the send/verify routes and wire the 9D OTP UI |
 | Session 9F (Admin Cost & Usage Monitoring) | ✅ Built, on `origin/uat`; Anthropic $ row intentionally "unavailable" | `src/utils/anthropicCost.js`, `src/routes/admin.js`, `public/admin.html` | Admin key skipped 2026-10-01 (Console admin keys can't be scoped). Awaiting `uat → main` PR with 9D/9E |
 | Session 9E (AI listing moderation + feedback draft-reply) | 🟡 Manual UAT: 1a–1c, 2a PASS; 3a/3b, 4a, 5a pending; T-014 fix pending (2026-10-03) | `src/routes/listings.js` (leak fix `d810e5b`), migration 015 (run 2026-10-01) | `mapit-uat` key in Vercel Preview only; $5 prepaid, auto-reload off |
 | Session 9C (phone OTP via WhatsApp/MSG91) | 🟢 Unblocked 2026-10-03: verification approved, OTP template + `MSG91_AUTH_KEY` (Preview) ready; build after 9E closes | `docs/technical/whatsapp-business-registration-guide.html` (revised 2026-09-30) | Then OTP template in MSG91 → build items 2 + 4; MSG91 Titan ₹500/mo from 2026-11-01 |
@@ -1154,6 +1179,14 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+```
+MapIt_Admin_v1.html + public/admin.html — T-014 (2026-10-03, 6467df1): escapeHtmlAdm() escapes 5 chars, applied to all user/AI fields; sendFeedbackReply() looks the name up by id.
+src/utils/notifySeller.js — Option C (ee5ca06): banner + "[Possible spam]" prefix only for verdict 'spam'.
+MapIt_MVP_v1.html + public/index.html — Session 9G: priceText/isRental, BROWSE_CHIPS, header mode/location/radius dropdowns, single post-btn, sidebar rail (sb-collapsed), detail action row, setPrefix(false).
+src/routes/listings.js — Session 9G (ce144bb): listingTxn() + validated txn=Rent|Sell filter on GET /api/listings.
+public/user-guide.html — 9G wording: My Listings, Near me/Explore in the top bar, radius chip, Post button.
+docs/screenshots/session-9g/ — 3 before + 15 after screenshots (desktop 1280, phone 390/360).
+```
 
 ```
 .env.example — +4 lines (2026-10-03, 4f90540): ANTHROPIC_API_KEY / SENTRY_DSN / MSG91_AUTH_KEY placeholders, written by Nagesh, not read by Claude.
@@ -1415,7 +1448,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 
-- **🔴 T-014 — Stored XSS in the admin pending queue (found 2026-10-03, not fixed).** `public/admin.html:636-642` interpolates `l.title`, `l.address`, `l.price_label`, the seller name and `l.moderation_reason` into `innerHTML` unescaped; a seller title like `<img src=x onerror=…>` would run in the admin session. Fix: wrap in the existing `escapeHtmlAdm()` (line 779), and check the Reports/Feedback views and the main app's templates for the same pattern. Blocks the `uat → main` PR.
+- **🟡 Main page (`MapIt_MVP_v1.html`) not audited for T-014-style unescaped `innerHTML` (2026-10-03).** Listing titles and descriptions are interpolated raw in the detail card. Same fix pattern; schedule before production launch.
+- **🟡 User Guide SVG mockups still draw the old sidebar (2026-10-04)** — radius buttons, search-mode box and Browse toggle. The text is updated; the illustrations aren't.
+- **🟢 Admin error toasts render `e.message` unescaped (2026-10-03)** — low risk (server-generated), logged only.
+- **ℹ️ Headless screenshot tooling:** Chrome headless has a 500px minimum window width, and iframes are blocked by our frame-ancestors header. Phone shots need CDP `Emulation.setDeviceMetricsOverride` (script kept in the session scratchpad only).
+
+- **✅ RESOLVED 2026-10-03 (`6467df1`, UAT PASS) — 🔴 T-014 — Stored XSS in the admin pending queue (found 2026-10-03).** `public/admin.html:636-642` interpolates `l.title`, `l.address`, `l.price_label`, the seller name and `l.moderation_reason` into `innerHTML` unescaped; a seller title like `<img src=x onerror=…>` would run in the admin session. Fix: wrap in the existing `escapeHtmlAdm()` (line 779), and check the Reports/Feedback views and the main app's templates for the same pattern. Blocks the `uat → main` PR.
 - **🟡 MSG91 Titan renewal on 1 Nov will fail as things stand (2026-10-03).** Prepaid: ₹500 from the wallet (≈ ₹50 + ₹90 buffer). Top up if 9C goes live soon; otherwise let it lapse or ask MSG91 to pause, and ask whether a lapse affects the template or number.
 - **🟡 Anthropic Console Usage not yet showing 9E test spend (2026-10-03)** — likely reporting lag; recheck before marking 4a.
 - **🟢 Haiku 4.5 retirement: CORRECTED 2026-10-01, not urgent.** Anthropic's deprecations page lists `claude-haiku-4-5-20251001` as **Active, not deprecated**. "Not sooner than 2026-10-15" is only a floor, and Anthropic gives ≥60 days' notice by email before any retirement. Decision: **stay on Haiku 4.5** (the cheapest model). When a deprecation notice arrives, switch to the replacement Anthropic names. Fallback: `claude-sonnet-5-5` ($2/$10 per MTok, ~2× cost, ≈$2/mo at soft-open volume). Code check: none of our 3 utilities send `temperature`/`top_p`/`top_k`, which newer models reject, so a swap is one line per file.
@@ -1515,6 +1553,17 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| Option C: spam-only seller warning + production Anthropic key at merge (2026-10-03, Nagesh) | A warning on every email trains sellers to ignore it; the key gives real protection, and cost stays capped by the $5 prepaid credit |
+| Escape at the point of display (`escapeHtmlAdm`), not on save (2026-10-03) | Old rows and other write paths bypass save-time cleaning; quote-escaping is needed for attribute contexts |
+| Rent/Buy as two sidebar chips over one `re` category + `txn` filter (2026-10-03, Nagesh) | No schema change; `CATS` stays the data model; seed rows without `transaction_type` fall back to a 'per month' label |
+| "All" stays the opening view; post form defaults to Rent (2026-10-03, Nagesh) | Shows MapIt's full range on first visit; rent is the most common Real Estate case in Bangalore |
+| Radius as a dropdown chip (1/3/5/10 km, Region 50, Whole city) matched by `data-r` (2026-10-03) | Compact on phones; position-based matching broke when options were added |
+| "My location · <place> ▾" replaces the separate Near me button + location badge; dropdown skips the confirm (2026-10-04) | One control says where you're searching from; picking from a list is already deliberate |
+| Browse button removed (2026-10-04, Nagesh) | Always-on, duplicated the Listings tab, cost header space on phones |
+| Keep the Mapbox + OSM credit, drop only the Leaflet prefix (2026-10-04) | Mapbox ToS and the OSM ODbL licence require attribution; Leaflet's is optional |
+| Desktop sidebar collapses to an icon rail; pin click auto-expands and closing re-collapses (2026-10-04, Nagesh) | Maximises the map without losing navigation; temporary expands don't override the user's saved preference |
+| Detail actions in their own row directly under the title card, not after the description (2026-10-04) | Full title fits; the primary CTA stays visible without scrolling; the interest-note box still opens beneath it |
+| Develop on Windows 11 going forward (2026-10-03, Nagesh) | New Lenovo; fresh clone to `C:\dev\mapit\mapit-backend`, plus `.gitattributes` (LF) as the first Windows commit |
 | Commit `.env.example` without Claude reading it (2026-10-03) | `.env*` access is blocked for Claude, and using `git diff` to view it would get around that block; relied on Nagesh's check for real values. Push held until he confirms, since the file is public on GitHub |
 | `MSG91_AUTH_KEY` in Vercel Preview only (2026-10-03) | Same "deploy ≠ release" rule as the Anthropic key: a 9C merge to main can't start sending paid OTPs until a deliberate launch decision adds the key to Production |
 | MSG91 authkey IP Security OFF (2026-10-03) | Vercel serverless has no static egress IPs, so a whitelist would reject every call (error 418). Mitigated by keeping the key in Vercel/`.env` only, plus per-phone/IP rate limits in 9C |
@@ -1788,6 +1837,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-04, 11:35 — checkpoint):**
+1. **Arun + Nagesh review Session 9G** on the uat preview link: chips, prices, location/radius dropdowns, Post button, sidebar rail, detail action row, phone layout.
+2. **Open the `uat → main` PR** after sign-off (9D/9E/9F + T-014 + Option C + 9G). At merge, **Nagesh adds `ANTHROPIC_API_KEY` to Vercel Production** (Option C part 2) and redeploys production. Check migration 007 (`profiles.suspended`) first.
+3. **Session 9C:** Nagesh pastes the MSG91 OTP template sample curl (authkey removed), then build the send/verify routes and wire the 9D phone-OTP UI.
+4. **Windows 11 move:** follow the checklist artifact; then James commits `.gitattributes`, updates the root-directory line here, and adds the `git diff --no-index` Two-File check to CLAUDE.md.
+5. **Before ~25 Oct:** decide on the MSG91 Titan ₹500 renewal due 1 Nov (top up vs. lapse/pause).
+6. **Pre-launch hardening:** audit `MapIt_MVP_v1.html` for unescaped `innerHTML`; refresh the User Guide mockups.
 
 **⬅ Immediate (2026-10-04) — Session 9G (UI polish), all 5 items built on `feat/session-9g-ui-polish`, NOT yet pushed:**
 - Requested by Nagesh + Arun after reviewing the look. Decisions (AskUserQuestion, 2026-10-03): **two chips** (Rent / Buy Property), **All** stays the opening view, **dropdown radius chip**, **post form defaults to Rent**.
