@@ -12,6 +12,13 @@ const TIMEOUT_MS = 8000; // user is waiting on this one, but never hang a reques
 // recipient. Env vars only so they can change without a code change.
 const WA_NUMBER = () => process.env.MSG91_WA_NUMBER    || '917892400329';
 const TEMPLATE  = () => process.env.MSG91_OTP_TEMPLATE || 'mapit';
+// Must match the template's language EXACTLY — Meta treats en and en_US as
+// different templates and answers a mismatch with 132001 "template does not
+// exist" (found in the 9C live test, 2026-10-05: MSG91 shows it as "En_US").
+const LANGUAGE  = () => process.env.MSG91_OTP_LANG     || 'en_US';
+// The WABA's template namespace, from MSG91 → Templates → mapit → Code {JSON}.
+// Not a secret (shown in every template's details).
+const NAMESPACE = () => process.env.MSG91_OTP_NAMESPACE || 'aa165f84_7d84_47a4_8dfe_8eeda6f11797';
 
 // India-only for MVP (decision 2026-10-04). Accepts "98765 43210",
 // "+91-98765-43210", "919876543210", "09876543210". Returns E.164
@@ -64,13 +71,13 @@ async function sendWhatsAppOtp(e164, code) {
           type: 'template',
           template: {
             name: TEMPLATE(),
-            language: { code: 'en', policy: 'deterministic' },
-            namespace: null,
+            language: { code: LANGUAGE(), policy: 'deterministic' },
+            namespace: NAMESPACE(),
             to_and_components: [{
               to: [e164.slice(1)], // MSG91 wants "919876543210", no "+"
-              // UNCONFIRMED until the first live test (9C step 3): MSG91's
-              // sample curl left `components` empty. Authentication templates
-              // carry the code in the body ({{1}}) and in the copy-code button.
+              // Verified live 2026-10-05 against the `mapit` template export
+              // (variables body_1 + button_1). The code goes in the body ({{1}})
+              // and the copy-code button; Meta adds the button's "otp" prefix.
               components: {
                 body_1:   { type: 'text', value: code },
                 button_1: { subtype: 'url', type: 'text', value: code },
