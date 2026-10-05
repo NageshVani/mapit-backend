@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
 
-- **Last updated:** 2026-10-04 19:13, checkpoint (**Session 9G incl. Arun's review is on `origin/uat` @ `3bee4c8`, with round-2 UAT 30/0/1/1; 9C built (send/verify, signup flow, post gate) on `feat/session-9c-phone-otp`, not pushed; the live WhatsApp send was accepted by MSG91 but not delivered, and Arun checks the MSG91 logs tomorrow.**)
+- **Last updated:** 2026-10-05 20:45, checkpoint (**9C WhatsApp OTP delivered + verified LIVE end to end; fix `63e59d2` on `feat/session-9c-phone-otp` (not pushed); 5 `+otpN` test accounts deleted by ID.** Root causes: placeholder `MSG91_OTP_TEMPLATE` in local `.env` + language `en` vs approved `en_US`.)
+- **Last updated (previous):** 2026-10-04 19:13, checkpoint (**Session 9G incl. Arun's review is on `origin/uat` @ `3bee4c8`, with round-2 UAT 30/0/1/1; 9C built (send/verify, signup flow, post gate) on `feat/session-9c-phone-otp`, not pushed; the live WhatsApp send was accepted by MSG91 but not delivered, and Arun checks the MSG91 logs tomorrow.**)
 - **Last updated (previous):** 2026-10-04 11:35, checkpoint (**Session 9G UI polish fully on `origin/uat` at `c68d208`; T-014 fixed + UAT-passed; Option C part 1 shipped; 9E manual checklist complete.** Awaiting Arun's 9G review, then the `uat → main` PR; 9C waits on the MSG91 sample curl.)
 - **Last updated (previous):** 2026-10-03 11:12, checkpoint (**4 docs commits pushed, `origin/uat` at `3b83256`; `.env.example` placeholders committed as `4f90540`, not pushed.** Previous: 2026-10-03 11:04, **Session 9E UAT: automated pass 17/1/1/2, manual 1a–1c + 2a PASS; T-014 admin-page XSS found (not fixed); Meta verification approved; MSG91 OTP template + `MSG91_AUTH_KEY` (Preview only) done.** Previous: 2026-10-01 21:42, **Session 9E key setup done; migration 015 run; moderation-field leak fixed and pushed to `origin/uat` (`e922dee`). Click-test deferred to 2026-10-02 by Nagesh. Later the same evening: Haiku 4.5 urgency corrected (Active, ≥60 days' notice, stay on it); migration 007 reminder added; price-box overlap marked resolved per Nagesh; listing_reports RLS puzzle explained (parked); 9C waiting on Meta verification.** Anthropic $5 prepaid credit bought (auto-reload off = effective $5 cap; Console offers no monthly $ spend limit, only rate/token limits). Admin key deliberately SKIPPED (Console admin keys have no scopes = full org admin). Single regular key `mapit-uat` in Vercel **Preview only**; production stays keyless until a launch decision.)
 - **Last updated (previous):** 2026-09-30, checkpoint (**WhatsApp/MSG91 onboarding hit a blocker: MSG91 refused to save the OTP template ("This WhatsApp business account does not have permission to create message template"). Root cause confirmed via MSG91's own help page: Meta now requires Business Verification BEFORE any Authentication template can be created, so the old "go live unverified at 250/day, verify in parallel" plan is wrong for OTP. Registration guide revised to a verification-first order; phone-number document options and MSG91 Titan billing documented.** No code changed. Anthropic key setup (previous item) still pending, paused so Nagesh could ask these questions first.)
@@ -95,6 +96,12 @@
 ---
 
 ## 🎯 Current Goal
+
+**Update (2026-10-05 20:45) — 9C WhatsApp OTP works live (send + verify). Next: merge `uat` into the 9C branch, build 👤 View Profile, push 9C to uat. 9G still awaits Nagesh's round-2 click-test + Arun sign-off → `uat → main` PR.**
+- **Windows 11 Lenovo received (2026-10-05);** Nagesh has started the initial setup and will follow the move checklist (`claude.ai/artifact/6W7Wf8kXwaW1gs9Sc6FA82`) step by step. Push all local branches before the switch.
+- Fix `63e59d2` (local, not pushed). Nagesh still to fix `.env` (delete `MSG91_OTP_TEMPLATE`) and `.env.example` (MSG91 block below), and check Vercel for `MSG91_OTP_TEMPLATE`.
+
+Prior status, superseded above (2026-10-04 19:13):
 
 **Update (2026-10-04 19:13) — Session 9G + Arun's review done on uat (`3bee4c8`), awaiting Nagesh's round-2 click-test + Arun sign-off → `uat → main` PR. Session 9C parked until tomorrow's MSG91 delivery fix.**
 - 9G checklists: `docs/uat/session-09g-uat-checklist-Nagesh.html` (round 1) and `docs/uat/session-09g-r2-uat-checklist-Nagesh.html` (round 2).
@@ -469,6 +476,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+
+- ✅ **9C live WhatsApp OTP — delivered + verified end to end (2026-10-05).** Send 200 → WhatsApp received → verify 200 → `phone_verified` true.
+- ✅ **Root cause 1:** local `.env` had placeholder `MSG91_OTP_TEMPLATE=template_ID_from_MSG91_dashboard`; MSG91 log: "template name (…) does not exist in en_US". Overridden at server start; Nagesh to delete the line.
+- ✅ **Root cause 2 (`63e59d2`):** language `en` → `en_US` (template's only approved language) + namespace `aa165f84_7d84_47a4_8dfe_8eeda6f11797`; both env-overridable (`MSG91_OTP_LANG`, `MSG91_OTP_NAMESPACE`). Verified against MSG91's template JSON export.
+- ✅ **Earlier "no OTP" today = `MSG91_DRY_RUN=true` in `.env`** (correct dev default). Live-test locally with `MSG91_DRY_RUN=false node src/server.js`.
+- ✅ **5 test accounts deleted by explicit ID (2026-10-05, Nagesh approved):** `nagesh.aadi+otp1…otp5` (profiles + auth users; phone_otps cascaded; audit_log kept via SET NULL). Frees 9844221362 for the real account.
 
 - ✅ **Session 9C step 1: migration 016 (`phone_otps` + `uniq_profiles_verified_phone`)** run by Nagesh 2026-10-04; table, RLS and both indexes verified.
 - ✅ **9C step 2 (`a9aaa4a`):** `whatsappOtp.js` + `POST /api/auth/otp/phone/send|verify`. Hash-only codes, 60s cooldown, 5/day, 5 attempts, 10-min expiry, India-only. 21 util + 19 route checks.
@@ -1054,6 +1067,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| Session 9C WhatsApp phone OTP (2026-10-05) | 🟢 Live send + verify PASS; fix `63e59d2` on `feat/session-9c-phone-otp`, not pushed | `src/utils/whatsappOtp.js` | Next: merge uat in, View Profile, push to uat, UAT report. Supersedes the 🟡 9C row below |
 | Session 9G + Arun's review | 🟡 On `origin/uat` @ `3bee4c8`; round-2 UAT 30/0/1/1; awaiting Nagesh click-test + Arun sign-off | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js` | Then the `uat → main` PR + Production `ANTHROPIC_API_KEY` |
 | Session 9C WhatsApp phone OTP | 🟡 Built + tested (faked MSG91) on `feat/session-9c-phone-otp`, not pushed; live delivery failing | `src/utils/whatsappOtp.js`, `src/utils/phoneGate.js`, `src/routes/auth.js`/`users.js`/`listings.js`, migration 016, frontend | Needs: merge uat in, View Profile, MSG91 fix, live test |
 | ToS/Privacy v2.0 | ⏳ Facts gathered, not drafted | `docs/legal/terms-privacy-v2.html` (to create) | Arun approves before `/terms` switches |
@@ -1198,6 +1212,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+src/utils/whatsappOtp.js — FIX (63e59d2, 2026-10-05): language en_US + template namespace defaults (env MSG91_OTP_LANG / MSG91_OTP_NAMESPACE); components format now verified live.
 ```
 database/migrations/016-phone-otps.sql — NEW (2026-10-04, 9C): phone_otps (RLS, no policies) + partial unique index on verified profiles.phone. Run + verified.
 src/utils/whatsappOtp.js — NEW (9C, a9aaa4a): MSG91 WhatsApp template send (body_1 + button_1, UNCONFIRMED format), normalizeIndianMobile, maskPhone, MSG91_DRY_RUN (non-prod only).
@@ -1476,7 +1491,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 
-- **🔴 WhatsApp OTP not delivered (2026-10-04).** MSG91 accepted 3 sends (HTTP 200) but nothing arrived; the WhatsApp prepaid balance (₹50) is confirmed. Suspects: template `components` format (body_1/button_1) or language `en` vs `en_US`. Arun checks MSG91 → WhatsApp logs + template details tomorrow. Two local test accounts are kept for the retry; delete them by ID after.
+- **🟡 `.env` / `.env.example` / Vercel MSG91 cleanup (Nagesh, 2026-10-05):** delete `MSG91_OTP_TEMPLATE` from `.env`; `.env.example` MSG91 block = `MSG91_AUTH_KEY=` (empty, not `re_…`), `MSG91_DRY_RUN=true`, the 4 overrides commented out; remove `MSG91_OTP_TEMPLATE` from Vercel if present. Also a `git stash` (`pre-9c-otp-test: .env.example`) is pending on uat — pop or drop.
+- **ℹ️ WhatsApp shows the sender as +91 78924 00329, not "MapIt" (2026-10-05):** normal for unverified businesses. Arun: confirm display name "MapIt" is Approved in WhatsApp Manager + add logo/profile. Meta Verified (paid) only after launch (Rule 11). Optional idea, not scoped: "You'll get a WhatsApp from +91 78924 00329 (MapIt)" hint on the Verify screen.
+- **💡 Idea (not scoped):** startup warning when an env value looks like an unfilled placeholder (today's root cause).
+- **✅ RESOLVED 2026-10-05 (`63e59d2` + .env fix) —** ~~🔴 WhatsApp OTP not delivered (2026-10-04).~~ MSG91 accepted 3 sends (HTTP 200) but nothing arrived; the WhatsApp prepaid balance (₹50) is confirmed. Suspects: template `components` format (body_1/button_1) or language `en` vs `en_US`. Arun checks MSG91 → WhatsApp logs + template details tomorrow. Two local test accounts are kept for the retry; delete them by ID after.
 - **🟡 Unescaped self-typed names (9G UAT T-045/T-031):** pin labels (`MapIt_MVP_v1.html` marker + My Locations list + `_userMarker` popup) and who-am-I nicknames are rendered as HTML; self/device-only. Part of the pre-launch innerHTML audit.
 - **🟡 `listings.js` CRLF→LF in 9G** (diff noise only); the Windows `.gitattributes` step should lock line endings.
 - **🟡 Unregistered partnership (Section 69, Indian Partnership Act):** the firm can't sue to enforce contracts, including the ToS. Arun to seek a CA/advocate view on registering before launch.
@@ -1586,6 +1604,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| MSG91 template name/language/namespace/number live as code defaults with optional env overrides; `.env.example` lists them commented out, empty (2026-10-05) | Not secrets; a filled-in placeholder in `.env` silently broke delivery. Empty = falls back to the verified default |
+| Test-account cleanup by explicit ID list + email-regex guard, not a `LIKE` pattern (2026-10-05) | uat and production share one DB; an ID list can't over-match |
 | 9C: MapIt generates + hashes the OTP, MSG91 only delivers (2026-10-04) | Rules stay under our control; MSG91's OTP service is SMS-centric; Supabase phone auth would make phone a login identity |
 | 9C: India +91 only; "Verify later" allowed; gate before posting for accounts ≥ 2026-10-04 IST (Nagesh; reconfirmed after Arun's question) | Outages never block signup; sellers are always verified; existing test accounts are exempt and will re-register at launch |
 | 9C: phone_otps table doubles as rate limiter (insert-then-count); optimistic-concurrency attempt counter; timingSafeEqual | Race-safe without extra infrastructure |
@@ -1881,6 +1901,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-05 20:45 — checkpoint):**
+1. **Nagesh:** `.env` / `.env.example` / Vercel MSG91 cleanup (see Open Issues); then pop or drop the `pre-9c-otp-test` stash and commit `.env.example`.
+2. **9C:** merge `uat` into `feat/session-9c-phone-otp` (expect `openPostModal()` conflict) → build 👤 View Profile → add migrations 012–016 to `database/index.html` → push to uat → UAT report + checklist (incl. "Verify later" path).
+3. **9G:** Nagesh round-2 click-test + Arun sign-off → `uat → main` PR (check migration 007; `ANTHROPIC_API_KEY` to Production at merge). Push the 2 local docs commits on uat.
+4. **Arun:** WhatsApp display name "MapIt" approved + business profile/logo.
+5. Session 9H (auto-expiry) → ToS/Privacy v2.0 → Session 9I. Windows 11 move (~2026-10-07) + `.gitattributes`. MSG91 wallet ≥ ₹500 before 1 Nov.
+
+**Prior queue (2026-10-04 19:13), superseded above:**
 
 **⬅ Immediate (2026-10-04 19:13 — checkpoint):**
 1. **Nagesh:** run `docs/uat/session-09g-r2-uat-checklist-Nagesh.html` (+ the round-1 checklist if not done) on the uat preview; Arun final look.
