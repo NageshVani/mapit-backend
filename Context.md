@@ -8,7 +8,7 @@
 ## 📌 Project Overview
 - **Project:** MapIt — location-first buy-and-sell marketplace for India (and based on positive response, then release in USA)
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
-- **Root directory:** `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend` *(MacBook Air — migrated from Windows 2026-06-08)*
+- **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
 - **Last updated:** 2026-10-05 21:25, checkpoint (**Both branches pushed (`uat` @ `d93f473`, `feat/session-9c-phone-otp` @ `63e59d2`); Vercel MSG91 vars verified; CARTO key re-added as Sensitive, no watermark; NEW finding: Vercel functions run in `iad1` (DC) but Supabase is `ap-southeast-1` (Singapore) — move to `sin1` scheduled for later.**)
 - **Last updated (previous):** 2026-10-05 20:45, checkpoint (**9C WhatsApp OTP delivered + verified LIVE end to end; fix `63e59d2` on `feat/session-9c-phone-otp` (not pushed); 5 `+otpN` test accounts deleted by ID.** Root causes: placeholder `MSG91_OTP_TEMPLATE` in local `.env` + language `en` vs approved `en_US`.)
@@ -1502,13 +1502,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 
+- **🟡 11 `npm audit` vulnerabilities (logged 2026-10-06, Windows move step D6).** Same count as on the Mac, so they come from the dependency tree, not the move. Not triaged yet: review `npm audit` output before launch; avoid `npm audit fix --force` (it can jump major versions).
+- **ℹ️ Mac → Windows move done (2026-10-06):** Phases A–C passed, MapIt runs on localhost. The checklist artifact `claude.ai/artifact/6W7Wf8kXwaW1gs9Sc6FA82` replaces the old `docs/technical/mac-to-windows-migration-guide.html` (file kept in the repo, now superseded). Step D6 (`.gitattributes`, LF everywhere) on `chore/windows-setup`.
 - **🟡 Vercel functions run in Washington DC (`iad1`), DB in Singapore (`ap-southeast-1`) (found 2026-10-05).** Every DB query pays ~220 ms round trip; a map load makes ~8 DB-backed calls, explaining the 1–3s per call seen on 2026-09-08. Fix = `vercel.json` `"regions": ["sin1"]` (scheduled). Does not fix cold start (still held for Session 9).
 - **🟡 `.env` / `.env.example` / Vercel MSG91 cleanup (Nagesh, 2026-10-05; .env + Vercel DONE, .env.example staged):** delete `MSG91_OTP_TEMPLATE` from `.env`; `.env.example` MSG91 block = `MSG91_AUTH_KEY=` (empty, not `re_…`), `MSG91_DRY_RUN=true`, the 4 overrides commented out; remove `MSG91_OTP_TEMPLATE` from Vercel if present. Also a `git stash` (`pre-9c-otp-test: .env.example`) is pending on uat — pop or drop.
 - **ℹ️ WhatsApp shows the sender as +91 78924 00329, not "MapIt" (2026-10-05):** normal for unverified businesses. Arun: confirm display name "MapIt" is Approved in WhatsApp Manager + add logo/profile. Meta Verified (paid) only after launch (Rule 11). Optional idea, not scoped: "You'll get a WhatsApp from +91 78924 00329 (MapIt)" hint on the Verify screen.
 - **💡 Idea (not scoped):** startup warning when an env value looks like an unfilled placeholder (today's root cause).
 - **✅ RESOLVED 2026-10-05 (`63e59d2` + .env fix) —** ~~🔴 WhatsApp OTP not delivered (2026-10-04).~~ MSG91 accepted 3 sends (HTTP 200) but nothing arrived; the WhatsApp prepaid balance (₹50) is confirmed. Suspects: template `components` format (body_1/button_1) or language `en` vs `en_US`. Arun checks MSG91 → WhatsApp logs + template details tomorrow. Two local test accounts are kept for the retry; delete them by ID after.
 - **🟡 Unescaped self-typed names (9G UAT T-045/T-031):** pin labels (`MapIt_MVP_v1.html` marker + My Locations list + `_userMarker` popup) and who-am-I nicknames are rendered as HTML; self/device-only. Part of the pre-launch innerHTML audit.
-- **🟡 `listings.js` CRLF→LF in 9G** (diff noise only); the Windows `.gitattributes` step should lock line endings.
+- **✅ RESOLVED 2026-10-06 (`chore/windows-setup`) —** ~~🟡 `listings.js` CRLF→LF in 9G~~ (diff noise only). `.gitattributes` (`* text=auto eol=lf`, images/PDFs/docx/pages binary) + `git add --renormalize .` converted the 7 remaining CRLF files (4 skill files, 2 docs HTML, `src/server.js`; line endings only, verified with `--ignore-cr-at-eol`).
 - **🟡 Unregistered partnership (Section 69, Indian Partnership Act):** the firm can't sue to enforce contracts, including the ToS. Arun to seek a CA/advocate view on registering before launch.
 - **ℹ️ `og-image.png` may still carry old wording;** link previews are cached by WhatsApp.
 - **🟡 Main page (`MapIt_MVP_v1.html`) not audited for T-014-style unescaped `innerHTML` (2026-10-03).** Listing titles and descriptions are interpolated raw in the detail card. Same fix pattern; schedule before production launch.

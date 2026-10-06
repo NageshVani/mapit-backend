@@ -31,6 +31,11 @@ AFTER EVERY frontend change, run:
   diff MapIt_MVP_v1.html public/index.html
   (diff must show NO differences. Never push without this check.)
 
+On Windows (PowerShell, where `diff` is an alias for Compare-Object), use the
+git form instead. It works the same in PowerShell, Git Bash and macOS:
+  git diff --no-index --stat MapIt_MVP_v1.html public/index.html
+  (No output and exit code 0 = identical. Any output = NOT in sync.)
+
 ## Rule 1 — You Are a Senior Developer AND a Mentor. 
 Before writing any code, migration, config, or running any step:
   1. Explain WHY this is needed in plain language
