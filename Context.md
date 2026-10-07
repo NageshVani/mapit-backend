@@ -10,7 +10,7 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-07, mid-session (**9C live OTP re-verified on Windows; uat merged into 9C (`2daa25b`); View Profile built, awaiting click-test; 9C.1 emoji avatars decided.**)
+- **Last updated:** 2026-10-07 22:05, checkpoint (**9C live OTP re-verified on Windows; `uat` merged into 9C (`2daa25b`); 👤 View Profile built, click-tested, committed (`43ec5d8`); 9C.1 emoji avatars decided. 9C branch 14 commits ahead of origin, NOT pushed.**)
 - **Last updated (previous):** 2026-10-05 21:25, checkpoint (**Both branches pushed (`uat` @ `d93f473`, `feat/session-9c-phone-otp` @ `63e59d2`); Vercel MSG91 vars verified; CARTO key re-added as Sensitive, no watermark; NEW finding: Vercel functions run in `iad1` (DC) but Supabase is `ap-southeast-1` (Singapore) — move to `sin1` scheduled for later.**)
 - **Last updated (previous):** 2026-10-05 20:45, checkpoint (**9C WhatsApp OTP delivered + verified LIVE end to end; fix `63e59d2` on `feat/session-9c-phone-otp` (not pushed); 5 `+otpN` test accounts deleted by ID.** Root causes: placeholder `MSG91_OTP_TEMPLATE` in local `.env` + language `en` vs approved `en_US`.)
 - **Last updated (previous):** 2026-10-04 19:13, checkpoint (**Session 9G incl. Arun's review is on `origin/uat` @ `3bee4c8`, with round-2 UAT 30/0/1/1; 9C built (send/verify, signup flow, post gate) on `feat/session-9c-phone-otp`, not pushed; the live WhatsApp send was accepted by MSG91 but not delivered, and Arun checks the MSG91 logs tomorrow.**)
@@ -99,7 +99,9 @@
 
 ## 🎯 Current Goal
 
-**Update (2026-10-07) — 9C on Windows: live WhatsApp OTP delivered again (after setting `MSG91_DRY_RUN=false` in the new Windows `.env`); sender still shows the number, not "MapIt" (Meta display-name/profile, Arun). `uat` merged into `feat/session-9c-phone-otp` (`2daa25b`, local; one conflict in `listings.js` create route — kept 9C phone gate + uat's `SHOW_PHONE_OPTIONS`/`on_agreement` default). 👤 View Profile built (uncommitted until Nagesh's click-test). Next: commit View Profile → migrations 012–016 in `database/index.html` → push 9C to uat → UAT. Then 9C.1 emoji avatar picker.**
+**Update (2026-10-07 22:05) — End of day. View Profile committed (`43ec5d8`) on `feat/session-9c-phone-otp` (local, not pushed). Tomorrow: Nagesh tests "Verify now → Verify later" on an unverified account (password of the spare test account forgotten — reset it or create `+otp3`), then 1c migrations page → push 9C to uat → UAT. Local `npm run dev` is now on the 9C branch.**
+
+Earlier today (superseded above): **Update (2026-10-07) — 9C on Windows: live WhatsApp OTP delivered again (after setting `MSG91_DRY_RUN=false` in the new Windows `.env`); sender still shows the number, not "MapIt" (Meta display-name/profile, Arun). `uat` merged into `feat/session-9c-phone-otp` (`2daa25b`, local; one conflict in `listings.js` create route — kept 9C phone gate + uat's `SHOW_PHONE_OPTIONS`/`on_agreement` default). 👤 View Profile built (uncommitted until Nagesh's click-test). Next: commit View Profile → migrations 012–016 in `database/index.html` → push 9C to uat → UAT. Then 9C.1 emoji avatar picker.**
 - Test accounts to delete (Dashboard → Auth → Users): `nagesh.aadi_otp1@gmail.com` (created on the pre-9C flow; `_` is not a Gmail alias, mailbox doesn't exist) and `nagesh.aadi+otp2@gmail.com`.
 
 **Update (2026-10-05 21:25) — End of day. 9C live OTP done + pushed. Tomorrow: finish `.env.example` commit, then 9C merge-uat + View Profile. Vercel region move (`sin1`) is scheduled, not started.**
@@ -484,6 +486,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **9C live WhatsApp OTP re-tested from Windows (2026-10-07):** first try sent nothing — new `.env` had `MSG91_DRY_RUN=true` (template default); set to false + restart → code delivered and verified (`+otp2`). Sender still shows +91 78924 00329, not "MapIt".
+- ✅ **`uat` merged into `feat/session-9c-phone-otp` (`2daa25b`, 2026-10-07):** one conflict (`listings.js` create route) — kept 9C phone gate + uat's `SHOW_PHONE_OPTIONS`/`on_agreement`; `openPostModal()` auto-merged correctly (gate first, then 9G defaults).
+- ✅ **👤 View Profile built + click-tested + committed (`43ec5d8`, 2026-10-07):** avatar-menu item, read-only window (`textContent` only), `openPhoneVerify('profile')` returns to it. Screenshots `after-view-profile.png`, `after-avatar-menu.png`.
 - ✅ **Pushed (2026-10-05):** `uat` → `d93f473` (3 docs commits); `feat/session-9c-phone-otp` → GitHub for the first time (`63e59d2`). Vercel builds a 9C preview (real MSG91 sends, don't share URL).
 - ✅ **Vercel env checked:** no `MSG91_OTP_TEMPLATE` (code defaults apply); `MSG91_AUTH_KEY` Preview; `ANTHROPIC_API_KEY` is Preview·uat only (9C preview fails open).
 - ✅ **`CARTO_API_KEY` re-added as Sensitive** by Nagesh (was "Needs Attention"); uat redeployed, map shows no watermark.
@@ -1080,6 +1085,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| Session 9C — View Profile + uat merge (2026-10-07) | 🟢 Committed `43ec5d8` (local, 14 ahead of origin, not pushed) | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js` (merge), `Context.md` | Left: Verify now → Verify later test, migrations page, push to uat, UAT report. Supersedes the 9C rows below |
+| 9C.1 emoji avatar picker | ⏳ Decided, not started | — | After 9C ships; own branch; needs migration (`profiles.avatar_id`) |
 | Vercel function region → `sin1` (2026-10-05) | ⏸ Scheduled for later (Nagesh) | `vercel.json` (to change) | One line `"regions": ["sin1"]`; ₹0 on Hobby; test on a `fix/` branch → uat first |
 | `.env.example` MSG91 block | 🟡 Staged, not committed (Nagesh) | `.env.example` | Check no duplicate MSG91 lines; drop the `pre-9c-otp-test` stash; commit + push |
 | Session 9C WhatsApp phone OTP (2026-10-05) | 🟢 Live send + verify PASS; fix `63e59d2` on `feat/session-9c-phone-otp`, not pushed | `src/utils/whatsappOtp.js` | Next: merge uat in, View Profile, push to uat, UAT report. Supersedes the 🟡 9C row below |
@@ -1227,6 +1234,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+MapIt_MVP_v1.html / public/index.html — 9C (43ec5d8, 2026-10-07): 👤 View Profile menu item + #profileModal + .prof-* CSS + openProfileModal/_renderProfile; 'profile' ctx in _finishPhoneVerify/skipPhoneVerify.
+src/routes/listings.js — merge 2daa25b (2026-10-07): 9C phone gate kept + uat's SHOW_PHONE_OPTIONS / on_agreement default.
+docs/screenshots/session-9c/after-view-profile.png, after-avatar-menu.png — NEW (2026-10-07).
 src/utils/whatsappOtp.js — FIX (63e59d2, 2026-10-05): language en_US + template namespace defaults (env MSG91_OTP_LANG / MSG91_OTP_NAMESPACE); components format now verified live.
 ```
 database/migrations/016-phone-otps.sql — NEW (2026-10-04, 9C): phone_otps (RLS, no policies) + partial unique index on verified profiles.phone. Run + verified.
@@ -1505,6 +1515,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🟡 WhatsApp sender shows the number, not "MapIt" (re-confirmed 2026-10-07).** Not code. Arun: WhatsApp Manager → Phone numbers → display name Approved? + business profile (logo, description, site, email). Header name for unverified businesses may still need Meta Verified (paid, post-launch).
+- **🟡 Test accounts to delete after 9C UAT:** `nagesh.aadi_otp1@gmail.com` (made on the pre-9C flow; `_` isn't a Gmail alias) and `nagesh.aadi+otp2@gmail.com` — Dashboard → Auth → Users (cascades `phone_otps`).
+- **ℹ️ Windows `.env` has `MSG91_DRY_RUN=false` now** — local signups send real WhatsApp (₹ per message). Set back to true when not testing OTP.
 
 - **🟡 11 `npm audit` vulnerabilities (logged 2026-10-06, Windows move step D6).** Same count as on the Mac, so they come from the dependency tree, not the move. Not triaged yet: review `npm audit` output before launch; avoid `npm audit fix --force` (it can jump major versions).
 - **ℹ️ Mac → Windows move done (2026-10-06):** Phases A–C passed, MapIt runs on localhost. The checklist artifact `claude.ai/artifact/6W7Wf8kXwaW1gs9Sc6FA82` replaces the old `docs/technical/mac-to-windows-migration-guide.html` (file kept in the repo, now superseded). Step D6 (`.gitattributes`, LF everywhere) on `chore/windows-setup`.
@@ -1923,11 +1936,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ Immediate (2026-10-07):**
-1. ✅ View Profile click-tested by Nagesh (2026-10-07; `+otp2` shows email + phone ✓ Verified) and committed. Screenshot: `docs/screenshots/session-9c/after-view-profile.png` (before = avatar menu on the uat preview, not captured; `after-avatar-menu.png` still to take).
-2. 9C: migrations 012–016 in `database/index.html` → push to uat → UAT report + checklist.
-3. **9C.1:** emoji avatar picker (see Decisions, 2026-10-07).
-4. Then as before: 9G sign-off → `uat → main` PR; `sin1`; 9H; 9I; pre-launch innerHTML audit; npm audit; Session 9.
+**⬅ Immediate (2026-10-07 22:05 — checkpoint):**
+1. **Nagesh:** test "Verify now → Verify later" on an unverified account (reset the forgotten password, or create `nagesh.aadi+otp3@gmail.com` and tap Verify later at signup); also View Profile at ~375 px.
+2. **9C 1c:** add migrations 012–016 to `database/index.html` → push `feat/session-9c-phone-otp` → merge to uat → UAT report + checklist.
+3. **9G:** round-2 click-test + Arun sign-off → `uat → main` PR.
+4. **9C.1:** emoji avatar picker (see Decisions, 2026-10-07). Then `sin1`; 9H; 9I; pre-launch innerHTML audit; npm audit; Session 9.
+5. After UAT: delete the `_otp1` / `+otp2` (and any `+otp3`) test accounts. Arun: WhatsApp display name + profile.
+
+**Earlier 2026-10-07 queue (superseded above):** View Profile click-test ✅ committed `43ec5d8`; screenshots `after-view-profile.png` + `after-avatar-menu.png` ✅.
 
 **⬅ Immediate (2026-10-05 21:25 — checkpoint):**
 1. **Nagesh:** finish `.env.example` (no duplicate MSG91 lines, `git diff --cached` shows no real key) → commit + push; `git stash drop` the `pre-9c-otp-test` stash after checking it.
