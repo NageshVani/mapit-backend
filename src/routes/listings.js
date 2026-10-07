@@ -28,6 +28,8 @@ const router = express.Router();
 // Valid categories and statuses
 const VALID_CATEGORIES = ['re', 'veh', 'hh', 'furn', 'electronics']; // furn kept for legacy data
 const VALID_STATUSES   = ['active', 'sold', 'expired'];
+// Session 9G (Arun): 'always' removed — sellers choose On Agreement (default) or Never.
+const SHOW_PHONE_OPTIONS = ['on_agreement', 'never'];
 
 // Reference code: MP-BLR-XXXXXX (6 alphanumeric, no 0/O/1/I to avoid confusion)
 function generateRefCode() {
@@ -591,8 +593,7 @@ router.post('/', requireAuth, async (req, res, next) => {
       });
     }
 
-    const validShowPhone = ['always', 'on_agreement', 'never'];
-    const phoneVisibility = validShowPhone.includes(show_phone) ? show_phone : 'always';
+    const phoneVisibility = SHOW_PHONE_OPTIONS.includes(show_phone) ? show_phone : 'on_agreement';
     const now = new Date();
 
     // Generated up front (rather than left to the DB default) so the fuzz
@@ -686,6 +687,9 @@ router.put('/:id', requireAuth, async (req, res, next) => {
       return next(createError('No valid fields to update.'));
     }
 
+    if (updates.show_phone !== undefined && !SHOW_PHONE_OPTIONS.includes(updates.show_phone)) {
+      return next(createError(`show_phone must be one of: ${SHOW_PHONE_OPTIONS.join(', ')}`));
+    }
     if (updates.show_exact_location !== undefined) {
       updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';
     }

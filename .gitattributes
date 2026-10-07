@@ -1,0 +1,16 @@
+# Line endings: store and check out text files as LF on every OS
+# (Windows 11, macOS, Vercel/Linux). Added 2026-10-06 after the Windows move.
+* text=auto eol=lf
+
+# Binary files: never convert line endings or diff as text
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.docx  binary
+*.pages binary
+*.woff  binary
+*.woff2 binary

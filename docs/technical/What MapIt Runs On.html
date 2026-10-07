@@ -1,0 +1,426 @@
+<title>What MapIt Runs On</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --paper: #f2f4f5;
+    --paper-raised: #ffffff;
+    --ink: #1c2530;
+    --ink-soft: #4b5a68;
+    --ink-faint: #7c8a97;
+    --rule: #d4dade;
+    --accent: #0f6f73;
+    --accent-ink: #ffffff;
+    --accent-tint: #e2f0ef;
+    --tag-in: #b5651d;
+    --tag-in-bg: #fbeee2;
+    --tag-global: #3a5a7a;
+    --tag-global-bg: #e8eef4;
+    --shadow: 0 1px 2px rgba(28, 37, 48, 0.06), 0 8px 24px rgba(28, 37, 48, 0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14181c;
+      --paper-raised: #1b2126;
+      --ink: #e8ecef;
+      --ink-soft: #a8b4bd;
+      --ink-faint: #7a8792;
+      --rule: #2c343b;
+      --accent: #3fb3a8;
+      --accent-ink: #0d1113;
+      --accent-tint: #1a2c2c;
+      --tag-in: #e2a468;
+      --tag-in-bg: #2e2419;
+      --tag-global: #8fb2d6;
+      --tag-global-bg: #1c2733;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #14181c;
+    --paper-raised: #1b2126;
+    --ink: #e8ecef;
+    --ink-soft: #a8b4bd;
+    --ink-faint: #7a8792;
+    --rule: #2c343b;
+    --accent: #3fb3a8;
+    --accent-ink: #0d1113;
+    --accent-tint: #1a2c2c;
+    --tag-in: #e2a468;
+    --tag-in-bg: #2e2419;
+    --tag-global: #8fb2d6;
+    --tag-global-bg: #1c2733;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+  }
+
+  header.masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 8px;
+  }
+
+  .kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(30px, 4.5vw, 42px);
+    line-height: 1.08;
+    margin: 0;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .masthead-meta {
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  .dek {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 22px 0 40px;
+  }
+
+  .dek strong { color: var(--ink); font-weight: 600; }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .swatch.global { background: var(--tag-global); }
+  .swatch.india { background: var(--tag-in); }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    background: var(--paper-raised);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+  }
+
+  thead th {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--accent-tint);
+  }
+
+  thead th:first-child { border-top-left-radius: 6px; }
+  thead th:last-child { border-top-right-radius: 6px; }
+
+  tbody td {
+    padding: 18px 18px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    font-size: 14.5px;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--paper-raised) 96%, var(--ink) 4%); }
+
+  .layer {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 15.5px;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .layer .sub {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+    font-size: 10.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+
+  .why { color: var(--ink-soft); }
+
+  .taglist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 13px;
+    padding: 1px 0;
+  }
+
+  .tag.global::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 1.5px;
+    background: var(--tag-global);
+    margin-right: 7px;
+  }
+
+  .tag.india {
+    color: var(--tag-in);
+    font-weight: 600;
+  }
+
+  .tag.india::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 1.5px;
+    background: var(--tag-in);
+    margin-right: 7px;
+  }
+
+  .tag.none {
+    color: var(--ink-faint);
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  section.field-note {
+    margin-top: 44px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
+    align-items: start;
+    background: var(--accent-tint);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 22px 26px;
+  }
+
+  .field-note .mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    padding-top: 2px;
+  }
+
+  .field-note p {
+    margin: 0 0 10px;
+    color: var(--ink);
+    font-size: 15px;
+  }
+  .field-note p:last-child { margin-bottom: 0; }
+  .field-note strong { color: var(--accent); }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (max-width: 640px) {
+    .sheet { padding: 36px 18px 60px; }
+    header.masthead { flex-direction: column; align-items: flex-start; }
+    .masthead-meta { text-align: left; }
+  }
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <div>
+      <p class="kicker">Founder briefing · stack reference</p>
+      <h1>What MapIt Runs On</h1>
+    </div>
+    <div class="masthead-meta">
+      Prepared 2026&#8209;08&#8209;30<br>
+      For a founder evaluating stacks
+    </div>
+  </header>
+
+  <p class="dek">A working MVP stack, layer by layer — what each piece actually does, why it was picked, and the realistic alternatives if you're speccing your own build, <strong>including which options are Indian providers</strong> and which aren't.</p>
+
+  <div class="legend">
+    <span><span class="swatch global"></span> Global provider</span>
+    <span><span class="swatch india"></span> Indian provider</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:15%">Layer</th>
+          <th style="width:27%">What it does</th>
+          <th style="width:20%">Why MapIt chose it</th>
+          <th style="width:38%">Alternatives</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer">Node.js<span class="sub">+ Express</span></td>
+          <td class="why">Backend framework — handles API requests, runs business logic, talks to the database.</td>
+          <td class="why">Free, huge ecosystem, easy to hire for, runs well as small serverless functions.</td>
+          <td>
+            <div class="taglist">
+              <span class="tag global">Django / FastAPI, Rails, NestJS, Go, Spring Boot</span>
+              <span class="tag none">— not a vendor category; India has strong Node talent, not a rival product</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="layer">Vercel<span class="sub">Serverless hosting</span></td>
+          <td class="why">Hosts the backend code, runs it on demand instead of an always-on server, auto-scales.</td>
+          <td class="why">Zero server management, generous free tier, deploys straight from GitHub.</td>
+          <td>
+            <div class="taglist">
+              <span class="tag global">AWS Lambda, Netlify, Railway, Render, Fly.io, Cloud Run</span>
+              <span class="tag none">— no direct India-specific rival at this exact layer</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="layer">Supabase<span class="sub">DB + Auth + Storage</span></td>
+          <td class="why">One bundled backend: Postgres database, login/signup (incl. Google OAuth, OTP), and file storage.</td>
+          <td class="why">One vendor instead of three; generous free tier; open-source, so it can be self-hosted later.</td>
+          <td>
+            <div class="taglist">
+              <span class="tag global">Firebase, AWS Amplify, PlanetScale + Auth0 + S3 (unbundled)</span>
+              <span class="tag india">Appwrite (open-source, India presence)</span>
+              <span class="tag india">Hasura (Bangalore-founded)</span>
+              <span class="tag india">Zoho Catalyst</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="layer">Resend<span class="sub">Transactional email</span></td>
+          <td class="why">Sends system emails — signup confirmations, OTP codes, notifications. Not bulk marketing mail.</td>
+          <td class="why">Simple API, generous free tier, strong deliverability, dev-friendly.</td>
+          <td>
+            <div class="taglist">
+              <span class="tag global">SendGrid, Postmark, AWS SES, Mailgun</span>
+              <span class="tag india">Zeptomail (by Zoho, very cheap)</span>
+              <span class="tag india">MSG91 Email, Netcore Cloud</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="layer">Leaflet.js<span class="sub">Map library</span></td>
+          <td class="why">Draws the interactive map in the browser — pan, zoom, markers. Needs a tile provider underneath for the actual imagery.</td>
+          <td class="why">Free, lightweight, no lock-in — works with any tile provider.</td>
+          <td>
+            <div class="taglist">
+              <span class="tag global">Mapbox GL JS, Google Maps JS API, OpenLayers</span>
+              <span class="tag none">— Leaflet itself is free everywhere; lock-in lives one layer down</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="layer">Mapbox<span class="sub">Map tiles</span></td>
+          <td class="why">Supplies the actual map imagery and labels that Leaflet renders.</td>
+          <td class="why">Reliable labeling, 200k free tiles/month, transparent self-serve pricing.</td>
+          <td>
+            <div class="taglist">
+              <span class="tag global">Google Maps Platform, MapTiler, Stadia Maps, HERE, raw OpenStreetMap</span>
+              <span class="tag india">Mappls (MapmyIndia) — strong local accuracy, but pricing needs a sales call and every plan carries a mandatory logo</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="layer">Single&#8209;file frontend<span class="sub">No build step</span></td>
+          <td class="why">Not a vendor — an architecture choice. The whole UI lives in one HTML file, inline JS/CSS.</td>
+          <td class="why">Zero build tooling, instant deploys, easy for a small team to reason about at MVP scale.</td>
+          <td>
+            <div class="taglist">
+              <span class="tag none">React, Vue, Svelte, Next.js — same options everywhere, not a vendor comparison</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="field-note">
+    <span class="mark">Field&nbsp;note</span>
+    <div>
+      <p><strong>"Indian alternative" doesn't automatically mean cheaper or better.</strong> We ran this exact test on the map-tile layer: Mappls markets itself as ~30% more economical, but publishes no self-serve pricing — quotes require a sales call — and its terms mandate a visible logo on every plan, including paid ones. Mapbox's pricing is public and its free tier already covers MapIt's launch traffic, so that's what shipped.</p>
+      <p>If cost and India-first billing genuinely matter from day one, look specifically for <strong>transparent, self-serve, GST-inclusive pricing</strong> — Zoho's stack and MSG91 pass that test. A local brand name on its own doesn't.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>MapIt — location-first marketplace, Bangalore</span>
+    <span>Stack reference · not a vendor endorsement</span>
+  </footer>
+
+</div>

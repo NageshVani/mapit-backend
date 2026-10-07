@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MapIt — Session 09g Round 2 UAT Checklist (Nagesh)</title>
+<style>
+  :root{--bg:#0f1117;--card:#1a1d27;--card2:#21253a;--border:#2a2e3e;--green:#22c55e;--red:#ef4444;--orange:#f97316;--gold:#eab308;--blue:#3b82f6;--muted:#6b7280;--muted2:#9ca3af;--text:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.6;padding:0 0 80px;}
+  header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;position:sticky;top:0;z-index:100;}
+  .hd-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .logo{font-size:20px;font-weight:700;}.logo span{color:var(--orange);}
+  .hd-meta{font-size:12px;color:var(--muted);}
+  .progress-bar{height:6px;background:var(--card2);border-radius:3px;margin-top:12px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s;}
+  .progress-label{font-size:12px;color:var(--muted2);margin-top:6px;} .progress-label span{color:var(--green);font-weight:700;}
+  main{max-width:820px;margin:0 auto;padding:32px 24px;}
+  .intro-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:28px;}
+  .intro-card h2{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .intro-card p{font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .intro-card code{font-family:'SF Mono',Menlo,'Courier New',monospace;font-size:12px;background:var(--card2);padding:2px 6px;border-radius:3px;color:#93c5fd;}
+  .intro-card .warn{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:12.5px;color:#fca5a5;}
+  h2.section{font-size:14px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.7px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  h2.section .item-num{color:var(--orange);margin-right:6px;}
+  .test-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;transition:border-color .2s;}
+  .test-card.passed{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.04);}
+  .test-card.failed{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.04);}
+  .test-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .test-id{font-family:'SF Mono',Menlo,'Courier New',monospace;font-size:11px;color:var(--muted);flex-shrink:0;margin-top:2px;min-width:36px;}
+  .test-title{font-size:13px;font-weight:600;flex:1;}
+  .btn-row{display:flex;gap:8px;flex-shrink:0;}
+  button.pass-btn,button.fail-btn{padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
+  button.pass-btn{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  button.pass-btn:hover{background:rgba(34,197,94,.28);}
+  button.fail-btn{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+  button.fail-btn:hover{background:rgba(239,68,68,.22);}
+  button.pass-btn.active{background:var(--green);color:#000;}
+  button.fail-btn.active{background:var(--red);color:#fff;}
+  .test-steps{font-size:12px;color:var(--muted2);margin-top:10px;line-height:1.8;}
+  .test-steps ol{padding-left:18px;}
+  .test-steps li{margin-bottom:3px;}
+  .test-steps code{font-family:'SF Mono',Menlo,'Courier New',monospace;font-size:11px;background:var(--card2);padding:1px 5px;border-radius:3px;color:#93c5fd;}
+  .test-steps .expected{color:var(--green);font-weight:600;}
+  .note-area{margin-top:10px;display:none;}
+  .note-area textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-family:inherit;font-size:12px;resize:vertical;min-height:56px;}
+  .note-area textarea::placeholder{color:var(--muted);}
+  .auto-badge{display:inline-block;background:rgba(59,130,246,.15);color:var(--blue);border-radius:4px;font-size:10px;font-weight:700;padding:1px 7px;margin-left:8px;vertical-align:middle;}
+  .signoff{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:32px;}
+  .signoff h3{font-size:15px;font-weight:700;margin-bottom:14px;}
+  .signoff label{display:block;font-size:13px;color:var(--muted2);margin-bottom:6px;}
+  .signoff input,.signoff select,.signoff textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:13px;margin-bottom:14px;}
+  .signoff .verdict-row{display:flex;gap:10px;margin-bottom:14px;}
+  .verdict-btn{flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+  .verdict-btn.approve{border-color:rgba(34,197,94,.5);color:var(--green);}
+  .verdict-btn.approve.sel{background:var(--green);color:#000;border-color:var(--green);}
+  .verdict-btn.reject{border-color:rgba(239,68,68,.5);color:var(--red);}
+  .verdict-btn.reject.sel{background:var(--red);color:#fff;border-color:var(--red);}
+  .verdict-btn.hold{border-color:rgba(249,115,22,.5);color:var(--orange);}
+  .verdict-btn.hold.sel{background:var(--orange);color:#000;border-color:var(--orange);}
+  .submit-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .submit-btn:hover{background:#2563eb;}
+  .result-box{display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:16px;margin-top:14px;font-size:13px;}
+  .tip{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#bfdbfe;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-row">
+    <div>
+      <div class="logo">Map<span>It</span> &nbsp;·&nbsp; Session 09g Round 2 UAT Checklist</div>
+      <div class="hd-meta">Tester: Nagesh &nbsp;·&nbsp; Date: 2026-10-04 &nbsp;·&nbsp; Branch: uat (Vercel preview) &nbsp;·&nbsp; Arun's review changes</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="progress-label">Progress: <span id="pct">0%</span> &nbsp;(<span id="doneCount">0</span> / <span id="totalCount">0</span>)</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</header>
+
+<main>
+  <div class="intro-card">
+    <h2>📋 Round 2: Arun's review changes</h2>
+    <p>This checks the 7 changes made from Arun's review: the new <b>Geo-based Marketplace</b> tagline, bigger sign-in text, the email hint, the two-choice phone setting, Explore → My location, Plots without a photo, and the yellow/red map bubbles. Claude's automated pass is in <code>session-09g-r2-uat-report.html</code> (30 pass, 0 fail, 1 old warning, 1 left for you).</p>
+    <p><strong>Test on:</strong> <code>https://mapit-backend-git-uat-nagesh-n-arun.vercel.app</code>, on your <b>phone</b> (sections 1–3, 7b) and your <b>laptop</b> (the rest). Press <b>Cmd+Shift+R</b> once on the laptop so you get the newest version.</p>
+    <p><strong>You'll need:</strong> your normal account with at least one older listing, and about 15 minutes.</p>
+    <div class="warn">⚠️ Don't use <code>uat.mapit.co.in</code>: it still shows the live site. Step 6a posts one TEST listing. Please delete it in step 8a, because uat and the live site share one database.</div>
+  </div>
+
+  <h2 class="section"><span class="item-num">1</span>New tagline: "Geo-based Marketplace"</h2>
+  <div class="test-card" id="card-1a">
+    <div class="test-hd">
+      <div class="test-id">1a</div>
+      <div class="test-title">Browser tab shows the new name</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('1a','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('1a','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open the uat link on your laptop</li>
+        <li>Look at the browser tab at the top</li>
+        <li class="expected">Expected: The tab reads <b>MapIt — Geo-based Marketplace</b></li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-1a"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-1b">
+    <div class="test-hd">
+      <div class="test-id">1b</div>
+      <div class="test-title">Tagline under MapIt on the account-picker screen</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('1b','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('1b','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>On your phone, open the uat link (if it signs you straight in, use your avatar menu → <b>⎋ Sign Out &amp; Switch User</b>)</li>
+        <li class="expected">Expected: On the <b>Who's using MapIt?</b> screen, <b>Geo-based Marketplace</b> appears just under the big MapIt name</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-1b"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-1c">
+    <div class="test-hd">
+      <div class="test-id">1c</div>
+      <div class="test-title">Tagline on the Sign in window</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('1c','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('1c','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Tap <b>+ New person / first-time login</b></li>
+        <li class="expected">Expected: Under MapIt it now says <b>Geo-based Marketplace</b>, not "Bangalore's location-first marketplace"</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-1c"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-1d">
+    <div class="test-hd">
+      <div class="test-id">1d</div>
+      <div class="test-title">(Optional) Link preview in WhatsApp</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('1d','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('1d','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Send the uat link to yourself on WhatsApp</li>
+        <li class="expected">Expected: If a preview appears, its title says <b>MapIt — Geo-based Marketplace</b></li>
+      </ol>
+      <div class="tip">💡 WhatsApp remembers old previews. If it still shows "Buy &amp; Sell Near You", it's just cached, so mark Pass with a note. Also check whether the preview <b>picture</b> has old wording printed on it.</div>
+    </div>
+    <div class="note-area" id="note-1d"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+
+  <h2 class="section"><span class="item-num">2</span>Bigger text on the sign-in screens</h2>
+  <div class="test-card" id="card-2a">
+    <div class="test-hd">
+      <div class="test-id">2a</div>
+      <div class="test-title">Saved names and the New person button are easier to read</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('2a','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('2a','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Go back to the <b>Who's using MapIt?</b> screen on your phone</li>
+        <li class="expected">Expected: The saved names (e.g. Nagesh, Arun) are noticeably larger than before</li>
+        <li class="expected">Expected: <b>+ New person / first-time login</b> is larger and lines up with the name buttons, no longer stretching edge to edge</li>
+      </ol>
+      <div class="tip">💡 Compare with the before/after pictures in docs/screenshots/session-9g/ if you want to.</div>
+    </div>
+    <div class="note-area" id="note-2a"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-2b">
+    <div class="test-hd">
+      <div class="test-id">2b</div>
+      <div class="test-title">Sign In fields are larger</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('2b','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('2b','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Tap <b>+ New person / first-time login</b></li>
+        <li>Look at the Email and Password boxes, the labels, the Sign In / Create Account tabs and the orange button</li>
+        <li class="expected">Expected: Everything reads comfortably on the phone without zooming</li>
+        <li class="expected">Expected: On an iPhone, tapping the Email box no longer zooms the whole page in</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-2b"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-2c">
+    <div class="test-hd">
+      <div class="test-id">2c</div>
+      <div class="test-title">Create Account fields are larger too</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('2c','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('2c','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Tap the <b>Create Account</b> tab</li>
+        <li class="expected">Expected: Full Name, Nickname and the password boxes are just as large</li>
+        <li class="expected">Expected: Nothing is cut off and you don't need to scroll sideways</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-2c"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+
+  <h2 class="section"><span class="item-num">3</span>Email hint</h2>
+  <div class="test-card" id="card-3a">
+    <div class="test-hd">
+      <div class="test-id">3a</div>
+      <div class="test-title">The email box hint reads yourname@email.com</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('3a','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('3a','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>On the Sign In window, look at the empty Email box</li>
+        <li>Also tap <b>Prefer a one-time code? Use email OTP →</b> and look at that Email box</li>
+        <li class="expected">Expected: Both show the grey hint <b>yourname@email.com</b></li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-3a"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+
+  <h2 class="section"><span class="item-num">4</span>Show phone number to buyers</h2>
+  <div class="test-card" id="card-4a">
+    <div class="test-hd">
+      <div class="test-id">4a</div>
+      <div class="test-title">Only two choices, On Agreement selected</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('4a','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('4a','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Sign in, tap <b>＋ Post a Listing</b></li>
+        <li>Scroll down to <b>📞 Show Phone Number to Buyers</b></li>
+        <li class="expected">Expected: There are only two choices: <b>On Agreement</b> and <b>Never</b>. "Always" is gone.</li>
+        <li class="expected">Expected: <b>On Agreement</b> is already selected</li>
+      </ol>
+      <div class="tip">💡 Close the form without posting.</div>
+    </div>
+    <div class="note-area" id="note-4a"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-4b">
+    <div class="test-hd">
+      <div class="test-id">4b</div>
+      <div class="test-title">Your existing listings now say On Agreement</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('4b','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('4b','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open <b>📋 My Listings</b> and tap <b>✏️ Edit Listing</b> on one of your older listings</li>
+        <li class="expected">Expected: The phone setting shows <b>On Agreement</b> (or Never, if you had chosen that), never "Always"</li>
+      </ol>
+      <div class="tip">💡 Close without saving. Reminder: buyers don't see phone numbers anywhere yet; real sharing comes in Session 9I.</div>
+    </div>
+    <div class="note-area" id="note-4b"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+
+  <h2 class="section"><span class="item-num">5</span>Explore and back</h2>
+  <div class="test-card" id="card-5a">
+    <div class="test-hd">
+      <div class="test-id">5a</div>
+      <div class="test-title">My location brings the map back</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('5a','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('5a','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>On the map, tap <b>🗺 Explore</b></li>
+        <li>Drag the map far away (e.g. towards the airport) or search another area</li>
+        <li>Now tap the <b>📍 My location</b> button once</li>
+        <li class="expected">Expected: The map glides back to your saved location and zooms to your chosen distance, just as it does when you jump to an area in Explore</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-5a"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+
+  <h2 class="section"><span class="item-num">6</span>Plots without a photo</h2>
+  <div class="test-card" id="card-6a">
+    <div class="test-hd">
+      <div class="test-id">6a</div>
+      <div class="test-title">A Plot can be posted with no photo</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('6a','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('6a','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Tap <b>＋ Post a Listing</b> → Real Estate → <b>Plots</b></li>
+        <li>Title it <code>TEST Plot no photo</code>, fill the required details, and <b>don't add a photo</b></li>
+        <li>Submit</li>
+        <li class="expected">Expected: It's accepted ("submitted for review"), with no "Please add at least 1 photo" message</li>
+        <li class="expected">Expected: The Photos label says <b>(up to 5 · optional for Plots)</b></li>
+      </ol>
+      <div class="tip">💡 uat and the live site share one database, so delete this test listing in step 8a.</div>
+    </div>
+    <div class="note-area" id="note-6a"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-6b">
+    <div class="test-hd">
+      <div class="test-id">6b</div>
+      <div class="test-title">Other types still need a photo</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('6b','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('6b','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Start another post: Real Estate → <b>Apartment</b>, fill the details, no photo</li>
+        <li>Submit</li>
+        <li class="expected">Expected: You see <b>Please add at least 1 photo.</b> and nothing is posted</li>
+      </ol>
+      <div class="tip">💡 Close the form afterwards.</div>
+    </div>
+    <div class="note-area" id="note-6b"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+
+  <h2 class="section"><span class="item-num">7</span>Grouped-listing bubbles</h2>
+  <div class="test-card" id="card-7a">
+    <div class="test-hd">
+      <div class="test-id">7a</div>
+      <div class="test-title">Bubbles are yellow with a red number</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('7a','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('7a','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Set the distance to <b>Whole city</b> and zoom the map out until pins group into numbered circles</li>
+        <li class="expected">Expected: The circles are <b>yellow with a dark-red number</b> and a thin white ring</li>
+        <li class="expected">Expected: They stand out clearly over green parks, lakes and yellow main roads</li>
+      </ol>
+      <div class="tip">💡 The red is slightly deeper than plain red so the number is easy to read on yellow (an accessibility check found plain red a little too faint).</div>
+    </div>
+    <div class="note-area" id="note-7a"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-7b">
+    <div class="test-hd">
+      <div class="test-id">7b</div>
+      <div class="test-title">Bubbles on a phone</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('7b','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('7b','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Repeat on your phone</li>
+        <li class="expected">Expected: The numbers are readable at arm's length</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-7b"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+
+  <h2 class="section"><span class="item-num">8</span>Clean up and quick check</h2>
+  <div class="test-card" id="card-8a">
+    <div class="test-hd">
+      <div class="test-id">8a</div>
+      <div class="test-title">Delete the test Plot</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('8a','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('8a','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open <b>📋 My Listings</b> and delete <code>TEST Plot no photo</code> (or reject it on the /admin page)</li>
+        <li class="expected">Expected: It's gone from My Listings and from the map</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-8a"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+  <div class="test-card" id="card-8b">
+    <div class="test-hd">
+      <div class="test-id">8b</div>
+      <div class="test-title">Everything else still works</div>
+      <div class="btn-row">
+        <button class="pass-btn" onclick="mark('8b','pass')">✓ Pass</button>
+        <button class="fail-btn" onclick="mark('8b','fail')">✗ Fail</button>
+      </div>
+    </div>
+    <div class="test-steps">
+      <ol>
+        <li>Open a listing and tap ♡</li>
+        <li>Use the Rent Property / Buy Property chips</li>
+        <li>Fold and unfold the side panel on the laptop</li>
+        <li class="expected">Expected: All behave as they did in the first 9G checklist</li>
+      </ol>
+    </div>
+    <div class="note-area" id="note-8b"><textarea placeholder="What did you see instead? (Screenshot welcome)"></textarea></div>
+  </div>
+
+  <!-- SIGN-OFF -->
+  <div class="signoff" id="signoff">
+    <h3>✍️ UAT Sign-off: Nagesh</h3>
+    <label>Tester Name</label>
+    <input type="text" id="so-name" placeholder="Nagesh" value="Nagesh"/>
+    <label>Date of Testing</label>
+    <input type="date" id="so-date" value="2026-10-04"/>
+    <label>UAT URL / Environment Used</label>
+    <input type="text" id="so-url" placeholder="mapit-backend-git-uat-nagesh-n-arun.vercel.app"/>
+    <label>Overall Verdict</label>
+    <div class="verdict-row">
+      <button class="verdict-btn approve" id="v-approve" onclick="setVerdict('approve')">✅ Approve</button>
+      <button class="verdict-btn hold" id="v-hold" onclick="setVerdict('hold')">⏸ Hold (minor issues)</button>
+      <button class="verdict-btn reject" id="v-reject" onclick="setVerdict('reject')">❌ Reject</button>
+    </div>
+    <label>Notes / Observations (including anything Arun wants to tweak)</label>
+    <textarea id="so-notes" style="min-height:80px;" placeholder="Any observations or issues found during testing…"></textarea>
+    <button class="submit-btn" onclick="submitSignoff()">📋 Generate Sign-off Summary</button>
+    <div class="result-box" id="result-box"></div>
+  </div>
+</main>
+
+<script>
+const total = document.querySelectorAll('.test-card').length;
+document.getElementById('totalCount').textContent = total;
+let _verdict = '';
+
+const STORAGE_KEY = 'mapit_uat_session09g_r2_nagesh_v1';
+const testIds = Array.from(document.querySelectorAll('.test-card')).map(el => el.id.replace('card-',''));
+
+function save(){
+  const state = {};
+  testIds.forEach(id=>{
+    const card = document.getElementById('card-'+id);
+    if(card.classList.contains('passed')) state[id]='pass';
+    else if(card.classList.contains('failed')) state[id]='fail';
+  });
+  const notes = {};
+  document.querySelectorAll('.note-area textarea').forEach(ta=>{
+    const id = ta.closest('.note-area').id.replace('note-','');
+    if(ta.value) notes[id]=ta.value;
+  });
+  const data = {
+    state, notes,
+    soName: document.getElementById('so-name').value,
+    soDate: document.getElementById('so-date').value,
+    soUrl: document.getElementById('so-url').value,
+    soNotes: document.getElementById('so-notes').value,
+    verdict: _verdict
+  };
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+}
+
+function mark(id, result){
+  const card = document.getElementById('card-'+id);
+  const noteArea = document.getElementById('note-'+id);
+  card.classList.remove('passed','failed');
+  card.classList.add(result==='pass'?'passed':'failed');
+  card.querySelector('.pass-btn').classList.toggle('active', result==='pass');
+  card.querySelector('.fail-btn').classList.toggle('active', result==='fail');
+  if(noteArea) noteArea.style.display = result==='fail' ? 'block' : 'none';
+  updateProgress();
+  save();
+}
+
+function restore(){
+  let data;
+  try{ data = JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){ data = null; }
+  if(!data) return;
+  if(data.state) Object.keys(data.state).forEach(id => mark(id, data.state[id]));
+  if(data.notes) Object.keys(data.notes).forEach(id=>{
+    const el = document.querySelector('#note-'+id+' textarea');
+    if(el) el.value = data.notes[id];
+  });
+  if(data.soName) document.getElementById('so-name').value = data.soName;
+  if(data.soDate) document.getElementById('so-date').value = data.soDate;
+  if(data.soUrl) document.getElementById('so-url').value = data.soUrl;
+  if(data.soNotes) document.getElementById('so-notes').value = data.soNotes;
+  if(data.verdict) setVerdict(data.verdict);
+}
+
+function updateProgress(){
+  const done = document.querySelectorAll('.test-card.passed, .test-card.failed').length;
+  const pct = Math.round(done/total*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('pct').textContent = pct+'%';
+  document.getElementById('doneCount').textContent = done;
+}
+
+function setVerdict(v){
+  _verdict = v;
+  ['approve','hold','reject'].forEach(x=>{
+    document.getElementById('v-'+x).classList.toggle('sel', x===v);
+  });
+  save();
+}
+
+function submitSignoff(){
+  const name = document.getElementById('so-name').value.trim() || 'Nagesh';
+  const date = document.getElementById('so-date').value || new Date().toISOString().slice(0,10);
+  const url  = document.getElementById('so-url').value.trim() || 'Not specified';
+  const notes = document.getElementById('so-notes').value.trim();
+  const passed = document.querySelectorAll('.test-card.passed').length;
+  const failed = document.querySelectorAll('.test-card.failed').length;
+  const pending = total - passed - failed;
+  const vLabel = {approve:'✅ APPROVED',hold:'⏸ HOLD — MINOR ISSUES',reject:'❌ REJECTED'}[_verdict] || '— not set —';
+  const vColor = {approve:'#22c55e',hold:'#f97316',reject:'#ef4444'}[_verdict]||'#9ca3af';
+
+  const box = document.getElementById('result-box');
+  box.style.display='block';
+  box.style.borderColor = vColor;
+  box.style.background = `rgba(${_verdict==='approve'?'34,197,94':_verdict==='hold'?'249,115,22':'239,68,68'},.06)`;
+  box.innerHTML = `
+    <div style="font-weight:700;font-size:15px;color:${vColor};margin-bottom:10px;">${vLabel}</div>
+    <div style="font-size:12px;color:#9ca3af;line-height:2;">
+      <strong>Tester:</strong> ${name}<br/>
+      <strong>Date:</strong> ${date}<br/>
+      <strong>URL:</strong> ${url}<br/>
+      <strong>Results:</strong> ${passed} passed · ${failed} failed · ${pending} not tested<br/>
+      <strong>Pass rate:</strong> ${passed+failed>0?Math.round(passed/(passed+failed)*100):0}%<br/>
+      ${notes?`<strong>Notes:</strong> ${notes}`:''}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:#6b7280;">
+      Session 09g Round 2 — Arun's review changes · MapIt UAT
+    </div>`;
+}
+
+document.getElementById('so-name').addEventListener('input', save);
+document.getElementById('so-date').addEventListener('input', save);
+document.getElementById('so-url').addEventListener('input', save);
+document.getElementById('so-notes').addEventListener('input', save);
+document.querySelectorAll('.note-area textarea').forEach(ta => ta.addEventListener('input', save));
+
+restore();
+updateProgress();
+</script>
+
+</body>
+</html>
