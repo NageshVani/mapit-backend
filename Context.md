@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-05 21:25, checkpoint (**Both branches pushed (`uat` @ `d93f473`, `feat/session-9c-phone-otp` @ `63e59d2`); Vercel MSG91 vars verified; CARTO key re-added as Sensitive, no watermark; NEW finding: Vercel functions run in `iad1` (DC) but Supabase is `ap-southeast-1` (Singapore) — move to `sin1` scheduled for later.**)
+- **Last updated:** 2026-10-07, mid-session (**9C live OTP re-verified on Windows; uat merged into 9C (`2daa25b`); View Profile built, awaiting click-test; 9C.1 emoji avatars decided.**)
+- **Last updated (previous):** 2026-10-05 21:25, checkpoint (**Both branches pushed (`uat` @ `d93f473`, `feat/session-9c-phone-otp` @ `63e59d2`); Vercel MSG91 vars verified; CARTO key re-added as Sensitive, no watermark; NEW finding: Vercel functions run in `iad1` (DC) but Supabase is `ap-southeast-1` (Singapore) — move to `sin1` scheduled for later.**)
 - **Last updated (previous):** 2026-10-05 20:45, checkpoint (**9C WhatsApp OTP delivered + verified LIVE end to end; fix `63e59d2` on `feat/session-9c-phone-otp` (not pushed); 5 `+otpN` test accounts deleted by ID.** Root causes: placeholder `MSG91_OTP_TEMPLATE` in local `.env` + language `en` vs approved `en_US`.)
 - **Last updated (previous):** 2026-10-04 19:13, checkpoint (**Session 9G incl. Arun's review is on `origin/uat` @ `3bee4c8`, with round-2 UAT 30/0/1/1; 9C built (send/verify, signup flow, post gate) on `feat/session-9c-phone-otp`, not pushed; the live WhatsApp send was accepted by MSG91 but not delivered, and Arun checks the MSG91 logs tomorrow.**)
 - **Last updated (previous):** 2026-10-04 11:35, checkpoint (**Session 9G UI polish fully on `origin/uat` at `c68d208`; T-014 fixed + UAT-passed; Option C part 1 shipped; 9E manual checklist complete.** Awaiting Arun's 9G review, then the `uat → main` PR; 9C waits on the MSG91 sample curl.)
@@ -97,6 +98,9 @@
 ---
 
 ## 🎯 Current Goal
+
+**Update (2026-10-07) — 9C on Windows: live WhatsApp OTP delivered again (after setting `MSG91_DRY_RUN=false` in the new Windows `.env`); sender still shows the number, not "MapIt" (Meta display-name/profile, Arun). `uat` merged into `feat/session-9c-phone-otp` (`2daa25b`, local; one conflict in `listings.js` create route — kept 9C phone gate + uat's `SHOW_PHONE_OPTIONS`/`on_agreement` default). 👤 View Profile built (uncommitted until Nagesh's click-test). Next: commit View Profile → migrations 012–016 in `database/index.html` → push 9C to uat → UAT. Then 9C.1 emoji avatar picker.**
+- Test accounts to delete (Dashboard → Auth → Users): `nagesh.aadi_otp1@gmail.com` (created on the pre-9C flow; `_` is not a Gmail alias, mailbox doesn't exist) and `nagesh.aadi+otp2@gmail.com`.
 
 **Update (2026-10-05 21:25) — End of day. 9C live OTP done + pushed. Tomorrow: finish `.env.example` commit, then 9C merge-uat + View Profile. Vercel region move (`sin1`) is scheduled, not started.**
 
@@ -1618,6 +1622,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **9C.1 avatar picker: emoji on a coloured circle, built after 9C ships, own branch (Nagesh, 2026-10-07)** | New `profiles.avatar_id` column (migration) + server-validated preset IDs; ~16 emoji, no image files/licences/Storage cost. Shown in header, View Profile, chat and Who's-using-MapIt (localStorage, updates on next sign-in). Kept out of 9C so its UAT stays OTP-focused |
+| View Profile renders all values with `textContent`, never `innerHTML` (2026-10-07) | Name/nickname/address are user-typed — avoids T-014-style XSS by construction |
 | Move Vercel functions to `sin1` (Singapore), not `bom1`, and not the DB to Mumbai — scheduled for later (2026-10-05) | Data locality: user↔server trip is once per request, server↔DB is once per query. Moving the DB = risky migration for small gain. ₹0, reversible |
 | MSG91 template name/language/namespace/number live as code defaults with optional env overrides; `.env.example` lists them commented out, empty (2026-10-05) | Not secrets; a filled-in placeholder in `.env` silently broke delivery. Empty = falls back to the verified default |
 | Test-account cleanup by explicit ID list + email-regex guard, not a `LIKE` pattern (2026-10-05) | uat and production share one DB; an ID list can't over-match |
@@ -1916,6 +1922,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-07):**
+1. ✅ View Profile click-tested by Nagesh (2026-10-07; `+otp2` shows email + phone ✓ Verified) and committed. Screenshot: `docs/screenshots/session-9c/after-view-profile.png` (before = avatar menu on the uat preview, not captured; `after-avatar-menu.png` still to take).
+2. 9C: migrations 012–016 in `database/index.html` → push to uat → UAT report + checklist.
+3. **9C.1:** emoji avatar picker (see Decisions, 2026-10-07).
+4. Then as before: 9G sign-off → `uat → main` PR; `sin1`; 9H; 9I; pre-launch innerHTML audit; npm audit; Session 9.
 
 **⬅ Immediate (2026-10-05 21:25 — checkpoint):**
 1. **Nagesh:** finish `.env.example` (no duplicate MSG91 lines, `git diff --cached` shows no real key) → commit + push; `git stash drop` the `pre-9c-otp-test` stash after checking it.

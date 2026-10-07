@@ -514,6 +514,20 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .feedback-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:460px;box-shadow:var(--shadow);padding:28px 28px 22px;}
 .feedback-box h3{font-size:16px;font-weight:700;margin-bottom:4px;}
 .feedback-box p{font-size:12px;color:var(--muted);margin-bottom:18px;}
+/* Session 9C — View Profile */
+.prof-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.prof-avatar{flex:0 0 56px;width:56px;height:56px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;}
+.prof-name{font-size:18px;font-weight:700;overflow-wrap:anywhere;}
+.prof-nick{font-size:14px;color:var(--muted);overflow-wrap:anywhere;}
+.prof-rows{border-top:1px solid var(--border2);margin-bottom:14px;}
+.prof-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2);font-size:14px;}
+.prof-lbl{color:var(--muted);flex-shrink:0;}
+.prof-val{text-align:right;overflow-wrap:anywhere;min-width:0;}
+.prof-ok{color:var(--green);font-weight:600;white-space:nowrap;}
+.prof-warn{color:var(--muted);white-space:nowrap;}
+.prof-link{color:var(--orange);font-weight:600;cursor:pointer;white-space:nowrap;}
+.feedback-box p.prof-note{font-size:13px;margin-bottom:12px;}
+.prof-note a{color:var(--orange);}
 .help-box{max-width:720px;}
 .help-box h3{font-size:18px;}
 .help-scroll{max-height:min(62vh,520px);overflow-y:auto;padding-right:10px;}
@@ -1001,6 +1015,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </div>
     <div class="uav-menu" id="uavMenu" onclick="event.stopPropagation()">
       <div class="uav-name" id="uavName">—</div>
+      <div class="uav-item" onclick="openProfileModal()">👤 View Profile</div>
       <div class="uav-item" onclick="openHelpModal()">❓ Help</div>
       <div class="uav-item" onclick="window.open('/user-guide.html','_blank')">📖 User Guide</div>
       <div class="uav-item" onclick="changeNickname()">✏️ Change Nickname</div>
@@ -1100,6 +1115,28 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </ul>
     </div>
     <button class="modal-btn" onclick="closeHelpModal()" style="margin-top:10px;">Got it</button>
+  </div>
+</div>
+
+<!-- ── VIEW PROFILE MODAL (Session 9C) — read-only; editing comes in 9I ── -->
+<div class="feedback-modal hide" id="profileModal" onclick="if(event.target===this)closeProfileModal()">
+  <div class="feedback-box">
+    <div class="prof-head">
+      <div class="prof-avatar" id="profAvatar">?</div>
+      <div style="min-width:0;">
+        <div class="prof-name" id="profName">—</div>
+        <div class="prof-nick" id="profNick"></div>
+      </div>
+    </div>
+    <div class="prof-rows">
+      <div class="prof-row"><span class="prof-lbl">Email</span><span class="prof-val" id="profEmail">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">Phone</span><span class="prof-val" id="profPhone">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">Sign-in method</span><span class="prof-val" id="profMethod">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">Member since</span><span class="prof-val" id="profSince">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">Home location</span><span class="prof-val" id="profHome">—</span></div>
+    </div>
+    <p class="prof-note">To change your email or phone, contact us at <a href="mailto:contactus@mapit.co.in">contactus@mapit.co.in</a>.</p>
+    <button class="modal-btn" onclick="closeProfileModal()">Close</button>
   </div>
 </div>
 
@@ -2031,6 +2068,7 @@ async function saveProfile(){
 //              step-homeloc, exactly where signup went before 9C.
 //   'post'   — openPostModal() gate for accounts that must verify before
 //              posting; success reopens the post form, "Verify later" closes.
+//   'profile' — "Verify now →" in View Profile; either way returns to it.
 // The server enforces the same rule (POST /api/listings → 403), so this is
 // UX only — the user is asked up front instead of after filling the form.
 let _phoneVerifyCtx = 'signup';
@@ -2046,6 +2084,9 @@ function _finishPhoneVerify(){
   if(_phoneVerifyCtx === 'post'){
     document.getElementById('authModal').classList.add('hide');
     openPostModal();
+  } else if(_phoneVerifyCtx === 'profile'){
+    document.getElementById('authModal').classList.add('hide');
+    openProfileModal();
   } else {
     goToStep('step-homeloc');
     initHomeLocMap();
@@ -2055,6 +2096,9 @@ function skipPhoneVerify(){
   if(_phoneVerifyCtx === 'post'){
     document.getElementById('authModal').classList.add('hide');
     toast('You can verify any time — just tap Post a Listing again.');
+  } else if(_phoneVerifyCtx === 'profile'){
+    document.getElementById('authModal').classList.add('hide');
+    openProfileModal();
   } else {
     toast("No problem — we'll ask again before you post a listing.");
     goToStep('step-homeloc');
@@ -4408,6 +4452,67 @@ function openHelpModal(){
   document.getElementById('helpModal').classList.remove('hide');
 }
 function closeHelpModal(){ document.getElementById('helpModal').classList.add('hide'); }
+
+// ── View Profile (Session 9C) ──
+// Read-only. Every value goes in via textContent, never innerHTML — name,
+// nickname and address are user-typed (see the T-014 / T-045 XSS notes).
+async function openProfileModal(){
+  document.getElementById('uavMenu').classList.remove('open');
+  _renderProfile();
+  document.getElementById('profileModal').classList.remove('hide');
+  // Show the cached profile at once, then refresh — phone_verified may have
+  // changed in another tab or on another device.
+  try {
+    const data = await apiGet('/api/auth/me');
+    if(data.profile){ ST.profile = data.profile; ST.user = data.user || ST.user; _renderProfile(); }
+  } catch(_){}
+}
+function closeProfileModal(){ document.getElementById('profileModal').classList.add('hide'); }
+
+function _renderProfile(){
+  const p = ST.profile || {}, u = ST.user || {};
+  const set = (id, txt) => { document.getElementById(id).textContent = txt; };
+  const name = p.full_name || p.nickname || u.email || '—';
+  const av = document.getElementById('profAvatar');
+  av.textContent = getInitials(p.nickname || name);
+  av.style.background = p.avatar_color || '';
+  set('profName', name);
+  set('profNick', p.nickname && p.nickname !== name ? `“${p.nickname}”` : '');
+
+  const email = document.getElementById('profEmail');
+  email.textContent = u.email || '—';
+  if(u.email && u.email_confirmed_at){
+    const ok = document.createElement('span');
+    ok.className = 'prof-ok'; ok.textContent = ' ✓ Verified';
+    email.appendChild(ok);
+  }
+
+  // Phone: masked like the server's maskPhone() — never show the full number.
+  const phone = document.getElementById('profPhone');
+  phone.textContent = '';
+  const digits = String(p.phone || '').replace(/\D/g, '');
+  if(digits.length >= 4) phone.appendChild(document.createTextNode(`+91 ••••••${digits.slice(-4)} `));
+  if(p.phone_verified){
+    const ok = document.createElement('span');
+    ok.className = 'prof-ok'; ok.textContent = '✓ Verified';
+    phone.appendChild(ok);
+  } else {
+    const warn = document.createElement('span');
+    warn.className = 'prof-warn'; warn.textContent = digits.length >= 4 ? 'Not verified · ' : 'Not added · ';
+    const link = document.createElement('span');
+    link.className = 'prof-link'; link.textContent = 'Verify now →';
+    link.onclick = () => { closeProfileModal(); openPhoneVerify('profile'); };
+    phone.append(warn, link);
+  }
+
+  const provider = p.auth_provider || u.app_metadata?.provider || 'email';
+  set('profMethod', provider === 'google' ? 'Google' : 'Email');
+  const since = p.created_at || u.created_at;
+  set('profSince', since ? new Date(since).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : '—');
+  const home = p.home_address
+    || (p.home_lat != null && p.home_lng != null ? `${Number(p.home_lat).toFixed(4)}, ${Number(p.home_lng).toFixed(4)}` : '');
+  set('profHome', home || 'Not set');
+}
 
 function setFbType(el){
   _fbType = el.dataset.t;
