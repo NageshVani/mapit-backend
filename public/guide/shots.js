@@ -3,7 +3,7 @@ window.GUIDE_SHOTS = {
  "start": {
   "w": 390,
   "h": 844,
-  "v": "muztlxdv",
+  "v": "muzvh88y",
   "marks": [
    {
     "n": 1,
@@ -17,7 +17,7 @@ window.GUIDE_SHOTS = {
  "phone": {
   "w": 390,
   "h": 844,
-  "v": "muzto1da",
+  "v": "muzvh8rc",
   "marks": [
    {
     "n": 1,
@@ -38,7 +38,7 @@ window.GUIDE_SHOTS = {
  "browse": {
   "w": 390,
   "h": 844,
-  "v": "muztm8ot",
+  "v": "muzvhiyu",
   "marks": [
    {
     "n": 2,
@@ -66,7 +66,7 @@ window.GUIDE_SHOTS = {
  "search": {
   "w": 390,
   "h": 844,
-  "v": "muztm9cp",
+  "v": "muzvhjmn",
   "marks": [
    {
     "n": 1,
@@ -87,7 +87,7 @@ window.GUIDE_SHOTS = {
  "radius": {
   "w": 390,
   "h": 844,
-  "v": "muztmbe6",
+  "v": "muzvhln7",
   "marks": [
    {
     "n": 1,
@@ -108,7 +108,7 @@ window.GUIDE_SHOTS = {
  "explore": {
   "w": 390,
   "h": 844,
-  "v": "muztmche",
+  "v": "muzvhmq8",
   "marks": [
    {
     "n": 1,
@@ -136,7 +136,7 @@ window.GUIDE_SHOTS = {
  "home": {
   "w": 390,
   "h": 844,
-  "v": "muztu4xw",
+  "v": "muzvhs3e",
   "marks": [
    {
     "n": 2,
@@ -150,12 +150,12 @@ window.GUIDE_SHOTS = {
  "view": {
   "w": 390,
   "h": 844,
-  "v": "muzts30a",
+  "v": "muzvi4in",
   "marks": [
    {
     "n": 1,
     "x": 0,
-    "y": 41.4,
+    "y": 42.2,
     "w": 100,
     "h": 8.3
    },
@@ -164,12 +164,12 @@ window.GUIDE_SHOTS = {
     "x": 0,
     "y": 34.8,
     "w": 100,
-    "h": 6
+    "h": 6.9
    },
    {
     "n": 3,
     "x": 2.6,
-    "y": 50.1,
+    "y": 50.9,
     "w": 59.2,
     "h": 5.2
    }
@@ -178,12 +178,12 @@ window.GUIDE_SHOTS = {
  "save": {
   "w": 390,
   "h": 844,
-  "v": "muzts34c",
+  "v": "muzvi4mp",
   "marks": [
    {
     "n": 1,
     "x": 62.3,
-    "y": 50.1,
+    "y": 50.9,
     "w": 11.3,
     "h": 5.2
    },
@@ -199,19 +199,19 @@ window.GUIDE_SHOTS = {
  "contact": {
   "w": 390,
   "h": 844,
-  "v": "muzts3p8",
+  "v": "muzvi57p",
   "marks": [
    {
     "n": 1,
     "x": 2.6,
-    "y": 50.1,
+    "y": 50.9,
     "w": 59.2,
     "h": 5.2
    },
    {
     "n": 2,
     "x": 0,
-    "y": 55.8,
+    "y": 56.6,
     "w": 100,
     "h": 11.7
    }
@@ -220,7 +220,7 @@ window.GUIDE_SHOTS = {
  "report": {
   "w": 390,
   "h": 844,
-  "v": "muzts4ad",
+  "v": "muzvi5sr",
   "marks": [
    {
     "n": 2,
@@ -241,7 +241,7 @@ window.GUIDE_SHOTS = {
  "post": {
   "w": 390,
   "h": 844,
-  "v": "muztp76g",
+  "v": "muzviiwx",
   "marks": [
    {
     "n": 3,
@@ -255,7 +255,7 @@ window.GUIDE_SHOTS = {
  "myads": {
   "w": 390,
   "h": 844,
-  "v": "muztnggr",
+  "v": "muzvivcz",
   "marks": [
    {
     "n": 1,
@@ -276,7 +276,7 @@ window.GUIDE_SHOTS = {
  "profile": {
   "w": 390,
   "h": 844,
-  "v": "muztnhmw",
+  "v": "muzviwip",
   "marks": [
    {
     "n": 1,
@@ -304,7 +304,7 @@ window.GUIDE_SHOTS = {
  "legal": {
   "w": 390,
   "h": 844,
-  "v": "muztnhr1",
+  "v": "muzviwmx",
   "marks": [
    {
     "n": 1,
@@ -318,7 +318,7 @@ window.GUIDE_SHOTS = {
  "feedback": {
   "w": 390,
   "h": 844,
-  "v": "muztykuv",
+  "v": "muzvix8k",
   "marks": [
    {
     "n": 2,
