@@ -158,6 +158,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-dist-bar{background:linear-gradient(135deg,#0d9488,#0284c7);padding:7px 13px;border-radius:0;display:flex;flex-direction:column;gap:1px;}
 .ld-dist-txt{font-size:12px;font-weight:800;color:#fff;letter-spacing:.2px;}
 .ld-dist-sub{font-size:10px;color:rgba(255,255,255,.72);}
+/* Session 9J — phones show one pane at a time, so the detail gets a way to the map */
+.ld-dist-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ld-map-btn{display:none;flex-shrink:0;background:#fff;color:#0369a1;border:none;border-radius:14px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+@media(max-width:768px){.ld-map-btn{display:inline-block;}}
 .ld-info-top{display:flex;align-items:center;gap:10px;padding:0 13px;}
 .ld-info-thumb{width:64px;height:64px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;overflow:hidden;border:1px solid var(--border2);}
 .ld-info-mid{flex:1;min-width:0;}
@@ -1543,7 +1547,7 @@ function listingRow(l){
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
   cat:'all', chip:'all', txn:null, sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
-  selId:null, tab:'browse', editingId:null,
+  selId:null, tab:'browse', editingId:null, sharedListing:null,
   chatOpen:false, chatMsgs:[], chatConvId:null, chatChannel:null,
   conversationsByListing: new Map(), // listing_id -> conversation, buyer's own conversations only
   allConversations: new Map(),       // conversation_id -> conversation, every conversation (buyer or seller side)
@@ -2684,7 +2688,7 @@ function drawMarkers(){
   });
 
   // Auto-fit map to show all saved/own listings when none is selected
-  if(keepTab && fl.length > 0 && !ST.selId){
+  if(keepTab && fl.length > 0 && !ST.selId && !mapHidden()){
     const bounds = L.latLngBounds(fl.map(l=>[l.lat,l.lng]));
     map.fitBounds(bounds, {padding:[50,50], animate:true, maxZoom:14});
   }
@@ -2846,6 +2850,7 @@ async function loadListings(){
         ...l,
         d: l.distance_m != null ? l.distance_m/1000 : dist(loc.lat,loc.lng,l.lat,l.lng),
       }));
+    _keepSharedListing();
   } catch(e){
     toast('Could not load listings: ' + e.message);
     ST.listings = [];
@@ -3087,7 +3092,7 @@ function renderSidebar(){
     <!-- Block A: distance bar + category icon + title/price + actions + photo strip -->
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
-        <span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span>
+        <div class="ld-dist-row"><span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span><button class="ld-map-btn" type="button" onclick="showListingOnMap('${l.id}')">🗺 Show on map</button></div>
         <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${l.reference_code}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
       </div>
       <div class="ld-info-top">
@@ -3184,7 +3189,11 @@ async function selListing(id, keepTab=false){
     document.querySelector('.rad-box').classList.remove('disabled');
   }
   const l = ST.listings.find(x=>x.id===id) || ST.favListings.find(x=>x.id===id) || (ST.tab==='mine' ? ST.myListings.find(x=>x.id===id) : null);
-  if(l) map.flyTo([l.lat,l.lng], ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14), {animate:true,duration:.6});
+  if(l){
+    const z = ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14);
+    if(mapHidden()) map.setView([l.lat,l.lng], z, {animate:false});
+    else map.flyTo([l.lat,l.lng], z, {animate:true,duration:.6});
+  }
   Object.keys(mMarkers).forEach(k=>{
     const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
     mMarkers[k].setIcon(mkIcon(ml, k===id));
@@ -3208,6 +3217,11 @@ async function selListing(id, keepTab=false){
 }
 
 function closeDetail(){
+  if(ST.sharedListing && ST.selId===ST.sharedListing.id){
+    // The shared listing was only on the map because of the link — back to normal results
+    ST.listings = ST.listings.filter(x=>!x._sharedOnly);
+    ST.sharedListing = null;
+  }
   ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
   // If the panel only opened to show this listing, fold it back to the rail
@@ -3378,23 +3392,45 @@ function shareListingUrl(id){
   }
 }
 
+// Session 9J — a shared link (#listing-<id>) opens that listing with its pin,
+// even when it is outside the viewer's radius (pins are otherwise drawn only for
+// listings inside it). The hash is saved at page load, so it survives signing in
+// or signing up first — Google's redirect replaces the hash.
+const SHARE_HASH_KEY = 'mapit_shared_listing';
+try { if(/^#listing-/.test(location.hash)) sessionStorage.setItem(SHARE_HASH_KEY, location.hash); } catch(_){}
 async function checkShareUrl(){
-  const hash=location.hash;
-  if(hash&&hash.startsWith('#listing-')){
-    const id=hash.replace('#listing-','');
-    setTimeout(async()=>{
-      // Try to find in current list, else fetch
-      let l = ST.listings.find(x=>x.id===id);
-      if(!l){
-        try{ const data=await apiGet(`/api/listings/${id}`);l=data.listing;ST.listings=[l,...ST.listings]; }catch(_){}
-      }
-      if(l){
-        selListing(id);
-        map.setView([l.lat,l.lng],16,{animate:true});
-        toast(`📍 Opened shared listing: ${l.title}`);
-      }
-    },1000);
-  }
+  let hash = location.hash;
+  try { hash = /^#listing-/.test(hash) ? hash : (sessionStorage.getItem(SHARE_HASH_KEY) || ''); sessionStorage.removeItem(SHARE_HASH_KEY); } catch(_){}
+  const m = hash.match(/^#listing-([0-9a-f-]{36})$/i);
+  if(!m) return;
+  history.replaceState(null, '', location.pathname);   // don't reopen it on every reload
+  const id = m[1];
+  let l = ST.listings.find(x=>x.id===id);
+  if(!l){ try { l = (await apiGet(`/api/listings/${id}`)).listing; } catch(_){} }
+  if(!l){ toast('This shared listing is no longer available.'); return; }
+  ST.sharedListing = l;
+  _keepSharedListing();
+  setViewMode('list', false);          // phones: details first, "Show on map" is one tap away
+  await selListing(id);
+  map.setView([l.lat, l.lng], 16, { animate:false });
+  drawMarkers();
+  toast(`📍 Opened shared listing: ${l.title}`);
+}
+// Keeps the shared listing in ST.listings (so its pin, details, interest note and
+// report all work) until its details are closed. _sharedOnly marks one that is
+// outside the current search, so closeDetail() can take it out again.
+function _keepSharedListing(){
+  const sh = ST.sharedListing;
+  if(!sh || ST.listings.some(x=>x.id===sh.id)) return;
+  const loc = activeLoc();
+  ST.listings = [...ST.listings, { ...sh, d: dist(loc.lat, loc.lng, sh.lat, sh.lng), _sharedOnly: true }];
+}
+// Phones: from a listing's details, switch to the map centred on its pin
+function showListingOnMap(id){
+  const l = ST.listings.find(x=>x.id===id) || ST.favListings.find(x=>x.id===id) || ST.myListings.find(x=>x.id===id);
+  if(!l) return;
+  setViewMode('map', false);
+  setTimeout(() => { map.setView([l.lat, l.lng], 16, { animate:false }); drawMarkers(); }, 80);
 }
 
 // ═══════════════════════════════════════════════
@@ -3962,7 +3998,7 @@ async function loadAndRenderPins(){
         _userMarker.setLatLng([def.lat, def.lng]);
         _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${def.label}</b>`);
       }
-      if(map) map.setView([def.lat, def.lng], 14, {animate:true});
+      if(map) map.setView([def.lat, def.lng], 14, {animate:!mapHidden()});
       updateCircle();
     }
     renderPinsList();
@@ -4038,8 +4074,19 @@ function setRad(r){
 // Frame the map on the active search area: the radius circle, or a ~25 km box
 // for "Whole city". fly=true animates like the Explore search jump (Session 9G,
 // Arun: returning from Explore to My location must pan + zoom back).
+// Session 9J — on phones in List view the map is display:none (0×0). Leaflet's
+// animated moves divide by the map's size and throw "Invalid LatLng (NaN, NaN)",
+// which stopped listing details from opening for List-view users. While hidden,
+// jump without animation; setViewMode('map') re-measures the map when shown.
+function mapHidden(){ const c = document.getElementById('mapc'); return !c || c.offsetParent === null; }
 function fitMapToRadius(fly){
   const loc=activeLoc();
+  if(mapHidden()){
+    // No size to fit bounds against — use a zoom that roughly frames the radius
+    const z = ST.rad<=1 ? 15 : ST.rad<=3 ? 14 : ST.rad<=5 ? 13 : ST.rad<=10 ? 12 : 10;
+    map.setView([loc.lat, loc.lng], z, {animate:false});
+    return;
+  }
   let bounds, pad;
   if(ST.rad<999&&radCircle){ bounds=radCircle.getBounds(); pad=[30,30]; }
   else{ const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180); bounds=L.latLngBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]]); pad=[20,20]; }
