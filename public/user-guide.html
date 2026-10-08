@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MapIt — User Guide</title>
 <style>
   @font-face {
@@ -134,8 +139,9 @@
     font-family:ui-monospace,'SF Mono',Menlo,monospace;
     display:flex; align-items:center; justify-content:center; margin-top:1px;
   }
-  .step-body b{display:block; font-size:15px; margin-bottom:3px;}
-  .step-body span{font-size:14px; color:var(--muted); line-height:1.6;}
+  /* > : only the step title is a block; <b> inside the description stays inline (9J) */
+  .step-body > b{display:block; font-size:15px; margin-bottom:3px;}
+  .step-body > span{font-size:14px; color:var(--muted); line-height:1.6;}
 
   .mockup-wrap{
     position:sticky; top:86px;
@@ -161,6 +167,8 @@
   /* ── SVG MOCKUP SHARED TOKENS (used inline via CSS vars aren't inherited into SVG presentation attrs reliably in all renderers, so mockups use literal hexes matching the tokens above) ── */
   .callout-num{font-family:ui-monospace,'SF Mono',Menlo,monospace; font-weight:700; font-size:12px;}
 </style>
+</head>
+<body>
 
 <div id="topbar">
   <div class="wordmark">Map<em>It</em></div>
@@ -171,7 +179,7 @@
 <main id="landing">
   <div class="hero-kicker">How MapIt works</div>
   <h1 class="hero-title">One topic at a time — pick what you need help with.</h1>
-  <p class="hero-sub">Fifteen short walkthroughs covering everything from your first sign-up to reporting a bad listing. Each one shows exactly where to tap.</p>
+  <p class="hero-sub">Sixteen short walkthroughs covering everything from your first sign-up to reporting a bad listing. Each one shows exactly where to tap.</p>
 
   <div class="topic-grid" id="topicGrid"></div>
 </main>
@@ -510,124 +518,132 @@ MOCKUPS.legal = function(){
 
 <script>
 const TOPICS = [
-  { id:'start', ico:'🚀', name:'Getting Started', teaser:'Sign up and verify your email in under a minute.',
-    intro:'Create your account with the method that suits you, then confirm your email so sellers know you’re real.',
+  { id:'start', ico:'🚀', name:'Getting Started', teaser:'Create your account in a couple of minutes.',
+    intro:'Sign up with the method that suits you. MapIt then asks for your name, your phone (via WhatsApp) and your home area.',
     steps:[
-      ['Choose how to sign up','Tap <b>Sign Up</b> and pick email + password, Google, or a one-time email code.'],
-      ['Verify your email','A 6-digit code arrives in your inbox — enter it to confirm your account.'],
-      ['Add your nickname','This is the name sellers and buyers will see instead of your email.']
+      ['Choose how to sign up','Tap <b>Create Account</b> and use email + password, or <b>Continue with Google</b>.'],
+      ['Confirm your email','If asked, enter the 6-digit code sent to your inbox.'],
+      ['Add your name and nickname','Your nickname is what other people see. Tick the Terms box to continue.']
     ], mockup:'auth' },
 
-  { id:'home', ico:'📍', name:'Setting Your Home Location', teaser:'Tell MapIt where you live so nearby listings show first.',
-    intro:'Your home pin is what MapIt uses to sort listings by distance — set it once from the profile menu.',
+  { id:'phone', ico:'📱', name:'Verifying Your Phone', teaser:'A one-time WhatsApp code, needed before you post.',
+    intro:'MapIt checks that your phone number is really yours with a 6-digit code sent on WhatsApp from <b>MapIt</b>. You can browse without it, but you need it to post a listing.',
+    steps:[
+      ['Enter your mobile number','A 10-digit Indian mobile number. One number can be verified on only one MapIt account.'],
+      ['Enter the WhatsApp code','The code is valid for 10 minutes. Didn’t get it? Wait a minute and tap Resend.'],
+      ['Or tap Verify later','You can verify any time from <b>👤 View Profile</b>, or when you first tap Post a Listing.']
+    ], mockup:'auth' },
+
+  { id:'home', ico:'📍', name:'Setting Your Home Location', teaser:'Tell MapIt where you are so nearby listings show first.',
+    intro:'Your saved location is the centre MapIt measures distance from. You set one when you sign up and can add more later (home, office…).',
     steps:[
       ['Open My Locations','Tap your avatar (top right), then <b>📍 My Locations</b>.'],
-      ['Find your spot','Search your area by name, or drag the pin to your exact location.'],
-      ['Save it','Listings from here on are sorted by distance from this pin.']
+      ['Find your spot','Search your area by name, tap the map, or paste coordinates, then adjust the pin.'],
+      ['Switch between them','Tap <b>📍 My location ▾</b> in the top bar to pick which saved location to use.']
     ], mockup:'homeloc' },
 
-  { id:'browse', ico:'🗺️', name:'Browsing Listings', teaser:'See what’s for sale near you, on the map or as a list.',
-    intro:'Every listing near your location shows up as a pin on the map and a card in the sidebar — filter by category to narrow things down.',
+  { id:'browse', ico:'🗺️', name:'Browsing Listings', teaser:'See what’s for sale or rent near you, on the map or as a list.',
+    intro:'Listings near your location show as pins on the map and as cards in the list. Yellow bubbles group several listings — tap one to zoom in.',
     steps:[
-      ['Look at the map or list','Pins on the map and cards in the sidebar show the same listings.'],
-      ['Filter by category','Use 🏠 Real Estate, 🚗 Vehicles, or 🏡 Household Items to narrow results.'],
+      ['Map or list','On a computer you see both. On a phone, switch with the <b>☰ List / 🗺 Map</b> buttons at the bottom.'],
+      ['Pick a category','<b>All</b>, <b>Rent Property</b>, <b>Buy Property</b>, <b>Vehicles</b> or <b>Household</b>, then a sub-type if you like.'],
       ['Open a listing','Tap any pin or card to see full details.']
     ], mockup:'main', highlight:'browse' },
 
-  { id:'search', ico:'🔎', name:'Searching', teaser:'Jump the map straight to a place name.',
-    intro:'Typing a locality in the search bar moves the map there instantly — combine it with filters for a focused result.',
+  { id:'search', ico:'🔎', name:'Searching by Keyword', teaser:'Find listings by a word in the title, area or type.',
+    intro:'The search box sits just under the category icons. It filters the listings in the part of the map you are looking at.',
     steps:[
-      ['Type a place name','Use the search bar at the top of the screen.'],
-      ['Map jumps there','MapIt centers the map on that location.'],
-      ['Narrow it down','Add a category filter or keyword to refine the results.']
+      ['Type a word','For example <b>honda</b>, <b>2BHK</b> or <b>sofa</b>. Results update as you type.'],
+      ['Not finding it?','Zoom the map out or pick a bigger distance — the search only covers what’s on screen.'],
+      ['Clear the search','Tap <b>×</b> in the box. On the map, a <b>🔍 “word” ×</b> tag shows while a search is active.']
     ], mockup:'main', highlight:'search' },
 
   { id:'radius', ico:'🎯', name:'Filtering by Distance', teaser:'Show only listings within 1, 3, 5, 10 km, a 50 km region, or the whole city.',
-    intro:'The <b>Within 5 km ▾</b> chip in the top bar controls how far MapIt looks from your active location — the default is 5 km.',
+    intro:'The <b>Within 5 km ▾</b> chip in the top bar controls how far MapIt looks from your location. The default is 5 km.',
     steps:[
-      ['Pick a radius','Tap the chip, then choose 1 km, 3 km, 5 km, 10 km, Region (50 km) or Whole city.'],
+      ['Pick a distance','Tap the chip, then choose 1 km, 3 km, 5 km, 10 km, Region (50 km) or Whole city.'],
       ['Map redraws','Only listings inside that circle are shown.'],
-      ['Change anytime','Switch radius as often as you like — nothing else resets.']
+      ['Change anytime','Switch as often as you like — nothing else resets.']
     ], mockup:'main', highlight:'radius' },
 
-  { id:'explore', ico:'🧭', name:'Exploring Other Areas', teaser:'Browse a neighborhood that isn’t your own, without losing your home pin.',
-    intro:'Explore Area is a second, temporary search center — perfect for house-hunting in a different part of town.',
+  { id:'explore', ico:'🧭', name:'Exploring Other Areas', teaser:'Browse a neighbourhood that isn’t yours, without changing your saved location.',
+    intro:'Explore lets you look around any part of the city — handy for house-hunting somewhere new.',
     steps:[
-      ['Switch modes','Tap <b>🗺 Explore</b> in the top bar instead of <b>📍 Near me</b>.'],
-      ['Search any place','Type a locality — the map flies there.'],
-      ['Switch back anytime','Tap <b>📍 Near me</b> to return to your saved home pin.']
+      ['Switch to Explore','Tap <b>🗺 Explore</b> in the top bar.'],
+      ['Search a place','Type an area in the <b>Search area to jump there…</b> box on the map, or just drag the map.'],
+      ['Come back','Tap <b>📍 My location</b> to return to your saved location.']
     ], mockup:'explore' },
 
-  { id:'view', ico:'🏷️', name:'Viewing a Listing', teaser:'Photos, price, specs, and what’s nearby.',
-    intro:'Every listing opens into a full detail panel — including a 📍 Nearby section with schools, malls, and supermarkets close by.',
+  { id:'view', ico:'🏷️', name:'Viewing a Listing', teaser:'Photos, price, details, and what’s nearby.',
+    intro:'Every listing opens into a detail panel with photos, price, details and a 📍 Nearby section (schools, malls, supermarkets).',
     steps:[
-      ['Browse photos & specs','See up to 5 photos plus category-specific details (BHK, brand, condition, etc.).'],
-      ['Check what’s nearby','The 📍 Nearby section lists close schools, malls, and supermarkets.'],
-      ['Save or contact','Tap the heart to save it, or scroll down to message the seller.']
+      ['Photos and details','Up to 5 photos plus details for the category (BHK, brand, year, condition…).'],
+      ['Approximate location','The pin shows the area, not the exact address, unless the seller chose to share it.'],
+      ['Act on it','Under the title: <b>🤝 I’m Interested</b>, ♡ save, 🚩 report and 🔗 share.']
     ], mockup:'listing' },
 
   { id:'save', ico:'❤️', name:'Saving Listings', teaser:'Bookmark listings to compare later.',
-    intro:'Tap the heart on any listing to keep it in one place — your Saved tab.',
+    intro:'Tap the heart on a listing to keep it in your Saved tab.',
     steps:[
-      ['Tap the heart','Available on both listing cards and the full detail view.'],
-      ['Find it in Saved','Open the <b>❤ Saved</b> tab anytime to see everything you’ve bookmarked.'],
-      ['Remove anytime','Tap the heart again to take it off your Saved list.']
+      ['Tap ♡','In the button row under the listing’s title. It turns into ❤.'],
+      ['Find it in Saved','Open the <b>❤ Saved</b> tab anytime to see everything you’ve saved.'],
+      ['Remove anytime','Tap ❤ again to take it off your Saved list.']
     ], mockup:'main', highlight:'save' },
 
   { id:'post', ico:'➕', name:'Posting a Listing', teaser:'List a home, vehicle, or item in a few steps.',
-    intro:'Posting walks you through category, photos, and dropping a precise GPS pin — exact location is what makes MapIt different.',
+    intro:'Posting needs a verified phone number (see Verifying Your Phone). Each new listing is checked by our team before it goes live, usually within 4 hours.',
     steps:[
-      ['Tap Post a Listing','The orange <b>➕ Post a Listing</b> button at the top right of the header.'],
-      ['Fill in the details','Pick a category and subcategory, add up to 5 photos, and describe the item.'],
-      ['Drop your pin','Place the pin at the exact spot on the map, then submit.']
+      ['Tap Post a Listing','The orange <b>➕ Post a Listing</b> button in the top bar.'],
+      ['Fill in the details','Pick a category and type, add up to 5 photos (optional for Plots) and describe it.'],
+      ['Place the pin and submit','Set the location on the map. Buyers see an approximate area unless you choose to show the exact spot.']
     ], mockup:'post' },
 
   { id:'myads', ico:'📋', name:'Managing Your Listings', teaser:'Edit, mark as sold, or delete what you’ve posted.',
-    intro:'Everything you’ve listed lives in My Listings — with quick actions for each one.',
+    intro:'Everything you’ve posted is in the My Listings tab, with its status and how long until it expires.',
     steps:[
-      ['Open My Listings','Tap the <b>📋 My Listings</b> tab to see all your listings.'],
-      ['Take an action','Edit details, mark it <b>Sold</b>, or <b>Delete</b> it entirely.'],
-      ['Know the expiry','Listings expire automatically 30 days after posting.']
+      ['Open My Listings','Tap the <b>📋 My Listings</b> tab.'],
+      ['Take an action','Edit it, mark it <b>✅ Sold</b>, or delete it. An edited listing is checked again before it goes live.'],
+      ['Watch the expiry','Each listing shows how many days it has left.']
     ], mockup:'myads' },
 
   { id:'contact', ico:'🤝', name:'Contacting a Seller', teaser:'Send an interest note, then keep chatting.',
-    intro:'A first note goes to the seller by email — once they reply, the conversation moves into Chat.',
+    intro:'Your first note reaches the seller by email. Once they reply, you continue in Chat.',
     steps:[
-      ['Tap I’m Interested','Found on any listing’s detail view.'],
-      ['Send a short note','The seller gets notified by email right away.'],
-      ['Continue in Chat','Once they reply, keep talking via the message icon in the header.']
+      ['Tap I’m Interested','On the listing’s detail view.'],
+      ['Write a short note','Say what you’d like to know. The seller is emailed right away.'],
+      ['Continue in Chat','Tap <b>💬 Chat with seller</b> on the listing, or open <b>📥 Inbox</b> from your avatar menu.']
     ], mockup:'chat' },
 
   { id:'report', ico:'🚩', name:'Reporting a Listing', teaser:'Flag something fake, spammy, or offensive.',
-    intro:'Reports go straight to our review queue — nothing is deleted automatically, a real person checks each one.',
+    intro:'Reports go to our review queue. Nothing is removed automatically — a real person checks each one.',
     steps:[
-      ['Tap Report','Found on the listing’s detail view.'],
-      ['Choose a reason','Fake, Wrong price, Spam, or Offensive.'],
-      ['Add a note (optional)','Submit — our team reviews it from there.']
+      ['Tap 🚩','In the button row on the listing’s detail view.'],
+      ['Choose a reason','Fake, Wrong price, Spam, Offensive, or Other.'],
+      ['Add a note (optional)','Submit — our team takes it from there.']
     ], mockup:'report' },
 
-  { id:'profile', ico:'👤', name:'Your Profile', teaser:'Nickname, default view, and signing out.',
-    intro:'Your profile menu is also where multiple family members on one device can switch accounts.',
+  { id:'profile', ico:'👤', name:'Your Profile', teaser:'Your details, nickname, and signing out.',
+    intro:'Tap your avatar (top right) for your profile menu. On a shared device, family members can switch accounts here.',
     steps:[
-      ['Open the menu','Tap your avatar in the top right.'],
-      ['Update preferences','Change your nickname or default view — Map or List.'],
-      ['Sign out or switch','Sign out here, or switch to another person’s account on a shared device.']
+      ['View your profile','<b>👤 View Profile</b> shows your name, email, phone (✓ verified) and home location.'],
+      ['Change your nickname','<b>✏️ Change Nickname</b>. To change your email or phone, write to contact-us@mapit.co.in.'],
+      ['Sign out or switch','<b>Sign Out &amp; Switch User</b> at the bottom of the menu.']
     ], mockup:'profile' },
 
-  { id:'feedback', ico:'⭐', name:'Giving Feedback', teaser:'Rate your experience or report a bug.',
-    intro:'Feedback goes directly to the team building MapIt — every submission gets read.',
+  { id:'feedback', ico:'⭐', name:'Giving Feedback', teaser:'Tell us what works, what doesn’t, or report a bug.',
+    intro:'Feedback goes directly to the MapIt team — every message is read.',
     steps:[
-      ['Open Feedback','Found in the profile menu.'],
-      ['Rate & categorize','Pick 1–5 stars and a category — Bug, Content Report, Suggestion, or Other.'],
-      ['Send it','Add any details and submit.']
+      ['Open Feedback','Tap <b>💡 Share Feedback</b> at the bottom of the listings panel.'],
+      ['Pick a type','Suggestion, Bug, Praise or Complaint. A 1–5 star rating is optional.'],
+      ['Send it','Write at least 10 characters and tap <b>Send Feedback</b>.']
     ], mockup:'feedback' },
 
   { id:'legal', ico:'📄', name:'Privacy & Terms', teaser:'What we collect, and your rights as a user.',
-    intro:'Our Terms of Service and Privacy Policy are linked at sign-up and from your profile menu at any time.',
+    intro:'Our Terms of Service and Privacy Policy are shown when you sign up and are always in your profile menu.',
     steps:[
-      ['Find the links','At sign-up, and anytime from the profile menu.'],
+      ['Find the links','<b>📄 Terms of Service</b> and <b>🔒 Privacy Policy</b> in the avatar menu.'],
       ['Know your rights','They explain what data we collect and how it’s used.'],
-      ['Have a concern?','Our Grievance Officer contact is listed in the Privacy Policy.']
+      ['Have a concern?','Contact our Grievance Officer at contact-us@mapit.co.in.']
     ], mockup:'legal' },
 ];
 
@@ -677,3 +693,5 @@ function showLanding(){
   window.scrollTo({top:0, behavior:'instant'});
 }
 </script>
+</body>
+</html>
