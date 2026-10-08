@@ -47,13 +47,22 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
 .beta-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
-.srch{flex:1;max-width:260px;min-width:140px;position:relative;}
+/* Session 9J — keyword search lives in the sidebar, under the category chips */
+.srch{position:relative;margin:0 10px 8px;flex-shrink:0;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14.5px;opacity:.5;}
 #srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 30px 8px 32px;color:var(--text);font-size:14.5px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 #srchIn:focus{border-color:var(--orange);}
 #srchIn::placeholder{color:var(--muted);}
 .srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;display:none;}
 .srch-clear:hover{color:var(--text);}
+.rail-srch{display:none;}
+/* Shown on the map only while a keyword is active and the box is out of sight */
+.kw-pill{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:650;display:flex;align-items:center;gap:6px;max-width:80%;background:var(--panel);border:1.5px solid var(--orange);border-radius:20px;padding:5px 6px 5px 14px;box-shadow:0 4px 16px rgba(0,0,0,.18);font-size:12.5px;color:var(--text);}
+.kw-pill.hide{display:none;}
+.kw-pill-txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.kw-pill button{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:none;background:var(--card);color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0;}
+.kw-pill button:hover{color:var(--text);}
+.explore-search-box:not(.hide) ~ .kw-pill{top:64px;}
 .hsp{flex:1;}
 .post-btn{padding:8px 16px;border-radius:8px;border:none;background:var(--orange);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;flex-shrink:0;transition:background .18s;}
 .post-btn:hover{background:var(--orange2);}
@@ -149,6 +158,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-dist-bar{background:linear-gradient(135deg,#0d9488,#0284c7);padding:7px 13px;border-radius:0;display:flex;flex-direction:column;gap:1px;}
 .ld-dist-txt{font-size:12px;font-weight:800;color:#fff;letter-spacing:.2px;}
 .ld-dist-sub{font-size:10px;color:rgba(255,255,255,.72);}
+/* Session 9J — phones show one pane at a time, so the detail gets a way to the map */
+.ld-dist-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ld-map-btn{display:none;flex-shrink:0;background:#fff;color:#0369a1;border:none;border-radius:14px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+@media(max-width:768px){.ld-map-btn{display:inline-block;}}
 .ld-info-top{display:flex;align-items:center;gap:10px;padding:0 13px;}
 .ld-info-thumb{width:64px;height:64px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;overflow:hidden;border:1px solid var(--border2);}
 .ld-info-mid{flex:1;min-width:0;}
@@ -244,7 +257,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #main.sb-collapsed .cat-btn{min-width:0;padding:8px 0;}
   /* !important: renderCats() sets the sub-row's display inline */
   #main.sb-collapsed .cat-lbl,#main.sb-collapsed .sub-row,#main.sb-collapsed .tab-lbl,
-  #main.sb-collapsed .fb-lbl,#main.sb-collapsed #sb-content{display:none !important;}
+  #main.sb-collapsed .fb-lbl,#main.sb-collapsed #sb-content,#main.sb-collapsed .sb-srch{display:none !important;}
+  #main.sb-collapsed .rail-srch{display:block;margin:0 6px 6px;padding:8px 0;border:1.5px solid transparent;border-radius:10px;background:none;font-size:19px;cursor:pointer;}
+  #main.sb-collapsed .rail-srch:hover{background:var(--card);}
   #main.sb-collapsed .tab-bar{flex-direction:column;border-top:1px solid var(--border);border-bottom:none;padding:6px;gap:4px;}
   #main.sb-collapsed .tab-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;margin:0;font-size:15px;border-radius:8px;}
   #main.sb-collapsed .tab-btn.on{border-radius:8px;}
@@ -275,12 +290,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #viewToggle{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:900;}
 @media(max-width:768px){
   #viewToggle{display:flex;}
-  /* Phone header: row 1 = logo · search · avatar; row 2 = mode · radius · Post */
+  /* Phone header: row 1 = logo · avatar; row 2 = mode · radius · Post (search is in the list, 9J) */
   #hdr{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:8px 12px;}
   .beta-tag,.hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
   #activePinLabel{max-width:110px;}
-  .srch{max-width:none;min-width:0;}
-  .uav-wrap{order:2;}
+  .uav-wrap{order:2;margin-left:auto;}
   .hdr-break{display:block;order:3;flex-basis:100%;height:0;}
   .hdr-filters{order:4;flex:1;min-width:0;gap:6px;}
   .hdr-filters #searchModeBox{flex:1;min-width:0;}
@@ -290,15 +304,16 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   .pin-box{flex:1 1 auto;}
   .pin-menu{left:0;right:auto;max-width:calc(100vw - 24px);}
   .post-btn{order:5;padding:8px 12px;}
+  /* Single-pane List/Map view on every phone width (were wrongly under 380px since b79a3ed) */
+  #sb{width:100%;}
+  #main.view-list #mapc{display:none;}
+  #main.view-map #sb{display:none;}
 }
 @media(max-width:380px){
   .cat-lbl{white-space:normal;text-align:center;line-height:1.2;max-width:64px;}
   .cat-btn{padding:7px 4px;}
   .smb{padding:5px 4px;font-size:11px;}
   .post-btn{padding:8px 10px;}
-  #sb{width:100%;}
-  #main.view-list #mapc{display:none;}
-  #main.view-map #sb{display:none;}
 }
 
 /* ── EXPLORE AREA SEARCH BAR ── */
@@ -434,6 +449,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 @media(max-width:640px){.post-box{max-width:98vw;}.post-body{grid-template-columns:1fr;}#dynamicFields{grid-template-columns:1fr;}}
 .form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:12px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
+.price-words{font-size:12.5px;font-weight:700;color:var(--orange);margin-top:5px;min-height:16px;}
 .form-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 .tx-radio-row{display:flex;gap:20px;padding:10px 13px;background:var(--card);border:1px solid var(--border2);border-radius:8px;}
 .tx-radio-lbl{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;}
@@ -975,11 +991,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <header id="hdr">
   <div class="logo">Map<em>It</em></div>
   <div class="beta-tag">Beta</div>
-  <div class="srch">
-    <span class="srch-ic">🔍</span>
-    <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
-    <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
-  </div>
   <div class="hsp"></div>
   <div class="hdr-break"></div>
   <div class="hdr-filters">
@@ -1037,6 +1048,12 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <aside id="sb">
     <div class="cat-row" id="catRow"></div>
     <div class="sub-row" id="subRow"></div>
+    <div class="srch sb-srch">
+      <span class="srch-ic">🔍</span>
+      <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
+      <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
+    </div>
+    <button class="rail-srch" type="button" onclick="openSearchFromRail()" title="Search listings by keyword" aria-label="Search listings by keyword">🔍</button>
     <div class="tab-bar">
       <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse');expandFromRail()" title="Listings"><span class="tab-ico">📍</span><span class="tab-lbl"> Listings</span> <span class="tab-count" id="cnt-badge">0</span></button>
       <button class="tab-btn" id="tab-fav" onclick="switchTab('fav');expandFromRail()" title="Saved"><span class="tab-ico">❤</span><span class="tab-lbl"> Saved</span> <span class="tab-count" id="fav-badge">0</span></button>
@@ -1058,6 +1075,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <input type="text" id="exploreSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onExploreSearchInput()"/>
       <div id="exploreSearchDD" class="explore-search-dd hide"></div>
     </div>
+    <div class="kw-pill hide" id="kwPill" role="status"><span class="kw-pill-txt">🔍 “<b id="kwPillTxt"></b>”</span><button type="button" onclick="clearKeyword()" title="Clear search" aria-label="Clear keyword search">×</button></div>
   </div>
   <div id="viewToggle" class="vtog">
     <button class="vbtn" id="vbtnList" onclick="setViewMode('list')">☰ List</button>
@@ -1068,7 +1086,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="feedback-modal hide" id="feedbackModal">
   <div class="feedback-box">
     <h3>💡 Share Your Feedback</h3>
-    <p>Help us improve MapIt — your input goes directly to Nagesh & Arun.</p>
+    <p>Help us improve MapIt — your input goes directly to the MapIt team.</p>
     <div class="fb-type-row" id="fbTypeRow">
       <span class="fb-type on" data-t="suggestion" onclick="setFbType(this)">💡 Suggestion</span>
       <span class="fb-type" data-t="bug" onclick="setFbType(this)">🐛 Bug</span>
@@ -1101,17 +1119,21 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <h3>❓ How MapIt Works</h3>
     <div class="help-scroll">
     <ul style="margin:14px 0 4px;padding-left:20px;line-height:1.6;font-size:16.5px;color:var(--text);">
-      <li>🗺 <b>Browse:</b> listings near you appear as pins on the map (or the list, on mobile) — tap a pin to view details, filter by category and distance in the sidebar</li>
-      <li>🌍 <b>Explore Area:</b> want to browse a different neighborhood instead of your own? Tap <b>🗺 Explore</b> in the top bar and search any place</li>
-      <li>➕ <b>Post:</b> tap <b>Post a Listing</b> in the header to list a home, vehicle, or item</li>
-      <li>❤ <b>Save:</b> tap the heart icon on any listing to save it — find it later in the <b>Saved</b> tab</li>
-      <li>🤝 <b>Contact a seller:</b> open a listing and tap <b>I'm Interested</b> to send them a message</li>
-      <li>💬 <b>Chat:</b> once a seller replies to your interest note, keep the conversation going in Chat — tap the message icon in the header to see all your ongoing chats</li>
+      <li>🗺 <b>Browse:</b> listings near you appear as pins on the map and cards in the list (on a phone, switch with <b>☰ List / 🗺 Map</b>). Tap one to see details. Pick a category with the icons at the top of the list</li>
+      <li>🔍 <b>Search:</b> type a word in the search box under the category icons — it filters the listings in the part of the map on screen</li>
+      <li>🎯 <b>Distance:</b> tap <b>Within 5 km ▾</b> in the top bar to look closer or further</li>
+      <li>🌍 <b>Explore another area:</b> tap <b>🗺 Explore</b> in the top bar and search any place; tap <b>📍 My location</b> to come back</li>
+      <li>➕ <b>Post:</b> tap <b>Post a Listing</b> in the top bar. You'll first verify your phone with a WhatsApp code; each listing is checked by our team before it goes live</li>
+      <li>❤ <b>Save:</b> tap ♡ on a listing to save it — find it later in the <b>Saved</b> tab</li>
+      <li>🤝 <b>Contact a seller:</b> open a listing and tap <b>I'm Interested</b> to send them a note</li>
+      <li>💬 <b>Chat:</b> once a seller replies, tap <b>💬 Chat with seller</b> on the listing, or open <b>📥 Inbox</b> from your avatar menu</li>
       <li>📍 <b>Nearby places:</b> open any listing to see nearby schools, malls, and supermarkets in the "📍 Nearby" section</li>
-      <li>🚩 <b>Report a listing:</b> something looks wrong or suspicious? Open the listing and tap 🚩 <b>Report</b> to flag it for review</li>
-      <li>🗑 <b>Delete a listing:</b> open <b>My Listings</b>, select your listing, then use the delete option</li>
-      <li>📍 <b>Change your location:</b> use <b>My Locations</b> in the profile menu</li>
-      <li>⭐ <b>Rate your experience:</b> tap <b>Feedback</b> in the profile menu to rate MapIt and tell us what's working or what needs fixing</li>
+      <li>🚩 <b>Report a listing:</b> something looks wrong or suspicious? Open the listing and tap 🚩 to flag it for review</li>
+      <li>📋 <b>Your listings:</b> open the <b>My Listings</b> tab to edit, mark as sold, or delete</li>
+      <li>📍 <b>Change your location:</b> use <b>My Locations</b> in the avatar menu, or pick a saved one from <b>📍 My location ▾</b></li>
+      <li>👤 <b>Your profile:</b> <b>View Profile</b> in the avatar menu shows your details and lets you verify your phone</li>
+      <li>⭐ <b>Feedback:</b> tap <b>💡 Share Feedback</b> at the bottom of the list to rate MapIt and tell us what's working or what needs fixing</li>
+      <li>📖 <b>More help:</b> the <b>User Guide</b> in the avatar menu walks through each feature step by step</li>
     </ul>
     </div>
     <button class="modal-btn" onclick="closeHelpModal()" style="margin-top:10px;">Got it</button>
@@ -1135,7 +1157,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="prof-row"><span class="prof-lbl">Member since</span><span class="prof-val" id="profSince">—</span></div>
       <div class="prof-row"><span class="prof-lbl">Home location</span><span class="prof-val" id="profHome">—</span></div>
     </div>
-    <p class="prof-note">To change your email or phone, contact us at <a href="mailto:contactus@mapit.co.in">contactus@mapit.co.in</a>.</p>
+    <p class="prof-note">To change your email or phone, contact us at <a href="mailto:contact-us@mapit.co.in">contact-us@mapit.co.in</a>.</p>
     <button class="modal-btn" onclick="closeProfileModal()">Close</button>
   </div>
 </div>
@@ -1525,7 +1547,7 @@ function listingRow(l){
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
   cat:'all', chip:'all', txn:null, sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
-  selId:null, tab:'browse', editingId:null,
+  selId:null, tab:'browse', editingId:null, sharedListing:null,
   chatOpen:false, chatMsgs:[], chatConvId:null, chatChannel:null,
   conversationsByListing: new Map(), // listing_id -> conversation, buyer's own conversations only
   allConversations: new Map(),       // conversation_id -> conversation, every conversation (buyer or seller side)
@@ -1564,6 +1586,16 @@ function timeAgo(dateStr){
 function catCol(c){return (CATS.find(x=>x.id===c)||CATS[0]).col;}
 function catLbl(c){return (CATS.find(x=>x.id===c)||CATS[0]).lbl;}
 function nowStr(){return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}
+// Session 9J — full Indian words for amounts: ₹28 Lakh, ₹1.25 Crore; below
+// 1 lakh Indian commas (₹28,000). Used where the full figure is shown.
+function fmtINRWords(v){
+  const n = Number(v);
+  if(!isFinite(n) || n <= 0) return '';
+  const trim = x => String(+x.toFixed(2));
+  if(n >= 1e7) return `₹${trim(n / 1e7)} Crore`;
+  if(n >= 1e5){ const l = trim(n / 1e5); return l === '100' ? '₹1 Crore' : `₹${l} Lakh`; }
+  return '₹' + n.toLocaleString('en-IN');
+}
 function fmtPrice(p){
   if(p>=10000000) return `₹${(p/10000000).toFixed(2)}Cr`;
   if(p>=100000)   return `₹${(p/100000).toFixed(1)}L`;
@@ -2214,9 +2246,35 @@ function _onHomeLocCoordsInput(){
   _resolveHomeLocAddr(lat, lng);
 }
 
-// Locality/city level only — excludes roads, houses, shops, and landmarks (avoids implying only those spots are searchable)
-// Photon's osm_key plays the same role Nominatim's `category` did
-const HOMELOC_SEARCH_CLASSES = new Set(['place','boundary']);
+// Session 9J — place search finds areas AND landmarks (malls, hospitals, schools,
+// parks, temples, stations, offices). Roads are left out (many near-duplicate
+// segments), and so are railway lines (only stations). Shared by all four place
+// searches: home location, post location, My Locations and Explore.
+const PLACE_SEARCH_KEYS = new Set(['place','boundary','amenity','shop','tourism','leisure','historic','building','office','railway','public_transport','aeroway']);
+const RAIL_STOPS = new Set(['station','halt','subway_entrance','tram_stop']);
+// Small fixtures nobody searches for as a landmark ("Nexus Mall Parking")
+// Only big shops work as landmarks; single stores inside a mall are noise
+const LANDMARK_SHOPS = new Set(['mall','department_store','supermarket','hypermarket','wholesale']);
+const PLACE_SEARCH_SKIP = new Set(['parking','parking_entrance','parking_space','bicycle_parking','motorcycle_parking','toilets','bench','waste_basket','atm','vending_machine','drinking_water']);
+function photonPlaces(features){
+  const seen = new Set();
+  return (features || [])
+    .filter(f => {
+      const p = f.properties;
+      if(!p.name || !PLACE_SEARCH_KEYS.has(p.osm_key) || PLACE_SEARCH_SKIP.has(p.osm_value)) return false;
+      if(p.osm_key === 'shop') return LANDMARK_SHOPS.has(p.osm_value);
+      return p.osm_key !== 'railway' || RAIL_STOPS.has(p.osm_value);
+    })
+    .map(f => {
+      const p = f.properties;
+      const city = p.city && p.city !== p.name ? p.city : null;
+      const isArea = p.osm_key === 'place' || p.osm_key === 'boundary';
+      // Landmarks show their locality so "Forum Mall" reads "Forum Mall, Koramangala, Bengaluru"
+      const parts = isArea ? [p.name, city, p.state] : [p.name, p.district || p.locality || p.street, city];
+      return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name: parts.filter(Boolean).join(', ') };
+    })
+    .filter(r => !seen.has(r.display_name) && seen.add(r.display_name));
+}
 let _homeLocSearchTimer = null;
 let _homeLocSearchResults = [];
 
@@ -2245,21 +2303,14 @@ async function _runHomeLocSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _homeLocSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _homeLocSearchResults = photonPlaces(features);
     if(!_homeLocSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _homeLocSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickHomeLocSearchResult(i);
       dd.appendChild(row);
@@ -2273,7 +2324,7 @@ async function _runHomeLocSearch(q){
 function _pickHomeLocSearchResult(i){
   const m = _homeLocSearchResults[i];
   if(!m) return;
-  document.getElementById('homeLocSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('homeLocSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('homeLocSearchDD').classList.add('hide');
   if(_homeLocMap) _homeLocMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -2283,7 +2334,7 @@ async function _resolveHomeLocAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _homeLocCoords.address = addr;
     document.getElementById('homeLocAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -2400,6 +2451,7 @@ function setSidebarCollapsed(collapsed, persist=true){
   if(persist){ try { localStorage.setItem(SB_COLLAPSED_KEY, collapsed ? '1' : '0'); } catch(_){} }
   // Leaflet must re-measure after the width animation, or the newly exposed strip stays grey
   setTimeout(() => { if(map) map.invalidateSize(); }, 260);
+  updateKwPill();
 }
 function toggleSidebar(){ ST.sbAutoOpened = false; setSidebarCollapsed(!isSidebarCollapsed()); }
 function expandSidebarForDetail(){
@@ -2636,7 +2688,7 @@ function drawMarkers(){
   });
 
   // Auto-fit map to show all saved/own listings when none is selected
-  if(keepTab && fl.length > 0 && !ST.selId){
+  if(keepTab && fl.length > 0 && !ST.selId && !mapHidden()){
     const bounds = L.latLngBounds(fl.map(l=>[l.lat,l.lng]));
     map.fitBounds(bounds, {padding:[50,50], animate:true, maxZoom:14});
   }
@@ -2798,6 +2850,7 @@ async function loadListings(){
         ...l,
         d: l.distance_m != null ? l.distance_m/1000 : dist(loc.lat,loc.lng,l.lat,l.lng),
       }));
+    _keepSharedListing();
   } catch(e){
     toast('Could not load listings: ' + e.message);
     ST.listings = [];
@@ -3039,7 +3092,7 @@ function renderSidebar(){
     <!-- Block A: distance bar + category icon + title/price + actions + photo strip -->
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
-        <span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span>
+        <div class="ld-dist-row"><span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span><button class="ld-map-btn" type="button" onclick="showListingOnMap('${l.id}')">🗺 Show on map</button></div>
         <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${l.reference_code}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
       </div>
       <div class="ld-info-top">
@@ -3077,7 +3130,7 @@ function renderSidebar(){
         const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
         const items = subFields.filter(f=>det[f.id]!=null && det[f.id]!=='');
         if(!items.length) return '';
-        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${det[f.id]}</div></div>`).join('')}</div>`;
+        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${f.id==='total_price' ? (fmtINRWords(det[f.id]) || det[f.id]) : det[f.id]}</div></div>`).join('')}</div>`;
       })()}
       ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${l.details.transaction_type}</div></div>` : '')}
       ${(()=>{
@@ -3136,7 +3189,11 @@ async function selListing(id, keepTab=false){
     document.querySelector('.rad-box').classList.remove('disabled');
   }
   const l = ST.listings.find(x=>x.id===id) || ST.favListings.find(x=>x.id===id) || (ST.tab==='mine' ? ST.myListings.find(x=>x.id===id) : null);
-  if(l) map.flyTo([l.lat,l.lng], ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14), {animate:true,duration:.6});
+  if(l){
+    const z = ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14);
+    if(mapHidden()) map.setView([l.lat,l.lng], z, {animate:false});
+    else map.flyTo([l.lat,l.lng], z, {animate:true,duration:.6});
+  }
   Object.keys(mMarkers).forEach(k=>{
     const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
     mMarkers[k].setIcon(mkIcon(ml, k===id));
@@ -3160,6 +3217,11 @@ async function selListing(id, keepTab=false){
 }
 
 function closeDetail(){
+  if(ST.sharedListing && ST.selId===ST.sharedListing.id){
+    // The shared listing was only on the map because of the link — back to normal results
+    ST.listings = ST.listings.filter(x=>!x._sharedOnly);
+    ST.sharedListing = null;
+  }
   ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
   // If the panel only opened to show this listing, fold it back to the rail
@@ -3330,23 +3392,45 @@ function shareListingUrl(id){
   }
 }
 
+// Session 9J — a shared link (#listing-<id>) opens that listing with its pin,
+// even when it is outside the viewer's radius (pins are otherwise drawn only for
+// listings inside it). The hash is saved at page load, so it survives signing in
+// or signing up first — Google's redirect replaces the hash.
+const SHARE_HASH_KEY = 'mapit_shared_listing';
+try { if(/^#listing-/.test(location.hash)) sessionStorage.setItem(SHARE_HASH_KEY, location.hash); } catch(_){}
 async function checkShareUrl(){
-  const hash=location.hash;
-  if(hash&&hash.startsWith('#listing-')){
-    const id=hash.replace('#listing-','');
-    setTimeout(async()=>{
-      // Try to find in current list, else fetch
-      let l = ST.listings.find(x=>x.id===id);
-      if(!l){
-        try{ const data=await apiGet(`/api/listings/${id}`);l=data.listing;ST.listings=[l,...ST.listings]; }catch(_){}
-      }
-      if(l){
-        selListing(id);
-        map.setView([l.lat,l.lng],16,{animate:true});
-        toast(`📍 Opened shared listing: ${l.title}`);
-      }
-    },1000);
-  }
+  let hash = location.hash;
+  try { hash = /^#listing-/.test(hash) ? hash : (sessionStorage.getItem(SHARE_HASH_KEY) || ''); sessionStorage.removeItem(SHARE_HASH_KEY); } catch(_){}
+  const m = hash.match(/^#listing-([0-9a-f-]{36})$/i);
+  if(!m) return;
+  history.replaceState(null, '', location.pathname);   // don't reopen it on every reload
+  const id = m[1];
+  let l = ST.listings.find(x=>x.id===id);
+  if(!l){ try { l = (await apiGet(`/api/listings/${id}`)).listing; } catch(_){} }
+  if(!l){ toast('This shared listing is no longer available.'); return; }
+  ST.sharedListing = l;
+  _keepSharedListing();
+  setViewMode('list', false);          // phones: details first, "Show on map" is one tap away
+  await selListing(id);
+  map.setView([l.lat, l.lng], 16, { animate:false });
+  drawMarkers();
+  toast(`📍 Opened shared listing: ${l.title}`);
+}
+// Keeps the shared listing in ST.listings (so its pin, details, interest note and
+// report all work) until its details are closed. _sharedOnly marks one that is
+// outside the current search, so closeDetail() can take it out again.
+function _keepSharedListing(){
+  const sh = ST.sharedListing;
+  if(!sh || ST.listings.some(x=>x.id===sh.id)) return;
+  const loc = activeLoc();
+  ST.listings = [...ST.listings, { ...sh, d: dist(loc.lat, loc.lng, sh.lat, sh.lng), _sharedOnly: true }];
+}
+// Phones: from a listing's details, switch to the map centred on its pin
+function showListingOnMap(id){
+  const l = ST.listings.find(x=>x.id===id) || ST.favListings.find(x=>x.id===id) || ST.myListings.find(x=>x.id===id);
+  if(!l) return;
+  setViewMode('map', false);
+  setTimeout(() => { map.setView([l.lat, l.lng], 16, { animate:false }); drawMarkers(); }, 80);
 }
 
 // ═══════════════════════════════════════════════
@@ -3483,7 +3567,7 @@ function _onPostLocSearchInput(){
 async function _runPostLocSearch(q){
   const dd = document.getElementById('postLocSearchDD');
   try {
-    // Same Photon-based locality/city search as the home-location picker (HOMELOC_SEARCH_CLASSES).
+    // Same Photon-based area + landmark search as the home-location picker (photonPlaces).
     let geoParams = '';
     if(_postPickerMap){
       const c = _postPickerMap.getCenter();
@@ -3491,21 +3575,14 @@ async function _runPostLocSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _postLocSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _postLocSearchResults = photonPlaces(features);
     if(!_postLocSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _postLocSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickPostLocSearchResult(i);
       dd.appendChild(row);
@@ -3519,7 +3596,7 @@ async function _runPostLocSearch(q){
 function _pickPostLocSearchResult(i){
   const m = _postLocSearchResults[i];
   if(!m) return;
-  document.getElementById('postLocSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('postLocSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('postLocSearchDD').classList.add('hide');
   if(_postPickerMap) _postPickerMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -3529,7 +3606,7 @@ async function _resolvePostLocAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _postPickerCoords.address = addr;
     document.getElementById('postPickerAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -3570,6 +3647,7 @@ async function editListing(id){
     const el = document.getElementById(`pf_${f.id}`);
     if(el && det[f.id] != null) el.value = det[f.id];
   });
+  updatePriceWords();
 
   // Populate title and description
   document.getElementById('postTitle').value = l.title || '';
@@ -3639,8 +3717,16 @@ function renderDynamicFields(){
       const inp = f.type === 'select'
         ? `<select class="form-input form-select" id="pf_${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
         : `<input class="form-input" id="pf_${f.id}" type="${f.type === 'number' ? 'number' : 'text'}" min="${f.type==='number'?'0':''}"${f.placeholder?` placeholder="${f.placeholder}"`:''}${f.default!=null?` value="${f.default}"`:''}/>`;
-      return `<div class="form-group"><label class="form-label">${f.label}</label>${inp}</div>`;
+      const words = f.id === 'total_price' ? `<div class="price-words" id="pfw_total_price"></div>` : '';
+      return `<div class="form-group"><label class="form-label">${f.label}</label>${inp}${words}</div>`;
     }).join('');
+  const tp = document.getElementById('pf_total_price');
+  if(tp) tp.addEventListener('input', updatePriceWords);
+}
+// Session 9J — '2800000' → '₹28 Lakh' under the box, so a missing or extra zero is obvious
+function updatePriceWords(){
+  const tp = document.getElementById('pf_total_price'), out = document.getElementById('pfw_total_price');
+  if(tp && out) out.textContent = fmtINRWords(tp.value);
 }
 
 let _addPinMap = null, _addPinMarker = null, _addPinCoords = null;
@@ -3726,21 +3812,14 @@ async function _runAddPinSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _addPinSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _addPinSearchResults = photonPlaces(features);
     if(!_addPinSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _addPinSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickAddPinSearchResult(i);
       dd.appendChild(row);
@@ -3754,7 +3833,7 @@ async function _runAddPinSearch(q){
 function _pickAddPinSearchResult(i){
   const m = _addPinSearchResults[i];
   if(!m) return;
-  document.getElementById('addPinSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('addPinSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('addPinSearchDD').classList.add('hide');
   if(_addPinMap) _addPinMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -3764,7 +3843,7 @@ async function _resolveAddPinAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _addPinCoords.address = addr;
     document.getElementById('addPinAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -3919,7 +3998,7 @@ async function loadAndRenderPins(){
         _userMarker.setLatLng([def.lat, def.lng]);
         _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${def.label}</b>`);
       }
-      if(map) map.setView([def.lat, def.lng], 14, {animate:true});
+      if(map) map.setView([def.lat, def.lng], 14, {animate:!mapHidden()});
       updateCircle();
     }
     renderPinsList();
@@ -3995,8 +4074,19 @@ function setRad(r){
 // Frame the map on the active search area: the radius circle, or a ~25 km box
 // for "Whole city". fly=true animates like the Explore search jump (Session 9G,
 // Arun: returning from Explore to My location must pan + zoom back).
+// Session 9J — on phones in List view the map is display:none (0×0). Leaflet's
+// animated moves divide by the map's size and throw "Invalid LatLng (NaN, NaN)",
+// which stopped listing details from opening for List-view users. While hidden,
+// jump without animation; setViewMode('map') re-measures the map when shown.
+function mapHidden(){ const c = document.getElementById('mapc'); return !c || c.offsetParent === null; }
 function fitMapToRadius(fly){
   const loc=activeLoc();
+  if(mapHidden()){
+    // No size to fit bounds against — use a zoom that roughly frames the radius
+    const z = ST.rad<=1 ? 15 : ST.rad<=3 ? 14 : ST.rad<=5 ? 13 : ST.rad<=10 ? 12 : 10;
+    map.setView([loc.lat, loc.lng], z, {animate:false});
+    return;
+  }
   let bounds, pad;
   if(ST.rad<999&&radCircle){ bounds=radCircle.getBounds(); pad=[30,30]; }
   else{ const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180); bounds=L.latLngBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]]); pad=[20,20]; }
@@ -4054,7 +4144,7 @@ function _onExploreMoveEnd(){
 
 // ── Explore Area search bar (Session 8 item 11) ────────────────
 // Same Photon-based locality/city search as the post-listing/home-location
-// pickers (HOMELOC_SEARCH_CLASSES) — flyTo only, never places a pin. In
+// pickers (photonPlaces) — flyTo only, never places a pin. In
 // Explore mode the map center itself IS the search point (the blue dot
 // marker + radius circle already follow map center via _onExploreMove),
 // so flyTo's own 'moveend' event is all that's needed to pick up the new
@@ -4077,22 +4167,15 @@ async function _runExploreSearch(q){
     const latDelta = 0.35; // ~39km
     const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
     const geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _exploreSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _exploreSearchResults = photonPlaces(features);
     if(!_exploreSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _exploreSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
       row.className = 'explore-search-row';
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.onclick = () => _pickExploreSearchResult(i);
       dd.appendChild(row);
     });
@@ -4105,7 +4188,7 @@ async function _runExploreSearch(q){
 function _pickExploreSearchResult(i){
   const m = _exploreSearchResults[i];
   if(!m) return;
-  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('exploreSearchDD').classList.add('hide');
   map.flyTo([+m.lat, +m.lon], 15);
 }
@@ -4132,6 +4215,7 @@ function setViewMode(mode, persist=true){
   // out hidden behind display:none (list-mode default), switching back to
   // map mode needs an explicit resize or the tiles render at 0x0.
   if(mode==='map' && map) setTimeout(()=>map.invalidateSize(), 50);
+  updateKwPill();
   if(persist) apiPut('/api/auth/default-view', { default_view: mode }).catch(()=>{});
 }
 
@@ -4150,6 +4234,7 @@ function switchTab(tab){
     ST.q = '';
     const si = document.getElementById('srchIn'); if(si) si.value = '';
     const sc = document.getElementById('srchClear'); if(sc) sc.style.display = 'none';
+    updateKwPill();
   }
   // Redraw markers for the new tab (fav shows saved pins, browse shows radius listings, mine keeps browse pins)
   drawMarkers();
@@ -4724,13 +4809,30 @@ function clearKeyword(){
   const inp = document.getElementById('srchIn');
   if(inp) inp.value = '';
   document.getElementById('srchClear').style.display = 'none';
+  updateKwPill();
   drawMarkers();
   renderSidebar();
+}
+
+// Session 9J — the box sits in the sidebar, which is hidden in phone Map view
+// and folded into the rail on desktop. An active keyword then shows as a
+// clearable pill on the map, so pins never vanish without explanation.
+function updateKwPill(){
+  const pill = document.getElementById('kwPill'), inp = document.getElementById('srchIn');
+  if(!pill || !inp) return;
+  const typed = inp.value.trim();
+  document.getElementById('kwPillTxt').textContent = typed;   // user-typed: text only
+  pill.classList.toggle('hide', !(ST.q && inp.offsetParent === null));
+}
+function openSearchFromRail(){
+  expandFromRail();
+  setTimeout(() => document.getElementById('srchIn').focus(), 260);
 }
 
 document.getElementById('srchIn').addEventListener('input', e => {
   ST.q = e.target.value.trim().toLowerCase();
   document.getElementById('srchClear').style.display = ST.q ? 'block' : 'none';
+  updateKwPill();
   drawMarkers();
   renderSidebar();
 });
