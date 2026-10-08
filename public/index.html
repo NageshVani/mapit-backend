@@ -290,15 +290,16 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   .pin-box{flex:1 1 auto;}
   .pin-menu{left:0;right:auto;max-width:calc(100vw - 24px);}
   .post-btn{order:5;padding:8px 12px;}
+  /* Single-pane List/Map view on every phone width (were wrongly under 380px since b79a3ed) */
+  #sb{width:100%;}
+  #main.view-list #mapc{display:none;}
+  #main.view-map #sb{display:none;}
 }
 @media(max-width:380px){
   .cat-lbl{white-space:normal;text-align:center;line-height:1.2;max-width:64px;}
   .cat-btn{padding:7px 4px;}
   .smb{padding:5px 4px;font-size:11px;}
   .post-btn{padding:8px 10px;}
-  #sb{width:100%;}
-  #main.view-list #mapc{display:none;}
-  #main.view-map #sb{display:none;}
 }
 
 /* ── EXPLORE AREA SEARCH BAR ── */
