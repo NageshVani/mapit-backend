@@ -100,6 +100,8 @@
 
 ## 🎯 Current Goal
 
+**Update (2026-10-08, later) — Session 9J started on `feat/session-9j-ui-copy-polish` (from uat `af7849a`).** Items 1 (keyword search under the categories), 2 (Feedback → "MapIt team") and 5 (`contact-us@` everywhere) built + committed, not pushed. Also fixed a 9G phone-layout regression (`3dccd54`). Next: Nagesh click-tests the new search placement → item 3 (Help popup + User Guide refresh, needs the final layout). 9C manual UAT is a placeholder (Open Issues).
+
 **Update (2026-10-08 20:22) — Finishing 9C UAT.** 9C is on uat (`0d028d9`). Automated pass on live uat found **T-027** (users could self-set `profiles.phone_verified`/`suspended`/ratings via the public anon key); fixed by **migration 017** (Nagesh ran + verified, `3371f1f`). Checklist `docs/uat/session-09c-uat-checklist-Nagesh.html` written. Now: full API re-run (scheduled ~20:32, after the per-IP send limiter resets) → write `docs/uat/session-09c-uat-report.html` → commit report + checklist → push 9C → merge to uat → Nagesh runs the checklist. Then Session 9J (UI copy/polish) and ToS v2.0 — see Next Steps.
 
 **Update (2026-10-07 22:05) — End of day. View Profile committed (`43ec5d8`) on `feat/session-9c-phone-otp` (local, not pushed). Tomorrow: Nagesh tests "Verify now → Verify later" on an unverified account (password of the spare test account forgotten — reset it or create `+otp3`), then 1c migrations page → push 9C to uat → UAT. Local `npm run dev` is now on the 9C branch.**
@@ -489,6 +491,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **9J items 1, 2, 5 (2026-10-08):** (1) keyword search moved from the header to the sidebar under the category chips; folded desktop rail gets a 🔍 icon (`openSearchFromRail()` → expands + focuses); an active keyword shows as a clearable map pill `🔍 "honda" ×` whenever the box is out of sight (phone Map view, folded rail) — `updateKwPill()`, text via `textContent`; phone header row 1 = logo · avatar. (2) Feedback modal: "goes directly to the MapIt team". (5) `contactus@` → `contact-us@mapit.co.in` in the app (View Profile), live `/terms` (3 places), WhatsApp registration guide; 9C checklist notes both; 09a report left as history. Nagesh confirmed both addresses deliver. Screenshots: `docs/screenshots/session-9j/before-*.png` / `after-*.png` (desktop-1280 main/keyword/rail-collapsed/feedback, phone-390 list/map-keyword).
+- ✅ **Fix `3dccd54` (2026-10-08): phone List/Map toggle broken at 381–768px since 9G `b79a3ed`** (a new 380px media block captured 3 rules from the 768px block; the 380px sidebar always showed, map squeezed to a strip). uat only — 9G isn't on main. Evidence: `before-phone-390-map-keyword.png`.
 - ✅ **9C automated re-run on live uat: 35/35 PASS (2026-10-08).** Report `docs/uat/session-09c-uat-report.html` (4 manual-only items → checklist); 9C row added to `docs/index.html` (rows for the 9E/9G reports are still missing there — small docs follow-up). Two overlapping scheduled re-runs: the second aborted on its own guard (fake number held by the first run's live accounts); the first cleaned up its 3 users + 1 listing; DB re-checked, no `+91600000000x` profiles left.
 - ✅ **Migrations 012–016 indexed in `database/index.html` (`be23312`, 2026-10-08).**
 - ✅ **9C pushed + merged to uat (`0d028d9`, `--no-ff`, 2026-10-08):** clean merge, two-file sync OK, routes load. Preview = 9C code (only diff: Vercel's injected feedback.js).
@@ -1097,7 +1101,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
 | Session 9C UAT (2026-10-08) | 🟢 Automated re-run **35/35 PASS** (T-027 fixed by 017); report + checklist committed | `docs/uat/session-09c-uat-report.html`, `docs/uat/session-09c-uat-checklist-Nagesh.html`, `docs/index.html` | Left: Nagesh runs the 17-step checklist on uat, then deletes the `otp` test accounts |
-| Session 9J — UI copy & polish (planned 2026-10-08) | ⏳ Planned, not started | — | After 9C ships; own branch. Items 1, 2, 5 (after mailbox confirmed), then 3 last |
+| Session 9J — UI copy & polish (2026-10-08) | 🟡 Items 1, 2, 5 built + committed on `feat/session-9j-ui-copy-polish` (not pushed); item 3 next | `MapIt_MVP_v1.html`/`public/index.html`, `docs/legal/terms-privacy-draft2.html`, `docs/technical/whatsapp-business-registration-guide.html`, `docs/uat/session-09c-uat-checklist-Nagesh.html` | Screenshots `docs/screenshots/session-9j/` (6 before, 6 after). Item 3 waits for Nagesh's OK on the new layout |
 | ToS/Privacy v2.0 | ⏳ Decisions made 2026-10-08, not drafted | `docs/legal/terms-privacy-draft2.html` (live v1.0) → v2.0 | Nakshe Ventures as firm, no Arun name, "Grievance Officer" role only |
 | Session 9C — View Profile + uat merge (2026-10-07) | 🟢 Committed `43ec5d8` (local, 14 ahead of origin, not pushed) | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js` (merge), `Context.md` | Left: Verify now → Verify later test, migrations page, push to uat, UAT report. Supersedes the 9C rows below |
 | 9C.1 emoji avatar picker | ⏳ Decided, not started | — | After 9C ships; own branch; needs migration (`profiles.avatar_id`) |
@@ -1532,6 +1536,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🟡 Pre-launch innerHTML audit (add):** `renderSidebar()` shows the typed keyword `ST.q` unescaped in "N results for …" / "No results for …" (self-typed only, low risk).
+- **ℹ️ Keyword search only covers the visible map (by design, Session 4):** "7 listings within 5 km" can become "No results" for a keyword whose listings are inside the radius but off-screen. Possible UX follow-up (search the whole radius), not scoped.
+- **⏸ PLACEHOLDER (2026-10-08): 9C manual UAT pending — Nagesh will run `docs/uat/session-09c-uat-checklist-Nagesh.html` on the uat preview soon.** Automated pass is 35/35 and 9C is merged to uat (`af7849a`). After sign-off: delete `nagesh.aadi_otp1@gmail.com` + `nagesh.aadi+otp2@gmail.com`. 9J proceeds in parallel; the `uat → main` PR waits for this sign-off.
 - **⚠️ WATCH-OUT (Nagesh decision 2026-10-08): ToS v2.0 will show "Grievance Officer" without a personal name.** IT Rules 2021 Rule 3(2) asks for the officer's name + contact details. Accepted risk for now; add a name if a complaint, notice or legal review raises it.
 - **⚠️ WATCH-OUT: per-IP send limiter (10/h) on `/api/auth/otp/phone/send`** — testers on a shared connection can hit "Too many code requests from this network" (hit during 9C UAT, 2026-10-08). Working as designed; note for family testing.
 - **🟡 9J item 5 blocked on Nagesh:** confirm the new shared mailbox `contact-us@mapit.co.in` receives mail before any address change.

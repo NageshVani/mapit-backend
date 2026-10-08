@@ -47,13 +47,22 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
 .beta-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
-.srch{flex:1;max-width:260px;min-width:140px;position:relative;}
+/* Session 9J — keyword search lives in the sidebar, under the category chips */
+.srch{position:relative;margin:0 10px 8px;flex-shrink:0;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14.5px;opacity:.5;}
 #srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 30px 8px 32px;color:var(--text);font-size:14.5px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 #srchIn:focus{border-color:var(--orange);}
 #srchIn::placeholder{color:var(--muted);}
 .srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;display:none;}
 .srch-clear:hover{color:var(--text);}
+.rail-srch{display:none;}
+/* Shown on the map only while a keyword is active and the box is out of sight */
+.kw-pill{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:650;display:flex;align-items:center;gap:6px;max-width:80%;background:var(--panel);border:1.5px solid var(--orange);border-radius:20px;padding:5px 6px 5px 14px;box-shadow:0 4px 16px rgba(0,0,0,.18);font-size:12.5px;color:var(--text);}
+.kw-pill.hide{display:none;}
+.kw-pill-txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.kw-pill button{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:none;background:var(--card);color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0;}
+.kw-pill button:hover{color:var(--text);}
+.explore-search-box:not(.hide) ~ .kw-pill{top:64px;}
 .hsp{flex:1;}
 .post-btn{padding:8px 16px;border-radius:8px;border:none;background:var(--orange);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;flex-shrink:0;transition:background .18s;}
 .post-btn:hover{background:var(--orange2);}
@@ -244,7 +253,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #main.sb-collapsed .cat-btn{min-width:0;padding:8px 0;}
   /* !important: renderCats() sets the sub-row's display inline */
   #main.sb-collapsed .cat-lbl,#main.sb-collapsed .sub-row,#main.sb-collapsed .tab-lbl,
-  #main.sb-collapsed .fb-lbl,#main.sb-collapsed #sb-content{display:none !important;}
+  #main.sb-collapsed .fb-lbl,#main.sb-collapsed #sb-content,#main.sb-collapsed .sb-srch{display:none !important;}
+  #main.sb-collapsed .rail-srch{display:block;margin:0 6px 6px;padding:8px 0;border:1.5px solid transparent;border-radius:10px;background:none;font-size:19px;cursor:pointer;}
+  #main.sb-collapsed .rail-srch:hover{background:var(--card);}
   #main.sb-collapsed .tab-bar{flex-direction:column;border-top:1px solid var(--border);border-bottom:none;padding:6px;gap:4px;}
   #main.sb-collapsed .tab-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;margin:0;font-size:15px;border-radius:8px;}
   #main.sb-collapsed .tab-btn.on{border-radius:8px;}
@@ -275,12 +286,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #viewToggle{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:900;}
 @media(max-width:768px){
   #viewToggle{display:flex;}
-  /* Phone header: row 1 = logo · search · avatar; row 2 = mode · radius · Post */
+  /* Phone header: row 1 = logo · avatar; row 2 = mode · radius · Post (search is in the list, 9J) */
   #hdr{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:8px 12px;}
   .beta-tag,.hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
   #activePinLabel{max-width:110px;}
-  .srch{max-width:none;min-width:0;}
-  .uav-wrap{order:2;}
+  .uav-wrap{order:2;margin-left:auto;}
   .hdr-break{display:block;order:3;flex-basis:100%;height:0;}
   .hdr-filters{order:4;flex:1;min-width:0;gap:6px;}
   .hdr-filters #searchModeBox{flex:1;min-width:0;}
@@ -976,11 +986,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <header id="hdr">
   <div class="logo">Map<em>It</em></div>
   <div class="beta-tag">Beta</div>
-  <div class="srch">
-    <span class="srch-ic">🔍</span>
-    <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
-    <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
-  </div>
   <div class="hsp"></div>
   <div class="hdr-break"></div>
   <div class="hdr-filters">
@@ -1038,6 +1043,12 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <aside id="sb">
     <div class="cat-row" id="catRow"></div>
     <div class="sub-row" id="subRow"></div>
+    <div class="srch sb-srch">
+      <span class="srch-ic">🔍</span>
+      <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
+      <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
+    </div>
+    <button class="rail-srch" type="button" onclick="openSearchFromRail()" title="Search listings by keyword" aria-label="Search listings by keyword">🔍</button>
     <div class="tab-bar">
       <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse');expandFromRail()" title="Listings"><span class="tab-ico">📍</span><span class="tab-lbl"> Listings</span> <span class="tab-count" id="cnt-badge">0</span></button>
       <button class="tab-btn" id="tab-fav" onclick="switchTab('fav');expandFromRail()" title="Saved"><span class="tab-ico">❤</span><span class="tab-lbl"> Saved</span> <span class="tab-count" id="fav-badge">0</span></button>
@@ -1059,6 +1070,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <input type="text" id="exploreSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onExploreSearchInput()"/>
       <div id="exploreSearchDD" class="explore-search-dd hide"></div>
     </div>
+    <div class="kw-pill hide" id="kwPill" role="status"><span class="kw-pill-txt">🔍 “<b id="kwPillTxt"></b>”</span><button type="button" onclick="clearKeyword()" title="Clear search" aria-label="Clear keyword search">×</button></div>
   </div>
   <div id="viewToggle" class="vtog">
     <button class="vbtn" id="vbtnList" onclick="setViewMode('list')">☰ List</button>
@@ -1069,7 +1081,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="feedback-modal hide" id="feedbackModal">
   <div class="feedback-box">
     <h3>💡 Share Your Feedback</h3>
-    <p>Help us improve MapIt — your input goes directly to Nagesh & Arun.</p>
+    <p>Help us improve MapIt — your input goes directly to the MapIt team.</p>
     <div class="fb-type-row" id="fbTypeRow">
       <span class="fb-type on" data-t="suggestion" onclick="setFbType(this)">💡 Suggestion</span>
       <span class="fb-type" data-t="bug" onclick="setFbType(this)">🐛 Bug</span>
@@ -1136,7 +1148,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="prof-row"><span class="prof-lbl">Member since</span><span class="prof-val" id="profSince">—</span></div>
       <div class="prof-row"><span class="prof-lbl">Home location</span><span class="prof-val" id="profHome">—</span></div>
     </div>
-    <p class="prof-note">To change your email or phone, contact us at <a href="mailto:contactus@mapit.co.in">contactus@mapit.co.in</a>.</p>
+    <p class="prof-note">To change your email or phone, contact us at <a href="mailto:contact-us@mapit.co.in">contact-us@mapit.co.in</a>.</p>
     <button class="modal-btn" onclick="closeProfileModal()">Close</button>
   </div>
 </div>
@@ -2401,6 +2413,7 @@ function setSidebarCollapsed(collapsed, persist=true){
   if(persist){ try { localStorage.setItem(SB_COLLAPSED_KEY, collapsed ? '1' : '0'); } catch(_){} }
   // Leaflet must re-measure after the width animation, or the newly exposed strip stays grey
   setTimeout(() => { if(map) map.invalidateSize(); }, 260);
+  updateKwPill();
 }
 function toggleSidebar(){ ST.sbAutoOpened = false; setSidebarCollapsed(!isSidebarCollapsed()); }
 function expandSidebarForDetail(){
@@ -4133,6 +4146,7 @@ function setViewMode(mode, persist=true){
   // out hidden behind display:none (list-mode default), switching back to
   // map mode needs an explicit resize or the tiles render at 0x0.
   if(mode==='map' && map) setTimeout(()=>map.invalidateSize(), 50);
+  updateKwPill();
   if(persist) apiPut('/api/auth/default-view', { default_view: mode }).catch(()=>{});
 }
 
@@ -4151,6 +4165,7 @@ function switchTab(tab){
     ST.q = '';
     const si = document.getElementById('srchIn'); if(si) si.value = '';
     const sc = document.getElementById('srchClear'); if(sc) sc.style.display = 'none';
+    updateKwPill();
   }
   // Redraw markers for the new tab (fav shows saved pins, browse shows radius listings, mine keeps browse pins)
   drawMarkers();
@@ -4725,13 +4740,30 @@ function clearKeyword(){
   const inp = document.getElementById('srchIn');
   if(inp) inp.value = '';
   document.getElementById('srchClear').style.display = 'none';
+  updateKwPill();
   drawMarkers();
   renderSidebar();
+}
+
+// Session 9J — the box sits in the sidebar, which is hidden in phone Map view
+// and folded into the rail on desktop. An active keyword then shows as a
+// clearable pill on the map, so pins never vanish without explanation.
+function updateKwPill(){
+  const pill = document.getElementById('kwPill'), inp = document.getElementById('srchIn');
+  if(!pill || !inp) return;
+  const typed = inp.value.trim();
+  document.getElementById('kwPillTxt').textContent = typed;   // user-typed: text only
+  pill.classList.toggle('hide', !(ST.q && inp.offsetParent === null));
+}
+function openSearchFromRail(){
+  expandFromRail();
+  setTimeout(() => document.getElementById('srchIn').focus(), 260);
 }
 
 document.getElementById('srchIn').addEventListener('input', e => {
   ST.q = e.target.value.trim().toLowerCase();
   document.getElementById('srchClear').style.display = ST.q ? 'block' : 'none';
+  updateKwPill();
   drawMarkers();
   renderSidebar();
 });
