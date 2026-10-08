@@ -144,6 +144,14 @@ router.put('/me/profile', requireAuth, async (req, res, next) => {
 
     if (Object.keys(updates).length === 0) return next(createError('No fields to update.'));
 
+    // Session 9C: changing the number here clears WhatsApp verification —
+    // only POST /api/auth/otp/phone/verify may set a verified phone.
+    if (updates.phone) {
+      const { data: current } = await supabaseAdmin
+        .from('profiles').select('phone, phone_verified').eq('id', req.user.id).maybeSingle();
+      if (current?.phone_verified && current.phone !== updates.phone) updates.phone_verified = false;
+    }
+
     const { data: profile, error } = await supabaseAdmin
       .from('profiles')
       .update(updates)

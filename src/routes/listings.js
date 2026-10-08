@@ -21,6 +21,7 @@ const { fuzzLocation } = require('../utils/geo');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 const { scoreListing } = require('../utils/contentModeration');
+const { needsPhoneVerification } = require('../utils/phoneGate');
 
 const router = express.Router();
 
@@ -580,6 +581,17 @@ router.post('/', requireAuth, async (req, res, next) => {
     }
     if (title.length > 80) return next(createError('Title must be 80 characters or less.'));
     if (price && parseFloat(price) < 0) return next(createError('Price cannot be negative.'));
+
+    // Session 9C: new accounts must verify their phone before posting. The
+    // frontend pre-checks via /api/auth/otp/phone/status; this is the real gate.
+    const { data: sellerProfile } = await supabaseAdmin
+      .from('profiles').select('phone_verified').eq('id', req.user.id).maybeSingle();
+    if (needsPhoneVerification(req.user, sellerProfile)) {
+      return res.status(403).json({
+        error: 'Please verify your phone number via WhatsApp before posting a listing.',
+        phone_verification_required: true,
+      });
+    }
 
     const phoneVisibility = SHOW_PHONE_OPTIONS.includes(show_phone) ? show_phone : 'on_agreement';
     const now = new Date();
