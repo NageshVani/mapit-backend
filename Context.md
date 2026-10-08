@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-08 20:22, checkpoint (**9C pushed + merged to uat (`0d028d9`); 9C UAT found + fixed T-027 security hole (migration 017, run + verified); checklist written; API re-run + report pending. WhatsApp display name approved + profile completed. New Session 9J + ToS v2.0 decisions logged.**)
+- **Last updated:** 2026-10-08 22:36, checkpoint (**9C automated UAT 35/35 + report; 9J built, pushed, merged to uat (`6e910d5`) incl. Nagesh’s 4 extra items; 2 bugs fixed (phone List/Map toggle; List-view phones could not open listings — also in production); User Guide now real phone screenshots (`npm run guide:shots`); 9J checklist written. Arun approved paid subscriptions. Nothing on main yet.**)
+- **Last updated (previous):** 2026-10-08 20:22, checkpoint (**9C pushed + merged to uat (`0d028d9`); 9C UAT found + fixed T-027 security hole (migration 017, run + verified); checklist written; API re-run + report pending. WhatsApp display name approved + profile completed. New Session 9J + ToS v2.0 decisions logged.**)
 - **Last updated (previous):** 2026-10-07 22:05, checkpoint (**9C live OTP re-verified on Windows; `uat` merged into 9C (`2daa25b`); 👤 View Profile built, click-tested, committed (`43ec5d8`); 9C.1 emoji avatars decided. 9C branch 14 commits ahead of origin, NOT pushed.**)
 - **Last updated (previous):** 2026-10-05 21:25, checkpoint (**Both branches pushed (`uat` @ `d93f473`, `feat/session-9c-phone-otp` @ `63e59d2`); Vercel MSG91 vars verified; CARTO key re-added as Sensitive, no watermark; NEW finding: Vercel functions run in `iad1` (DC) but Supabase is `ap-southeast-1` (Singapore) — move to `sin1` scheduled for later.**)
 - **Last updated (previous):** 2026-10-05 20:45, checkpoint (**9C WhatsApp OTP delivered + verified LIVE end to end; fix `63e59d2` on `feat/session-9c-phone-otp` (not pushed); 5 `+otpN` test accounts deleted by ID.** Root causes: placeholder `MSG91_OTP_TEMPLATE` in local `.env` + language `en` vs approved `en_US`.)
@@ -99,6 +100,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**Update (2026-10-08 22:36) — Manual UAT day next, then the `uat → main` PR.** uat = `6e910d5` (9C + 9J live on the preview). Nagesh runs the 9J (21), 9C (17) and 9G r1/r2 checklists; Arun signs off 9G; then James prepares the `uat → main` PR. After that: activate subscriptions (approved) + Session 9 config, then 9H, ToS v2.0, security audit (HIGH), 9C.1, 9I, soft-open.
 
 **Update (2026-10-08, end of day) — Arun has approved the paid subscriptions (Supabase, Vercel, Resend, and any others needed). Goal: finish all open items in the coming days; Friday 2026-10-09 target = close 9J, run every pending manual checklist, open the `uat → main` PR.** 9J extra item 1 (share link) + the List-view `flyTo` NaN fix are built, verification running in the background (rate-limit reset), commit pending. Consolidated pending list: Next Steps → "⬅ Immediate (2026-10-08 night)".
 
@@ -493,7 +496,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
-- ✅ **9J pushed + merged to uat (2026-10-09):** guide shots regenerated (`9dc5b13`, Show on map + price words visible), `feat/session-9j-ui-copy-polish` pushed, merged `--no-ff` into uat (`bc9d6ce`), pushed. uat preview deployed in ~40s; `/guide/*.webp` served by Vercel (200, image/webp), 9J code live. Manual checklist `docs/uat/session-09j-uat-checklist-Nagesh.html` (21 checks, 8 sections) written + added to `docs/index.html`; all its search examples verified against live Photon.
+- ✅ **9J pushed + merged to uat (2026-10-08 night):** guide shots regenerated (`9dc5b13`, Show on map + price words visible), `feat/session-9j-ui-copy-polish` pushed, merged `--no-ff` into uat (`bc9d6ce`), pushed. uat preview deployed in ~40s; `/guide/*.webp` served by Vercel (200, image/webp), 9J code live. Manual checklist `docs/uat/session-09j-uat-checklist-Nagesh.html` (21 checks, 8 sections) written + added to `docs/index.html`; all its search examples verified against live Photon.
 - ✅ **Verified 2026-10-08 night (headless, after the 429 reset):** plain tap with List default → details open (was 37× NaN errors); share link on desktop / phone-map-default / phone-list-default → pin drawn, details shown, hash cleared, Show on map centres at z16, close removes it (7 listings). Screenshots `after-phone-390-shared-link-details.png`, `after-phone-390-shared-link-show-on-map.png`, `after-desktop-1280-shared-link.png` (before = empty map / normal list, described above; before images were overwritten during debugging).
 - ✅ **9J extra item 1 — shared WhatsApp link shows the listing + pin (2026-10-08).** Repro: a `#listing-<id>` link for a listing outside the viewer's 5 km radius centred the map but drew **no pin** (pins come only from the radius query); on phones Map view showed an empty map, List view showed the normal list (the listing was dropped on reload). Fix: `ST.sharedListing` + `_keepSharedListing()` keeps it in `ST.listings` (flag `_sharedOnly`) across reloads until its details are closed; `checkShareUrl()` opens details first (phone → List view) and clears the hash; new phone-only **🗺 Show on map** button in every listing's distance bar (`showListingOnMap()`); the share hash is saved in `sessionStorage` at page load so it survives sign-in/sign-up and Google's redirect.
 - ✅ **Pre-existing bug fixed (also in PRODUCTION): phone users with default view = List could not open a listing.** The map starts hidden (0×0); `selListing()`'s `map.flyTo()` threw "Invalid LatLng (NaN, NaN)" ×37 and details never rendered. My `3dccd54` fix (List/Map at all phone widths) would have spread it to every phone on uat. New `mapHidden()` guard: while hidden, jump with `setView(…, {animate:false})` in `selListing`, `fitMapToRadius` (approx. zoom per radius), `setDefaultPin`, and skip the Saved/My Listings auto-fit.
@@ -1113,8 +1116,11 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| Session 9C UAT (2026-10-08) | 🟢 Automated re-run **35/35 PASS** (T-027 fixed by 017); report + checklist committed | `docs/uat/session-09c-uat-report.html`, `docs/uat/session-09c-uat-checklist-Nagesh.html`, `docs/index.html` | Left: Nagesh runs the 17-step checklist on uat, then deletes the `otp` test accounts |
-| Session 9J — UI copy & polish (2026-10-08) | 🟢 All items built + committed on `feat/session-9j-ui-copy-polish` (not pushed): 1, 2, 5, 3a, 3b + phone-view fix | Next: push → merge to uat → check `/guide/*.webp` loads on the uat preview → UAT | `MapIt_MVP_v1.html`/`public/index.html`, `docs/legal/terms-privacy-draft2.html`, `docs/technical/whatsapp-business-registration-guide.html`, `docs/uat/session-09c-uat-checklist-Nagesh.html` | Screenshots `docs/screenshots/session-9j/` (6 before, 6 after). Item 3 waits for Nagesh's OK on the new layout |
+| `uat → main` PR (9D/9E/9F/9G/9C/9J, T-014, Option C) | ⏳ After manual sign-offs | git | Migrations 015–017 already live in the shared DB; check 007; `ANTHROPIC_API_KEY` → Production at merge |
+| Paid subscriptions + Session 9 config | ⏳ Approved by Arun 2026-10-08, not started | Vercel/Supabase/Resend/MSG91 dashboards | ≈ $71/mo; then uat domain, `sin1`, PgBouncer, Storage CDN, backup test restore, alerts |
+| Pre-launch security audit | 🔴 HIGH, not started | `MapIt_MVP_v1.html`, RLS/grants | Listing titles + detail values render raw HTML to all buyers (admin approval is the only gate); T-027 pattern on other tables; npm audit; CSP |
+| Session 9C UAT (2026-10-08) | 🟡 Automated **35/35 PASS**; on uat; **manual 17-step checklist pending (Nagesh)** | `docs/uat/session-09c-uat-report.html`, `docs/uat/session-09c-uat-checklist-Nagesh.html`, `docs/index.html` | Left: Nagesh runs the 17-step checklist on uat, then deletes the `otp` test accounts |
+| Session 9J — UI copy & polish (2026-10-08) | 🟢 Done + on uat (`6e910d5`); manual checklist pending | items 1, 2, 3a, 3b, 5 + extras 1–3; extra 4 = already fixed in 9G | Nagesh runs `docs/uat/session-09j-uat-checklist-Nagesh.html` | `MapIt_MVP_v1.html`/`public/index.html`, `docs/legal/terms-privacy-draft2.html`, `docs/technical/whatsapp-business-registration-guide.html`, `docs/uat/session-09c-uat-checklist-Nagesh.html` | Screenshots `docs/screenshots/session-9j/` (6 before, 6 after). Item 3 waits for Nagesh's OK on the new layout |
 | ToS/Privacy v2.0 | ⏳ Decisions made 2026-10-08, not drafted | `docs/legal/terms-privacy-draft2.html` (live v1.0) → v2.0 | Nakshe Ventures as firm, no Arun name, "Grievance Officer" role only |
 | Session 9C — View Profile + uat merge (2026-10-07) | 🟢 Committed `43ec5d8` (local, 14 ahead of origin, not pushed) | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js` (merge), `Context.md` | Left: Verify now → Verify later test, migrations page, push to uat, UAT report. Supersedes the 9C rows below |
 | 9C.1 emoji avatar picker | ⏳ Decided, not started | — | After 9C ships; own branch; needs migration (`profiles.avatar_id`) |
@@ -1265,6 +1271,13 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+MapIt_MVP_v1.html / public/index.html — 9J (2026-10-08): keyword search in sidebar + rail 🔍 + map pill (`updateKwPill`, `openSearchFromRail`); phone view rules moved to 768px block; Help popup rewrite; `fmtINRWords`/`updatePriceWords`; `photonPlaces()` (landmarks) replaces 4 filter copies; share link (`checkShareUrl`, `_keepSharedListing`, `showListingOnMap`, `ST.sharedListing`); `mapHidden()` guard; contact-us@.
+public/user-guide.html — 9J: viewport/doctype added, 16 topics re-written, SVG mockups → `shotHtml()` with real screenshots (695 → 388 lines).
+public/guide/*.webp + shots.js — NEW: 16 phone screenshots + marker positions (generated).
+scripts/guide-shots.js + package.json `guide:shots` — NEW: screenshot generator (throwaway account + pending demo listing, deleted by ID).
+docs/legal/terms-privacy-draft2.html, docs/technical/whatsapp-business-registration-guide.html — contactus@ → contact-us@.
+docs/uat/session-09c-uat-report.html — NEW (35/35); docs/uat/session-09j-uat-checklist-Nagesh.html — NEW (21 checks); docs/index.html — 09c + 09j rows.
+docs/screenshots/session-9j/ — NEW: before/after shots (search, rail, phone views, feedback, Help, guide, price, landmark search, shared link).
 database/migrations/017-lock-profile-client-writes.sql — NEW (3371f1f, 2026-10-08): revoke client writes on profiles (T-027).
 database/index.html — be23312 + 3371f1f (2026-10-08): rows for migrations 012–017.
 docs/uat/session-09c-uat-checklist-Nagesh.html — NEW (2026-10-08, uncommitted): 17-step manual checklist.
@@ -1549,6 +1562,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🔴 HIGH (found 2026-10-08): stored XSS risk in the main app.** `MapIt_MVP_v1.html` has no HTML-escape helper; listing titles (`listingRow`) and detail values (`det[f.id]`) are inserted raw for every buyer, plus the keyword in “No results for …”. Only admin approval of new/edited listings stands in the way. Fix in the pre-launch security audit, before launch.
+- **🟡 `CLAUDE.md` Rule 13 (“after building, offer a localhost click-test”) is uncommitted** — Nagesh’s own edit; commit or adjust.
+- **🟡 Manual checklists pending:** 9J (21), 9C (17), 9G r1 + r2 (+ Arun), plus older 04/07/08 still marked pending in `docs/index.html`.
+- **ℹ️ Production still has: Explore → My location not flying back (fixed in 9G) and List-view phones unable to open listings (fixed in 9J `ae8fdc4`)** — both ship with the `uat → main` PR.
 - **🟡 Pre-launch innerHTML audit (add):** `renderSidebar()` shows the typed keyword `ST.q` unescaped in "N results for …" / "No results for …" (self-typed only, low risk).
 - **ℹ️ Keyword search only covers the visible map (by design, Session 4):** "7 listings within 5 km" can become "No results" for a keyword whose listings are inside the radius but off-screen. Possible UX follow-up (search the whole radius), not scoped.
 - **⏸ PLACEHOLDER (2026-10-08): 9C manual UAT pending — Nagesh will run `docs/uat/session-09c-uat-checklist-Nagesh.html` on the uat preview soon.** Automated pass is 35/35 and 9C is merged to uat (`af7849a`). After sign-off: delete `nagesh.aadi_otp1@gmail.com` + `nagesh.aadi+otp2@gmail.com`. 9J proceeds in parallel; the `uat → main` PR waits for this sign-off.
@@ -1676,6 +1693,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **User Guide uses generated phone screenshots, not drawn SVGs (2026-10-08, Nagesh: phone 390px, split 3a text / 3b pictures)** | Drawn mockups went stale with every UI change; `npm run guide:shots` regenerates pictures + ring positions from the live DOM. Gotcha: renamed IDs drop a marker silently — the script prints MISSING |
+| **Shared link opens details first, “🗺 Show on map” one tap away; pin drawn even outside the radius (2026-10-08, Nagesh)** | Buyers want photo/price first; location one tap away; shared listing kept in `ST.listings` (`_sharedOnly`) until its details close |
+| **Place search = areas + landmarks, no roads (2026-10-08, Nagesh)** | One `photonPlaces()` for all 4 boxes; stations only, big shops only, no parking/toilets; roads excluded (near-duplicate segments) |
+| **Total price in words: ₹1.25 Crore / ₹28 Lakh, Indian commas below 1 lakh, live hint in the Post form (2026-10-08, Nagesh)** | Avoids misread zeros for buyers and mistyped zeros for sellers |
+| **Hidden map never animates (`mapHidden()` guard, 2026-10-08)** | Leaflet `flyTo`/`fitBounds` on a 0×0 map throws NaN and aborted `selListing()`; jump without animation instead |
 | **Paid subscriptions approved by Arun (2026-10-08)** | Supabase Pro ($25), Vercel Pro ($20), Resend paid tier ($20), plus others needed (MSG91 Titan ₹500/mo from 1 Nov, Anthropic Production key on $5 prepaid). ≈ $71/mo recurring (Rule 11). Unblocks Session 9 (cron for 9H, uat domain, PgBouncer, backups/PITR, Storage CDN) |
 | **Lock all client writes to `profiles` (migration 017, 2026-10-08)** instead of a column-guard trigger | RLS limits rows not columns; a revoke covers every future column, a trigger needs each sensitive column listed. App never writes profiles with a user token (all via supabaseAdmin) |
 | **New Session 9J for Nagesh's 2026-10-08 UI/copy list, not reopening 9G** | 9G is complete and awaiting sign-off → main; adding items would delay that release |
@@ -1982,6 +2004,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-08 22:36 — checkpoint):**
+1. **Nagesh:** run the 9J checklist (21), 9C checklist (17), 9G r1 + r2; Arun signs off 9G. Then delete `_otp1` / `+otp2` test accounts. Commit or adjust `CLAUDE.md` Rule 13.
+2. **James:** prepare the `uat → main` PR (check migration 007; note 015–017 already live; Nagesh adds `ANTHROPIC_API_KEY` to Production at merge).
+3. **Subscriptions (approved):** Supabase Pro, Vercel Pro, Resend, MSG91 wallet ≥ ₹500 before ~25 Oct → Session 9 config (uat domain → uat branch, `sin1`, PgBouncer, Storage CDN, backup test restore, alerts, keep-warm decision).
+4. **Security audit (HIGH):** escape helper + all user fields in `MapIt_MVP_v1.html`; T-027 pattern on `listings` etc.; npm audit; CSP review.
+5. **9H** listing auto-expiry (cron) → **ToS/Privacy v2.0** (Arun approves) → **9C.1** emoji avatars → **9I** (could be post-launch).
+6. External: contact-us@ in Google OAuth consent / WhatsApp profile / MSG91-Meta; `SENTRY_DSN=` in `.env.example`; Android device test; decide on seed listings.
+7. Launch gate: re-run 9a checks + cron firing → 48 h soft-open (10–20 people) → public announcement.
 
 **⬅ Immediate (2026-10-08 night) — full pending list, see the 2026-10-08 chat summary. Friday: (A) finish 9J → push → uat → 9J checklist; (B) Nagesh runs 9C + 9J + 9G r1/r2 checklists, Arun signs off; (C) `uat → main` PR. Then (D) activate subscriptions + Session 9 config; (E) 9H, ToS v2.0, pre-launch security audit (innerHTML XSS now HIGH: listing titles + detail values render raw to all buyers), 9C.1, 9I; (F) 9a re-check + soft-open.**
 
