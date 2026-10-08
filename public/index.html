@@ -2242,9 +2242,35 @@ function _onHomeLocCoordsInput(){
   _resolveHomeLocAddr(lat, lng);
 }
 
-// Locality/city level only — excludes roads, houses, shops, and landmarks (avoids implying only those spots are searchable)
-// Photon's osm_key plays the same role Nominatim's `category` did
-const HOMELOC_SEARCH_CLASSES = new Set(['place','boundary']);
+// Session 9J — place search finds areas AND landmarks (malls, hospitals, schools,
+// parks, temples, stations, offices). Roads are left out (many near-duplicate
+// segments), and so are railway lines (only stations). Shared by all four place
+// searches: home location, post location, My Locations and Explore.
+const PLACE_SEARCH_KEYS = new Set(['place','boundary','amenity','shop','tourism','leisure','historic','building','office','railway','public_transport','aeroway']);
+const RAIL_STOPS = new Set(['station','halt','subway_entrance','tram_stop']);
+// Small fixtures nobody searches for as a landmark ("Nexus Mall Parking")
+// Only big shops work as landmarks; single stores inside a mall are noise
+const LANDMARK_SHOPS = new Set(['mall','department_store','supermarket','hypermarket','wholesale']);
+const PLACE_SEARCH_SKIP = new Set(['parking','parking_entrance','parking_space','bicycle_parking','motorcycle_parking','toilets','bench','waste_basket','atm','vending_machine','drinking_water']);
+function photonPlaces(features){
+  const seen = new Set();
+  return (features || [])
+    .filter(f => {
+      const p = f.properties;
+      if(!p.name || !PLACE_SEARCH_KEYS.has(p.osm_key) || PLACE_SEARCH_SKIP.has(p.osm_value)) return false;
+      if(p.osm_key === 'shop') return LANDMARK_SHOPS.has(p.osm_value);
+      return p.osm_key !== 'railway' || RAIL_STOPS.has(p.osm_value);
+    })
+    .map(f => {
+      const p = f.properties;
+      const city = p.city && p.city !== p.name ? p.city : null;
+      const isArea = p.osm_key === 'place' || p.osm_key === 'boundary';
+      // Landmarks show their locality so "Forum Mall" reads "Forum Mall, Koramangala, Bengaluru"
+      const parts = isArea ? [p.name, city, p.state] : [p.name, p.district || p.locality || p.street, city];
+      return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name: parts.filter(Boolean).join(', ') };
+    })
+    .filter(r => !seen.has(r.display_name) && seen.add(r.display_name));
+}
 let _homeLocSearchTimer = null;
 let _homeLocSearchResults = [];
 
@@ -2273,21 +2299,14 @@ async function _runHomeLocSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _homeLocSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _homeLocSearchResults = photonPlaces(features);
     if(!_homeLocSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _homeLocSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickHomeLocSearchResult(i);
       dd.appendChild(row);
@@ -2301,7 +2320,7 @@ async function _runHomeLocSearch(q){
 function _pickHomeLocSearchResult(i){
   const m = _homeLocSearchResults[i];
   if(!m) return;
-  document.getElementById('homeLocSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('homeLocSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('homeLocSearchDD').classList.add('hide');
   if(_homeLocMap) _homeLocMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -2311,7 +2330,7 @@ async function _resolveHomeLocAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _homeLocCoords.address = addr;
     document.getElementById('homeLocAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -3512,7 +3531,7 @@ function _onPostLocSearchInput(){
 async function _runPostLocSearch(q){
   const dd = document.getElementById('postLocSearchDD');
   try {
-    // Same Photon-based locality/city search as the home-location picker (HOMELOC_SEARCH_CLASSES).
+    // Same Photon-based area + landmark search as the home-location picker (photonPlaces).
     let geoParams = '';
     if(_postPickerMap){
       const c = _postPickerMap.getCenter();
@@ -3520,21 +3539,14 @@ async function _runPostLocSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _postLocSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _postLocSearchResults = photonPlaces(features);
     if(!_postLocSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _postLocSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickPostLocSearchResult(i);
       dd.appendChild(row);
@@ -3548,7 +3560,7 @@ async function _runPostLocSearch(q){
 function _pickPostLocSearchResult(i){
   const m = _postLocSearchResults[i];
   if(!m) return;
-  document.getElementById('postLocSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('postLocSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('postLocSearchDD').classList.add('hide');
   if(_postPickerMap) _postPickerMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -3558,7 +3570,7 @@ async function _resolvePostLocAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _postPickerCoords.address = addr;
     document.getElementById('postPickerAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -3764,21 +3776,14 @@ async function _runAddPinSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _addPinSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _addPinSearchResults = photonPlaces(features);
     if(!_addPinSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _addPinSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickAddPinSearchResult(i);
       dd.appendChild(row);
@@ -3792,7 +3797,7 @@ async function _runAddPinSearch(q){
 function _pickAddPinSearchResult(i){
   const m = _addPinSearchResults[i];
   if(!m) return;
-  document.getElementById('addPinSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('addPinSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('addPinSearchDD').classList.add('hide');
   if(_addPinMap) _addPinMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -3802,7 +3807,7 @@ async function _resolveAddPinAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _addPinCoords.address = addr;
     document.getElementById('addPinAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -4092,7 +4097,7 @@ function _onExploreMoveEnd(){
 
 // ── Explore Area search bar (Session 8 item 11) ────────────────
 // Same Photon-based locality/city search as the post-listing/home-location
-// pickers (HOMELOC_SEARCH_CLASSES) — flyTo only, never places a pin. In
+// pickers (photonPlaces) — flyTo only, never places a pin. In
 // Explore mode the map center itself IS the search point (the blue dot
 // marker + radius circle already follow map center via _onExploreMove),
 // so flyTo's own 'moveend' event is all that's needed to pick up the new
@@ -4115,22 +4120,15 @@ async function _runExploreSearch(q){
     const latDelta = 0.35; // ~39km
     const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
     const geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _exploreSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _exploreSearchResults = photonPlaces(features);
     if(!_exploreSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _exploreSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
       row.className = 'explore-search-row';
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.onclick = () => _pickExploreSearchResult(i);
       dd.appendChild(row);
     });
@@ -4143,7 +4141,7 @@ async function _runExploreSearch(q){
 function _pickExploreSearchResult(i){
   const m = _exploreSearchResults[i];
   if(!m) return;
-  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('exploreSearchDD').classList.add('hide');
   map.flyTo([+m.lat, +m.lon], 15);
 }
