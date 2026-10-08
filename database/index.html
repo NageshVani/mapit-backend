@@ -54,6 +54,7 @@
     <tr><td><a href="migrations/014-audit-log.sql">014</a></td><td class="desc"><code>audit_log</code> — IT Rules 2021 record of signup/login/listing/message events, 180-day retention, service-role only (RLS, no policies). Single project.</td><td class="meta">Pre-launch fix (2026-08-06)</td></tr>
     <tr><td><a href="migrations/015-content-moderation.sql">015</a></td><td class="desc">Nullable <code>moderation_verdict</code>/<code>_reason</code>/<code>_scored_at</code> on <code>listings</code> — Claude spam/fake screening verdict for the admin queue.</td><td class="meta">Session 9E</td></tr>
     <tr><td><a href="migrations/016-phone-otps.sql">016</a></td><td class="desc"><code>phone_otps</code> (hashed WhatsApp OTP codes, 10-min life, rate limits) + unique index: one verified phone per account. Service-role only. Single project.</td><td class="meta">Session 9C</td></tr>
+    <tr><td><a href="migrations/017-lock-profile-client-writes.sql">017</a></td><td class="desc">Revokes direct INSERT/UPDATE/DELETE on <code>profiles</code> from <code>anon</code>/<code>authenticated</code> — users could self-set <code>phone_verified</code>, <code>suspended</code>, ratings. All writes go via the backend. Single project.</td><td class="meta">Session 9C UAT (T-027)</td></tr>
   </table>
 
   <h2>🧰 One-off Scripts <code style="font-size:.75rem;color:var(--muted);font-weight:400;">database/scripts/</code> (data cleanup / verification, not schema migrations)</h2>
