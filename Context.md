@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-09 20:13, checkpoint (**PR #20 `uat → main` MERGED (`7be83e4`) — production now runs 9C/9D/9E/9F/9G/9J; smoke test 12/12; 9J UAT polish (7 observations) + ToS 1.1 shipped; migrations 007–017 verified live; prod is OTP-live. Open: UAT/prod share one DB.**)
+- **Last updated:** 2026-10-09 22:30, checkpoint (**Session 9K in progress on `feat/session-9k-uat-supabase` — new free org "MapIt UAT" + project `mapit-uat` (`xesekrkxbtybbxpsvxuz`, Singapore) built from new `000-baseline.sql`, verified identical to prod; Auth/Google/Vercel Preview/local `.env` all point to UAT; open: UAT email signup fails "Error sending confirmation email".**)
+- **Last updated (previous):** 2026-10-09 20:13, checkpoint (**PR #20 `uat → main` MERGED (`7be83e4`) — production now runs 9C/9D/9E/9F/9G/9J; smoke test 12/12; 9J UAT polish (7 observations) + ToS 1.1 shipped; migrations 007–017 verified live; prod is OTP-live. Open: UAT/prod share one DB.**)
 - **Last updated (previous):** 2026-10-08 22:36, checkpoint (**9C automated UAT 35/35 + report; 9J built, pushed, merged to uat (`6e910d5`) incl. Nagesh’s 4 extra items; 2 bugs fixed (phone List/Map toggle; List-view phones could not open listings — also in production); User Guide now real phone screenshots (`npm run guide:shots`); 9J checklist written. Arun approved paid subscriptions. Nothing on main yet.**)
 - **Last updated (previous):** 2026-10-08 20:22, checkpoint (**9C pushed + merged to uat (`0d028d9`); 9C UAT found + fixed T-027 security hole (migration 017, run + verified); checklist written; API re-run + report pending. WhatsApp display name approved + profile completed. New Session 9J + ToS v2.0 decisions logged.**)
 - **Last updated (previous):** 2026-10-07 22:05, checkpoint (**9C live OTP re-verified on Windows; `uat` merged into 9C (`2daa25b`); 👤 View Profile built, click-tested, committed (`43ec5d8`); 9C.1 emoji avatars decided. 9C branch 14 commits ahead of origin, NOT pushed.**)
@@ -101,6 +102,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**Update (2026-10-09 22:30) — Session 9K (separate UAT Supabase project) steps 0–5 done, one blocker.** Branch `feat/session-9k-uat-supabase` (from uat `3b538ef`), commit `276d7a6` (not pushed). Done: (0) free org "MapIt UAT" (InstaWin deleted to free the 2-free-project slot); (1) read-only inventory `database/scripts/session-9k-schema-inventory.sql` → found migrations 001–017 can't build from empty (hand-made prototype tables; unrecorded `messages→messages_legacy` rename and `listings.city_id` drop) → squashed baseline `database/migrations/000-baseline.sql` (= prod 2026-10-09, includes 001–017; guard aborts if `listings` exists); (2) project `mapit-uat` `xesekrkxbtybbxpsvxuz`; (3) baseline applied, `compare-schema-inventory.js` = identical to prod (only PG 17.6 vs 17.11); (4) Auth: Site URL = uat alias, redirect URLs (uat/vercel-preview/localhost only), Resend SMTP (own key `mapit-uat-smtp`, sender "MapIt UAT"), templates, Google provider + Google Console redirect URI #2 added (prod URI untouched), Email OTP length fixed 8→6; (5) Vercel: 3 `SUPABASE_*` + `EMAIL_FROM_NAME` split into Production (unchanged) / Preview (UAT); uat redeployed; verified via `/api/config` + anon-key claims: prod → `jneox…`, uat → `xesek…` (role anon), UAT DB returns 0 listings; local `.env` → UAT, `npm run dev` verified. **Blocker:** signup on UAT returns "Error sending confirmation email" — likely "Confirm email" still ON in mapit-uat (prod has OFF) + SMTP rejection (check mapit-uat → Logs → Auth for the exact SMTP error; Resend key value/permission). A production redeploy happened by mistake (same commit + unchanged Production env) — prod verified fine.
 
 **Update (2026-10-09 20:13) — Release done: PR #20 merged, mapit.co.in runs 9C/9D/9E/9F/9G/9J, smoke test 12/12.** Now: Nagesh's phone OTP test on prod; decide how to separate UAT test data from production (shared Supabase project); then subscriptions + Session 9 config (`sin1` first).
 
@@ -1578,13 +1581,17 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🔴 (2026-10-09, 9K) UAT signup fails: "Error sending confirmation email"** (localhost → mapit-uat). Check mapit-uat → Auth → Email "Confirm email" = OFF (prod), and Logs → Auth for the SMTP error (Resend key `mapit-uat-smtp` value starts `re_`, Sending access to mapit.co.in). Retry once after fixing (auth email rate limit counts failures).
+- **🔴 HIGH (found 2026-10-09 by the 9K inventory): `listings` policy "Allow public read" = `USING (true)` for anon.** Anyone with the public anon key can read ALL listings incl. pending/rejected, exact `lat/lng` even when `show_exact_location = false`, and `moderation_reason`. Also: `listings` UPDATE policy has WITH CHECK but no USING (test it); `handle_new_user` is SECURITY DEFINER without `SET search_path`. Fix in the pre-launch security audit via migration 018+, applied to BOTH projects.
+- **🟡 Production Supabase is on Free with "No backups"** (seen 2026-10-09). Pro upgrade (or a manual export) required before 9K step 8 (prod test-data clean-up).
+- **ℹ️ Vercel env vars are Sensitive** — the Edit form always shows them empty; never save an Edit form with an empty Sensitive field. Verify via `/api/config` instead. Redeploy UAT = the **Preview · uat** row, never a Production row.
 - **🟡 UAT and production share ONE Supabase project (`jneoxwumccmjwaojfazh`) — confirmed 2026-10-09.** Test listings (e.g. Ref `MP-BLR-UAT001`) are visible on mapit.co.in; UAT signups, OTP sends and migrations all hit live data. Decision 2026-10-09: separate UAT Supabase project = Session 9K (a "UAT" prefix can find test rows but not hide them, and doesn't protect against untested migrations). Resolve before the public announcement.
 - **ℹ️ Git tracks this file as `Context.md` (mixed case).** On Windows `git add CONTEXT.md` silently adds nothing — use `git add Context.md`.
 - **ℹ️ CLAUDE.md says Font Awesome is loaded via CDN — it is not** (icons are emoji / inline SVG). Correct the note when CLAUDE.md is next edited.
 - **ℹ️ WhatsApp OTP on production works (Nagesh, 2026-10-09), but unsaved contacts see +91 78924 00329, not "MapIt".** Expected: the name shows to unsaved contacts only with Meta Verified (paid, post-launch, Rule 11). Proposed free fix (not built): phone-step copy "You'll get a code on WhatsApp from MapIt (+91 78924 00329)".
 - **🟡 MSG91 "Complete your KYC" banner** — main wallet ₹0 is expected (WhatsApp OTP uses the separate WhatsApp prepaid balance, ₹549.56 on 2026-10-09), but finish KYC to avoid later limits.
 - **🔴 HIGH (found 2026-10-08): stored XSS risk in the main app.** `MapIt_MVP_v1.html` has no HTML-escape helper; listing titles (`listingRow`) and detail values (`det[f.id]`) are inserted raw for every buyer, plus the keyword in “No results for …”. Only admin approval of new/edited listings stands in the way. Fix in the pre-launch security audit, before launch.
-- **🟡 `CLAUDE.md` Rule 13 (“after building, offer a localhost click-test”) is uncommitted** — Nagesh’s own edit; commit or adjust.
+- **✅ RESOLVED: `CLAUDE.md` Rule 13** committed in `1e84e5c`.
 - **🟡 Manual checklists pending:** 9J (21), 9C (17), 9G r1 + r2 (+ Arun), plus older 04/07/08 still marked pending in `docs/index.html`.
 - **ℹ️ Production still has: Explore → My location not flying back (fixed in 9G) and List-view phones unable to open listings (fixed in 9J `ae8fdc4`)** — both ship with the `uat → main` PR.
 - **🟡 Pre-launch innerHTML audit (add):** `renderSidebar()` shows the typed keyword `ST.q` unescaped in "N results for …" / "No results for …" (self-typed only, low risk).
@@ -2030,6 +2037,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-09 22:30 — checkpoint, Session 9K mid-way) — full list until release:**
+A. **Finish 9K:** (1) fix UAT email signup blocker (Open Issues) → signup + 6-digit code from "MapIt UAT" + profiles row in mapit-uat; Google sign-in on UAT; Google sign-in on mapit.co.in still works; (2) step 6 UAT seed script (`database/scripts/`, test listings across re/veh/hh) + EXPLAIN ANALYZE on `listings_within_radius` (Index Scan on `idx_listings_ll_to_earth`); (3) step 7 run 9C automated suite on uat preview + prod smoke re-run; (4) step 9 docs — CLAUDE.md Rule 10 + Quick Reference (two projects, run migrations on UAT first), `database/index.html` (000 + scripts), `.env.example` note, migration rule "001–017 = history, new DB runs 000"; push branch → merge to uat; (5) step 8 **destructive, separate approval:** backup prod → delete test data (34 accounts / 41 listings, by ID) → decide seed listings.
+B. **Subscriptions + Session 9 config:** Supabase Pro (backups!), Vercel Pro, Resend review → `sin1` region (measure) → uat.mapit.co.in domain → PgBouncer, Storage CDN, backup test-restore, alerts, keep-warm decision. Anthropic Console spend limit + alerts; MSG91 KYC.
+C. **Pre-launch security audit (HIGH):** listings public-read hole (above) + T-027 pattern on all tables; escape all user fields in `MapIt_MVP_v1.html` (stored XSS); `ST.q` keyword escaping; npm audit (11); CSP review; `handle_new_user` search_path.
+D. **Features before launch:** 9H listing auto-expiry (cron) → ToS/Privacy v2.0 (WhatsApp clauses; Arun approves) → 9C.1 emoji avatars → 9I (may go post-launch). Optional free fix: phone-step copy "code on WhatsApp from MapIt (+91 78924 00329)".
+E. **Manual UAT backlog:** 9J (21), 9C (17), 9G r1+r2 (+ Arun sign-off); delete test accounts `_otp1`, `+otp2`, `+prod1`.
+F. **External:** contact-us@ in Google OAuth consent / WhatsApp profile / MSG91-Meta; `SENTRY_DSN=` in `.env.example`; Android device test.
+G. **Launch gate:** re-run 9a checks + cron firing → 48 h soft-open (10–20 people) → public announcement.
 
 **⬅ Immediate (2026-10-09 20:13 — checkpoint, after the production release):**
 1. **Nagesh:** OTP test on phone at mapit.co.in (new `+prod1` account) → WhatsApp code arrives + verifies → MSG91 WhatsApp balance drops ~₹0.15–0.21 → delete the test account.
