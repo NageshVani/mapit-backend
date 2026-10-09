@@ -504,6 +504,20 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .pin-action-btn.primary:hover{background:rgba(240,96,48,.1);}
 .pin-action-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08);}
 .pin-action-btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+/* In-app dialog (replaces browser prompt()/confirm(), see mapitDialog()) */
+.dlg-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.dlg-modal.hide{display:none;}
+.dlg-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:380px;padding:20px;box-shadow:var(--shadow);}
+.dlg-title{font-size:15px;font-weight:700;margin-bottom:8px;}
+.dlg-msg{font-size:13px;color:var(--muted);line-height:1.5;white-space:pre-line;margin-bottom:14px;}
+.dlg-msg:empty{display:none;}
+.dlg-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'Outfit',sans-serif;margin-bottom:14px;outline:none;}
+.dlg-input:focus{border-color:var(--orange);}
+.dlg-input.hide{display:none;}
+.dlg-btns{display:flex;gap:10px;justify-content:flex-end;}
+.dlg-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.dlg-btn.primary{background:var(--orange);border-color:var(--orange);color:#fff;}
+.dlg-btn.danger{background:var(--red);border-color:var(--red);color:#fff;}
 .add-pin-form{padding:16px 22px;border-top:1px solid var(--border);background:var(--card);}
 .add-pin-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;}
 .add-pin-divider{text-align:center;font-size:10px;color:var(--muted);margin:10px 0 6px;letter-spacing:.5px;text-transform:uppercase;}
@@ -753,8 +767,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(your display name) *</span></label>
         <input class="modal-input" id="profileNicknameInput" placeholder="e.g. Priya" maxlength="30"/>
       </div>
-      <label class="modal-label">Phone (optional)</label>
-      <input class="modal-input" id="phoneInput" placeholder="+91 98765 43210" type="tel"/>
       <div class="tos-row">
         <input type="checkbox" id="tosCheck" onchange="updateProfileContinueState()" style="margin-top:2px;accent-color:var(--orange);width:16px;height:16px;flex-shrink:0;cursor:pointer;"/>
         <label for="tosCheck" style="font-size:12px;color:var(--muted);line-height:1.5;cursor:pointer;">I agree to the <a href="/terms" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Privacy Policy</a></label>
@@ -797,6 +809,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="modal-step" id="step-homeloc">
       <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📍 Set your home area</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll show nearby listings first.</div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);margin-bottom:4px;">Name this location</div>
+      <input type="text" id="homeLocLabelIn" value="Home" placeholder="Label, e.g. &quot;Home&quot; or &quot;Office&quot;" maxlength="40" autocomplete="off"
+        style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:8px;"/>
       <div style="position:relative;margin-bottom:4px;">
         <input type="text" id="homeLocSearchIn" placeholder="Search area to jump there…" autocomplete="off"
           style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;"
@@ -947,6 +962,19 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   </div>
 </div>
 
+<!-- ── IN-APP DIALOG (see mapitDialog()) ── -->
+<div class="dlg-modal hide" id="mapitDlg" onclick="if(event.target===this)_dlgClose(false)">
+  <div class="dlg-box" role="dialog" aria-modal="true" aria-labelledby="mapitDlgTitle">
+    <div class="dlg-title" id="mapitDlgTitle"></div>
+    <div class="dlg-msg" id="mapitDlgMsg"></div>
+    <input type="text" class="dlg-input hide" id="mapitDlgInput" autocomplete="off"/>
+    <div class="dlg-btns">
+      <button class="dlg-btn" id="mapitDlgCancel" onclick="_dlgClose(false)">Cancel</button>
+      <button class="dlg-btn primary" id="mapitDlgOk" onclick="_dlgClose(true)">OK</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── PINS MODAL ── -->
 <div class="pins-modal hide" id="pinsModal">
   <div class="pins-box">
@@ -957,7 +985,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div id="pinsList"></div>
     <div class="add-pin-form">
       <div style="font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Add New Location</div>
-      <input class="form-input" id="newPinLabel" placeholder='Label, e.g. "Office" or "Sister\'s Home"' maxlength="40" style="margin-bottom:10px;"/>
+      <input type="text" id="newPinLabel" placeholder="Label, e.g. &quot;Office&quot; or &quot;Sister's Home&quot;" maxlength="40" autocomplete="off"
+        style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:10px;"/>
       <div style="position:relative;margin-bottom:4px;">
         <input type="text" id="addPinSearchIn" placeholder="Search area to jump there…" autocomplete="off"
           style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;"
@@ -2074,14 +2103,13 @@ function updateProfileContinueState(){
 async function saveProfile(){
   const full_name = document.getElementById('nameInput').value.trim();
   const nickname  = document.getElementById('profileNicknameInput').value.trim();
-  const phone     = document.getElementById('phoneInput').value.trim();
-  const tosOk     = document.getElementById('tosCheck').checked;
+  const tosOk    = document.getElementById('tosCheck').checked;
   if(!full_name){ toast('Please enter your name.'); return; }
   if(!nickname){ toast('Please enter a nickname — it will appear as your display name.'); return; }
   if(!tosOk){ toast('Please agree to the Terms of Service to continue.'); return; }
   try {
     const data = await apiPost('/api/auth/register', {
-      full_name, nickname, phone: phone||null,
+      full_name, nickname,
       invite_code: ST.inviteCode||null,
       auth_provider: ST.authProvider||'email',
     });
@@ -2090,7 +2118,7 @@ async function saveProfile(){
     ST._pendingFullName = null; ST._pendingNickname = null;
     const uid = ST.user?.id;
     if(uid) saveToMultiSessions(uid, { session: ST.session, name: full_name, nickname, initials: getInitials(nickname), email: ST.user?.email });
-    openPhoneVerify('signup', phone);
+    openPhoneVerify('signup');
   } catch(e){ toast('Could not save profile: ' + e.message); }
 }
 
@@ -2357,7 +2385,7 @@ async function saveHomeLocation(){
     // Also create a user_pin so the header badge and map centre reflect the saved location
     // (profiles.home_* and user_pins are separate stores; without this the header stays at the HTML default)
     await apiPost('/api/pins', {
-      label: _homeLocCoords.address || `${_homeLocCoords.lat.toFixed(4)}, ${_homeLocCoords.lng.toFixed(4)}`,
+      label: document.getElementById('homeLocLabelIn').value.trim() || 'Home',
       lat: _homeLocCoords.lat,
       lng: _homeLocCoords.lng,
       is_default: true,
@@ -2408,7 +2436,13 @@ function toggleAvatarMenu(){
 
 async function changeNickname(){
   const current = ST.profile?.nickname || '';
-  const newNick = prompt('Change your display name (nickname):', current);
+  document.getElementById('uavMenu').classList.remove('open');
+  const newNick = await mapitDialog({
+    title: 'Change your display name',
+    message: 'This is the nickname other people see.',
+    input: { value: current, maxlength: 30, placeholder: 'e.g. Priya' },
+    okText: 'Save',
+  });
   if(newNick === null) return;
   const trimmed = newNick.trim();
   if(!trimmed){ toast('Nickname cannot be empty.'); return; }
@@ -2973,7 +3007,7 @@ async function renderMyAds(el){
     if(!listings.length){
       el.innerHTML = `<div class="sb-empty">
         <div class="sb-empty-ico">📋</div>
-        <div class="sb-empty-ttl">No ads posted yet</div>
+        <div class="sb-empty-ttl">No listings posted yet</div>
         <div class="sb-empty-sub">You haven't posted any listings yet.<br>Tap <b>➕ Post a Listing</b> in the header to get started.</div>
       </div>`;
       return;
@@ -4017,10 +4051,11 @@ function renderPinsList(){
     <div class="pin-item">
       <div class="pin-ico ${p.is_default?'default':''}">📍</div>
       <div class="pin-info">
-        <div class="pin-name">${p.label} ${p.is_default?'<span style="font-size:10px;color:var(--orange);font-weight:700;">● Active</span>':''}</div>
+        <div class="pin-name">${escHtml(p.label)} ${p.is_default?'<span style="font-size:10px;color:var(--orange);font-weight:700;">● Active</span>':''}</div>
         <div class="pin-coords">${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}</div>
       </div>
       <div class="pin-actions">
+        <button class="pin-action-btn" onclick="renamePin('${p.id}')" title="Rename">✏️ Rename</button>
         ${!p.is_default?`<button class="pin-action-btn primary" onclick="setDefaultPin('${p.id}')">Set Active</button>`:''}
         ${onlyOne?'':`<button class="pin-action-btn danger" ${p.is_default?'disabled title="Set another location as active before removing this one"':''} onclick="deletePin('${p.id}')">Remove</button>`}
       </div>
@@ -4030,13 +4065,36 @@ function renderPinsList(){
 async function setDefaultPin(id, skipConfirm){
   const candidate = ST.userPins.find(p=>p.id===id);
   if(!candidate) return;
-  if(!skipConfirm && !confirm(`Set "${candidate.label}" as your active location?`)) return;
+  if(!skipConfirm && !(await mapitDialog({
+    title: 'Change active location?',
+    message: `Set "${candidate.label}" as your active location?`,
+    okText: 'Set Active',
+  }))) return;
   try {
     await apiPut(`/api/pins/${id}/default`,{});
     await loadAndRenderPins(); // this now syncs ST.activePin, marker, map via the updated function
     await loadListings();
     closePinsModal();
     toast(`📍 ${candidate.label} is now your active location.`);
+  } catch(e){ toast(e.message); }
+}
+
+async function renamePin(id){
+  const pin = ST.userPins.find(p=>p.id===id);
+  if(!pin) return;
+  const label = await mapitDialog({
+    title: 'Rename location',
+    input: { value: pin.label, maxlength: 40, placeholder: 'e.g. Home, Office' },
+    okText: 'Save',
+  });
+  if(label === null) return;
+  const trimmed = label.trim();
+  if(!trimmed){ toast('Label cannot be empty.'); return; }
+  if(trimmed === pin.label) return;
+  try {
+    await apiPut(`/api/pins/${id}`, { label: trimmed });
+    await loadAndRenderPins();
+    toast(`📍 Renamed to "${trimmed}".`);
   } catch(e){ toast(e.message); }
 }
 
@@ -4244,6 +4302,52 @@ function toast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),3200);
 }
+
+// Escape user-typed text before putting it into innerHTML.
+function escHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── In-app dialog ─────────────────────────────────────────────────
+// Replaces the browser's prompt()/confirm(): those can't be styled, show the
+// site address as their title ("mapit-backend-git-uat… says") and are
+// silently blocked by some in-app browsers. Returns a Promise, so callers
+// must await it:
+//   confirm mode (no `input`) → true / false
+//   input mode               → the typed text, or null on Cancel
+let _dlgResolve = null, _dlgHasInput = false;
+function mapitDialog({ title, message = '', input = null, okText = 'OK', cancelText = 'Cancel', danger = false }){
+  if(_dlgResolve) _dlgClose(false); // never leave an earlier caller hanging
+  document.getElementById('mapitDlgTitle').textContent = title;
+  document.getElementById('mapitDlgMsg').textContent = message;
+  const inp = document.getElementById('mapitDlgInput');
+  _dlgHasInput = !!input;
+  inp.classList.toggle('hide', !input);
+  if(input){
+    inp.value = input.value || '';
+    inp.placeholder = input.placeholder || '';
+    inp.maxLength = input.maxlength || 100;
+  }
+  const ok = document.getElementById('mapitDlgOk');
+  ok.textContent = okText;
+  ok.className = 'dlg-btn ' + (danger ? 'danger' : 'primary');
+  document.getElementById('mapitDlgCancel').textContent = cancelText;
+  document.getElementById('mapitDlg').classList.remove('hide');
+  setTimeout(() => (input ? inp : ok).focus(), 30);
+  return new Promise(res => { _dlgResolve = res; });
+}
+function _dlgClose(confirmed){
+  const res = _dlgResolve; _dlgResolve = null;
+  document.getElementById('mapitDlg').classList.add('hide');
+  if(!res) return;
+  if(_dlgHasInput) res(confirmed ? document.getElementById('mapitDlgInput').value : null);
+  else res(!!confirmed);
+}
+document.addEventListener('keydown', e => {
+  if(!_dlgResolve) return;
+  if(e.key === 'Escape'){ e.preventDefault(); _dlgClose(false); }
+  else if(e.key === 'Enter'){ e.preventDefault(); _dlgClose(true); }
+});
 
 // ═══════════════════════════════════════════════
 // INIT
@@ -4498,7 +4602,11 @@ function signInAsSomeoneElse(){
 // MARK AS SOLD
 // ═══════════════════════════════════════════════
 async function markAsSold(id, title){
-  if(!confirm(`Are you sure you want to mark "${title}" as sold?\n\nThis will remove it from the public map.`)) return;
+  if(!(await mapitDialog({
+    title: 'Mark as sold?',
+    message: `"${title}" will be removed from the public map.`,
+    okText: 'Mark as Sold',
+  }))) return;
   try {
     await apiPut(`/api/listings/${id}/sold`, {});
     toast('✅ Listing marked as sold and removed from the map.');
@@ -4507,7 +4615,12 @@ async function markAsSold(id, title){
 }
 
 async function deleteListing(id, title){
-  if(!confirm(`Delete "${title}"?\n\nThis cannot be undone.`)) return;
+  if(!(await mapitDialog({
+    title: 'Delete listing?',
+    message: `"${title}" will be deleted. This cannot be undone.`,
+    okText: 'Delete',
+    danger: true,
+  }))) return;
   try {
     await apiDelete(`/api/listings/${id}`);
     toast('🗑️ Listing deleted.');
