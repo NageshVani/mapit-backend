@@ -1578,9 +1578,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **🟡 UAT and production share ONE Supabase project (`jneoxwumccmjwaojfazh`) — confirmed 2026-10-09.** Test listings (e.g. Ref `MP-BLR-UAT001`) are visible on mapit.co.in; UAT signups, OTP sends and migrations all hit live data. Options being weighed with Nagesh (tag-and-purge vs separate UAT project). Resolve before the public announcement.
+- **🟡 UAT and production share ONE Supabase project (`jneoxwumccmjwaojfazh`) — confirmed 2026-10-09.** Test listings (e.g. Ref `MP-BLR-UAT001`) are visible on mapit.co.in; UAT signups, OTP sends and migrations all hit live data. Decision 2026-10-09: separate UAT Supabase project = Session 9K (a "UAT" prefix can find test rows but not hide them, and doesn't protect against untested migrations). Resolve before the public announcement.
 - **ℹ️ Git tracks this file as `Context.md` (mixed case).** On Windows `git add CONTEXT.md` silently adds nothing — use `git add Context.md`.
 - **ℹ️ CLAUDE.md says Font Awesome is loaded via CDN — it is not** (icons are emoji / inline SVG). Correct the note when CLAUDE.md is next edited.
+- **ℹ️ WhatsApp OTP on production works (Nagesh, 2026-10-09), but unsaved contacts see +91 78924 00329, not "MapIt".** Expected: the name shows to unsaved contacts only with Meta Verified (paid, post-launch, Rule 11). Proposed free fix (not built): phone-step copy "You'll get a code on WhatsApp from MapIt (+91 78924 00329)".
 - **🟡 MSG91 "Complete your KYC" banner** — main wallet ₹0 is expected (WhatsApp OTP uses the separate WhatsApp prepaid balance, ₹549.56 on 2026-10-09), but finish KYC to avoid later limits.
 - **🔴 HIGH (found 2026-10-08): stored XSS risk in the main app.** `MapIt_MVP_v1.html` has no HTML-escape helper; listing titles (`listingRow`) and detail values (`det[f.id]`) are inserted raw for every buyer, plus the keyword in “No results for …”. Only admin approval of new/edited listings stands in the way. Fix in the pre-launch security audit, before launch.
 - **🟡 `CLAUDE.md` Rule 13 (“after building, offer a localhost click-test”) is uncommitted** — Nagesh’s own edit; commit or adjust.
@@ -2032,7 +2033,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 **⬅ Immediate (2026-10-09 20:13 — checkpoint, after the production release):**
 1. **Nagesh:** OTP test on phone at mapit.co.in (new `+prod1` account) → WhatsApp code arrives + verifies → MSG91 WhatsApp balance drops ~₹0.15–0.21 → delete the test account.
-2. **Decide UAT/production data separation** (shared Supabase project, see Open Issues): tag-and-purge vs a separate UAT Supabase project. Then remove `MP-BLR-UAT*` seed/test listings before the public announcement.
+2. **Session 9K (decided 2026-10-09, Nagesh): separate UAT Supabase project.** Steps: (0) org/cost decision — free separate org vs Pro org (~$10/mo), region Singapore; (1) read-only schema diff live vs migrations 001–017 → `000-baseline.sql` if drifted; (2) Nagesh creates `mapit-uat` + PostGIS; (3) schema + RLS + grants + RPC, verify probe + EXPLAIN ANALYZE; (4) Storage bucket/policies, Auth (Resend SMTP, templates, site URL, Google OAuth uat redirect); (5) Vercel **Preview** env → new project, Production untouched, local `.env` → UAT; (6) UAT seed script; (7) 9C suite on uat + prod smoke re-run; (8) **destructive, separate approval:** prod clean-up of test data (34 accounts / 41 listings on 2026-10-09) by ID after a backup, decide seed listings; (9) docs (CLAUDE.md Rule 10, .env.example, database index). ~½ day + ~1 h dashboards; pair with the Supabase Pro upgrade.
 3. Anthropic Console: spend limit + alerts on the Production key. MSG91: finish KYC.
 4. **Subscriptions + Session 9 config:** Vercel Pro, Supabase Pro, Resend → `sin1` region (measure before/after) → uat domain → PgBouncer, Storage CDN, backup test restore, alerts, keep-warm decision.
 5. **Pre-launch security audit (HIGH):** escape all user fields in `MapIt_MVP_v1.html` (reuse the new `escHtml()`), T-027 pattern on `listings` etc., npm audit (11), CSP review.
