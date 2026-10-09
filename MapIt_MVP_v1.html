@@ -504,6 +504,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .pin-action-btn.primary:hover{background:rgba(240,96,48,.1);}
 .pin-action-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08);}
 .pin-action-btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+.pin-action-btn.icon{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;}
 /* In-app dialog (replaces browser prompt()/confirm(), see mapitDialog()) */
 .dlg-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
 .dlg-modal.hide{display:none;}
@@ -4040,6 +4041,15 @@ async function loadAndRenderPins(){
   } catch(e){ toast('Could not load pins: '+e.message); }
 }
 
+// Saved-location action icons (Lucide, MIT). Inline SVG: same look on every
+// device, and stroke="currentColor" picks up the button's hover colour.
+const _svg = d => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const PIN_ICONS = {
+  rename: _svg('<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>'),
+  active: _svg('<line x1="2" x2="5" y1="12" y2="12"/><line x1="19" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="5"/><line x1="12" x2="12" y1="19" y2="22"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/>'),
+  remove: _svg('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>'),
+};
+
 function renderPinsList(){
   const el = document.getElementById('pinsList');
   if(!ST.userPins.length){
@@ -4055,9 +4065,9 @@ function renderPinsList(){
         <div class="pin-coords">${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}</div>
       </div>
       <div class="pin-actions">
-        <button class="pin-action-btn" onclick="renamePin('${p.id}')" title="Rename">✏️ Rename</button>
-        ${!p.is_default?`<button class="pin-action-btn primary" onclick="setDefaultPin('${p.id}')">Set Active</button>`:''}
-        ${onlyOne?'':`<button class="pin-action-btn danger" ${p.is_default?'disabled title="Set another location as active before removing this one"':''} onclick="deletePin('${p.id}')">Remove</button>`}
+        <button class="pin-action-btn icon" onclick="renamePin('${p.id}')" title="Rename" aria-label="Rename">${PIN_ICONS.rename}</button>
+        ${!p.is_default?`<button class="pin-action-btn icon primary" onclick="setDefaultPin('${p.id}')" title="Set as active location" aria-label="Set as active location">${PIN_ICONS.active}</button>`:''}
+        ${onlyOne?'':`<button class="pin-action-btn icon danger" ${p.is_default?'disabled':''} title="${p.is_default?'Set another location as active before removing this one':'Remove'}" aria-label="Remove" onclick="deletePin('${p.id}')">${PIN_ICONS.remove}</button>`}
       </div>
     </div>`).join('');
 }
