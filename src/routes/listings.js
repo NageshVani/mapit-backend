@@ -20,12 +20,16 @@ const { createError } = require('../middleware/errorHandler');
 const { fuzzLocation } = require('../utils/geo');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
+const { scoreListing } = require('../utils/contentModeration');
+const { needsPhoneVerification } = require('../utils/phoneGate');
 
 const router = express.Router();
 
 // Valid categories and statuses
 const VALID_CATEGORIES = ['re', 'veh', 'hh', 'furn', 'electronics']; // furn kept for legacy data
 const VALID_STATUSES   = ['active', 'sold', 'expired'];
+// Session 9G (Arun): 'always' removed — sellers choose On Agreement (default) or Never.
+const SHOW_PHONE_OPTIONS = ['on_agreement', 'never'];
 
 // Reference code: MP-BLR-XXXXXX (6 alphanumeric, no 0/O/1/I to avoid confusion)
 function generateRefCode() {
@@ -56,7 +60,10 @@ function resolveListingLocation(listing, viewerId) {
       lng = fuzzed.lng;
     }
   }
-  const { display_lat, display_lng, ...rest } = listing;
+  // Moderation fields (migration 015) are admin-only — strip them from every
+  // buyer/seller-facing response. The admin queue reads them via /pending/all,
+  // which doesn't go through this function.
+  const { display_lat, display_lng, moderation_verdict, moderation_reason, moderation_scored_at, ...rest } = listing;
   return { ...rest, lat, lng, location_is_exact: exact };
 }
 
@@ -70,7 +77,14 @@ router.get('/pending/all', requireAuth, requireAdmin, async (req, res, next) => 
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
     if (error) return next(createError(error.message));
-    res.json({ listings: listings || [] });
+    // Session 9E: flagged listings sort first (a signal for the human
+    // reviewer, not an auto-reject gate) — cheap in-JS sort rather than a
+    // second query, same pattern as the admin Overview dashboard's other
+    // cheap-query-plus-JS-aggregation stats. created_at DESC is preserved
+    // within each group since Array.sort is stable in Node.
+    const sorted = (listings || []).slice().sort((a, b) =>
+      (b.moderation_verdict === 'flagged' ? 1 : 0) - (a.moderation_verdict === 'flagged' ? 1 : 0));
+    res.json({ listings: sorted });
   } catch (err) { next(err); }
 });
 
@@ -326,8 +340,18 @@ router.post('/cleanup/bulk-delete', requireAuth, requireAdmin, async (req, res, 
   } catch (err) { next(err); }
 });
 
+// Session 9G — Real Estate transaction type ('Rent' | 'Sell'), stored in
+// details.transaction_type by the post form. Legacy/seed rows predate that
+// field: a 'per month' price label means Rent, anything else Sell. Mirrors
+// isRental() in the frontend so pins and filters always agree.
+function listingTxn(l) {
+  const t = l.details?.transaction_type;
+  if (t === 'Rent' || t === 'Sell') return t;
+  return /per\s*month|\/\s*month|monthly/i.test(l.price_label || '') ? 'Rent' : 'Sell';
+}
+
 // ── GET listings with radius filter ──────────────────────────
-// GET /api/listings?lat=12.93&lng=77.62&radius=5000&category=re&subcategory=Buy&q=flat
+// GET /api/listings?lat=12.93&lng=77.62&radius=5000&category=re&subcategory=Buy&q=flat&txn=Rent
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const {
@@ -335,6 +359,7 @@ router.get('/', requireAuth, async (req, res, next) => {
       radius    = 5000,   // metres — default 5 km
       category,
       subcategory,
+      txn,                // 'Rent' | 'Sell' — Real Estate only (Session 9G)
       q,                  // search query
       limit     = 50,
       offset    = 0,
@@ -389,6 +414,11 @@ router.get('/', requireAuth, async (req, res, next) => {
     }
     if (subcategory && subcategory !== 'All Types') {
       listings = listings.filter(l => l.subcategory === subcategory);
+    }
+    // Only the two known values are honoured; anything else is ignored rather
+    // than echoed, so a crafted ?txn= cannot change behaviour.
+    if (txn === 'Rent' || txn === 'Sell') {
+      listings = listings.filter(l => l.category === 're' && listingTxn(l) === txn);
     }
     if (q) {
       const ql = q.toLowerCase();
@@ -552,8 +582,18 @@ router.post('/', requireAuth, async (req, res, next) => {
     if (title.length > 80) return next(createError('Title must be 80 characters or less.'));
     if (price && parseFloat(price) < 0) return next(createError('Price cannot be negative.'));
 
-    const validShowPhone = ['always', 'on_agreement', 'never'];
-    const phoneVisibility = validShowPhone.includes(show_phone) ? show_phone : 'always';
+    // Session 9C: new accounts must verify their phone before posting. The
+    // frontend pre-checks via /api/auth/otp/phone/status; this is the real gate.
+    const { data: sellerProfile } = await supabaseAdmin
+      .from('profiles').select('phone_verified').eq('id', req.user.id).maybeSingle();
+    if (needsPhoneVerification(req.user, sellerProfile)) {
+      return res.status(403).json({
+        error: 'Please verify your phone number via WhatsApp before posting a listing.',
+        phone_verification_required: true,
+      });
+    }
+
+    const phoneVisibility = SHOW_PHONE_OPTIONS.includes(show_phone) ? show_phone : 'on_agreement';
     const now = new Date();
 
     // Generated up front (rather than left to the DB default) so the fuzz
@@ -597,6 +637,17 @@ router.post('/', requireAuth, async (req, res, next) => {
     lookupAndStoreNearbyPois(listing.id, listing.lat, listing.lng)
       .catch(err => console.error('POI lookup pipeline failed:', err.message));
 
+    // Fire-and-forget: never block or fail listing creation on moderation
+    // errors (migration 015, Session 9E). Flagged/clean is a sort signal
+    // for the human admin reviewer, not an auto-approve/auto-reject gate —
+    // the listing goes to the normal 'pending' review queue either way.
+    scoreListing(listing.title, listing.description)
+      .then(({ verdict, reason }) => supabaseAdmin
+        .from('listings')
+        .update({ moderation_verdict: verdict, moderation_reason: reason, moderation_scored_at: new Date().toISOString() })
+        .eq('id', listing.id))
+      .catch(err => console.error('Content moderation pipeline failed:', err.message));
+
     // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
     logAuditEvent('listing_created', req, req.user.id, { listing_id: listing.id });
 
@@ -636,6 +687,9 @@ router.put('/:id', requireAuth, async (req, res, next) => {
       return next(createError('No valid fields to update.'));
     }
 
+    if (updates.show_phone !== undefined && !SHOW_PHONE_OPTIONS.includes(updates.show_phone)) {
+      return next(createError(`show_phone must be one of: ${SHOW_PHONE_OPTIONS.join(', ')}`));
+    }
     if (updates.show_exact_location !== undefined) {
       updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';
     }

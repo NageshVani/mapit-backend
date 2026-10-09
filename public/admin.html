@@ -73,6 +73,10 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .fbv-reply-input:focus{border-color:var(--orange);}
 .fbv-send-btn{padding:7px 14px;background:var(--orange);color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;white-space:nowrap;}
 .fbv-send-btn:hover{background:var(--orange2);}
+/* Session 9E — AI draft-reply button, secondary/muted vs. the orange Send Reply button so it never reads as the primary action */
+.fbv-draft-btn{padding:7px 12px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;align-self:flex-end;white-space:nowrap;}
+.fbv-draft-btn:hover{border-color:var(--orange);color:var(--orange);}
+.fbv-draft-btn:disabled{opacity:.5;cursor:default;}
 .fbv-resolve-btn{padding:5px 12px;border-radius:6px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.07);color:var(--green);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
 .fbv-resolve-btn:hover{background:rgba(34,197,94,.18);}
 
@@ -87,6 +91,24 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .admin-reason-sel{font-size:11px;font-family:'Outfit',sans-serif;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--deep);color:var(--text);margin-left:6px;}
 .admin-suspend-btn{padding:6px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
 .admin-suspend-btn:hover{background:var(--red);color:#fff;}
+/* Session 9E — flagged-listing badge in the pending queue; a sort/attention signal for the human reviewer, not a verdict of guilt */
+.admin-flag-badge{display:inline-block;padding:2px 8px;border-radius:5px;background:rgba(240,96,48,.12);color:var(--orange);font-size:10.5px;font-weight:700;margin-left:6px;vertical-align:middle;}
+
+/* Session 9F — Cost & Usage tab */
+.cost-table{width:100%;border-collapse:collapse;font-size:12px;}
+.cost-table th{text-align:left;padding:9px 14px;color:var(--muted);font-weight:600;font-size:11px;border-bottom:1px solid var(--border);white-space:nowrap;}
+.cost-table td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.cost-table tr:last-child td{border-bottom:none;}
+.cost-metric-name{font-weight:600;}
+.cost-est-tag{font-size:9.5px;font-weight:700;color:var(--muted);background:var(--deep);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:middle;}
+.cost-pct-up{color:var(--red);font-weight:600;}
+.cost-pct-down{color:var(--green);font-weight:600;}
+.cost-flag-badge{display:inline-block;padding:2px 7px;border-radius:5px;background:rgba(240,96,48,.12);color:var(--orange);font-size:10px;font-weight:700;margin-left:6px;}
+.cost-unavailable{color:var(--muted);font-style:italic;}
+.cost-links-wrap{padding:14px 16px;border-top:1px solid var(--border);}
+.cost-links-title{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.cost-link-item{display:block;font-size:12px;color:var(--orange);text-decoration:none;margin-bottom:6px;}
+.cost-link-item:hover{text-decoration:underline;}
 .admin-suspend-btn.reinstate{border-color:var(--green);color:var(--green);}
 .admin-suspend-btn.reinstate:hover{background:var(--green);color:#fff;}
 .admin-suspend-btn:disabled{opacity:.4;cursor:default;}
@@ -230,6 +252,11 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
         <div class="adm-block-label">Cleanup</div>
         <div class="adm-block-count" id="admCountCleanup">&nbsp;</div>
       </div>
+      <div class="adm-block" id="admTabCost" onclick="switchAdmSection('cost')">
+        <span class="adm-block-ico">💰</span>
+        <div class="adm-block-label">Cost & Usage</div>
+        <div class="adm-block-count">&nbsp;</div>
+      </div>
     </div>
 
     <div class="adm-box">
@@ -301,6 +328,14 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
           </div>
           <div id="cleanupList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
         </div>
+      </div>
+
+      <div id="admSectionCost" class="adm-section hide">
+        <div style="padding:10px 16px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);line-height:1.5;">
+          Last 7 days vs. the trailing 4-week average, per metric. Rows marked <b>estimated</b> are not real invoice figures — see the source links below to verify directly.
+        </div>
+        <div id="costReportTable"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+        <div class="cost-links-wrap" id="costQuickLinks"></div>
       </div>
     </div>
   </div>
@@ -429,17 +464,20 @@ function switchAdmSection(section){
   document.getElementById('admTabFeedback').classList.toggle('on', section==='feedback');
   document.getElementById('admTabGrievances').classList.toggle('on', section==='grievances');
   document.getElementById('admTabCleanup').classList.toggle('on', section==='cleanup');
+  document.getElementById('admTabCost').classList.toggle('on', section==='cost');
   document.getElementById('admSectionOverview').classList.toggle('hide', section!=='overview');
   document.getElementById('admSectionPending').classList.toggle('hide', section!=='pending');
   document.getElementById('admSectionReports').classList.toggle('hide', section!=='reports');
   document.getElementById('admSectionFeedback').classList.toggle('hide', section!=='feedback');
   document.getElementById('admSectionGrievances').classList.toggle('hide', section!=='grievances');
   document.getElementById('admSectionCleanup').classList.toggle('hide', section!=='cleanup');
+  document.getElementById('admSectionCost').classList.toggle('hide', section!=='cost');
   if(section==='overview') loadOverview();
   if(section==='reports') loadReportsQueue();
   if(section==='feedback') loadFeedbackView();
   if(section==='grievances') loadGrievances();
   if(section==='cleanup') loadCleanupCandidates();
+  if(section==='cost') loadCostReport();
 }
 
 // ═══════════════════════════════════════════════
@@ -597,15 +635,15 @@ async function loadPendingListings(){
     }
     document.getElementById('adminList').innerHTML = list.map(l=>`
       <div class="admin-item" id="admin-item-${l.id}">
-        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${escapeHtmlAdm(l.title)}${l.moderation_verdict==='flagged'?`<span class="admin-flag-badge" title="${escapeHtmlAdm(l.moderation_reason||'')}">🚩 Flagged${l.moderation_reason?': '+escapeHtmlAdm(l.moderation_reason):''}</span>`:''}</div>
         <div class="admin-item-meta">
-          <span>${l.subcategory||l.category}</span>
-          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
-          <span>👤 ${l.seller?.full_name||l.profiles?.full_name||'Unknown'}</span>
-          <span>📍 ${l.address||'No address'}</span>
+          <span>${escapeHtmlAdm(l.subcategory||l.category)}</span>
+          <span>₹ ${escapeHtmlAdm(l.price_label||fmtPrice(l.price))}</span>
+          <span>👤 ${escapeHtmlAdm(l.seller?.full_name||l.profiles?.full_name||'Unknown')}</span>
+          <span>📍 ${escapeHtmlAdm(l.address||'No address')}</span>
           <span style="color:var(--muted);">${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
         </div>
-        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${l.description.slice(0,120)}${l.description.length>120?'…':''}</div>`:''}
+        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${escapeHtmlAdm(l.description.slice(0,120))}${l.description.length>120?'…':''}</div>`:''}
         <div>
           <button class="admin-approve-btn" onclick="approveAdminListing('${l.id}')">✅ Approve & Go Live</button>
           <button class="admin-reject-btn" onclick="rejectAdminListing('${l.id}')">🗑 Remove</button>
@@ -673,13 +711,13 @@ async function loadReportsQueue(){
         `<option value="${rr.id}" ${rr.id===r.reason?'selected':''}>${rr.label}</option>`).join('');
       return `
       <div class="admin-item" id="report-item-${r.id}">
-        <div class="admin-item-title">🚩 ${listing ? listing.title : '(listing deleted)'}</div>
+        <div class="admin-item-title">🚩 ${listing ? escapeHtmlAdm(listing.title) : '(listing deleted)'}</div>
         <div class="admin-item-meta">
-          <span>Reason: ${(REPORT_REASONS.find(rr=>rr.id===r.reason)||{}).label||r.reason}</span>
-          <span>👤 Reported by ${reporter ? (reporter.nickname||reporter.full_name||'Unknown') : 'Unknown'}</span>
+          <span>Reason: ${escapeHtmlAdm((REPORT_REASONS.find(rr=>rr.id===r.reason)||{}).label||r.reason)}</span>
+          <span>👤 Reported by ${reporter ? escapeHtmlAdm(reporter.nickname||reporter.full_name||'Unknown') : 'Unknown'}</span>
           <span style="color:var(--muted);">${new Date(r.created_at).toLocaleDateString('en-IN')}</span>
         </div>
-        ${r.note?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">"${r.note}"</div>`:''}
+        ${r.note?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">"${escapeHtmlAdm(r.note)}"</div>`:''}
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
           <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>
           <select class="admin-reason-sel" id="report-reason-${r.id}">${reasonOpts}</select>
@@ -738,10 +776,10 @@ function closeReportChat(){
   document.getElementById('chatviewOverlay').classList.add('hide');
 }
 
+// T-014: escape every user/model-supplied value before it goes into innerHTML.
+// Covers & < > " ' so it is safe both as element text and inside quoted attributes.
 function escapeHtmlAdm(s){
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // ═══════════════════════════════════════════════
@@ -799,16 +837,17 @@ function renderFeedbackView(){
   el.innerHTML = list.map((f,i)=>`
     <div class="fbv-item ${f.status==='resolved'?'resolved':''}" id="fbv-card-${f.id}">
       <div class="fbv-meta">
-        <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${f.type}</span>
+        <span class="fbv-type">${FBV_EMOJI[f.type]||'💬'} ${escapeHtmlAdm(f.type)}</span>
         ${f.rating ? `<span class="fbv-type" style="color:var(--orange);background:rgba(240,96,48,.1);">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>` : ''}
-        <span class="fbv-name">👤 ${f.created_for||f.profile?.full_name||'Unknown'}</span>
+        <span class="fbv-name">👤 ${escapeHtmlAdm(f.created_for||f.profile?.full_name||'Unknown')}</span>
         ${f.status==='resolved'?'<span class="fbv-resolved-badge">✅ Resolved</span>':''}
         <span class="fbv-time">${f.created_at?new Date(f.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span>
       </div>
-      <div class="fbv-text">"${f.description}"</div>
+      <div class="fbv-text">"${escapeHtmlAdm(f.description)}"</div>
       <div class="fbv-reply-row">
-        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${f.created_for||f.profile?.full_name||'this user'}…"></textarea>
-        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}','${((f.created_for||f.profile?.full_name||'Someone').replace(/'/g,"\\'"))}')">💬 Send Reply</button>
+        <textarea class="fbv-reply-input" id="fbv-reply-${i}" placeholder="Type a reply to send in-app to ${escapeHtmlAdm(f.created_for||f.profile?.full_name||'this user')}…"></textarea>
+        <button class="fbv-draft-btn" id="fbv-draft-btn-${i}" onclick="draftFeedbackReplyBtn('${f.id}',${i})">✨ Draft Reply</button>
+        <button class="fbv-send-btn" onclick="sendFeedbackReply('${f.id}',${i},'${(f.user_id||'')}')">💬 Send Reply</button>
       </div>
       <div class="fbv-actions">
         ${f.status !== 'resolved' ? `<button class="fbv-resolve-btn" onclick="resolveFeedback('${f.id}')">✅ Mark as Resolved</button>` : ''}
@@ -817,7 +856,9 @@ function renderFeedbackView(){
     </div>`).join('');
 }
 
-async function sendFeedbackReply(feedbackId, idx, receiverId, name){
+async function sendFeedbackReply(feedbackId, idx, receiverId){
+  const fb = _fbAll.find(f=>f.id===feedbackId);
+  const name = fb?.created_for || fb?.profile?.full_name || 'Someone';
   const txt = document.getElementById('fbv-reply-'+idx)?.value.trim();
   if(!txt){ toast('Please type a reply first.'); return; }
   if(!receiverId){ toast('Cannot find this user — no receiver ID.'); return; }
@@ -826,6 +867,21 @@ async function sendFeedbackReply(feedbackId, idx, receiverId, name){
     document.getElementById('fbv-reply-'+idx).value = '';
     toast(`✅ Reply sent to ${name} — they will see it in their Inbox.`);
   } catch(e){ toast('Could not send reply: '+e.message); }
+}
+
+// Session 9E — fills the reply textarea with an AI-drafted reply for
+// Arun/Nagesh to review and edit; never sends anything itself, that's
+// still the separate "💬 Send Reply" button above.
+async function draftFeedbackReplyBtn(feedbackId, idx){
+  const btn = document.getElementById('fbv-draft-btn-'+idx);
+  const original = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '⏳ Drafting…';
+  try {
+    const data = await apiPost(`/api/users/feedback/${feedbackId}/draft-reply`, {});
+    const input = document.getElementById('fbv-reply-'+idx);
+    if(input) input.value = data.draft;
+  } catch(e){ toast('Could not draft a reply: '+e.message); }
+  finally { btn.disabled = false; btn.innerHTML = original; }
 }
 
 async function resolveFeedback(id){
@@ -889,14 +945,14 @@ async function loadGrievances(){
       <div class="admin-item" id="grv-item-${g.id}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
           <div>
-            <div class="admin-item-title">${g.complainant_name}${g.complainant_contact?` · ${g.complainant_contact}`:''}</div>
+            <div class="admin-item-title">${escapeHtmlAdm(g.complainant_name)}${g.complainant_contact?` · ${escapeHtmlAdm(g.complainant_contact)}`:''}</div>
             <div class="admin-item-meta">
               <span>Received ${new Date(g.received_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span>
             </div>
           </div>
           <div class="grv-badges" style="text-align:right;margin-bottom:0;flex-shrink:0;">${grvBadges(g)}</div>
         </div>
-        <div style="font-size:11.5px;color:var(--text);line-height:1.6;margin-bottom:8px;">"${g.note}"</div>
+        <div style="font-size:11.5px;color:var(--text);line-height:1.6;margin-bottom:8px;">"${escapeHtmlAdm(g.note)}"</div>
         <div>
           ${!g.acknowledged_at ? `<button class="admin-dismiss-btn" onclick="acknowledgeGrievance('${g.id}')">✓ Mark Acknowledged</button>` : ''}
           ${g.status!=='resolved' ? `<button class="fbv-resolve-btn" onclick="resolveGrievanceEntry('${g.id}')">✅ Mark Resolved</button>` : ''}
@@ -1005,15 +1061,68 @@ function clnItemHtml(l, sub){
     <div class="cln-item">
       <input type="checkbox" onchange="toggleClnSelect('${l.id}', this.checked)">
       <div class="cln-item-body">
-        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${l.title}</div>
+        <div class="admin-item-title">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'} ${escapeHtmlAdm(l.title)}</div>
         <div class="admin-item-meta">
-          <span>${l.subcategory||l.category}</span>
-          <span>₹ ${l.price_label||fmtPrice(l.price)}</span>
-          <span>👤 ${l.profiles?.full_name||'Unknown'}</span>
+          <span>${escapeHtmlAdm(l.subcategory||l.category)}</span>
+          <span>₹ ${escapeHtmlAdm(l.price_label||fmtPrice(l.price))}</span>
+          <span>👤 ${escapeHtmlAdm(l.profiles?.full_name||'Unknown')}</span>
           <span style="color:var(--muted);">${sub}</span>
         </div>
       </div>
     </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// COST & USAGE (Session 9F) — last 7 days vs. trailing 4-week average,
+// per metric, with a >30%-move flag and a rule-based (not LLM-generated)
+// probable-cause line computed server-side. Mapbox's row is always
+// labeled "estimated" since Mapbox itself has no usage/spend API.
+// ═══════════════════════════════════════════════
+let _costLoaded = false;
+
+function fmtCostNum(n, isMoney){
+  if(n == null) return '—';
+  return isMoney ? `$${n.toFixed(2)}` : n;
+}
+
+async function loadCostReport(){
+  if(_costLoaded) return;
+  try {
+    const data = await apiGet('/api/admin/cost-report');
+    _costLoaded = true;
+    const isMoneyRow = m => m.metric.includes('$');
+    document.getElementById('costReportTable').innerHTML = `
+      <div style="overflow-x:auto;">
+      <table class="cost-table">
+        <tr><th>Metric</th><th>Last 7 days</th><th>4-wk avg</th><th>% change</th><th>Note</th></tr>
+        ${data.metrics.map(m => {
+          if(m.unavailable){
+            return `<tr>
+              <td class="cost-metric-name">${m.metric}</td>
+              <td colspan="3" class="cost-unavailable">${m.cause}</td>
+              <td></td>
+            </tr>`;
+          }
+          const money = isMoneyRow(m);
+          const pctClass = m.pct_change > 0 ? 'cost-pct-up' : m.pct_change < 0 ? 'cost-pct-down' : '';
+          const pctSign = m.pct_change > 0 ? '+' : '';
+          return `<tr>
+            <td class="cost-metric-name">${m.metric.replace(', estimated','')}${m.estimated?'<span class="cost-est-tag">ESTIMATED</span>':''}</td>
+            <td>${fmtCostNum(m.last_7d, money)}</td>
+            <td>${fmtCostNum(m.trailing_4wk_avg, money)}</td>
+            <td class="${pctClass}">${pctSign}${m.pct_change}%${m.flagged?'<span class="cost-flag-badge">⚠ &gt;30%</span>':''}</td>
+            <td style="color:var(--muted);font-size:11px;">${m.cause}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+      </div>`;
+    document.getElementById('costQuickLinks').innerHTML = `
+      <div class="cost-links-title">🔗 Check the source</div>
+      ${data.quick_links.map(l => `<a class="cost-link-item" href="${l.url}" target="_blank" rel="noopener">${l.label} ↗</a>`).join('')}
+    `;
+  } catch(e){
+    document.getElementById('costReportTable').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
+  }
 }
 
 function toggleClnSelect(id, checked){

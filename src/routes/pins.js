@@ -28,6 +28,15 @@ router.get('/', requireAuth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Labels are typed by the user (≤40 in the UI). The server cap is looser
+// because pins saved at signup before 9J used the street address as label.
+const MAX_LABEL = 100;
+function cleanLabel(label) {
+  if (typeof label !== 'string') return null;
+  const t = label.trim();
+  return t && t.length <= MAX_LABEL ? t : null;
+}
+
 // ── Add a new pin ─────────────────────────────────────────────
 // Body: { label, lat, lng, is_default }
 router.post('/', requireAuth, async (req, res, next) => {
@@ -36,6 +45,9 @@ router.post('/', requireAuth, async (req, res, next) => {
 
     if (!label || lat === undefined || lng === undefined) {
       return next(createError('label, lat and lng are required.'));
+    }
+    if (!cleanLabel(label)) {
+      return next(createError(`Label must be 1–${MAX_LABEL} characters.`));
     }
 
     const parsedLat = parseFloat(lat);
@@ -108,7 +120,10 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     }
 
     const updates = {};
-    if (label !== undefined) updates.label = label.trim();
+    if (label !== undefined) {
+      updates.label = cleanLabel(label);
+      if (!updates.label) return next(createError(`Label must be 1–${MAX_LABEL} characters.`));
+    }
     if (lat   !== undefined) updates.lat   = parseFloat(lat);
     if (lng   !== undefined) updates.lng   = parseFloat(lng);
 

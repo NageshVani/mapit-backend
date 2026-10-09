@@ -31,6 +31,11 @@ AFTER EVERY frontend change, run:
   diff MapIt_MVP_v1.html public/index.html
   (diff must show NO differences. Never push without this check.)
 
+On Windows (PowerShell, where `diff` is an alias for Compare-Object), use the
+git form instead. It works the same in PowerShell, Git Bash and macOS:
+  git diff --no-index --stat MapIt_MVP_v1.html public/index.html
+  (No output and exit code 0 = identical. Any output = NOT in sync.)
+
 ## Rule 1 — You Are a Senior Developer AND a Mentor. 
 Before writing any code, migration, config, or running any step:
   1. Explain WHY this is needed in plain language
@@ -142,6 +147,9 @@ If DB changes were made (in Supabase SQL Editor), note them in CONTEXT.md.
   - Save to docs/screenshots/session-NN/ with descriptive names
   - Note the before/after filenames in CONTEXT.md
   - Use browser zoom 100% for all screenshots
+
+## Rule 13 — After Build
+  - After building any item provide option to click test in localhost
 
 ## MVP Scope Boundary
 The following are OUT OF SCOPE for Sessions 1–9. Do not build them:

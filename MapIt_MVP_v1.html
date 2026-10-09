@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MapIt — Buy &amp; Sell Near You</title>
+<title>MapIt — Geo-based Marketplace</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<meta name="description" content="MapIt is a location-first marketplace for Bangalore. Browse listings by exact GPS pin, post your ad for free, and connect with nearby buyers and sellers.">
+<meta name="description" content="MapIt — Geo-based Marketplace. Browse homes, vehicles and household items in Bangalore on a live map, post your ad for free, and connect with nearby buyers and sellers.">
 <!-- Open Graph / WhatsApp / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.mapit.co.in/">
-<meta property="og:title" content="MapIt — Buy &amp; Sell Near You">
-<meta property="og:description" content="Browse real estate, vehicles, and household items on an interactive map. Every listing has an exact GPS pin. Free to post.">
+<meta property="og:title" content="MapIt — Geo-based Marketplace">
+<meta property="og:description" content="Geo-based Marketplace: browse real estate, vehicles and household items near you on an interactive map. Free to post.">
 <meta property="og:image" content="https://www.mapit.co.in/og-image.png">
 <!-- Twitter / X card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MapIt — Buy &amp; Sell Near You">
-<meta name="twitter:description" content="Location-first marketplace for Bangalore. Browse by map, post for free.">
+<meta name="twitter:title" content="MapIt — Geo-based Marketplace">
+<meta name="twitter:description" content="Geo-based Marketplace for Bangalore. Browse by map, post for free.">
 <meta name="twitter:image" content="https://www.mapit.co.in/og-image.png">
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
@@ -43,24 +43,29 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.45);}
 
 /* ── HEADER ── */
-#hdr{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
+#hdr{min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
 .beta-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
-.srch{flex:1;max-width:400px;position:relative;}
+/* Session 9J — keyword search lives in the sidebar, under the category chips */
+.srch{position:relative;margin:0 10px 8px;flex-shrink:0;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14.5px;opacity:.5;}
 #srchIn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:8px 30px 8px 32px;color:var(--text);font-size:14.5px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 #srchIn:focus{border-color:var(--orange);}
 #srchIn::placeholder{color:var(--muted);}
 .srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 5px;line-height:1;display:none;}
 .srch-clear:hover{color:var(--text);}
+.rail-srch{display:none;}
+/* Shown on the map only while a keyword is active and the box is out of sight */
+.kw-pill{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:650;display:flex;align-items:center;gap:6px;max-width:80%;background:var(--panel);border:1.5px solid var(--orange);border-radius:20px;padding:5px 6px 5px 14px;box-shadow:0 4px 16px rgba(0,0,0,.18);font-size:12.5px;color:var(--text);}
+.kw-pill.hide{display:none;}
+.kw-pill-txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.kw-pill button{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:none;background:var(--card);color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0;}
+.kw-pill button:hover{color:var(--text);}
+.explore-search-box:not(.hide) ~ .kw-pill{top:64px;}
 .hsp{flex:1;}
-.loc-badge{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:11.5px;color:var(--muted);flex-shrink:0;cursor:pointer;transition:border-color .18s;}
-.loc-badge:hover{border-color:var(--orange);}
-.loc-badge b{color:var(--orange);}
-.modetog{display:flex;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:3px;gap:2px;flex-shrink:0;}
-.mbt{padding:5px 16px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;}
-.mbt.on{background:var(--orange);color:#fff;}
+.post-btn{padding:8px 16px;border-radius:8px;border:none;background:var(--orange);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;flex-shrink:0;transition:background .18s;}
+.post-btn:hover{background:var(--orange2);}
 .uav-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;position:relative;flex-shrink:0;}
 .uav-chip{font-size:12px;font-weight:600;color:var(--text);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .uav{width:36px;height:36px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;flex-shrink:0;box-shadow:0 0 0 2px rgba(240,96,48,.3);letter-spacing:.5px;}
@@ -76,13 +81,13 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .uav-name{font-size:11px;font-weight:600;color:var(--muted2);padding:6px 12px 4px;border-bottom:1px solid var(--border);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
 
 /* ── LAYOUT ── */
-#main{display:flex;height:calc(100vh - 56px);}
+#main{display:flex;height:calc(100vh - var(--hdr-h,56px));}
 
 /* ── SIDEBAR ── */
 #sb{width:var(--sb-w);flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .cat-row{display:flex;gap:4px;padding:10px 10px 6px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
 .cat-row::-webkit-scrollbar{display:none;}
-.cat-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 10px;border-radius:10px;cursor:pointer;min-width:58px;flex-shrink:0;border:1.5px solid transparent;transition:all .18s;}
+.cat-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 6px;border-radius:10px;cursor:pointer;min-width:54px;flex-shrink:0;border:1.5px solid transparent;transition:all .18s;}
 .cat-btn:hover{background:var(--card);}
 .cat-btn.on{background:var(--card);border-color:var(--orange);}
 .cat-ico{font-size:19px;}
@@ -92,20 +97,38 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .spill{padding:4px 11px;border-radius:20px;border:1px solid var(--border2);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .18s;color:var(--muted);background:transparent;}
 .spill:hover{background:var(--card);color:var(--text);}
 .spill.on{background:var(--orange);border-color:var(--orange);color:#fff;}
-.rad-box{padding:9px 12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
-.rad-hd{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
-.rad-hd span{color:var(--orange);}
-.rad-btns{display:flex;gap:4px;overflow-x:auto;}
-.rbt{flex:1;min-width:44px;padding:5px 0;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;}
-.rbt:hover{background:var(--card);color:var(--text);}
-.rbt.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+/* Session 9G — search mode + radius live in the header; radius is a dropdown chip */
+.hdr-filters{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.hdr-break{display:none;}
+.pin-box{position:relative;display:flex;flex:0 1 auto;min-width:0;}
+#smExplore{flex:0 0 auto;}
+.pin-box .smb{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;}
+#activePinLabel{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;}
+.smb-k{font-weight:500;opacity:.85;}
+.pmi{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;border-radius:6px;background:transparent;color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-align:left;}
+.pmi:hover{background:var(--card);}
+.pmi.on{color:var(--orange);}
+.pmi-tick{width:14px;flex-shrink:0;}
+.pmi-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pmi.manage{color:var(--muted);font-weight:500;border-top:1px solid var(--border);border-radius:0 0 6px 6px;margin-top:4px;padding-top:10px;}
+.rad-box{position:relative;flex-shrink:0;}
+.rad-chip{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;transition:border-color .18s;}
+.rad-chip:hover,.rad-chip[aria-expanded="true"]{border-color:var(--orange);}
+.rad-chip b{color:var(--orange);font-weight:700;}
+.rad-caret{font-size:10px;}
+.rad-menu{position:absolute;top:100%;left:0;margin-top:6px;background:var(--panel);border:1px solid var(--border2);border-radius:10px;padding:6px;min-width:200px;box-shadow:var(--shadow);display:none;flex-direction:column;gap:2px;z-index:910;}
+.rad-menu.open{display:flex;}
+.rbt{display:flex;justify-content:space-between;align-items:baseline;gap:10px;width:100%;padding:8px 10px;border:none;border-radius:6px;background:transparent;color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-align:left;}
+.rbt small{font-weight:400;color:var(--muted);font-size:11px;}
+.rbt:hover{background:var(--card);}
+.rbt.on{background:var(--orange);color:#fff;}
+.rbt.on small{color:rgba(255,255,255,.85);}
 .rad-box.disabled{opacity:.4;pointer-events:none;}
 /* ── SEARCH MODE TOGGLE ── */
-.search-mode-box{padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.search-mode-box.disabled{opacity:.4;pointer-events:none;}
+#searchModeBox.disabled{opacity:.4;pointer-events:none;}
 .smode-hd{font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
 .smode-tog{display:flex;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:3px;gap:2px;}
-.smb{flex:1;padding:5px 8px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;white-space:nowrap;}
+.smb{flex:1;padding:5px 10px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);background:transparent;font-family:'Outfit',sans-serif;white-space:nowrap;}
 .smb:hover{color:var(--text);background:rgba(0,0,0,.05);}
 .smb.on{background:var(--orange);color:#fff;}
 .smb.on.explore{background:var(--blue);}
@@ -135,19 +158,28 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .ld-dist-bar{background:linear-gradient(135deg,#0d9488,#0284c7);padding:7px 13px;border-radius:0;display:flex;flex-direction:column;gap:1px;}
 .ld-dist-txt{font-size:12px;font-weight:800;color:#fff;letter-spacing:.2px;}
 .ld-dist-sub{font-size:10px;color:rgba(255,255,255,.72);}
+/* Session 9J — phones show one pane at a time, so the detail gets a way to the map */
+.ld-dist-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ld-map-btn{display:none;flex-shrink:0;background:#fff;color:#0369a1;border:none;border-radius:14px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+@media(max-width:768px){.ld-map-btn{display:inline-block;}}
 .ld-info-top{display:flex;align-items:center;gap:10px;padding:0 13px;}
 .ld-info-thumb{width:64px;height:64px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;overflow:hidden;border:1px solid var(--border2);}
 .ld-info-mid{flex:1;min-width:0;}
-.ld-info-ttl{font-size:16.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;margin-bottom:3px;}
-.ld-info-price{font-size:20px;font-weight:700;color:var(--orange);font-family:'JetBrains Mono',monospace;line-height:1;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ld-info-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ld-info-ttl{font-size:16.5px;font-weight:700;line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;}
+.ld-info-price{font-size:18px;font-weight:700;color:var(--orange);font-family:'JetBrains Mono',monospace;line-height:1;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* long prices (₹85.0L, ₹1.25Cr) step down so they fit beside the action buttons */
+.ld-info-price.sm{font-size:15px;}
+.per-mo{font-size:11px;font-weight:600;letter-spacing:0;margin-left:1px;}
+.ld-info-neg{font-size:11px;font-weight:600;color:var(--muted);margin-top:3px;}
+/* Session 9G — actions get their own full-width row so the title has room */
+.ld-info-actions{display:flex;align-items:center;gap:8px;padding:0 13px;}
 .ld-photo-strip{display:flex;align-items:center;gap:6px;padding:8px 13px 0;border-top:1px solid var(--border2);}
 .ld-photo-lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;margin-right:2px;}
 .ld-photo-thumb{width:38px;height:38px;border-radius:5px;overflow:hidden;flex-shrink:0;cursor:pointer;background:var(--card);border:1px solid var(--border2);}
 .ld-photo-thumb img{width:100%;height:100%;object-fit:cover;}
 .ld-photo-thumb:hover{opacity:.82;}
-.ld-chat-btn{background:transparent;border:none;color:#16a34a;font-size:12px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;text-align:center;line-height:1.3;padding:4px 2px;}
-.ld-chat-btn:hover{color:#15803d;}
+.ld-chat-btn{flex:1;height:38px;background:#16a34a;border:none;border-radius:8px;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;padding:0 12px;transition:background .15s;}
+.ld-chat-btn:hover{background:#15803d;}
 .ld-chat-btn:disabled{opacity:.5;cursor:not-allowed;}
 .ld-interest-box{padding:0 13px;display:flex;flex-direction:column;gap:6px;}
 .ld-interest-box textarea{width:100%;min-height:60px;max-height:140px;resize:vertical;padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;background:var(--card);color:inherit;box-sizing:border-box;}
@@ -213,6 +245,29 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
 /* ── MAP ── */
 #mapc{flex:1;position:relative;overflow:hidden;}
+/* Session 9G — desktop collapsible sidebar: a ‹/› handle on the map's left
+   edge shrinks #sb to a 64px icon rail. Phones keep the List/Map toggle. */
+#sb{transition:width .22s ease;}
+.sb-handle{position:absolute;top:14px;left:0;z-index:650;width:22px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--border2);border-left:none;border-radius:0 8px 8px 0;box-shadow:2px 2px 8px rgba(0,0,0,.12);color:var(--muted);font-size:18px;font-weight:700;line-height:1;cursor:pointer;padding:0;transition:color .15s;}
+.sb-handle:hover{color:var(--orange);}
+.sb-handle:focus-visible{outline:2px solid var(--orange);outline-offset:2px;}
+@media(min-width:769px){
+  #main.sb-collapsed #sb{width:64px;}
+  #main.sb-collapsed .cat-row{flex-direction:column;align-items:stretch;padding:8px 6px;gap:4px;overflow:visible;}
+  #main.sb-collapsed .cat-btn{min-width:0;padding:8px 0;}
+  /* !important: renderCats() sets the sub-row's display inline */
+  #main.sb-collapsed .cat-lbl,#main.sb-collapsed .sub-row,#main.sb-collapsed .tab-lbl,
+  #main.sb-collapsed .fb-lbl,#main.sb-collapsed #sb-content,#main.sb-collapsed .sb-srch{display:none !important;}
+  #main.sb-collapsed .rail-srch{display:block;margin:0 6px 6px;padding:8px 0;border:1.5px solid transparent;border-radius:10px;background:none;font-size:19px;cursor:pointer;}
+  #main.sb-collapsed .rail-srch:hover{background:var(--card);}
+  #main.sb-collapsed .tab-bar{flex-direction:column;border-top:1px solid var(--border);border-bottom:none;padding:6px;gap:4px;}
+  #main.sb-collapsed .tab-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;margin:0;font-size:15px;border-radius:8px;}
+  #main.sb-collapsed .tab-btn.on{border-radius:8px;}
+  #main.sb-collapsed .feedback-strip{margin-top:auto;padding:8px 0;}
+  #main.sb-collapsed .feedback-btn{padding:6px 10px;}
+}
+@media(max-width:768px){.sb-handle{display:none;}}
+@media(prefers-reduced-motion:reduce){#sb{transition:none;}}
 #map{width:100%;height:100%;}
 .leaflet-control-zoom{border:none !important;box-shadow:0 2px 10px rgba(0,0,0,.12) !important;}
 .leaflet-control-zoom a{background:var(--card) !important;color:var(--text) !important;border:1px solid var(--border2) !important;font-size:16px !important;}
@@ -235,9 +290,30 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #viewToggle{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:900;}
 @media(max-width:768px){
   #viewToggle{display:flex;}
+  /* Phone header: row 1 = logo · avatar; row 2 = mode · radius · Post (search is in the list, 9J) */
+  #hdr{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:8px 12px;}
+  .beta-tag,.hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
+  #activePinLabel{max-width:110px;}
+  .uav-wrap{order:2;margin-left:auto;}
+  .hdr-break{display:block;order:3;flex-basis:100%;height:0;}
+  .hdr-filters{order:4;flex:1;min-width:0;gap:6px;}
+  .hdr-filters #searchModeBox{flex:1;min-width:0;}
+  .smb{padding:5px 6px;font-size:11.5px;}
+  .rad-chip{padding:6px 9px;}
+  .rad-menu{left:auto;right:0;}
+  .pin-box{flex:1 1 auto;}
+  .pin-menu{left:0;right:auto;max-width:calc(100vw - 24px);}
+  .post-btn{order:5;padding:8px 12px;}
+  /* Single-pane List/Map view on every phone width (were wrongly under 380px since b79a3ed) */
   #sb{width:100%;}
   #main.view-list #mapc{display:none;}
   #main.view-map #sb{display:none;}
+}
+@media(max-width:380px){
+  .cat-lbl{white-space:normal;text-align:center;line-height:1.2;max-width:64px;}
+  .cat-btn{padding:7px 4px;}
+  .smb{padding:5px 4px;font-size:11px;}
+  .post-btn{padding:8px 10px;}
 }
 
 /* ── EXPLORE AREA SEARCH BAR ── */
@@ -325,16 +401,16 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .modal-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:36px 32px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);}
 .modal-logo{font-family:'Playfair Display',serif;font-size:28px;color:var(--text);text-align:center;margin-bottom:6px;}
 .modal-logo em{font-style:normal;color:var(--orange);}
-.modal-sub{font-size:12.5px;color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.6;}
-.modal-label{font-size:11px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;display:block;}
-.modal-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;margin-bottom:14px;}
+.modal-sub{font-size:15px;font-weight:600;letter-spacing:.3px;color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.6;}
+.modal-label{font-size:12.5px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.modal-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;color:var(--text);font-size:16px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;margin-bottom:14px;}
 .modal-input:focus{border-color:var(--orange);}
 .modal-input::placeholder{color:var(--muted);}
 .modal-input.otp-input{font-size:22px;letter-spacing:8px;text-align:center;font-weight:700;}
-.modal-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.modal-btn{width:100%;background:var(--orange);color:#fff;border:none;padding:13px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;}
 .modal-btn:hover{background:var(--orange2);}
 .modal-btn:disabled{opacity:.5;cursor:not-allowed;}
-.modal-link{text-align:center;font-size:12px;color:var(--muted);margin-top:14px;cursor:pointer;}
+.modal-link{text-align:center;font-size:13.5px;color:var(--muted);margin-top:14px;cursor:pointer;}
 .modal-link span{color:var(--orange);font-weight:600;}
 .modal-link span:hover{text-decoration:underline;}
 .modal-step{display:none;}
@@ -350,7 +426,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .otp-hint{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px;}
 .otp-hint b{color:var(--text);}
 .auth-tabs{display:flex;gap:0;margin-bottom:20px;border:1.5px solid var(--border2);border-radius:8px;overflow:hidden;}
-.auth-tab{flex:1;padding:9px 0;background:none;border:none;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;}
+.auth-tab{flex:1;padding:10px 0;background:none;border:none;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;}
 .auth-tab.active{background:var(--orange);color:#fff;}
 .auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:11.5px;}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border2);}
@@ -373,6 +449,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 @media(max-width:640px){.post-box{max-width:98vw;}.post-body{grid-template-columns:1fr;}#dynamicFields{grid-template-columns:1fr;}}
 .form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:12px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
+.price-words{font-size:12.5px;font-weight:700;color:var(--orange);margin-top:5px;min-height:16px;}
 .form-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 .tx-radio-row{display:flex;gap:20px;padding:10px 13px;background:var(--card);border:1px solid var(--border2);border-radius:8px;}
 .tx-radio-lbl{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;}
@@ -427,6 +504,21 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .pin-action-btn.primary:hover{background:rgba(240,96,48,.1);}
 .pin-action-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08);}
 .pin-action-btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+.pin-action-btn.icon{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;}
+/* In-app dialog (replaces browser prompt()/confirm(), see mapitDialog()) */
+.dlg-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.dlg-modal.hide{display:none;}
+.dlg-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:380px;padding:20px;box-shadow:var(--shadow);}
+.dlg-title{font-size:15px;font-weight:700;margin-bottom:8px;}
+.dlg-msg{font-size:13px;color:var(--muted);line-height:1.5;white-space:pre-line;margin-bottom:14px;}
+.dlg-msg:empty{display:none;}
+.dlg-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'Outfit',sans-serif;margin-bottom:14px;outline:none;}
+.dlg-input:focus{border-color:var(--orange);}
+.dlg-input.hide{display:none;}
+.dlg-btns{display:flex;gap:10px;justify-content:flex-end;}
+.dlg-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.dlg-btn.primary{background:var(--orange);border-color:var(--orange);color:#fff;}
+.dlg-btn.danger{background:var(--red);border-color:var(--red);color:#fff;}
 .add-pin-form{padding:16px 22px;border-top:1px solid var(--border);background:var(--card);}
 .add-pin-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;}
 .add-pin-divider{text-align:center;font-size:10px;color:var(--muted);margin:10px 0 6px;letter-spacing:.5px;text-transform:uppercase;}
@@ -453,6 +545,20 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .feedback-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:460px;box-shadow:var(--shadow);padding:28px 28px 22px;}
 .feedback-box h3{font-size:16px;font-weight:700;margin-bottom:4px;}
 .feedback-box p{font-size:12px;color:var(--muted);margin-bottom:18px;}
+/* Session 9C — View Profile */
+.prof-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.prof-avatar{flex:0 0 56px;width:56px;height:56px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;}
+.prof-name{font-size:18px;font-weight:700;overflow-wrap:anywhere;}
+.prof-nick{font-size:14px;color:var(--muted);overflow-wrap:anywhere;}
+.prof-rows{border-top:1px solid var(--border2);margin-bottom:14px;}
+.prof-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2);font-size:14px;}
+.prof-lbl{color:var(--muted);flex-shrink:0;}
+.prof-val{text-align:right;overflow-wrap:anywhere;min-width:0;}
+.prof-ok{color:var(--green);font-weight:600;white-space:nowrap;}
+.prof-warn{color:var(--muted);white-space:nowrap;}
+.prof-link{color:var(--orange);font-weight:600;cursor:pointer;white-space:nowrap;}
+.feedback-box p.prof-note{font-size:13px;margin-bottom:12px;}
+.prof-note a{color:var(--orange);}
 .help-box{max-width:720px;}
 .help-box h3{font-size:18px;}
 .help-scroll{max-height:min(62vh,520px);overflow-y:auto;padding-right:10px;}
@@ -480,22 +586,25 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .edit-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.08);color:#60a5fa;font-size:11.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
 .edit-btn:hover{background:rgba(59,130,246,.18);color:#93c5fd;}
 .myads-hd{padding:8px 13px 6px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--deep);display:flex;align-items:center;gap:6px;}
-.ld-edit-btn{background:transparent;border:none;color:#60a5fa;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;text-align:center;line-height:1.3;padding:4px 2px;}
-.ld-edit-btn:hover{color:#93c5fd;}
+.ld-edit-btn{flex:1;height:38px;background:#3B82F6;border:none;border-radius:8px;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;padding:0 12px;transition:background .15s;}
+.ld-edit-btn:hover{background:#2563eb;}
 
 /* ── WHO AM I (shared device screen) ── */
 .whoami{position:fixed;inset:0;background:var(--panel);z-index:1300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
 .whoami.hide{display:none;}
 .whoami-av{width:72px;height:72px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:6px;box-shadow:0 0 0 4px rgba(240,96,48,.2);}
-.whoami-tag{font-size:12px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600;}
+.whoami-tag{font-size:13.5px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600;}
 .whoami-name{font-size:26px;font-weight:700;color:var(--text);margin-bottom:4px;}
 .whoami-btns{display:flex;flex-direction:column;gap:10px;width:270px;margin-top:14px;}
 .whoami-yes{background:var(--orange);color:#fff;border:none;padding:13px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .15s;}
 .whoami-yes:hover{background:var(--orange2);}
-.whoami-no{background:transparent;color:var(--muted);border:1.5px solid var(--border2);padding:13px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
+.whoami-no{background:transparent;color:var(--muted);border:1.5px solid var(--border2);padding:14px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
 .whoami-no:hover{border-color:var(--orange);color:var(--orange);}
 .whoami-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:460px;max-height:55vh;overflow-y:auto;padding:2px;}
-@media (max-width:520px){.whoami-grid{grid-template-columns:1fr;max-width:280px;}}
+@media (max-width:520px){.whoami-grid{grid-template-columns:1fr;max-width:280px;}
+  /* Session 9G (Arun) — match the name cards instead of running edge to edge (inline max-width is 460px).
+     276 = the grid's 280px minus its 2px padding on each side. */
+  #whoamiScreen .whoami-no{max-width:276px!important;}}
 .whoami-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.28);color:#fff;
   display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;cursor:pointer;transition:background .15s;}
 .whoami-remove:hover{background:rgba(0,0,0,.5);}
@@ -505,6 +614,16 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .splash.hide{display:none;}
 .splash-logo{font-family:'Playfair Display',serif;font-size:52px;color:var(--text);}
 .splash-logo em{font-style:normal;color:var(--orange);}
+/* Session 9G (Arun) — grouped-listing bubbles: yellow fill + red number for every
+   size (the library default green blends into parks). White ring + shadow keep
+   them distinct from yellow highways. #991B1B on #FACC15 = 5.4:1 contrast, which
+   passes WCAG AA for normal text (#B91C1C was only 4.2:1). Brighter reds read
+   poorly on yellow. */
+.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background-color:rgba(250,204,21,.35)!important;}
+.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background-color:#FACC15!important;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);}
+.marker-cluster span{color:#991B1B;font-weight:800;font-size:14px;}
+/* Session 9G (Arun) — tagline under the MapIt wordmark on full-screen brand screens */
+.brand-tagline{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.4px;}
 .splash-msg{font-size:17.5px;color:var(--muted);text-align:center;max-width:420px;line-height:1.9;}
 .splash-msg ul{text-align:left;padding-left:20px;margin-top:12px;line-height:2.4;}
 .splash-btn{background:var(--orange);color:#fff;border:none;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:6px;}
@@ -527,8 +646,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
 <!-- ── WHO AM I (shared device — multi-user picker) ── -->
 <div class="whoami hide" id="whoamiScreen">
-  <div class="splash-logo" style="margin-bottom:4px;">Map<em>It</em></div>
-  <div class="whoami-tag">Who's using MapIt?</div>
+  <div class="splash-logo" style="margin-bottom:0;">Map<em>It</em></div>
+  <div class="brand-tagline">Geo-based Marketplace</div>
+  <div class="whoami-tag" style="margin-top:14px;">Who's using MapIt?</div>
   <div id="whoamiUserList" class="whoami-grid" style="margin-top:18px;"></div>
   <button class="whoami-no" onclick="signInAsSomeoneElse()" style="width:100%;max-width:460px;margin-top:12px;">+ New person / first-time login</button>
 </div>
@@ -536,6 +656,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <!-- ── SPLASH ── -->
 <div class="splash hide" id="splashScreen">
   <div class="splash-logo">Map<em>It</em></div>
+  <div class="brand-tagline" style="margin-top:-10px;">Geo-based Marketplace</div>
   <div class="splash-msg" id="splashMsg">Loading your map…</div>
 </div>
 
@@ -543,7 +664,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="modal-overlay hide" id="authModal">
   <div class="modal-box">
     <div class="modal-logo" id="modalLogo">Map<em>It</em></div>
-    <div class="modal-sub" id="modalSub">Bangalore's location-first marketplace</div>
+    <div class="modal-sub" id="modalSub">Geo-based Marketplace</div>
 
     <!-- Step 0: Landing — value proposition for first-time visitors -->
     <div class="modal-step" id="step-landing">
@@ -586,7 +707,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div id="authError" class="modal-error" style="display:none"></div>
       <div id="registerMandatoryNote" style="display:none;font-size:11px;color:var(--muted);margin:-2px 0 10px;">All fields are mandatory *</div>
       <label class="modal-label">Email <span style="color:var(--orange);">*</span></label>
-      <input class="modal-input" id="authEmail" type="email" placeholder="your@email.com" autocomplete="email" oninput="_updateRegisterBtnState()"/>
+      <input class="modal-input" id="authEmail" type="email" placeholder="yourname@email.com" autocomplete="email" oninput="_updateRegisterBtnState()"/>
       <label class="modal-label">Password <span style="color:var(--orange);">*</span></label>
       <div style="position:relative;margin-bottom:14px;">
         <input class="modal-input" id="authPassword" type="password" placeholder="••••••••" style="margin-bottom:0;padding-right:44px;" autocomplete="current-password" oninput="_updateAuthPwdHint()"/>
@@ -619,7 +740,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div class="modal-step" id="step-email">
       <div id="emailError" class="modal-error" style="display:none"></div>
       <label class="modal-label">Email Address</label>
-      <input class="modal-input" id="emailInput" type="email" placeholder="your@email.com"/>
+      <input class="modal-input" id="emailInput" type="email" placeholder="yourname@email.com"/>
       <button class="modal-btn" id="sendOtpBtn" onclick="sendOtp()">
         <span>Send Login Code</span> <span>→</span>
       </button>
@@ -647,8 +768,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <label class="modal-label">Nickname <span style="color:var(--muted);font-weight:400;font-size:11px;">(your display name) *</span></label>
         <input class="modal-input" id="profileNicknameInput" placeholder="e.g. Priya" maxlength="30"/>
       </div>
-      <label class="modal-label">Phone (optional)</label>
-      <input class="modal-input" id="phoneInput" placeholder="+91 98765 43210" type="tel"/>
       <div class="tos-row">
         <input type="checkbox" id="tosCheck" onchange="updateProfileContinueState()" style="margin-top:2px;accent-color:var(--orange);width:16px;height:16px;flex-shrink:0;cursor:pointer;"/>
         <label for="tosCheck" style="font-size:12px;color:var(--muted);line-height:1.5;cursor:pointer;">I agree to the <a href="/terms" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Privacy Policy</a></label>
@@ -658,10 +777,42 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       </button>
     </div>
 
+    <!-- Step: Phone number entry (Session 9C — WhatsApp OTP via MSG91).
+         Shown after the profile step for new signups, and before posting
+         for accounts that still need it. See sendPhoneOtp(). -->
+    <div class="modal-step" id="step-phone-number">
+      <div id="phoneNumError" class="modal-error" style="display:none"></div>
+      <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📱 Verify your phone number</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll send a 6-digit code via WhatsApp to confirm it's really you. Needed before you post a listing.</div>
+      <label class="modal-label">Indian Mobile Number (+91)</label>
+      <input class="modal-input" id="phoneVerifyInput" type="tel" placeholder="98765 43210" autocomplete="tel"/>
+      <button class="modal-btn" id="sendPhoneOtpBtn" onclick="sendPhoneOtp()">
+        <span>Send WhatsApp Code</span> <span>→</span>
+      </button>
+      <div class="modal-link" onclick="skipPhoneVerify()">No WhatsApp right now? <span>Verify later</span></div>
+    </div>
+
+    <!-- Step: Phone OTP verify -->
+    <div class="modal-step" id="step-phone-otp">
+      <div id="phoneOtpError" class="modal-error" style="display:none"></div>
+      <div class="otp-hint">We sent a 6-digit code via WhatsApp to<br><b id="phoneOtpLabel"></b></div>
+      <label class="modal-label">Enter Code</label>
+      <input class="modal-input otp-input" id="phoneOtpInput" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code"/>
+      <button class="modal-btn" id="verifyPhoneOtpBtn" onclick="verifyPhoneOtp()">
+        <span>Verify Phone</span> <span>→</span>
+      </button>
+      <div class="modal-link" onclick="sendPhoneOtp()">Didn't get a code? <span>Resend</span></div>
+      <div class="modal-link" onclick="goToStep('step-phone-number')">Wrong number? <span>Change it</span></div>
+      <div class="modal-link" onclick="skipPhoneVerify()"><span>Verify later</span></div>
+    </div>
+
     <!-- Step: Home location picker -->
     <div class="modal-step" id="step-homeloc">
       <div style="font-size:13.5px;font-weight:600;margin-bottom:6px;">📍 Set your home area</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">We'll show nearby listings first.</div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted2);margin-bottom:4px;">Name this location</div>
+      <input type="text" id="homeLocLabelIn" value="Home" placeholder="Label, e.g. &quot;Home&quot; or &quot;Office&quot;" maxlength="40" autocomplete="off"
+        style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:8px;"/>
       <div style="position:relative;margin-bottom:4px;">
         <input type="text" id="homeLocSearchIn" placeholder="Search area to jump there…" autocomplete="off"
           style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;"
@@ -741,8 +892,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <div class="form-group" id="txTypeGroup" style="display:none;margin-top:14px;">
           <label class="form-label">Transaction Type</label>
           <div class="tx-radio-row">
-            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell" checked> Sell</label>
-            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Rent"> Rent</label>
+            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Rent" checked> Rent</label>
+            <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell"> Sell</label>
           </div>
         </div>
         <!-- Dynamic category-specific fields (rendered as 2-col subgrid via CSS) -->
@@ -754,15 +905,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         </div>
         <!-- Photos -->
         <div class="form-group">
-          <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5)</span></label>
+          <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5 · optional for Plots)</span></label>
           <input type="file" class="form-input" id="postPhotos" accept="image/*" multiple style="padding:8px;cursor:pointer;"/>
         </div>
         <!-- Phone visibility -->
         <div class="form-group">
           <label class="form-label">📞 Show Phone Number to Buyers</label>
           <div class="tx-radio-row" style="flex-direction:column;gap:8px;">
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="always" checked> Always</label>
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement"> On Agreement</label>
+            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement" checked> On Agreement</label>
             <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
           </div>
         </div>
@@ -813,6 +963,19 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   </div>
 </div>
 
+<!-- ── IN-APP DIALOG (see mapitDialog()) ── -->
+<div class="dlg-modal hide" id="mapitDlg" onclick="if(event.target===this)_dlgClose(false)">
+  <div class="dlg-box" role="dialog" aria-modal="true" aria-labelledby="mapitDlgTitle">
+    <div class="dlg-title" id="mapitDlgTitle"></div>
+    <div class="dlg-msg" id="mapitDlgMsg"></div>
+    <input type="text" class="dlg-input hide" id="mapitDlgInput" autocomplete="off"/>
+    <div class="dlg-btns">
+      <button class="dlg-btn" id="mapitDlgCancel" onclick="_dlgClose(false)">Cancel</button>
+      <button class="dlg-btn primary" id="mapitDlgOk" onclick="_dlgClose(true)">OK</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── PINS MODAL ── -->
 <div class="pins-modal hide" id="pinsModal">
   <div class="pins-box">
@@ -823,7 +986,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div id="pinsList"></div>
     <div class="add-pin-form">
       <div style="font-size:12px;font-weight:600;color:var(--muted2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Add New Location</div>
-      <input class="form-input" id="newPinLabel" placeholder='Label, e.g. "Office" or "Sister\'s Home"' maxlength="40" style="margin-bottom:10px;"/>
+      <input type="text" id="newPinLabel" placeholder="Label, e.g. &quot;Office&quot; or &quot;Sister's Home&quot;" maxlength="40" autocomplete="off"
+        style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:10px;"/>
       <div style="position:relative;margin-bottom:4px;">
         <input type="text" id="addPinSearchIn" placeholder="Search area to jump there…" autocomplete="off"
           style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;"
@@ -857,19 +1021,34 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <header id="hdr">
   <div class="logo">Map<em>It</em></div>
   <div class="beta-tag">Beta</div>
-  <div class="srch">
-    <span class="srch-ic">🔍</span>
-    <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
-    <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
+  <div class="hsp"></div>
+  <div class="hdr-break"></div>
+  <div class="hdr-filters">
+    <div class="smode-tog" id="searchModeBox">
+      <div class="pin-box" id="pinBox">
+        <button class="smb on" id="smPin" type="button" onclick="onMyLocationClick(event)" aria-haspopup="true" aria-expanded="false" title="Listings around your saved location — tap to change it">
+          📍 <span class="smb-k">My location ·</span> <b id="activePinLabel">Set location</b> <span class="rad-caret">▾</span>
+        </button>
+        <div class="rad-menu pin-menu" id="pinMenu" role="menu"></div>
+      </div>
+      <button class="smb explore" id="smExplore" onclick="setSearchMode('explore')" title="Pan the map or search any area">🗺 Explore</button>
+    </div>
+    <div class="rad-box" id="radBox">
+      <button class="rad-chip" id="radChip" type="button" onclick="toggleRadMenu(event)" aria-haspopup="true" aria-expanded="false">
+        <span id="radMode">Within</span> <b id="radLbl">5 km</b> <span class="rad-caret">▾</span>
+      </button>
+      <div class="rad-menu" id="radMenu" role="menu">
+        <button class="rbt" data-r="1" onclick="setRad(1)">1 km <small>walking distance</small></button>
+        <button class="rbt" data-r="3" onclick="setRad(3)">3 km</button>
+        <button class="rbt on" data-r="5" onclick="setRad(5)">5 km</button>
+        <button class="rbt" data-r="10" onclick="setRad(10)">10 km</button>
+        <button class="rbt" data-r="50" onclick="setRad(50)">Region <small>50 km</small></button>
+        <button class="rbt" data-r="999" onclick="setRad(999)">Whole city</button>
+      </div>
+    </div>
   </div>
   <div class="hsp"></div>
-  <div class="loc-badge" title="Your active location" style="cursor:default;">
-    📍 <b id="activePinLabel">Koramangala</b>
-  </div>
-  <div class="modetog">
-    <button class="mbt on" data-m="buy" onclick="setMode(this)">Browse</button>
-    <button class="mbt" data-m="post" onclick="setMode(this)">➕ Post a Listing</button>
-  </div>
+  <button class="post-btn" type="button" onclick="openPostModal()">➕ Post<span class="hide-sm"> a Listing</span></button>
   <div class="uav-wrap" id="uavBtn" onclick="toggleAvatarMenu()">
     <span class="uav-chip" id="uavChipName"></span>
     <div class="uav">
@@ -877,6 +1056,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </div>
     <div class="uav-menu" id="uavMenu" onclick="event.stopPropagation()">
       <div class="uav-name" id="uavName">—</div>
+      <div class="uav-item" onclick="openProfileModal()">👤 View Profile</div>
       <div class="uav-item" onclick="openHelpModal()">❓ Help</div>
       <div class="uav-item" onclick="window.open('/user-guide.html','_blank')">📖 User Guide</div>
       <div class="uav-item" onclick="changeNickname()">✏️ Change Nickname</div>
@@ -898,35 +1078,25 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <aside id="sb">
     <div class="cat-row" id="catRow"></div>
     <div class="sub-row" id="subRow"></div>
-    <div class="search-mode-box" id="searchModeBox">
-      <div class="smode-hd">Search Mode</div>
-      <div class="smode-tog">
-        <button class="smb on" id="smPin" onclick="setSearchMode('pin')">📍 My Locations</button>
-        <button class="smb explore" id="smExplore" onclick="setSearchMode('explore')">🗺 Explore Area</button>
-      </div>
+    <div class="srch sb-srch">
+      <span class="srch-ic">🔍</span>
+      <input id="srchIn" type="text" placeholder="Search listings by keyword…" autocomplete="off"/>
+      <button id="srchClear" class="srch-clear" onclick="clearKeyword()" title="Clear search">×</button>
     </div>
-    <div class="rad-box">
-      <div class="rad-hd"><span id="radMode">Proximity Radius</span> <span id="radLbl">5 km</span></div>
-      <div class="rad-btns">
-        <button class="rbt" onclick="setRad(3)">3 km</button>
-        <button class="rbt on" onclick="setRad(5)">5 km</button>
-        <button class="rbt" onclick="setRad(10)">10 km</button>
-        <button class="rbt" onclick="setRad(999)">City</button>
-        <button class="rbt" onclick="setRad(50)">Region</button>
-      </div>
-    </div>
+    <button class="rail-srch" type="button" onclick="openSearchFromRail()" title="Search listings by keyword" aria-label="Search listings by keyword">🔍</button>
     <div class="tab-bar">
-      <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse')">📍 Listings <span class="tab-count" id="cnt-badge">0</span></button>
-      <button class="tab-btn" id="tab-fav" onclick="switchTab('fav')">❤ Saved <span class="tab-count" id="fav-badge">0</span></button>
-      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">📋 My Ads <span class="tab-count" id="mine-badge">0</span></button>
+      <button class="tab-btn on" id="tab-browse" onclick="switchTab('browse');expandFromRail()" title="Listings"><span class="tab-ico">📍</span><span class="tab-lbl"> Listings</span> <span class="tab-count" id="cnt-badge">0</span></button>
+      <button class="tab-btn" id="tab-fav" onclick="switchTab('fav');expandFromRail()" title="Saved"><span class="tab-ico">❤</span><span class="tab-lbl"> Saved</span> <span class="tab-count" id="fav-badge">0</span></button>
+      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine');expandFromRail()" title="My Listings"><span class="tab-ico">📋</span><span class="tab-lbl"> My Listings</span> <span class="tab-count" id="mine-badge">0</span></button>
     </div>
     <div id="sb-content"></div>
     <div class="feedback-strip">
-      <button class="feedback-btn" onclick="openFeedbackModal()">💡 Share Feedback</button>
+      <button class="feedback-btn" onclick="openFeedbackModal()" title="Share Feedback"><span>💡</span><span class="fb-lbl">Share Feedback</span></button>
     </div>
   </aside>
 
   <div id="mapc">
+    <button class="sb-handle" id="sbHandle" type="button" onclick="toggleSidebar()" aria-label="Collapse side panel" title="Collapse side panel" aria-expanded="true">‹</button>
     <div id="map"></div>
     <div class="cnt-mini"><b id="mapCnt">0</b> pins visible</div>
     <div id="hoverCard"><div class="hc-inner" id="hcInner"></div></div>
@@ -935,6 +1105,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <input type="text" id="exploreSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onExploreSearchInput()"/>
       <div id="exploreSearchDD" class="explore-search-dd hide"></div>
     </div>
+    <div class="kw-pill hide" id="kwPill" role="status"><span class="kw-pill-txt">🔍 “<b id="kwPillTxt"></b>”</span><button type="button" onclick="clearKeyword()" title="Clear search" aria-label="Clear keyword search">×</button></div>
   </div>
   <div id="viewToggle" class="vtog">
     <button class="vbtn" id="vbtnList" onclick="setViewMode('list')">☰ List</button>
@@ -945,7 +1116,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <div class="feedback-modal hide" id="feedbackModal">
   <div class="feedback-box">
     <h3>💡 Share Your Feedback</h3>
-    <p>Help us improve MapIt — your input goes directly to Nagesh & Arun.</p>
+    <p>Help us improve MapIt — your input goes directly to the MapIt team.</p>
     <div class="fb-type-row" id="fbTypeRow">
       <span class="fb-type on" data-t="suggestion" onclick="setFbType(this)">💡 Suggestion</span>
       <span class="fb-type" data-t="bug" onclick="setFbType(this)">🐛 Bug</span>
@@ -978,20 +1149,46 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <h3>❓ How MapIt Works</h3>
     <div class="help-scroll">
     <ul style="margin:14px 0 4px;padding-left:20px;line-height:1.6;font-size:16.5px;color:var(--text);">
-      <li>🗺 <b>Browse:</b> listings near you appear as pins on the map (or the list, on mobile) — tap a pin to view details, filter by category and distance in the sidebar</li>
-      <li>🌍 <b>Explore Area:</b> want to browse a different neighborhood instead of your own? Switch to <b>Explore Area</b> in the sidebar and search any place</li>
-      <li>➕ <b>Post:</b> tap <b>Post a Listing</b> in the header to list a home, vehicle, or item</li>
-      <li>❤ <b>Save:</b> tap the heart icon on any listing to save it — find it later in the <b>Saved</b> tab</li>
-      <li>🤝 <b>Contact a seller:</b> open a listing and tap <b>I'm Interested</b> to send them a message</li>
-      <li>💬 <b>Chat:</b> once a seller replies to your interest note, keep the conversation going in Chat — tap the message icon in the header to see all your ongoing chats</li>
+      <li>🗺 <b>Browse:</b> listings near you appear as pins on the map and cards in the list (on a phone, switch with <b>☰ List / 🗺 Map</b>). Tap one to see details. Pick a category with the icons at the top of the list</li>
+      <li>🔍 <b>Search:</b> type a word in the search box under the category icons — it filters the listings in the part of the map on screen</li>
+      <li>🎯 <b>Distance:</b> tap <b>Within 5 km ▾</b> in the top bar to look closer or further</li>
+      <li>🌍 <b>Explore another area:</b> tap <b>🗺 Explore</b> in the top bar and search any place; tap <b>📍 My location</b> to come back</li>
+      <li>➕ <b>Post:</b> tap <b>Post a Listing</b> in the top bar. You'll first verify your phone with a WhatsApp code; each listing is checked by our team before it goes live</li>
+      <li>❤ <b>Save:</b> tap ♡ on a listing to save it — find it later in the <b>Saved</b> tab</li>
+      <li>🤝 <b>Contact a seller:</b> open a listing and tap <b>I'm Interested</b> to send them a note</li>
+      <li>💬 <b>Chat:</b> once a seller replies, tap <b>💬 Chat with seller</b> on the listing, or open <b>📥 Inbox</b> from your avatar menu</li>
       <li>📍 <b>Nearby places:</b> open any listing to see nearby schools, malls, and supermarkets in the "📍 Nearby" section</li>
-      <li>🚩 <b>Report a listing:</b> something looks wrong or suspicious? Open the listing and tap 🚩 <b>Report</b> to flag it for review</li>
-      <li>🗑 <b>Delete a listing:</b> open <b>My Ads</b>, select your listing, then use the delete option</li>
-      <li>📍 <b>Change your location:</b> use <b>My Locations</b> in the profile menu</li>
-      <li>⭐ <b>Rate your experience:</b> tap <b>Feedback</b> in the profile menu to rate MapIt and tell us what's working or what needs fixing</li>
+      <li>🚩 <b>Report a listing:</b> something looks wrong or suspicious? Open the listing and tap 🚩 to flag it for review</li>
+      <li>📋 <b>Your listings:</b> open the <b>My Listings</b> tab to edit, mark as sold, or delete</li>
+      <li>📍 <b>Change your location:</b> use <b>My Locations</b> in the avatar menu, or pick a saved one from <b>📍 My location ▾</b></li>
+      <li>👤 <b>Your profile:</b> <b>View Profile</b> in the avatar menu shows your details and lets you verify your phone</li>
+      <li>⭐ <b>Feedback:</b> tap <b>💡 Share Feedback</b> at the bottom of the list to rate MapIt and tell us what's working or what needs fixing</li>
+      <li>📖 <b>More help:</b> the <b>User Guide</b> in the avatar menu walks through each feature step by step</li>
     </ul>
     </div>
     <button class="modal-btn" onclick="closeHelpModal()" style="margin-top:10px;">Got it</button>
+  </div>
+</div>
+
+<!-- ── VIEW PROFILE MODAL (Session 9C) — read-only; editing comes in 9I ── -->
+<div class="feedback-modal hide" id="profileModal" onclick="if(event.target===this)closeProfileModal()">
+  <div class="feedback-box">
+    <div class="prof-head">
+      <div class="prof-avatar" id="profAvatar">?</div>
+      <div style="min-width:0;">
+        <div class="prof-name" id="profName">—</div>
+        <div class="prof-nick" id="profNick"></div>
+      </div>
+    </div>
+    <div class="prof-rows">
+      <div class="prof-row"><span class="prof-lbl">Email</span><span class="prof-val" id="profEmail">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">Phone</span><span class="prof-val" id="profPhone">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">Sign-in method</span><span class="prof-val" id="profMethod">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">Member since</span><span class="prof-val" id="profSince">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">Home location</span><span class="prof-val" id="profHome">—</span></div>
+    </div>
+    <p class="prof-note">To change your email or phone, contact us at <a href="mailto:contact-us@mapit.co.in">contact-us@mapit.co.in</a>.</p>
+    <button class="modal-btn" onclick="closeProfileModal()">Close</button>
   </div>
 </div>
 
@@ -1075,6 +1272,40 @@ function mapboxTileUrl(){
   return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/512/{z}/{x}/{y}{r}?access_token=${token}`;
 }
 
+// Session 9D item 7 (2026-08-31) — Bangalore-first launch: restrict every map
+// surface to Bangalore + ~100km radius so users can't pan/zoom out to empty
+// or irrelevant regions. This is the smallest rectangular lat/lng box that
+// fully contains a 100km-radius circle centered on Bangalore (12.9716,
+// 77.5946) — 100km ÷ ~111km/° latitude ≈ 0.90° lat; 100km ÷ (~111.3km/° ×
+// cos(13°)) ≈ 0.92° lng. Viewport/UX-level only, as scoped with Nagesh — no
+// server-side listing-coordinate validation (a separate future item if
+// out-of-region listings actually turn up).
+const MAPIT_REGION_BOUNDS = L.latLngBounds([12.07, 76.67], [13.87, 78.52]);
+
+// Applied to every Leaflet map instance (browse map, home-location picker,
+// post-listing picker, add-pin picker) right after it's created and sized.
+// `maxBoundsViscosity: 1.0` is a hard stop, not an elastic bounce — the map
+// simply won't pan past the box. `setMinZoom()` is computed from the box
+// itself (via getBoundsZoom) rather than a fixed number, so zooming out
+// can't shrink the bounded box down to a speck of empty space regardless of
+// the viewer's screen size.
+function _applyRegionBounds(map){
+  map.setMaxBounds(MAPIT_REGION_BOUNDS);
+  map.options.maxBoundsViscosity = 1.0;
+  map.setMinZoom(map.getBoundsZoom(MAPIT_REGION_BOUNDS, false));
+}
+
+// Session 9F (2026-09-29) — fire-and-forget ping on each map init, one per
+// Leaflet surface. This is the only server-side proxy for Mapbox tile-
+// request volume that exists (Mapbox itself has no usage API at all) —
+// logged into the existing audit_log table, read back by the admin
+// Cost & Usage tab's estimate. Never awaited, never surfaces an error to
+// the user — a failed ping just means one fewer data point for an
+// internal estimate, never something worth interrupting map loading for.
+function _pingMapLoad(surface){
+  apiPost('/api/admin/map-load-ping', { surface }).catch(()=>{});
+}
+
 // SUPABASE CLIENT — Realtime chat only (all writes still go through the
 // backend REST API above). Anon key is safe to expose — RLS is the boundary.
 let sbClient = null;
@@ -1094,18 +1325,28 @@ function getSbClient(){
 // ═══════════════════════════════════════════════
 const CATS = [
   { id:'all', lbl:'All',             ico:'🗺️', col:'#F06030', subs:[] },
-  { id:'re',  lbl:'Real Estate',     ico:'🏠',  col:'#F06030', subs:['All Types','Plots','Individual House','Builder Flat','Apartment','Commercial Building'] },
+  { id:'re',  lbl:'Real Estate',     ico:'🏠',  col:'#F06030', subs:['All Types','Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space'] },
   { id:'veh', lbl:'Vehicles',        ico:'🚗',  col:'#3B82F6', subs:['All Types','Cars','2 Wheelers','Cycles','Trucks & Commercial'] },
   { id:'hh',  lbl:'Household Items', ico:'🏡',  col:'#22C55E', subs:['All Types','Electronic Appliances','Furniture','Home Decor'] },
 ];
+// Session 9G — sidebar chips. Real Estate is split into Rent and Buy Property
+// (rent is the most-searched in Bangalore); both map to category 're' plus a
+// transaction filter. CATS above stays the data model (colours, labels, post form).
+const BROWSE_CHIPS = [
+  { id:'all',  cat:'all', txn:null,   lbl:'All',             ico:'🗺️' },
+  { id:'rent', cat:'re',  txn:'Rent', lbl:'Rent Property',   ico:'🔑' },
+  { id:'buy',  cat:'re',  txn:'Sell', lbl:'Buy Property',    ico:'🏠' },
+  { id:'veh',  cat:'veh', txn:null,   lbl:'Vehicles',        ico:'🚗' },
+  { id:'hh',   cat:'hh',  txn:null,   lbl:'Household',       ico:'🏡' },
+];
 const SUBCAT_MAP = {
-  re:  ['Plots','Individual House','Builder Flat','Apartment','Commercial Building'],
+  re:  ['Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space'],
   veh: ['Cars','2 Wheelers','Cycles','Trucks & Commercial'],
   hh:  ['Electronic Appliances','Furniture','Home Decor'],
 };
 const CAT_EMOJI = { re:'🏠', veh:'🚗', hh:'🏡' };
 const SUBCAT_EMOJI = {
-  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬',
+  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬','Office Space':'💼',
   'Cars':'🚗','2 Wheelers':'🛵','Cycles':'🚲','Trucks & Commercial':'🚛',
   'Electronic Appliances':'📺','Furniture':'🛋️','Home Decor':'🎨',
 };
@@ -1118,6 +1359,7 @@ const TITLE_PLACEHOLDER = {
     'Builder Flat':        '2BHK Builder Flat, 3rd Floor, Park-Facing',
     'Apartment':           '2BHK Apartment in Prestige Society, Koramangala',
     'Commercial Building': '3-Storey Commercial Building on Main Road',
+    'Office Space':        'Plug-and-Play Office Space, 20 Seats, Indiranagar',
   },
   veh: {
     'Cars':               'Maruti Swift 2019 – Single Owner, 28k Kms',
@@ -1181,6 +1423,26 @@ const LISTING_FIELDS = {
       { id:'floors',      label:'No. of Floors',              type:'number' },
       { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
       { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
+    ],
+    // Added 2026-09-29 (Session 9D item 8) — fields drafted by Nagesh, using
+    // the Bare Shell → Plug-and-Play furnishing scale common to Indian
+    // commercial office leasing rather than the residential
+    // Furnished/Semi/Unfurnished scale used elsewhere in this app.
+    'Office Space':        [
+      { id:'carpet_area',        label:'Carpet Area (sq ft)',            type:'number', starred:true },
+      { id:'super_built_up_area',label:'Super Built-up Area (sq ft)',    type:'number' },
+      { id:'floor_no',           label:'Floor Number',                   type:'number' },
+      { id:'furnishing',         label:'Furnishing Status',              type:'select', options:['Bare Shell','Warm Shell','Semi-Furnished','Fully Furnished','Plug-and-Play'], starred:true },
+      // Nagesh's 2026-09-29 revision: washrooms/AC/lift/parking collapsed
+      // from 4 separate fields into one free-text field with a tip, rather
+      // than 4 separate Yes/No selects — same "no multi-select field type
+      // exists yet" constraint as before, so this uses the existing
+      // type:'text' + placeholder pattern (already used by brand/model
+      // fields above) instead.
+      { id:'essentials',         label:'Other Essentials',               type:'text', placeholder:'e.g. 2 Washrooms, AC, Lift, Covered Parking' },
+      { id:'facing',             label:'Facing',                         type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'] },
+      { id:'age',                label:'Age of Building (years)',        type:'number' },
+      { id:'total_price',        label:'Total Price (₹)',                type:'number', starred:true },
     ],
   },
   veh: {
@@ -1266,14 +1528,14 @@ function renderWhoamiScreen(){
     return `
     <div style="position:relative;">
       <button class="whoami-yes" onclick="continueAs('${uid}')" title="${displayName}"
-        style="display:flex;align-items:center;gap:8px;text-align:left;padding:8px 10px;border-radius:10px;min-width:0;width:100%;box-sizing:border-box;">
-        <div style="width:30px;height:30px;border-radius:50%;background:var(--orange);display:flex;align-items:center;
-          justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.5px;">
+        style="display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:10px;min-width:0;width:100%;box-sizing:border-box;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--orange);display:flex;align-items:center;
+          justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.5px;">
           ${displayInit}
         </div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName}</div>
-          <div style="font-size:9.5px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.invite_code||''}</div>
+          <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayName}</div>
+          <div style="font-size:11px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.invite_code||''}</div>
         </div>
       </button>
       <span class="whoami-remove" onclick="removeMultiSession('${uid}', event)" title="Remove ${displayName} from this device">✕</span>
@@ -1303,7 +1565,7 @@ function listingRow(l){
     <div class="lr-ico">${l.cover_photo?`<img src="${l.cover_photo}" alt=""/>`:`<span>${listingEmoji(l)}</span>`}</div>
     <div class="lr-info">
       <div class="lr-title">${l.title}</div>
-      <div class="lr-price">${l.price_label||fmtPrice(l.price)}</div>
+      <div class="lr-price">${priceText(l)}</div>
       <div class="lr-meta">📍 ${fmtD(d)} · ${l.subcategory||''} · ${timeAgo(l.created_at)}</div>
     </div>
   </div>`;
@@ -1314,8 +1576,8 @@ function listingRow(l){
 // ═══════════════════════════════════════════════
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
 let ST = {
-  cat:'all', sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
-  selId:null, tab:'browse', editingId:null,
+  cat:'all', chip:'all', txn:null, sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
+  selId:null, tab:'browse', editingId:null, sharedListing:null,
   chatOpen:false, chatMsgs:[], chatConvId:null, chatChannel:null,
   conversationsByListing: new Map(), // listing_id -> conversation, buyer's own conversations only
   allConversations: new Map(),       // conversation_id -> conversation, every conversation (buyer or seller side)
@@ -1354,11 +1616,33 @@ function timeAgo(dateStr){
 function catCol(c){return (CATS.find(x=>x.id===c)||CATS[0]).col;}
 function catLbl(c){return (CATS.find(x=>x.id===c)||CATS[0]).lbl;}
 function nowStr(){return new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}
+// Session 9J — full Indian words for amounts: ₹28 Lakh, ₹1.25 Crore; below
+// 1 lakh Indian commas (₹28,000). Used where the full figure is shown.
+function fmtINRWords(v){
+  const n = Number(v);
+  if(!isFinite(n) || n <= 0) return '';
+  const trim = x => String(+x.toFixed(2));
+  if(n >= 1e7) return `₹${trim(n / 1e7)} Crore`;
+  if(n >= 1e5){ const l = trim(n / 1e5); return l === '100' ? '₹1 Crore' : `₹${l} Lakh`; }
+  return '₹' + n.toLocaleString('en-IN');
+}
 function fmtPrice(p){
   if(p>=10000000) return `₹${(p/10000000).toFixed(2)}Cr`;
   if(p>=100000)   return `₹${(p/100000).toFixed(1)}L`;
   if(p>=1000)     return `₹${(p/1000).toFixed(0)}K`;
   return `₹${p}`;
+}
+// Session 9G — rentals are Real Estate listings tagged 'Rent' in the post form.
+// Legacy/seed rows predate that field, so a 'per month' price label also counts.
+function isRental(l){
+  return l.category==='re' &&
+    (l.details?.transaction_type==='Rent' || /per\s*month|\/\s*month|monthly/i.test(l.price_label||''));
+}
+// Session 9G — one price string for pins, cards and detail. Always the real
+// number (never free text like 'negotiable'), with /mo for rentals.
+function priceText(l){
+  if(!(l.price>0)) return 'Price on request';
+  return fmtPrice(l.price) + (isRental(l) ? '/mo' : '');
 }
 function activeLoc(){
   if(ST.exploreMode && map){
@@ -1820,14 +2104,13 @@ function updateProfileContinueState(){
 async function saveProfile(){
   const full_name = document.getElementById('nameInput').value.trim();
   const nickname  = document.getElementById('profileNicknameInput').value.trim();
-  const phone     = document.getElementById('phoneInput').value.trim();
-  const tosOk     = document.getElementById('tosCheck').checked;
+  const tosOk    = document.getElementById('tosCheck').checked;
   if(!full_name){ toast('Please enter your name.'); return; }
   if(!nickname){ toast('Please enter a nickname — it will appear as your display name.'); return; }
   if(!tosOk){ toast('Please agree to the Terms of Service to continue.'); return; }
   try {
     const data = await apiPost('/api/auth/register', {
-      full_name, nickname, phone: phone||null,
+      full_name, nickname,
       invite_code: ST.inviteCode||null,
       auth_provider: ST.authProvider||'email',
     });
@@ -1836,9 +2119,98 @@ async function saveProfile(){
     ST._pendingFullName = null; ST._pendingNickname = null;
     const uid = ST.user?.id;
     if(uid) saveToMultiSessions(uid, { session: ST.session, name: full_name, nickname, initials: getInitials(nickname), email: ST.user?.email });
+    openPhoneVerify('signup');
+  } catch(e){ toast('Could not save profile: ' + e.message); }
+}
+
+// ── Phone OTP verification (Session 9C — WhatsApp via MSG91) ─────────────
+// Two entry points share the same two modal steps:
+//   'signup' — after saveProfile(); success or "Verify later" continues to
+//              step-homeloc, exactly where signup went before 9C.
+//   'post'   — openPostModal() gate for accounts that must verify before
+//              posting; success reopens the post form, "Verify later" closes.
+//   'profile' — "Verify now →" in View Profile; either way returns to it.
+// The server enforces the same rule (POST /api/listings → 403), so this is
+// UX only — the user is asked up front instead of after filling the form.
+let _phoneVerifyCtx = 'signup';
+function openPhoneVerify(ctx, prefill){
+  _phoneVerifyCtx = ctx;
+  hideErr('phoneNumError'); hideErr('phoneOtpError');
+  document.getElementById('phoneVerifyInput').value = prefill || ST.profile?.phone || '';
+  document.getElementById('phoneOtpInput').value = '';
+  document.getElementById('authModal').classList.remove('hide');
+  goToStep('step-phone-number');
+}
+function _finishPhoneVerify(){
+  if(_phoneVerifyCtx === 'post'){
+    document.getElementById('authModal').classList.add('hide');
+    openPostModal();
+  } else if(_phoneVerifyCtx === 'profile'){
+    document.getElementById('authModal').classList.add('hide');
+    openProfileModal();
+  } else {
     goToStep('step-homeloc');
     initHomeLocMap();
-  } catch(e){ toast('Could not save profile: ' + e.message); }
+  }
+}
+function skipPhoneVerify(){
+  if(_phoneVerifyCtx === 'post'){
+    document.getElementById('authModal').classList.add('hide');
+    toast('You can verify any time — just tap Post a Listing again.');
+  } else if(_phoneVerifyCtx === 'profile'){
+    document.getElementById('authModal').classList.add('hide');
+    openProfileModal();
+  } else {
+    toast("No problem — we'll ask again before you post a listing.");
+    goToStep('step-homeloc');
+    initHomeLocMap();
+  }
+}
+async function sendPhoneOtp(){
+  // Also used by "Resend" on the code step — show errors on whichever step is open.
+  const onCodeStep = document.getElementById('step-phone-otp').classList.contains('active');
+  const errId = onCodeStep ? 'phoneOtpError' : 'phoneNumError';
+  const phone = document.getElementById('phoneVerifyInput').value.trim();
+  hideErr('phoneNumError'); hideErr('phoneOtpError');
+  if(!phone || phone.replace(/\D/g,'').length < 10){ showErr('phoneNumError','Please enter a valid 10-digit mobile number.'); goToStep('step-phone-number'); return; }
+  const btn = document.getElementById('sendPhoneOtpBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
+  try {
+    const data = await apiPost('/api/auth/otp/phone/send', { phone });
+    if(data.already_verified){
+      ST.profile = { ...ST.profile, phone_verified: true };
+      toast('This number is already verified ✓');
+      _finishPhoneVerify();
+      return;
+    }
+    document.getElementById('phoneOtpLabel').textContent = data.phone_masked;
+    if(onCodeStep) toast('New code sent on WhatsApp');
+    goToStep('step-phone-otp');
+    document.getElementById('phoneOtpInput').value = '';
+    document.getElementById('phoneOtpInput').focus();
+  } catch(e){
+    showErr(errId, e.message);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<span>Send WhatsApp Code</span> <span>→</span>';
+  }
+}
+
+async function verifyPhoneOtp(){
+  const token = document.getElementById('phoneOtpInput').value.trim();
+  hideErr('phoneOtpError');
+  if(!/^\d{6}$/.test(token)){ showErr('phoneOtpError','Please enter the 6-digit code sent via WhatsApp.'); return; }
+  const btn = document.getElementById('verifyPhoneOtpBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="loading-spin"></div>';
+  try {
+    const data = await apiPost('/api/auth/otp/phone/verify', { code: token });
+    ST.profile = data.profile;
+    toast('Phone verified ✓');
+    _finishPhoneVerify();
+  } catch(e){
+    showErr('phoneOtpError', e.message || 'Invalid or expired code. Please try again.');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<span>Verify Phone</span> <span>→</span>';
+  }
 }
 
 // ── Home location picker ─────────────────────────────────────────
@@ -1865,6 +2237,8 @@ function initHomeLocMap(){
       await _resolveHomeLocAddr(lat, lng);
     });
     _homeLocMap.invalidateSize();
+    _applyRegionBounds(_homeLocMap);
+    _pingMapLoad('home');
   }, 120);
 }
 
@@ -1901,9 +2275,35 @@ function _onHomeLocCoordsInput(){
   _resolveHomeLocAddr(lat, lng);
 }
 
-// Locality/city level only — excludes roads, houses, shops, and landmarks (avoids implying only those spots are searchable)
-// Photon's osm_key plays the same role Nominatim's `category` did
-const HOMELOC_SEARCH_CLASSES = new Set(['place','boundary']);
+// Session 9J — place search finds areas AND landmarks (malls, hospitals, schools,
+// parks, temples, stations, offices). Roads are left out (many near-duplicate
+// segments), and so are railway lines (only stations). Shared by all four place
+// searches: home location, post location, My Locations and Explore.
+const PLACE_SEARCH_KEYS = new Set(['place','boundary','amenity','shop','tourism','leisure','historic','building','office','railway','public_transport','aeroway']);
+const RAIL_STOPS = new Set(['station','halt','subway_entrance','tram_stop']);
+// Small fixtures nobody searches for as a landmark ("Nexus Mall Parking")
+// Only big shops work as landmarks; single stores inside a mall are noise
+const LANDMARK_SHOPS = new Set(['mall','department_store','supermarket','hypermarket','wholesale']);
+const PLACE_SEARCH_SKIP = new Set(['parking','parking_entrance','parking_space','bicycle_parking','motorcycle_parking','toilets','bench','waste_basket','atm','vending_machine','drinking_water']);
+function photonPlaces(features){
+  const seen = new Set();
+  return (features || [])
+    .filter(f => {
+      const p = f.properties;
+      if(!p.name || !PLACE_SEARCH_KEYS.has(p.osm_key) || PLACE_SEARCH_SKIP.has(p.osm_value)) return false;
+      if(p.osm_key === 'shop') return LANDMARK_SHOPS.has(p.osm_value);
+      return p.osm_key !== 'railway' || RAIL_STOPS.has(p.osm_value);
+    })
+    .map(f => {
+      const p = f.properties;
+      const city = p.city && p.city !== p.name ? p.city : null;
+      const isArea = p.osm_key === 'place' || p.osm_key === 'boundary';
+      // Landmarks show their locality so "Forum Mall" reads "Forum Mall, Koramangala, Bengaluru"
+      const parts = isArea ? [p.name, city, p.state] : [p.name, p.district || p.locality || p.street, city];
+      return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name: parts.filter(Boolean).join(', ') };
+    })
+    .filter(r => !seen.has(r.display_name) && seen.add(r.display_name));
+}
 let _homeLocSearchTimer = null;
 let _homeLocSearchResults = [];
 
@@ -1932,21 +2332,14 @@ async function _runHomeLocSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _homeLocSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _homeLocSearchResults = photonPlaces(features);
     if(!_homeLocSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _homeLocSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickHomeLocSearchResult(i);
       dd.appendChild(row);
@@ -1960,7 +2353,7 @@ async function _runHomeLocSearch(q){
 function _pickHomeLocSearchResult(i){
   const m = _homeLocSearchResults[i];
   if(!m) return;
-  document.getElementById('homeLocSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('homeLocSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('homeLocSearchDD').classList.add('hide');
   if(_homeLocMap) _homeLocMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -1970,7 +2363,7 @@ async function _resolveHomeLocAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _homeLocCoords.address = addr;
     document.getElementById('homeLocAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -1993,7 +2386,7 @@ async function saveHomeLocation(){
     // Also create a user_pin so the header badge and map centre reflect the saved location
     // (profiles.home_* and user_pins are separate stores; without this the header stays at the HTML default)
     await apiPost('/api/pins', {
-      label: _homeLocCoords.address || `${_homeLocCoords.lat.toFixed(4)}, ${_homeLocCoords.lng.toFixed(4)}`,
+      label: document.getElementById('homeLocLabelIn').value.trim() || 'Home',
       lat: _homeLocCoords.lat,
       lng: _homeLocCoords.lng,
       is_default: true,
@@ -2044,7 +2437,13 @@ function toggleAvatarMenu(){
 
 async function changeNickname(){
   const current = ST.profile?.nickname || '';
-  const newNick = prompt('Change your display name (nickname):', current);
+  document.getElementById('uavMenu').classList.remove('open');
+  const newNick = await mapitDialog({
+    title: 'Change your display name',
+    message: 'This is the nickname other people see.',
+    input: { value: current, maxlength: 30, placeholder: 'e.g. Priya' },
+    okText: 'Save',
+  });
   if(newNick === null) return;
   const trimmed = newNick.trim();
   if(!trimmed){ toast('Nickname cannot be empty.'); return; }
@@ -2067,7 +2466,90 @@ document.addEventListener('click', e => {
   if(!document.getElementById('uavBtn').contains(e.target)){
     document.getElementById('uavMenu').classList.remove('open');
   }
+  if(!document.getElementById('radBox').contains(e.target)) closeRadMenu();
+  if(!document.getElementById('pinBox').contains(e.target)) closePinMenu();
 });
+
+// ── Collapsible sidebar, desktop only (Session 9G) ──
+// The user's own collapse/expand is remembered per browser. Opening a listing
+// from the rail expands the panel temporarily (ST.sbAutoOpened) and closing
+// that listing folds it back.
+const SB_COLLAPSED_KEY = 'mapit_sb_collapsed';
+const isDesktop = () => window.matchMedia('(min-width:769px)').matches;
+function isSidebarCollapsed(){ return document.getElementById('main').classList.contains('sb-collapsed'); }
+function setSidebarCollapsed(collapsed, persist=true){
+  document.getElementById('main').classList.toggle('sb-collapsed', collapsed);
+  const h = document.getElementById('sbHandle');
+  const label = collapsed ? 'Expand side panel' : 'Collapse side panel';
+  h.textContent = collapsed ? '›' : '‹';
+  h.title = label; h.setAttribute('aria-label', label); h.setAttribute('aria-expanded', String(!collapsed));
+  if(persist){ try { localStorage.setItem(SB_COLLAPSED_KEY, collapsed ? '1' : '0'); } catch(_){} }
+  // Leaflet must re-measure after the width animation, or the newly exposed strip stays grey
+  setTimeout(() => { if(map) map.invalidateSize(); }, 260);
+  updateKwPill();
+}
+function toggleSidebar(){ ST.sbAutoOpened = false; setSidebarCollapsed(!isSidebarCollapsed()); }
+function expandSidebarForDetail(){
+  if(isDesktop() && isSidebarCollapsed()){ ST.sbAutoOpened = true; setSidebarCollapsed(false, false); }
+}
+// Tab icons in the rail show lists, so they open the panel (a deliberate choice, remembered)
+function expandFromRail(){ if(isDesktop() && isSidebarCollapsed()){ ST.sbAutoOpened = false; setSidebarCollapsed(false); } }
+try { if(localStorage.getItem(SB_COLLAPSED_KEY) === '1') setSidebarCollapsed(true, false); } catch(_){}
+
+// ── Radius dropdown chip (Session 9G) ──
+function toggleRadMenu(e){
+  e.stopPropagation();
+  closePinMenu();
+  const open = document.getElementById('radMenu').classList.toggle('open');
+  document.getElementById('radChip').setAttribute('aria-expanded', open);
+}
+// ── My location dropdown (Session 9G) ──
+// In Explore mode the button just switches back to "Near me"; when already
+// active it opens the saved-locations menu. Labels are user-typed, so items
+// are built with textContent, never innerHTML.
+function onMyLocationClick(e){
+  e.stopPropagation();
+  if(ST.exploreMode){ setSearchMode('pin'); return; }
+  const menu = document.getElementById('pinMenu');
+  if(menu.classList.contains('open')){ closePinMenu(); return; }
+  closeRadMenu();
+  menu.innerHTML = '';
+  ST.userPins.forEach(p=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pmi' + (p.id===ST.activePin?.id ? ' on' : '');
+    const tick = document.createElement('span'); tick.className = 'pmi-tick'; tick.textContent = p.id===ST.activePin?.id ? '✓' : '';
+    const name = document.createElement('span'); name.className = 'pmi-name'; name.textContent = p.label;
+    b.append(tick, name);
+    b.onclick = () => { closePinMenu(); if(p.id!==ST.activePin?.id) setDefaultPin(p.id, true); };
+    menu.appendChild(b);
+  });
+  const m = document.createElement('button');
+  m.type = 'button'; m.className = 'pmi manage';
+  m.textContent = ST.userPins.length ? '＋ Add or manage locations…' : '＋ Set your location…';
+  m.onclick = () => { closePinMenu(); openPinsModal(); };
+  menu.appendChild(m);
+  menu.classList.add('open');
+  document.getElementById('smPin').setAttribute('aria-expanded','true');
+}
+function closePinMenu(){
+  document.getElementById('pinMenu').classList.remove('open');
+  document.getElementById('smPin').setAttribute('aria-expanded','false');
+}
+function closeRadMenu(){
+  document.getElementById('radMenu').classList.remove('open');
+  document.getElementById('radChip').setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ closeRadMenu(); closePinMenu(); } });
+
+// The header wraps to two rows on phones, so #main's height follows the
+// header's real height instead of assuming 56px. Leaflet must be told when
+// its container is resized, or tiles render with grey gaps.
+new ResizeObserver(() => {
+  const h = document.getElementById('hdr').offsetHeight;
+  document.documentElement.style.setProperty('--hdr-h', h + 'px');
+  if(typeof map !== 'undefined' && map) map.invalidateSize();
+}).observe(document.getElementById('hdr'));
 
 // ═══════════════════════════════════════════════
 // MAP
@@ -2081,7 +2563,7 @@ let hoverTO;
 // Browse-tab-only marker clustering (Leaflet.markercluster) — groups pins that
 // are merely close together on screen at the current zoom, separate from the
 // mStackMarkers logic above which groups pins sharing the *exact same* GPS
-// coordinate. Saved/My Ads never use this: both are small, user-owned lists
+// coordinate. Saved/My Listings never use this: both are small, user-owned lists
 // that already auto-fit bounds, so clustering would add nothing there.
 let listingCluster = null;
 
@@ -2090,12 +2572,17 @@ let _userMarker = null;
 function initMap(){
   const loc = activeLoc();
   map = L.map('map',{center:[loc.lat,loc.lng],zoom:14,zoomControl:false,renderer:L.canvas()});
+  // Session 9G — drop Leaflet's optional "🇺🇦 Leaflet |" prefix. The Mapbox and
+  // OpenStreetMap credits on the tile layer below are required by their terms — keep them.
+  map.attributionControl.setPrefix(false);
   const _mainTiles = L.tileLayer(mapboxTileUrl(),{
     attribution:'© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>',
     tileSize:512,zoomOffset:-1,maxZoom:20,
   }).addTo(map);
   runtimeCfgPromise.then(()=>_mainTiles.setUrl(mapboxTileUrl()));
   L.control.zoom({position:'bottomright'}).addTo(map);
+  _applyRegionBounds(map);
+  _pingMapLoad('browse');
 
   listingCluster = L.markerClusterGroup({
     maxClusterRadius: 60,       // px — tight-ish, only clusters pins that would actually overlap/crowd
@@ -2148,7 +2635,7 @@ function mkIcon(l, sel){
       <div style="width:${sz}px;height:${sz}px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${col};border:2.5px solid ${sel?'#fff':'rgba(255,255,255,.7)'};display:flex;align-items:center;justify-content:center;box-shadow:${sel?'0 4px 18px rgba(0,0,0,.7)':'0 2px 10px rgba(0,0,0,.5)'};position:relative;">
         <span style="transform:rotate(45deg);font-size:${sel?18:14}px;line-height:1;">${listingEmoji(l)}</span>
       </div>
-      <div style="background:rgba(7,14,24,.95);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin-top:2px;white-space:nowrap;font-family:'Outfit',sans-serif;border:1px solid rgba(255,255,255,.12);box-shadow:0 2px 8px rgba(0,0,0,.5);">${l.price_label||fmtPrice(l.price)}</div>
+      <div style="background:rgba(7,14,24,.95);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin-top:2px;white-space:nowrap;font-family:'Outfit',sans-serif;border:1px solid rgba(255,255,255,.12);box-shadow:0 2px 8px rgba(0,0,0,.5);">${priceText(l)}</div>
     </div>`,
     iconSize:[70,62],iconAnchor:[35,62],
   });
@@ -2182,7 +2669,7 @@ function drawMarkers(){
 
   const isFav = ST.tab === 'fav';
   const isMine = ST.tab === 'mine';
-  // My Ads: show only the seller's own listing pins (matches the sidebar
+  // My Listings: show only the seller's own listing pins (matches the sidebar
   // list exactly, same as Saved) — not leftover Browse-tab radius/category
   // pins, which were confusing since they had nothing to do with "my ads".
   const fl = isFav ? ST.favListings : isMine ? ST.myListings : filtered();
@@ -2236,7 +2723,7 @@ function drawMarkers(){
   });
 
   // Auto-fit map to show all saved/own listings when none is selected
-  if(keepTab && fl.length > 0 && !ST.selId){
+  if(keepTab && fl.length > 0 && !ST.selId && !mapHidden()){
     const bounds = L.latLngBounds(fl.map(l=>[l.lat,l.lng]));
     map.fitBounds(bounds, {padding:[50,50], animate:true, maxZoom:14});
   }
@@ -2254,7 +2741,7 @@ function openStackPopup(group, isFav){
         <span class="stack-popup-emoji">${listingEmoji(l)}</span>
         <div class="stack-popup-mid">
           <div class="stack-popup-title">${l.title}</div>
-          <div class="stack-popup-price">${l.price_label||fmtPrice(l.price)}</div>
+          <div class="stack-popup-price">${priceText(l)}</div>
         </div>
       </div>`).join('')}
     </div>
@@ -2363,7 +2850,7 @@ function showHoverCard(l, isFav, tapMode){
   document.getElementById('hcInner').innerHTML = `
     <div class="hc-cat" style="color:${col}">${catLbl(l.category||l.cat)} · ${l.subcategory||l.sub}</div>
     <div class="hc-title">${l.title}</div>
-    <div class="hc-price">${l.price_label || fmtPrice(l.price)}</div>
+    <div class="hc-price">${priceText(l)}</div>
     ${starredHtml}
     <div class="hc-row" style="margin-top:4px">
       <span class="hc-dist">📍 ${fmtD(d)}</span>
@@ -2388,6 +2875,7 @@ async function loadListings(){
   try {
     let url = `/api/listings?lat=${loc.lat}&lng=${loc.lng}&radius=${radiusM}`;
     if(ST.cat !== 'all') url += `&category=${ST.cat}`;
+    if(ST.txn) url += `&txn=${ST.txn}`;
     if(ST.sub && ST.sub !== 'All Types') url += `&subcategory=${encodeURIComponent(ST.sub)}`;
     const data = await apiGet(url);
     // Enrich with distance
@@ -2397,6 +2885,7 @@ async function loadListings(){
         ...l,
         d: l.distance_m != null ? l.distance_m/1000 : dist(loc.lat,loc.lng,l.lat,l.lng),
       }));
+    _keepSharedListing();
   } catch(e){
     toast('Could not load listings: ' + e.message);
     ST.listings = [];
@@ -2489,7 +2978,7 @@ async function renderFavs(el){
           </div>
           <div class="fav-info">
             <div class="fav-ttl">${l.title}</div>
-            <div class="fav-price">${l.price_label||fmtPrice(l.price)}</div>
+            <div class="fav-price">${priceText(l)}</div>
             <div class="fav-dist">📍 ${fmtD(l.d)} · ${l.address||''}</div>
           </div>
           <div class="fav-rm" onclick="event.stopPropagation();removeFav('${l.id}')" title="Remove">✕</div>
@@ -2519,7 +3008,7 @@ async function renderMyAds(el){
     if(!listings.length){
       el.innerHTML = `<div class="sb-empty">
         <div class="sb-empty-ico">📋</div>
-        <div class="sb-empty-ttl">No ads posted yet</div>
+        <div class="sb-empty-ttl">No listings posted yet</div>
         <div class="sb-empty-sub">You haven't posted any listings yet.<br>Tap <b>➕ Post a Listing</b> in the header to get started.</div>
       </div>`;
       return;
@@ -2543,7 +3032,7 @@ async function renderMyAds(el){
           </div>
           <div class="fav-info">
             <div class="fav-ttl">${l.title}</div>
-            <div class="fav-price">${l.price_label||fmtPrice(l.price)}</div>
+            <div class="fav-price">${priceText(l)}</div>
             <div class="fav-dist" style="color:${STATUS_COLOR[l.status]||'var(--muted)'};">● ${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
             ${expiryHtml}
           </div>
@@ -2580,8 +3069,8 @@ async function removeFav(id){
 // CATEGORIES
 // ═══════════════════════════════════════════════
 function renderCats(){
-  document.getElementById('catRow').innerHTML = CATS.map(c=>`
-    <div class="cat-btn ${ST.cat===c.id?'on':''}" onclick="setCat('${c.id}')">
+  document.getElementById('catRow').innerHTML = BROWSE_CHIPS.map(c=>`
+    <div class="cat-btn ${ST.chip===c.id?'on':''}" onclick="setCat('${c.id}')" title="${c.lbl}">
       <span class="cat-ico">${c.ico}</span>
       <span class="cat-lbl">${c.lbl}</span>
     </div>`).join('');
@@ -2602,7 +3091,7 @@ function renderSidebar(){
   const el = document.getElementById('sb-content');
   if(ST.tab==='fav' && !ST.selId){ renderFavs(el); return; }
   if(ST.tab==='mine' && !ST.selId){ renderMyAds(el); return; }
-  // In My Ads, navigation must stay within the current user's own listings —
+  // In My Listings, navigation must stay within the current user's own listings —
   // never the browse set (which excludes them) — so other sellers' ads can't surface here.
   const fl = ST.tab==='mine' ? ST.myListings : ST.tab==='fav' ? ST.favListings : filtered();
   if(!ST.selId){
@@ -2638,28 +3127,29 @@ function renderSidebar(){
     <!-- Block A: distance bar + category icon + title/price + actions + photo strip -->
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
-        <span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span>
+        <div class="ld-dist-row"><span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span><button class="ld-map-btn" type="button" onclick="showListingOnMap('${l.id}')">🗺 Show on map</button></div>
         <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${l.reference_code}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
       </div>
       <div class="ld-info-top">
         <div class="ld-info-thumb"><span>${listingEmoji(l)}</span></div>
         <div class="ld-info-mid">
           <div class="ld-info-ttl">${l.title}</div>
-          <div class="ld-info-price">${l.price_label||fmtPrice(l.price)}</div>
+          <div class="ld-info-price${fmtPrice(l.price).length>=6?' sm':''}">${l.price>0 ? fmtPrice(l.price)+(isRental(l)?'<span class="per-mo">/mo</span>':'') : '<span class="per-mo">Price on request</span>'}</div>
+          ${/negotiable/i.test(l.price_label||'') ? '<div class="ld-info-neg">Negotiable</div>' : ''}
         </div>
-        <div class="ld-info-actions">
+      </div>
+      <div class="ld-info-actions">
           ${ST.tab==='mine' && l.seller_id===ST.user?.id
-            ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit<br>Listing</button>`
+            ? `<button class="ld-edit-btn" onclick="editListing('${l.id}')">✏️ Edit Listing</button>`
             : (()=>{
                 const conv = ST.conversationsByListing.get(l.id);
                 return conv
-                  ? `<button class="ld-chat-btn" id="interestBtn" onclick="openChat('${conv.id}')">💬<br>Chat</button>`
-                  : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm<br>Interested</button>`;
+                  ? `<button class="ld-chat-btn" id="interestBtn" onclick="openChat('${conv.id}')">💬 Chat with seller</button>`
+                  : `<button class="ld-chat-btn" id="interestBtn" onclick="openInterestNote()">🤝 I'm Interested</button>`;
               })()
               + `<div class="btn-icon ${isSaved?'saved':''}" id="favBtn" onclick="toggleFav('${l.id}')" title="${isSaved?'Remove from saved':'Save listing'}">${isSaved?'❤':'♡'}</div>`
               + `<div class="btn-icon" onclick="openReportModal('${l.id}')" title="Report this listing">🚩</div>`}
           <div class="btn-icon" onclick="shareListingUrl('${l.id}')" title="Copy link to share">🔗</div>
-        </div>
       </div>
       <div class="ld-interest-box hide" id="interestBox">
         <textarea id="interestNote" maxlength="500" oninput="updateInterestSendState()"></textarea>
@@ -2675,7 +3165,7 @@ function renderSidebar(){
         const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
         const items = subFields.filter(f=>det[f.id]!=null && det[f.id]!=='');
         if(!items.length) return '';
-        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${det[f.id]}</div></div>`).join('')}</div>`;
+        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${f.id==='total_price' ? (fmtINRWords(det[f.id]) || det[f.id]) : det[f.id]}</div></div>`).join('')}</div>`;
       })()}
       ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${l.details.transaction_type}</div></div>` : '')}
       ${(()=>{
@@ -2708,7 +3198,7 @@ function renderSidebar(){
     if(ci) ci.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
   },50);
 
-  // Append other listings below the detail card (not in My Ads context)
+  // Append other listings below the detail card (not in My Listings context)
   if(ST.tab !== 'mine'){
     const others = fl.filter(x=>x.id!==ST.selId);
     if(others.length){
@@ -2724,6 +3214,7 @@ function renderSidebar(){
 // LISTING SELECTION
 // ═══════════════════════════════════════════════
 async function selListing(id, keepTab=false){
+  expandSidebarForDetail();
   ST.selId=id; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatMsgs=[]; ST.chatConvId=null;
   if(!keepTab){
     ST.tab='browse';
@@ -2733,7 +3224,11 @@ async function selListing(id, keepTab=false){
     document.querySelector('.rad-box').classList.remove('disabled');
   }
   const l = ST.listings.find(x=>x.id===id) || ST.favListings.find(x=>x.id===id) || (ST.tab==='mine' ? ST.myListings.find(x=>x.id===id) : null);
-  if(l) map.flyTo([l.lat,l.lng], ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14), {animate:true,duration:.6});
+  if(l){
+    const z = ST.tab==='mine'||ST.tab==='fav' ? 16 : Math.max(map.getZoom(),14);
+    if(mapHidden()) map.setView([l.lat,l.lng], z, {animate:false});
+    else map.flyTo([l.lat,l.lng], z, {animate:true,duration:.6});
+  }
   Object.keys(mMarkers).forEach(k=>{
     const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
     mMarkers[k].setIcon(mkIcon(ml, k===id));
@@ -2757,8 +3252,15 @@ async function selListing(id, keepTab=false){
 }
 
 function closeDetail(){
+  if(ST.sharedListing && ST.selId===ST.sharedListing.id){
+    // The shared listing was only on the map because of the link — back to normal results
+    ST.listings = ST.listings.filter(x=>!x._sharedOnly);
+    ST.sharedListing = null;
+  }
   ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
+  // If the panel only opened to show this listing, fold it back to the rail
+  if(ST.sbAutoOpened){ ST.sbAutoOpened=false; setSidebarCollapsed(true, false); }
 }
 
 // ═══════════════════════════════════════════════
@@ -2925,23 +3427,45 @@ function shareListingUrl(id){
   }
 }
 
+// Session 9J — a shared link (#listing-<id>) opens that listing with its pin,
+// even when it is outside the viewer's radius (pins are otherwise drawn only for
+// listings inside it). The hash is saved at page load, so it survives signing in
+// or signing up first — Google's redirect replaces the hash.
+const SHARE_HASH_KEY = 'mapit_shared_listing';
+try { if(/^#listing-/.test(location.hash)) sessionStorage.setItem(SHARE_HASH_KEY, location.hash); } catch(_){}
 async function checkShareUrl(){
-  const hash=location.hash;
-  if(hash&&hash.startsWith('#listing-')){
-    const id=hash.replace('#listing-','');
-    setTimeout(async()=>{
-      // Try to find in current list, else fetch
-      let l = ST.listings.find(x=>x.id===id);
-      if(!l){
-        try{ const data=await apiGet(`/api/listings/${id}`);l=data.listing;ST.listings=[l,...ST.listings]; }catch(_){}
-      }
-      if(l){
-        selListing(id);
-        map.setView([l.lat,l.lng],16,{animate:true});
-        toast(`📍 Opened shared listing: ${l.title}`);
-      }
-    },1000);
-  }
+  let hash = location.hash;
+  try { hash = /^#listing-/.test(hash) ? hash : (sessionStorage.getItem(SHARE_HASH_KEY) || ''); sessionStorage.removeItem(SHARE_HASH_KEY); } catch(_){}
+  const m = hash.match(/^#listing-([0-9a-f-]{36})$/i);
+  if(!m) return;
+  history.replaceState(null, '', location.pathname);   // don't reopen it on every reload
+  const id = m[1];
+  let l = ST.listings.find(x=>x.id===id);
+  if(!l){ try { l = (await apiGet(`/api/listings/${id}`)).listing; } catch(_){} }
+  if(!l){ toast('This shared listing is no longer available.'); return; }
+  ST.sharedListing = l;
+  _keepSharedListing();
+  setViewMode('list', false);          // phones: details first, "Show on map" is one tap away
+  await selListing(id);
+  map.setView([l.lat, l.lng], 16, { animate:false });
+  drawMarkers();
+  toast(`📍 Opened shared listing: ${l.title}`);
+}
+// Keeps the shared listing in ST.listings (so its pin, details, interest note and
+// report all work) until its details are closed. _sharedOnly marks one that is
+// outside the current search, so closeDetail() can take it out again.
+function _keepSharedListing(){
+  const sh = ST.sharedListing;
+  if(!sh || ST.listings.some(x=>x.id===sh.id)) return;
+  const loc = activeLoc();
+  ST.listings = [...ST.listings, { ...sh, d: dist(loc.lat, loc.lng, sh.lat, sh.lng), _sharedOnly: true }];
+}
+// Phones: from a listing's details, switch to the map centred on its pin
+function showListingOnMap(id){
+  const l = ST.listings.find(x=>x.id===id) || ST.favListings.find(x=>x.id===id) || ST.myListings.find(x=>x.id===id);
+  if(!l) return;
+  setViewMode('map', false);
+  setTimeout(() => { map.setView([l.lat, l.lng], 16, { animate:false }); drawMarkers(); }, 80);
 }
 
 // ═══════════════════════════════════════════════
@@ -2950,11 +3474,26 @@ async function checkShareUrl(){
 let postPickerLat = activeLoc().lat;
 let postPickerLng = activeLoc().lng;
 
-function openPostModal(){
+async function openPostModal(){
+  // Session 9C gate — ask for WhatsApp verification before the form, not after.
+  // Fail open on a network error: POST /api/listings enforces it regardless.
+  if(!ST.profile?.phone_verified){
+    try {
+      const s = await apiGet('/api/auth/otp/phone/status');
+      if(s.required){ openPhoneVerify('post'); return; }
+    } catch(_){}
+  }
   ST.editingId = null;
   document.getElementById('postSubmitBtn').textContent = 'Submit for Review 🚀';
   document.getElementById('postModal').classList.remove('hide');
   updatePostSubcats(); // also triggers renderDynamicFields
+  // Session 9G — Real Estate defaults to Rent for every new listing
+  const rentEl = document.querySelector('input[name="txType"][value="Rent"]');
+  if(rentEl) rentEl.checked = true;
+  // Session 9G (Arun) — phone visibility defaults to On Agreement for every new
+  // listing, even if the last listing edited was set to Never.
+  const phoneDefault = document.querySelector('input[name="showPhone"][value="on_agreement"]');
+  if(phoneDefault) phoneDefault.checked = true;
   // Populate location dropdown from saved pins + manual option
   const sel = document.getElementById('postLocation');
   sel.innerHTML = '';
@@ -3016,6 +3555,8 @@ function initPostPickerMap(){
       await _resolvePostLocAddr(lat, lng);
     });
     _postPickerMap.invalidateSize();
+    _applyRegionBounds(_postPickerMap);
+    _pingMapLoad('post');
   }, 120);
 }
 
@@ -3061,7 +3602,7 @@ function _onPostLocSearchInput(){
 async function _runPostLocSearch(q){
   const dd = document.getElementById('postLocSearchDD');
   try {
-    // Same Photon-based locality/city search as the home-location picker (HOMELOC_SEARCH_CLASSES).
+    // Same Photon-based area + landmark search as the home-location picker (photonPlaces).
     let geoParams = '';
     if(_postPickerMap){
       const c = _postPickerMap.getCenter();
@@ -3069,21 +3610,14 @@ async function _runPostLocSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _postLocSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _postLocSearchResults = photonPlaces(features);
     if(!_postLocSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _postLocSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickPostLocSearchResult(i);
       dd.appendChild(row);
@@ -3097,7 +3631,7 @@ async function _runPostLocSearch(q){
 function _pickPostLocSearchResult(i){
   const m = _postLocSearchResults[i];
   if(!m) return;
-  document.getElementById('postLocSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('postLocSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('postLocSearchDD').classList.add('hide');
   if(_postPickerMap) _postPickerMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -3107,7 +3641,7 @@ async function _resolvePostLocAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _postPickerCoords.address = addr;
     document.getElementById('postPickerAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -3120,8 +3654,6 @@ function closePostModal(){
   ST.editingId = null;
   document.getElementById('postModal').classList.add('hide');
   if(_postPickerMap){ _postPickerMap.remove(); _postPickerMap = null; _postPickerMarker = null; _postPickerCoords = null; }
-  // Always return the header to Browse-active state
-  document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on', b.dataset.m==='buy'));
 }
 
 async function editListing(id){
@@ -3150,6 +3682,7 @@ async function editListing(id){
     const el = document.getElementById(`pf_${f.id}`);
     if(el && det[f.id] != null) el.value = det[f.id];
   });
+  updatePriceWords();
 
   // Populate title and description
   document.getElementById('postTitle').value = l.title || '';
@@ -3165,7 +3698,7 @@ async function editListing(id){
   // values — previously these silently reset to the form's hardcoded HTML
   // defaults ('always' / unchecked) on every edit, regardless of what the
   // seller had actually chosen.
-  const phoneEl = document.querySelector(`input[name="showPhone"][value="${l.show_phone||'always'}"]`);
+  const phoneEl = document.querySelector(`input[name="showPhone"][value="${l.show_phone==='never'?'never':'on_agreement'}"]`);
   if(phoneEl) phoneEl.checked = true;
   document.getElementById('postShowExactLocation').checked = !!l.show_exact_location;
 
@@ -3219,8 +3752,16 @@ function renderDynamicFields(){
       const inp = f.type === 'select'
         ? `<select class="form-input form-select" id="pf_${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
         : `<input class="form-input" id="pf_${f.id}" type="${f.type === 'number' ? 'number' : 'text'}" min="${f.type==='number'?'0':''}"${f.placeholder?` placeholder="${f.placeholder}"`:''}${f.default!=null?` value="${f.default}"`:''}/>`;
-      return `<div class="form-group"><label class="form-label">${f.label}</label>${inp}</div>`;
+      const words = f.id === 'total_price' ? `<div class="price-words" id="pfw_total_price"></div>` : '';
+      return `<div class="form-group"><label class="form-label">${f.label}</label>${inp}${words}</div>`;
     }).join('');
+  const tp = document.getElementById('pf_total_price');
+  if(tp) tp.addEventListener('input', updatePriceWords);
+}
+// Session 9J — '2800000' → '₹28 Lakh' under the box, so a missing or extra zero is obvious
+function updatePriceWords(){
+  const tp = document.getElementById('pf_total_price'), out = document.getElementById('pfw_total_price');
+  if(tp && out) out.textContent = fmtINRWords(tp.value);
 }
 
 let _addPinMap = null, _addPinMarker = null, _addPinCoords = null;
@@ -3247,6 +3788,8 @@ function initAddPinMap(){
       await _placeAddPin(lat, lng);
     });
     _addPinMap.invalidateSize();
+    _applyRegionBounds(_addPinMap);
+    _pingMapLoad('addpin');
   }, 120);
 }
 
@@ -3304,21 +3847,14 @@ async function _runAddPinSearch(q){
       const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
       geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
     }
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _addPinSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _addPinSearchResults = photonPlaces(features);
     if(!_addPinSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _addPinSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.style.cssText = 'padding:9px 12px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);';
       row.onclick = () => _pickAddPinSearchResult(i);
       dd.appendChild(row);
@@ -3332,7 +3868,7 @@ async function _runAddPinSearch(q){
 function _pickAddPinSearchResult(i){
   const m = _addPinSearchResults[i];
   if(!m) return;
-  document.getElementById('addPinSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('addPinSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('addPinSearchDD').classList.add('hide');
   if(_addPinMap) _addPinMap.flyTo([+m.lat, +m.lon], 15);
 }
@@ -3342,7 +3878,7 @@ async function _resolveAddPinAddr(lat, lng){
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
     const g = await r.json();
-    const addr = g.display_name?.split(',').slice(0,3).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const addr = g.display_name?.split(',').slice(0,3).map(x=>x.trim()).join(', ') || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     _addPinCoords.address = addr;
     document.getElementById('addPinAddr').textContent = '📍 ' + addr;
   } catch(_){
@@ -3396,7 +3932,9 @@ async function submitListing(){
   if(!title){ toast('Please enter a title.'); return; }
   if(!subcategory){ toast('Please select a listing type (e.g. Cars, 2 Wheelers).'); return; }
   if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
-  if(!ST.editingId && document.getElementById('postPhotos').files.length === 0){
+  // Session 9G (Arun): an empty plot often has nothing worth photographing,
+  // so Plots may be posted without a photo. Every other type still needs one.
+  if(!ST.editingId && subcategory !== 'Plots' && document.getElementById('postPhotos').files.length === 0){
     toast('Please add at least 1 photo.'); return;
   }
 
@@ -3413,7 +3951,7 @@ async function submitListing(){
     toast('Please select or enter a location.'); return;
   }
 
-  const show_phone = document.querySelector('input[name="showPhone"]:checked')?.value || 'always';
+  const show_phone = document.querySelector('input[name="showPhone"]:checked')?.value || 'on_agreement';
   const show_exact_location = document.getElementById('postShowExactLocation').checked;
   btn.disabled=true; btn.textContent = ST.editingId ? 'Updating…' : 'Submitting…';
   try {
@@ -3495,13 +4033,22 @@ async function loadAndRenderPins(){
         _userMarker.setLatLng([def.lat, def.lng]);
         _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${def.label}</b>`);
       }
-      if(map) map.setView([def.lat, def.lng], 14, {animate:true});
+      if(map) map.setView([def.lat, def.lng], 14, {animate:!mapHidden()});
       updateCircle();
     }
     renderPinsList();
     drawPinMarkers();
   } catch(e){ toast('Could not load pins: '+e.message); }
 }
+
+// Saved-location action icons (Lucide, MIT). Inline SVG: same look on every
+// device, and stroke="currentColor" picks up the button's hover colour.
+const _svg = d => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const PIN_ICONS = {
+  rename: _svg('<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>'),
+  active: _svg('<line x1="2" x2="5" y1="12" y2="12"/><line x1="19" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="5"/><line x1="12" x2="12" y1="19" y2="22"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/>'),
+  remove: _svg('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>'),
+};
 
 function renderPinsList(){
   const el = document.getElementById('pinsList');
@@ -3514,26 +4061,50 @@ function renderPinsList(){
     <div class="pin-item">
       <div class="pin-ico ${p.is_default?'default':''}">📍</div>
       <div class="pin-info">
-        <div class="pin-name">${p.label} ${p.is_default?'<span style="font-size:10px;color:var(--orange);font-weight:700;">● Active</span>':''}</div>
+        <div class="pin-name">${escHtml(p.label)} ${p.is_default?'<span style="font-size:10px;color:var(--orange);font-weight:700;">● Active</span>':''}</div>
         <div class="pin-coords">${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}</div>
       </div>
       <div class="pin-actions">
-        ${!p.is_default?`<button class="pin-action-btn primary" onclick="setDefaultPin('${p.id}')">Set Active</button>`:''}
-        ${onlyOne?'':`<button class="pin-action-btn danger" ${p.is_default?'disabled title="Set another location as active before removing this one"':''} onclick="deletePin('${p.id}')">Remove</button>`}
+        <button class="pin-action-btn icon" onclick="renamePin('${p.id}')" title="Rename" aria-label="Rename">${PIN_ICONS.rename}</button>
+        ${!p.is_default?`<button class="pin-action-btn icon primary" onclick="setDefaultPin('${p.id}')" title="Set as active location" aria-label="Set as active location">${PIN_ICONS.active}</button>`:''}
+        ${onlyOne?'':`<button class="pin-action-btn icon danger" ${p.is_default?'disabled':''} title="${p.is_default?'Set another location as active before removing this one':'Remove'}" aria-label="Remove" onclick="deletePin('${p.id}')">${PIN_ICONS.remove}</button>`}
       </div>
     </div>`).join('');
 }
 
-async function setDefaultPin(id){
+async function setDefaultPin(id, skipConfirm){
   const candidate = ST.userPins.find(p=>p.id===id);
   if(!candidate) return;
-  if(!confirm(`Set "${candidate.label}" as your active location?`)) return;
+  if(!skipConfirm && !(await mapitDialog({
+    title: 'Change active location?',
+    message: `Set "${candidate.label}" as your active location?`,
+    okText: 'Set Active',
+  }))) return;
   try {
     await apiPut(`/api/pins/${id}/default`,{});
     await loadAndRenderPins(); // this now syncs ST.activePin, marker, map via the updated function
     await loadListings();
     closePinsModal();
     toast(`📍 ${candidate.label} is now your active location.`);
+  } catch(e){ toast(e.message); }
+}
+
+async function renamePin(id){
+  const pin = ST.userPins.find(p=>p.id===id);
+  if(!pin) return;
+  const label = await mapitDialog({
+    title: 'Rename location',
+    input: { value: pin.label, maxlength: 40, placeholder: 'e.g. Home, Office' },
+    okText: 'Save',
+  });
+  if(label === null) return;
+  const trimmed = label.trim();
+  if(!trimmed){ toast('Label cannot be empty.'); return; }
+  if(trimmed === pin.label) return;
+  try {
+    await apiPut(`/api/pins/${id}`, { label: trimmed });
+    await loadAndRenderPins();
+    toast(`📍 Renamed to "${trimmed}".`);
   } catch(e){ toast(e.message); }
 }
 
@@ -3549,7 +4120,8 @@ async function deletePin(id){
 // CONTROLS
 // ═══════════════════════════════════════════════
 function setCat(id){
-  ST.cat=id; ST.sub=null; ST.selId=null;
+  const chip = BROWSE_CHIPS.find(c=>c.id===id) || BROWSE_CHIPS[0];
+  ST.chip=chip.id; ST.cat=chip.cat; ST.txn=chip.txn; ST.sub=null; ST.selId=null;
   renderCats(); loadListings();
 }
 function setSub(s){
@@ -3559,20 +4131,40 @@ function setSub(s){
 }
 function setRad(r){
   ST.rad=r;
-  document.getElementById('radLbl').textContent = r>=999?'City-wide':r===50?'Region':r+' km';
-  document.querySelectorAll('.rbt').forEach((b,i)=>b.classList.toggle('on',[3,5,10,999,50][i]===r));
+  document.getElementById('radLbl').textContent = r>=999?'whole city':r+' km';
+  // match by each option's own data-r value, not its position in the menu
+  document.querySelectorAll('.rbt').forEach(b=>b.classList.toggle('on',Number(b.dataset.r)===r));
+  closeRadMenu();
   updateCircle();
-  const loc=activeLoc();
-  if(r<999&&radCircle) map.fitBounds(radCircle.getBounds(),{padding:[30,30],animate:true});
-  else{const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180);map.fitBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]],{padding:[20,20],animate:true});}
+  fitMapToRadius();
   loadListings();
+}
+// Frame the map on the active search area: the radius circle, or a ~25 km box
+// for "Whole city". fly=true animates like the Explore search jump (Session 9G,
+// Arun: returning from Explore to My location must pan + zoom back).
+// Session 9J — on phones in List view the map is display:none (0×0). Leaflet's
+// animated moves divide by the map's size and throw "Invalid LatLng (NaN, NaN)",
+// which stopped listing details from opening for List-view users. While hidden,
+// jump without animation; setViewMode('map') re-measures the map when shown.
+function mapHidden(){ const c = document.getElementById('mapc'); return !c || c.offsetParent === null; }
+function fitMapToRadius(fly){
+  const loc=activeLoc();
+  if(mapHidden()){
+    // No size to fit bounds against — use a zoom that roughly frames the radius
+    const z = ST.rad<=1 ? 15 : ST.rad<=3 ? 14 : ST.rad<=5 ? 13 : ST.rad<=10 ? 12 : 10;
+    map.setView([loc.lat, loc.lng], z, {animate:false});
+    return;
+  }
+  let bounds, pad;
+  if(ST.rad<999&&radCircle){ bounds=radCircle.getBounds(); pad=[30,30]; }
+  else{ const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180); bounds=L.latLngBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]]); pad=[20,20]; }
+  if(fly) map.flyToBounds(bounds,{padding:pad,duration:.8});
+  else map.fitBounds(bounds,{padding:pad,animate:true});
 }
 function setSearchMode(mode){
   ST.exploreMode = (mode === 'explore');
   document.getElementById('smPin').classList.toggle('on', !ST.exploreMode);
   document.getElementById('smExplore').classList.toggle('on', ST.exploreMode);
-  const radMode = document.getElementById('radMode');
-  if(radMode) radMode.textContent = ST.exploreMode ? 'Search Radius' : 'Proximity Radius';
   const searchBox = document.getElementById('exploreSearchBox');
   if(ST.exploreMode){
     _placeExploreMarker();
@@ -3593,6 +4185,7 @@ function setSearchMode(mode){
     }
   }
   updateCircle();
+  if(!ST.exploreMode) fitMapToRadius(true);
   loadListings();
 }
 function _placeExploreMarker(){
@@ -3619,7 +4212,7 @@ function _onExploreMoveEnd(){
 
 // ── Explore Area search bar (Session 8 item 11) ────────────────
 // Same Photon-based locality/city search as the post-listing/home-location
-// pickers (HOMELOC_SEARCH_CLASSES) — flyTo only, never places a pin. In
+// pickers (photonPlaces) — flyTo only, never places a pin. In
 // Explore mode the map center itself IS the search point (the blue dot
 // marker + radius circle already follow map center via _onExploreMove),
 // so flyTo's own 'moveend' event is all that's needed to pick up the new
@@ -3642,22 +4235,15 @@ async function _runExploreSearch(q){
     const latDelta = 0.35; // ~39km
     const lonDelta = latDelta / Math.cos(c.lat * Math.PI / 180);
     const geoParams = `&lat=${c.lat}&lon=${c.lng}&bbox=${c.lng-lonDelta},${c.lat-latDelta},${c.lng+lonDelta},${c.lat+latDelta}`;
-    const r = await fetch(`https://photon.komoot.io/api/?limit=8&q=${encodeURIComponent(q)}${geoParams}`);
+    const r = await fetch(`https://photon.komoot.io/api/?limit=10&q=${encodeURIComponent(q)}${geoParams}`);
     const { features } = await r.json();
-    _exploreSearchResults = features
-      .filter(f => HOMELOC_SEARCH_CLASSES.has(f.properties.osm_key))
-      .map(f => {
-        const p = f.properties;
-        const display_name = [p.name, p.city && p.city !== p.name ? p.city : null, p.state]
-          .filter(Boolean).join(', ');
-        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], display_name };
-      });
+    _exploreSearchResults = photonPlaces(features);
     if(!_exploreSearchResults.length){ dd.classList.add('hide'); dd.innerHTML = ''; return; }
     dd.innerHTML = '';
     _exploreSearchResults.forEach((m, i) => {
       const row = document.createElement('div');
       row.className = 'explore-search-row';
-      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).join(', ');
+      row.textContent = '📍 ' + m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
       row.onclick = () => _pickExploreSearchResult(i);
       dd.appendChild(row);
     });
@@ -3670,7 +4256,7 @@ async function _runExploreSearch(q){
 function _pickExploreSearchResult(i){
   const m = _exploreSearchResults[i];
   if(!m) return;
-  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).join(', ');
+  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
   document.getElementById('exploreSearchDD').classList.add('hide');
   map.flyTo([+m.lat, +m.lon], 15);
 }
@@ -3684,11 +4270,6 @@ document.addEventListener('click', (e) => {
   const box = document.getElementById('exploreSearchBox');
   if(box && !box.contains(e.target)) document.getElementById('exploreSearchDD').classList.add('hide');
 });
-function setMode(btn){
-  document.querySelectorAll('.mbt').forEach(b=>b.classList.toggle('on',b===btn));
-  if(btn.dataset.m==='post') openPostModal();
-  else { switchTab('browse'); if(ST.selId) closeDetail(); }
-}
 // Mobile map/list single-pane view toggle (Session 5 item 6, Tester-3a).
 // Only visually meaningful on narrow screens (see #main.view-map/.view-list
 // CSS) — harmless no-op on desktop, which always shows both panes.
@@ -3702,6 +4283,7 @@ function setViewMode(mode, persist=true){
   // out hidden behind display:none (list-mode default), switching back to
   // map mode needs an explicit resize or the tiles render at 0x0.
   if(mode==='map' && map) setTimeout(()=>map.invalidateSize(), 50);
+  updateKwPill();
   if(persist) apiPut('/api/auth/default-view', { default_view: mode }).catch(()=>{});
 }
 
@@ -3720,6 +4302,7 @@ function switchTab(tab){
     ST.q = '';
     const si = document.getElementById('srchIn'); if(si) si.value = '';
     const sc = document.getElementById('srchClear'); if(sc) sc.style.display = 'none';
+    updateKwPill();
   }
   // Redraw markers for the new tab (fav shows saved pins, browse shows radius listings, mine keeps browse pins)
   drawMarkers();
@@ -3729,6 +4312,52 @@ function toast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),3200);
 }
+
+// Escape user-typed text before putting it into innerHTML.
+function escHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── In-app dialog ─────────────────────────────────────────────────
+// Replaces the browser's prompt()/confirm(): those can't be styled, show the
+// site address as their title ("mapit-backend-git-uat… says") and are
+// silently blocked by some in-app browsers. Returns a Promise, so callers
+// must await it:
+//   confirm mode (no `input`) → true / false
+//   input mode               → the typed text, or null on Cancel
+let _dlgResolve = null, _dlgHasInput = false;
+function mapitDialog({ title, message = '', input = null, okText = 'OK', cancelText = 'Cancel', danger = false }){
+  if(_dlgResolve) _dlgClose(false); // never leave an earlier caller hanging
+  document.getElementById('mapitDlgTitle').textContent = title;
+  document.getElementById('mapitDlgMsg').textContent = message;
+  const inp = document.getElementById('mapitDlgInput');
+  _dlgHasInput = !!input;
+  inp.classList.toggle('hide', !input);
+  if(input){
+    inp.value = input.value || '';
+    inp.placeholder = input.placeholder || '';
+    inp.maxLength = input.maxlength || 100;
+  }
+  const ok = document.getElementById('mapitDlgOk');
+  ok.textContent = okText;
+  ok.className = 'dlg-btn ' + (danger ? 'danger' : 'primary');
+  document.getElementById('mapitDlgCancel').textContent = cancelText;
+  document.getElementById('mapitDlg').classList.remove('hide');
+  setTimeout(() => (input ? inp : ok).focus(), 30);
+  return new Promise(res => { _dlgResolve = res; });
+}
+function _dlgClose(confirmed){
+  const res = _dlgResolve; _dlgResolve = null;
+  document.getElementById('mapitDlg').classList.add('hide');
+  if(!res) return;
+  if(_dlgHasInput) res(confirmed ? document.getElementById('mapitDlgInput').value : null);
+  else res(!!confirmed);
+}
+document.addEventListener('keydown', e => {
+  if(!_dlgResolve) return;
+  if(e.key === 'Escape'){ e.preventDefault(); _dlgClose(false); }
+  else if(e.key === 'Enter'){ e.preventDefault(); _dlgClose(true); }
+});
 
 // ═══════════════════════════════════════════════
 // INIT
@@ -3983,7 +4612,11 @@ function signInAsSomeoneElse(){
 // MARK AS SOLD
 // ═══════════════════════════════════════════════
 async function markAsSold(id, title){
-  if(!confirm(`Are you sure you want to mark "${title}" as sold?\n\nThis will remove it from the public map.`)) return;
+  if(!(await mapitDialog({
+    title: 'Mark as sold?',
+    message: `"${title}" will be removed from the public map.`,
+    okText: 'Mark as Sold',
+  }))) return;
   try {
     await apiPut(`/api/listings/${id}/sold`, {});
     toast('✅ Listing marked as sold and removed from the map.');
@@ -3992,7 +4625,12 @@ async function markAsSold(id, title){
 }
 
 async function deleteListing(id, title){
-  if(!confirm(`Delete "${title}"?\n\nThis cannot be undone.`)) return;
+  if(!(await mapitDialog({
+    title: 'Delete listing?',
+    message: `"${title}" will be deleted. This cannot be undone.`,
+    okText: 'Delete',
+    danger: true,
+  }))) return;
   try {
     await apiDelete(`/api/listings/${id}`);
     toast('🗑️ Listing deleted.');
@@ -4022,6 +4660,67 @@ function openHelpModal(){
   document.getElementById('helpModal').classList.remove('hide');
 }
 function closeHelpModal(){ document.getElementById('helpModal').classList.add('hide'); }
+
+// ── View Profile (Session 9C) ──
+// Read-only. Every value goes in via textContent, never innerHTML — name,
+// nickname and address are user-typed (see the T-014 / T-045 XSS notes).
+async function openProfileModal(){
+  document.getElementById('uavMenu').classList.remove('open');
+  _renderProfile();
+  document.getElementById('profileModal').classList.remove('hide');
+  // Show the cached profile at once, then refresh — phone_verified may have
+  // changed in another tab or on another device.
+  try {
+    const data = await apiGet('/api/auth/me');
+    if(data.profile){ ST.profile = data.profile; ST.user = data.user || ST.user; _renderProfile(); }
+  } catch(_){}
+}
+function closeProfileModal(){ document.getElementById('profileModal').classList.add('hide'); }
+
+function _renderProfile(){
+  const p = ST.profile || {}, u = ST.user || {};
+  const set = (id, txt) => { document.getElementById(id).textContent = txt; };
+  const name = p.full_name || p.nickname || u.email || '—';
+  const av = document.getElementById('profAvatar');
+  av.textContent = getInitials(p.nickname || name);
+  av.style.background = p.avatar_color || '';
+  set('profName', name);
+  set('profNick', p.nickname && p.nickname !== name ? `“${p.nickname}”` : '');
+
+  const email = document.getElementById('profEmail');
+  email.textContent = u.email || '—';
+  if(u.email && u.email_confirmed_at){
+    const ok = document.createElement('span');
+    ok.className = 'prof-ok'; ok.textContent = ' ✓ Verified';
+    email.appendChild(ok);
+  }
+
+  // Phone: masked like the server's maskPhone() — never show the full number.
+  const phone = document.getElementById('profPhone');
+  phone.textContent = '';
+  const digits = String(p.phone || '').replace(/\D/g, '');
+  if(digits.length >= 4) phone.appendChild(document.createTextNode(`+91 ••••••${digits.slice(-4)} `));
+  if(p.phone_verified){
+    const ok = document.createElement('span');
+    ok.className = 'prof-ok'; ok.textContent = '✓ Verified';
+    phone.appendChild(ok);
+  } else {
+    const warn = document.createElement('span');
+    warn.className = 'prof-warn'; warn.textContent = digits.length >= 4 ? 'Not verified · ' : 'Not added · ';
+    const link = document.createElement('span');
+    link.className = 'prof-link'; link.textContent = 'Verify now →';
+    link.onclick = () => { closeProfileModal(); openPhoneVerify('profile'); };
+    phone.append(warn, link);
+  }
+
+  const provider = p.auth_provider || u.app_metadata?.provider || 'email';
+  set('profMethod', provider === 'google' ? 'Google' : 'Email');
+  const since = p.created_at || u.created_at;
+  set('profSince', since ? new Date(since).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : '—');
+  const home = p.home_address
+    || (p.home_lat != null && p.home_lng != null ? `${Number(p.home_lat).toFixed(4)}, ${Number(p.home_lng).toFixed(4)}` : '');
+  set('profHome', home || 'Not set');
+}
 
 function setFbType(el){
   _fbType = el.dataset.t;
@@ -4188,7 +4887,7 @@ function closeInboxModal(){ document.getElementById('inboxModal').classList.add(
 async function openConversationFromInbox(conversationId, listingId){
   closeInboxModal();
   // If the current user is the seller on this conversation, the listing is
-  // one of their own — it lives in My Ads, not Browse. Selecting it under
+  // one of their own — it lives in My Listings, not Browse. Selecting it under
   // the wrong tab both mis-highlights the tab bar and (since selListing's
   // fetch-and-merge targets whichever array matches ST.tab) leaks the
   // seller's own listing into the Browse array/pins.
@@ -4199,7 +4898,7 @@ async function openConversationFromInbox(conversationId, listingId){
     // null at that point, switchTab's own renderSidebar() call kicks off an
     // *unawaited* renderMyAds() fetch — that fetch can resolve after
     // openChat() below has already rendered the listing detail + chat box,
-    // silently overwriting it back to the plain My Ads list. So the tab
+    // silently overwriting it back to the plain My Listings list. So the tab
     // button/state is set directly here, ST.myListings is loaded and
     // awaited, and renderSidebar() is only triggered once (inside
     // selListing, below) — by which point ST.selId is already set, so it
@@ -4233,13 +4932,30 @@ function clearKeyword(){
   const inp = document.getElementById('srchIn');
   if(inp) inp.value = '';
   document.getElementById('srchClear').style.display = 'none';
+  updateKwPill();
   drawMarkers();
   renderSidebar();
+}
+
+// Session 9J — the box sits in the sidebar, which is hidden in phone Map view
+// and folded into the rail on desktop. An active keyword then shows as a
+// clearable pill on the map, so pins never vanish without explanation.
+function updateKwPill(){
+  const pill = document.getElementById('kwPill'), inp = document.getElementById('srchIn');
+  if(!pill || !inp) return;
+  const typed = inp.value.trim();
+  document.getElementById('kwPillTxt').textContent = typed;   // user-typed: text only
+  pill.classList.toggle('hide', !(ST.q && inp.offsetParent === null));
+}
+function openSearchFromRail(){
+  expandFromRail();
+  setTimeout(() => document.getElementById('srchIn').focus(), 260);
 }
 
 document.getElementById('srchIn').addEventListener('input', e => {
   ST.q = e.target.value.trim().toLowerCase();
   document.getElementById('srchClear').style.display = ST.q ? 'block' : 'none';
+  updateKwPill();
   drawMarkers();
   renderSidebar();
 });

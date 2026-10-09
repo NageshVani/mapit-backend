@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Session 09e UAT Report</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;}
+  a{color:#60a5fa;text-decoration:none;}
+  .shell{display:flex;min-height:100vh;}
+  nav{width:230px;background:#1a1d2e;border-right:1px solid #2d3148;padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  nav .logo{padding:0 20px 20px;font-size:18px;font-weight:800;color:#f97316;letter-spacing:-.5px;}
+  nav .logo span{color:#e2e8f0;font-weight:400;}
+  nav h3{padding:10px 20px 4px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4b5563;}
+  nav a{display:block;padding:6px 20px;font-size:12px;color:#9ca3af;border-left:3px solid transparent;transition:all .15s;}
+  nav a:hover{color:#e2e8f0;background:#1f2235;border-left-color:#f97316;}
+  main{flex:1;padding:40px 48px;max-width:1150px;}
+  .rpt-header{margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid #2d3148;}
+  .rpt-header h1{font-size:26px;font-weight:800;margin-bottom:6px;}
+  .rpt-header .sub{font-size:13px;color:#9ca3af;line-height:1.7;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;}
+  .badge-pass{background:#14532d;color:#4ade80;}
+  .badge-fail{background:#7f1d1d;color:#f87171;}
+  .badge-warn{background:#78350f;color:#fbbf24;}
+  .badge-skip{background:#2d2d3d;color:#9ca3af;}
+  .badge-fixed{background:#1e3a5f;color:#60a5fa;margin-left:4px;}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px;}
+  .scard{background:#1a1d2e;border:1px solid #2d3148;border-radius:10px;padding:18px 20px;text-align:center;}
+  .scard .num{font-size:32px;font-weight:800;margin-bottom:4px;}
+  .scard .lbl{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#9ca3af;}
+  .num-pass{color:#4ade80;}
+  .num-fail{color:#f87171;}
+  .num-warn{color:#fbbf24;}
+  .num-skip{color:#64748b;}
+  .verdict{background:#1e3a5f;border:1px solid #2c5a8f;border-radius:10px;padding:16px 22px;margin-bottom:36px;display:flex;align-items:center;gap:14px;}
+  .verdict-icon{font-size:28px;}
+  .verdict-text{font-size:15px;font-weight:700;color:#60a5fa;}
+  .verdict-sub{font-size:12px;color:#bfdbfe;margin-top:2px;line-height:1.6;}
+  section{margin-bottom:40px;}
+  section h2{font-size:16px;font-weight:700;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #2d3148;color:#f97316;}
+  section .item-status{font-size:11px;color:#9ca3af;margin:8px 0 14px;}
+  .test-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .test-table th{background:#1a1d2e;padding:9px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #2d3148;}
+  .test-table td{padding:9px 12px;border-bottom:1px solid #1f2235;vertical-align:top;}
+  .test-table tr:hover td{background:#1a1d2e;}
+  .test-id{font-weight:700;color:#9ca3af;white-space:nowrap;}
+  .test-area{color:#c4b5fd;font-size:11px;}
+  code{background:#1f2235;border:1px solid #2d3148;border-radius:4px;padding:1px 5px;font-family:'Courier New',monospace;font-size:11px;color:#a5f3fc;}
+  .evidence{background:#0f1117;border:1px solid #2d3148;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:10.5px;color:#a5f3fc;max-height:260px;overflow-y:auto;margin-top:8px;white-space:pre-wrap;}
+  .obs-card{background:#1a1d2e;border:1px solid #374151;border-left:4px solid #fbbf24;border-radius:8px;padding:14px 18px;margin-bottom:12px;}
+  .obs-card.crit{border-left-color:#f87171;}
+  .obs-card h3{font-size:12.5px;font-weight:700;color:#fbbf24;margin-bottom:5px;}
+  .obs-card.crit h3{color:#f87171;}
+  .obs-card p{font-size:12px;color:#9ca3af;line-height:1.6;}
+  .file-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #1f2235;font-size:12px;}
+  .file-path{color:#a5f3fc;font-family:'Courier New',monospace;flex-shrink:0;}
+  .file-desc{color:#9ca3af;}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid #2d3148;font-size:11px;color:#4b5563;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav>
+  <div class="logo">Map<span>It</span> UAT</div>
+  <h3>Session 09e</h3>
+  <a href="#summary">Summary</a>
+  <a href="#verdict">Verdict</a>
+  <h3>Checklist Items</h3>
+  <a href="#block-1">1 · Route Protection</a>
+  <a href="#block-2">2 · Fail-Open Behaviour</a>
+  <a href="#block-3">3 · Moderation Pipeline</a>
+  <a href="#block-4">4 · Admin Rendering (XSS)</a>
+  <a href="#block-5">5 · Live Key Behaviour</a>
+  <h3>Platform</h3>
+  <a href="#block-k">K · Regression / Config</a>
+  <h3>Findings</h3>
+  <a href="#observations">Observations</a>
+  <a href="#files">Files Covered</a>
+</nav>
+
+<main>
+  <div class="rpt-header">
+    <h1>Session 09e — UAT Report (AI Moderation, Draft Reply, Lead Screening)</h1>
+    <div class="sub">Automated QA pass before the manual 4-step click-test with the real <code>mapit-uat</code> Anthropic key. Covers AI listing moderation (<code>contentModeration.js</code>, migration 015), the admin ✨ Draft Reply (<code>feedbackDraft.js</code>), buyer "I'm interested" screening (<code>leadScoring.js</code> → <code>notifySeller.js</code>), and the moderation-field strip fix (<code>d810e5b</code>). Tested against the live <code>uat</code> preview (<code>mapit-backend-git-uat-nagesh-n-arun.vercel.app</code>) and the local source tree on branch <code>uat</code>. Generated 2026-10-03.</div>
+  </div>
+
+  <section id="summary">
+    <div class="summary">
+      <div class="scard"><div class="num num-pass">17</div><div class="lbl">Passed</div></div>
+      <div class="scard"><div class="num num-fail">1</div><div class="lbl">Failed (not fixed)</div></div>
+      <div class="scard"><div class="num num-warn">1</div><div class="lbl">Warnings</div></div>
+      <div class="scard"><div class="num num-skip">2</div><div class="lbl">Skipped</div></div>
+    </div>
+  </section>
+
+  <section id="verdict">
+    <div class="verdict">
+      <div class="verdict-icon">⚠️</div>
+      <div>
+        <div class="verdict-text">Overall Verdict: PARTIAL. The 9E features are sound, but one pre-existing admin-page security gap now also applies to the AI flag reason.</div>
+        <div class="verdict-sub">Every 9E route is login-protected. All three AI helpers fail safe with a missing or bad key. Model output is reduced to fixed values before it is used. T-014 is the one failure: the admin pending queue inserts the listing title, address, seller name and the new 🚩 flag reason into the page <b>without HTML-escaping</b>. A seller could put HTML or script in a title and it would run in the admin's browser. <b>Not fixed inline</b>, because CLAUDE.md Rule 1 requires explaining a fix and getting confirmation first. The fix is small (wrap the fields in the existing <code>escapeHtmlAdm()</code> helper) and should go on its own <code>fix/</code> branch before the <code>uat → main</code> PR. It does not block the manual click-test.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="block-1">
+    <h2>1 · Route Protection (live uat)</h2>
+    <div class="item-status">All 9E/9F admin routes reject unauthenticated callers.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-001</td><td class="test-area">API / health</td><td><code>GET /health</code> responds 200</td><td><code>curl</code> (uat)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-002</td><td class="test-area">API / config</td><td><code>GET /api/config</code> responds 200 (0.7s, warm)</td><td><code>curl</code> (uat)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-003</td><td class="test-area">API / draft-reply</td><td><code>POST /api/users/feedback/:id/draft-reply</code> without a token → 401</td><td><code>curl</code> (uat)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-004</td><td class="test-area">API / draft-reply</td><td>Same route with a forged token → 401, no internals leaked</td><td><code>curl</code> (uat)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-005</td><td class="test-area">API / admin queue</td><td><code>GET /api/listings/pending/all</code> without a token → 401 (route also has <code>requireAdmin</code>)</td><td><code>curl</code> (uat) + source</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-006</td><td class="test-area">API / cost report</td><td><code>GET /api/admin/cost-report</code> without a token → 401</td><td><code>curl</code> (uat)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">GET /health -> 200 2.03s   |   GET /api/config -> 200 0.70s
+POST /feedback/1/draft-reply (no auth)   -> 401 {"error":"Missing or invalid authorization header..."}
+POST /feedback/1/draft-reply (bad token) -> 401 {"error":"Invalid or expired session. Please log in again."}
+GET /listings/pending/all -> 401   |   GET /admin/cost-report -> 401</div>
+  </section>
+
+  <section id="block-2">
+    <h2>2 · Fail-Open Behaviour (no key / bad key)</h2>
+    <div class="item-status">Matters for production, which stays without a key until launch.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-007</td><td class="test-area">Moderation</td><td><code>scoreListing()</code> with no key → <code>unscreened</code>, never throws</td><td>Direct Node call</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-008</td><td class="test-area">Draft reply</td><td><code>draftFeedbackReply()</code> with no key → <code>null</code> (route turns this into a clear 502 "write one manually")</td><td>Direct Node call + source</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-009</td><td class="test-area">Lead scoring</td><td><code>scoreLead()</code> with no key → <code>unscreened</code></td><td>Direct Node call</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-010</td><td class="test-area">Bad key</td><td>An invalid key (real 401 from Anthropic) → both scorers return <code>unscreened</code>; the key is not echoed in logs</td><td>Direct Node call, real network</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">scoreListing no key  -> {"verdict":"unscreened","reason":null}
+draftFeedbackReply   -> null
+scoreLead no key     -> {"verdict":"unscreened"}
+scoreListing bad key -> {"verdict":"unscreened","reason":null}  (Anthropic 401 logged, key not printed)</div>
+  </section>
+
+  <section id="block-3">
+    <h2>3 · Moderation Pipeline &amp; Data Exposure</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-011</td><td class="test-area">Prompt injection</td><td>Untrusted seller/buyer/feedback text sits only in the user turn, inside tags. Model output is narrowed by regex/enum to <code>clean</code>/<code>flagged</code>/<code>unscreened</code> (or <code>spam</code>/<code>genuine</code>). The flag only changes sort order and never auto-approves or rejects.</td><td>Source review (all 3 utils, <code>listings.js:611-620</code>)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-012</td><td class="test-area">Data exposure</td><td><code>resolveListingLocation()</code> strips <code>moderation_verdict</code>, <code>moderation_reason</code>, <code>moderation_scored_at</code> (and <code>display_*</code>) from all buyer/seller responses. Fix <code>d810e5b</code> is on <code>origin/uat</code>.</td><td>Source review (<code>listings.js:63</code>) + <code>git branch -r --contains</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-013</td><td class="test-area">Admin sort</td><td><code>/pending/all</code> puts flagged rows first with a stable sort, keeping newest-first within each group</td><td>Source review (<code>listings.js:82-83</code>)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-015</td><td class="test-area">Serverless timing</td><td>Moderation is fire-and-forget <i>after</i> <code>res.json()</code>. On Vercel the function can be frozen once the response is sent, so the verdict may sometimes never be written. The same pattern already delivers seller emails on uat and production, so it most likely works, but the manual test is the real proof.</td><td>Source review</td><td><span class="badge badge-warn">WARN</span></td></tr>
+      <tr><td class="test-id">T-016</td><td class="test-area">Live leak check</td><td>Live <code>GET /api/listings</code> response checked for <code>moderation_*</code> keys</td><td><code>curl</code>: route needs login (401), no test token available</td><td><span class="badge badge-skip">SKIP</span></td></tr>
+    </table>
+    <div class="evidence">git branch -r --contains d810e5b -> origin/uat
+listings.js:63  const { display_lat, display_lng, moderation_verdict, moderation_reason, moderation_scored_at, ...rest } = listing;
+listings.js:615 scoreListing(...).then(update moderation_*)   // after res is built, not awaited</div>
+  </section>
+
+  <section id="block-4">
+    <h2>4 · Admin Rendering (XSS)</h2>
+    <div class="item-status">Found during this pass. Mostly pre-existing, slightly widened by 9E.</div>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-014</td><td class="test-area">🔴 Security / admin.html</td><td>The pending queue builds HTML with <code>innerHTML</code> and inserts <code>l.title</code>, <code>l.address</code>, <code>l.price_label</code>, the seller name and the new <code>l.moderation_reason</code> <b>without escaping</b>. A seller title such as <code>&lt;img src=x onerror=…&gt;</code> (fits in 80 chars) would run script in the admin's logged-in session, which could steal the admin token. The flag reason is model output that a seller can partly steer. A safe helper <code>escapeHtmlAdm()</code> already exists in the same file (line 779) and is used for chat messages, but not here.</td><td>Source review (<code>public/admin.html:636-642</code>)</td><td><span class="badge badge-fail">FAIL</span></td></tr>
+    </table>
+    <div class="evidence">admin.html:638  ... ${l.title}${... 'flagged' ? `...🚩 Flagged${l.moderation_reason ? ': '+l.moderation_reason : ''}` ...}
+admin.html:641  <span>📍 ${l.address||'No address'}</span>
+admin.html:767  ${escapeHtmlAdm(m.content||'')}      &lt;- helper exists, used for chat only
+Proposed fix: wrap each user/model-supplied field in escapeHtmlAdm(); then sync MapIt_Admin_v1.html ↔ public/admin.html</div>
+  </section>
+
+  <section id="block-5">
+    <h2>5 · Live Key Behaviour</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-017</td><td class="test-area">Real key</td><td>Real classification, drafting and screening with the <code>mapit-uat</code> key</td><td>The key exists only in Vercel Preview and <code>.env</code>, which Claude can't read. Covered by the manual checklist.</td><td><span class="badge badge-skip">SKIP → MANUAL</span></td></tr>
+    </table>
+  </section>
+
+  <section id="block-k">
+    <h2>K · Regression / Config</h2>
+    <table class="test-table">
+      <tr><th>ID</th><th>Area</th><th>Description</th><th>Method</th><th>Status</th></tr>
+      <tr><td class="test-id">T-018</td><td class="test-area">Syntax</td><td>All 7 touched backend files parse cleanly</td><td><code>node -c</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-019</td><td class="test-area">Two-File Rule</td><td><code>MapIt_MVP_v1.html</code> = <code>public/index.html</code>; <code>MapIt_Admin_v1.html</code> = <code>public/admin.html</code></td><td><code>diff</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-020</td><td class="test-area">Secrets</td><td>No <code>sk-ant-</code> or <code>ANTHROPIC_API_KEY</code> in any browser-served file</td><td><code>grep</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+      <tr><td class="test-id">T-021</td><td class="test-area">Branch state</td><td>Local <code>uat</code> is only 3 docs-only commits ahead of <code>origin/uat</code>; all 9E code is deployed to the uat preview</td><td><code>git rev-list --left-right --count</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+    </table>
+    <div class="evidence">parse OK: contentModeration.js feedbackDraft.js leadScoring.js notifySeller.js listings.js users.js admin.js
+diff (both pairs) -> clean
+grep sk-ant-|ANTHROPIC_API_KEY public/ MapIt_*.html -> 0 matches
+origin/uat...uat -> 0 behind, 3 ahead (checkpoint docs)</div>
+  </section>
+
+  <section id="observations">
+    <h2>💡 Observations</h2>
+    <div class="obs-card crit">
+      <h3>OBS-01: Fix T-014 before the uat → main PR</h3>
+      <p>The admin page is the most privileged screen in the app. Any HTML a seller types is currently treated as page code there. The 9E flag reason gives a second way in, through model output. Recommended: a small <code>fix/admin-escape-listing-fields</code> branch that wraps every user- or model-supplied field in the pending queue (and the reports and feedback views, if they have the same pattern) in <code>escapeHtmlAdm()</code>. Also worth checking how the main app renders listing titles in its own <code>innerHTML</code> templates.</p>
+    </div>
+    <div class="obs-card">
+      <h3>OBS-02: If step 1 of the manual test shows no 🚩 at all</h3>
+      <p>This could be T-015 (Vercel froze the function before the background verdict was saved). Check in Supabase: if the test listing's <code>moderation_scored_at</code> is empty, the background work never finished. The fix would be Vercel's <code>waitUntil()</code> or awaiting the call before responding (about 1s slower posting). Don't change anything unless the manual test actually fails.</p>
+    </div>
+    <div class="obs-card">
+      <h3>OBS-03: Seller email only fires on a buyer's first message per listing</h3>
+      <p>Manual step 3 must use a buyer account that has never messaged that listing before, otherwise no email is sent and the test looks like a failure when it isn't.</p>
+    </div>
+    <div class="obs-card">
+      <h3>OBS-04: Model IDs</h3>
+      <p>Moderation and lead scoring use <code>claude-haiku-4-5-20251001</code> (Active). Draft reply uses <code>claude-sonnet-5</code> (legacy, still available). No change needed for this test. A swap is one line per file when Anthropic sends a deprecation notice.</p>
+    </div>
+  </section>
+
+  <section id="files">
+    <h2>📂 Files Covered (Session 9E)</h2>
+    <div class="file-row"><div class="file-path">src/utils/contentModeration.js</div><div class="file-desc">Haiku listing classifier, fail-open</div></div>
+    <div class="file-row"><div class="file-path">src/utils/feedbackDraft.js</div><div class="file-desc">Sonnet draft-reply generator, returns null on failure</div></div>
+    <div class="file-row"><div class="file-path">src/utils/leadScoring.js · notifySeller.js</div><div class="file-desc">Buyer-note screening → <code>[Unscreened]</code> prefix and banner only when not <code>genuine</code></div></div>
+    <div class="file-row"><div class="file-path">src/routes/listings.js</div><div class="file-desc">Background moderation on POST, flagged-first sort, moderation-field strip (<code>d810e5b</code>)</div></div>
+    <div class="file-row"><div class="file-path">src/routes/users.js</div><div class="file-desc"><code>POST /feedback/:id/draft-reply</code> (requireAuth + requireAdmin)</div></div>
+    <div class="file-row"><div class="file-path">public/admin.html · MapIt_Admin_v1.html</div><div class="file-desc">🚩 badge, ✨ Draft Reply button (T-014 finding)</div></div>
+    <div class="file-row"><div class="file-path">database/migrations/015</div><div class="file-desc">3 nullable moderation columns, already run in Supabase</div></div>
+  </section>
+
+  <footer>
+    MapIt UAT · Session 09e (AI Moderation + Draft Reply + Lead Screening) · Branch uat · Report generated 2026-10-03 · Automated pass by Claude Code (James) · 21 checks: 17 pass, 1 fail (T-014, fix proposed, not applied), 1 warn, 2 skipped/manual
+  </footer>
+</main>
+</div>
+</body>
+</html>
