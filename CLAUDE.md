@@ -148,6 +148,9 @@ If DB changes were made (in Supabase SQL Editor), note them in CONTEXT.md.
   - Note the before/after filenames in CONTEXT.md
   - Use browser zoom 100% for all screenshots
 
+## Rule 13 — After Build
+  - After building any item provide option to click test in localhost
+
 ## MVP Scope Boundary
 The following are OUT OF SCOPE for Sessions 1–9. Do not build them:
   ✗ Trust Badge System
