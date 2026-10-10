@@ -1612,7 +1612,6 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **ℹ️ Dev PC clock is UTC+04:00 (AST), not IST (seen 2026-10-10).** Commit and CONTEXT timestamps follow the machine clock. Nagesh to confirm whether intended (travel) or set the Windows time zone to India (UTC+05:30).
 - **ℹ️ `npm run uat:9c` uses 9 of the 10/hour per-IP send limit** — wait 1 h between runs against the same target, or it fails with "Too many code requests".
 - **ℹ️ Supabase SQL Editor shows only the LAST result grid and may not keep TEMP TABLEs across statements** — use one `DO` block for multi-step scripts; run EXPLAINs on their own.
 - **✅ RESOLVED (2026-10-10 12:01, 9K) UAT signup "Error sending confirmation email".** Logs → Auth showed `535 "Authentication credentials invalid"` on POST /otp: the Resend key `mapit-uat-smtp` had never actually been created (correction to the 2026-10-09 note), so the SMTP password was invalid. Fix: created Resend key `mapit-uat-smtp` (Sending access, mapit.co.in), set mapit-uat SMTP = smtp.resend.com:465, user `resend`. Signup + 6-digit code from "MapIt UAT" + login verified; 1 `profiles` row in mapit-uat (trigger works). Side note: a 403 "unrecognized JWT kid" on /user = stale prod session in localhost storage; clear site data. Lesson: Supabase hides SMTP errors behind a generic message — always read Logs → Auth.
@@ -2821,6 +2820,7 @@ G. **Launch gate:** re-run 9a checks + cron firing → 48 h soft-open (10–20 p
 ---
 
 ## 📎 Important Context / Constraints
+- **🕒 Timezones (confirmed 2026-10-10, Nagesh):** Nagesh works from the **UAE (UTC+04:00, Gulf Standard Time)**; Arun is in **India (IST, UTC+05:30)**, 1.5 h ahead. Nagesh’s laptop clock is correct. All CONTEXT.md / commit timestamps are **UAE time** unless marked IST — e.g. 12:00 UAE = 13:30 IST. Convert when scheduling with Arun or quoting deadlines (IT Rules, Indian business hours).
 - **Two Supabase projects (since 2026-10-10, 9K):** prod `jneoxwumccmjwaojfazh` (Vercel Production) · UAT `mapit-uat` `xesekrkxbtybbxpsvxuz` (Vercel Preview + local `.env`). Canonical prod host = `www.mapit.co.in`.
 
 - **🖥️ Dev machine migration — POSTPONED (2026-09-29).** The Windows PC purchase is now postponed until after MVP release; Nagesh will keep building on this Mac through go-live. The "build every new feature migration-safe" discipline from 2026-09-27 (no Mac-specific paths/tooling, secrets only in `.env`/Vercel) is **no longer an active constraint** — it cost nothing to follow so nothing needs to be undone, but it's not a standing rule to keep enforcing going forward. `docs/technical/mac-to-windows-migration-guide.html` stays in the repo, ready to use whenever the move actually happens post-MVP.
