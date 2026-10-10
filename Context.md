@@ -1756,6 +1756,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Frontend stays one file through launch; split after launch (2026-10-10, Nagesh)** | Splitting `MapIt_MVP_v1.html` (~4,970 lines) into separate pages = 3–5 days + full re-UAT (9C/9G/9J) in the launch runway, and pages would reload Leaflet + session on every move (slower for users; Lighthouse already 100). Post-launch plan: **option 1** = same single page, code moved to `css/app.css` + `js/*.js` via plain script tags (no build tool, ~1–2 days + re-test); **option 2** (v2, with the mobile app) = Vite build, enables CSP |
 | **Saved regression suites instead of one-off runs (2026-10-10, Nagesh)** | `npm run uat:9c` (35) + `npm run smoke:prod` (12) — needed again after the security audit (018+) and every release; one command each |
 | **9C suite seeds OTP rows with a known hash, sends zero WhatsApp (2026-10-10)** | Verify only checks the `phone_otps` hash; all send calls are refused before MSG91 → ₹0, no undeliverable sends |
 | **Prod smoke test is read-only — no accounts, no writes (2026-10-10)** | Since 9K, prod data is real user data; radius check uses the public RPC + anon key and only counts ids |
@@ -2083,6 +2084,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 2. **PR #21 `uat → main`** (9K scripts/docs + smoke S-07 only, no app code) — Nagesh/Arun sign-off → merge → `npm run smoke:prod`.
 2b. Friends & family re-register at the closed-group soft-release (Nagesh, 2026-10-10).
 3. Then items 3–6 of the list below (subscriptions + Session 9 config, security audit, features, launch gate).
+4. **Post-launch (Nagesh, 2026-10-10):** frontend split option 1 — move CSS/JS out of `MapIt_MVP_v1.html` into `css/` + `js/` files, still one page (see Decisions). Option 2 (Vite) later with v2 / mobile app.
 
 **⬅ Immediate (2026-10-10 13:25 — checkpoint, Session 9K done except step 8):**
 1. **Nagesh decides order:** (a) Supabase Pro on prod (backups) → 9K step 8, or (b) `uat → main` PR for 9K first (scripts/docs only).
