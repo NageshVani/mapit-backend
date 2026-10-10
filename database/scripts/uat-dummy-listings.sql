@@ -3,9 +3,23 @@
 -- Run in: Supabase Dashboard → SQL Editor → New Query → Paste → Run
 -- Created: 2026-06-28
 --
+-- Updated: 2026-10-10 (Session 9K) — UAT project ONLY (mapit-uat).
+--   Since 9K, UAT has its own Supabase project, so this seed must never run
+--   on production. A guard at the top of the seed block aborts if the database already holds
+--   real (non-seed) listings — i.e. you are probably in the prod project.
+--   Guard + inserts are ONE DO block: any failure = nothing inserted.
+--
+-- HOW TO RUN (mapit-uat → SQL Editor):
+--   1. Check the project picker at the top says mapit-uat.
+--   2. Copy from the top down to the end of STEP 3 and Run.
+--      Result grid = the 20 seeded listings.
+--   3. Run STEP 4 (EXPLAIN ANALYZE) separately — see the notes there.
+--
 -- What this creates: 20 dummy listings across Bangalore
---   • 12 listings under Nagesh  (nagesh.aadi@gmail.com)
---   •  8 listings under Arun    (arun.bn1@gmail.com)
+--   • 11 listings under Seller A (nagesh.aadi@gmail.com)
+--   •  9 listings under Seller B (oldest other UAT account; was Arun pre-9K)
+--   Two sellers so buyer-view tests work: an owner always sees their own
+--   exact pin and can't chat with themselves.
 --
 -- UAT scenarios covered:
 --   • All 3 categories: Real Estate (re) · Vehicles (veh) · Household Items (hh)
@@ -24,11 +38,34 @@
 
 
 -- ============================================================
--- STEP 1 — VERIFY user IDs resolve before running inserts
---           (run these two lines alone first to confirm)
+-- STEP 1 — Resolve sellers + safety guard
 -- ============================================================
-SELECT id AS nagesh_id, email FROM auth.users WHERE email = 'nagesh.aadi@gmail.com';
-SELECT id AS arun_id,   email FROM auth.users WHERE email = 'arun.bn1@gmail.com';
+-- The whole seed (guard + 20 inserts) is ONE DO block = one statement =
+-- one session + one transaction. (A TEMP TABLE + BEGIN/COMMIT version
+-- failed: the SQL Editor doesn't keep every statement in one session.)
+DO $$
+DECLARE
+  v_a uuid;  -- Seller A
+  v_b uuid;  -- Seller B
+BEGIN
+  SELECT id INTO v_a FROM auth.users WHERE email = 'nagesh.aadi@gmail.com';
+  -- Seller B = oldest other account (no email typed, none stored in git)
+  SELECT id INTO v_b FROM auth.users
+   WHERE email IS DISTINCT FROM 'nagesh.aadi@gmail.com'
+   ORDER BY created_at LIMIT 1;
+
+  IF v_a IS NULL THEN
+    RAISE EXCEPTION 'Seller A (nagesh.aadi@gmail.com) not found in auth.users — sign up on UAT first';
+  END IF;
+  IF v_b IS NULL THEN
+    RAISE EXCEPTION 'Seller B not found — create a 2nd UAT account first';
+  END IF;
+  IF EXISTS (SELECT 1 FROM listings WHERE reference_code NOT LIKE 'MP-BLR-UAT%' OR reference_code IS NULL) THEN
+    RAISE EXCEPTION 'ABORT: real listings exist — this looks like PRODUCTION (or UAT has app-created listings — delete those first). Seed only runs on mapit-uat.';
+  END IF;
+  IF EXISTS (SELECT 1 FROM listings WHERE reference_code LIKE 'MP-BLR-UAT%') THEN
+    RAISE EXCEPTION 'Seed already present — run the CLEANUP at the bottom first if you want to re-seed';
+  END IF;
 
 
 -- ============================================================
@@ -42,14 +79,14 @@ SELECT id AS arun_id,   email FROM auth.users WHERE email = 'arun.bn1@gmail.com'
 
 -- RE-01 · 2BHK Apartment Rent · Koramangala 5th Block
 -- ★ OVERLAP TEST POINT A (12.9352, 77.6245) — 3 listings share this pin
--- Nagesh | active | +20 days
+-- Seller A | active | +20 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   're', 'Apartment',
   '2BHK Semi-Furnished Apartment for Rent — Koramangala',
   'Spacious 2BHK semi-furnished apartment in prime Koramangala 5th Block. Walking distance to Forum Mall. Gated community with 24/7 security and power backup. Kitchen modular with chimney. 1 covered parking included.',
@@ -63,14 +100,14 @@ INSERT INTO listings (
 );
 
 -- RE-02 · 3BHK Builder Flat Sale · Whitefield
--- Nagesh | active | +4 days → ORANGE WARNING (≤5 days)
+-- Seller A | active | +4 days → ORANGE WARNING (≤5 days)
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   're', 'Builder Flat',
   '3BHK Gated Community Flat for Sale — Whitefield',
   '1650 sqft 3BHK flat in a premium gated community near ITPL. 2 covered parking slots, clubhouse, swimming pool. BBMP approved. Close to Prestige Tech Park and Whitefield Metro. Genuine sale, no brokers.',
@@ -84,14 +121,14 @@ INSERT INTO listings (
 );
 
 -- RE-03 · Independent House Sale · Jayanagar
--- Nagesh | active | +25 days
+-- Seller A | active | +25 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   're', 'Individual House',
   '4BHK East-Facing Independent House for Sale — Jayanagar',
   'Well-maintained 4BHK independent house on 1800 sqft plot in the heart of Jayanagar. East-facing, BDA approved layout. All 4 floors, 2200 sqft built-up. Quiet residential street, 5 min from Jayanagar Shopping Complex.',
@@ -105,14 +142,14 @@ INSERT INTO listings (
 );
 
 -- RE-04 · 1BHK Apartment Rent · BTM Layout
--- Nagesh | active | +2 days → RED DANGER (≤2 days)
+-- Seller A | active | +2 days → RED DANGER (≤2 days)
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   're', 'Apartment',
   '1BHK Fully Furnished Apartment for Rent — BTM Layout',
   'Ready-to-move fully furnished 1BHK in BTM 2nd Stage. Includes 1.5 Ton AC, 2-door fridge, washing machine, modular kitchen. Ideal for IT professionals. 10 min from Silk Board. Maintenance ₹1500/month extra.',
@@ -126,14 +163,14 @@ INSERT INTO listings (
 );
 
 -- RE-05 · BDA Plot Sale · Yelahanka
--- Arun | active | +18 days
+-- Seller B | active | +18 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   're', 'Plot',
   'BDA Approved Corner Plot 1200 sqft — Yelahanka New Town',
   'East-facing BDA approved residential corner plot, 1200 sqft. 3-road access. All utilities available — electricity, water, drainage. Located in a developed layout with tarred roads. 5 min from Yelahanka New Town bus stand.',
@@ -147,14 +184,14 @@ INSERT INTO listings (
 );
 
 -- RE-06 · Commercial Shop Rent · Electronic City
--- Arun | active | PAST EXPIRY (−3 days) → tests ⚠️ Expired display in My Ads
+-- Seller B | active | PAST EXPIRY (−3 days) → tests ⚠️ Expired display in My Ads
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   're', 'Commercial Building',
   'Ground Floor Commercial Shop for Rent — Electronic City',
   '800 sqft ground floor commercial space on main road near Infosys campus. High footfall area. Suitable for pharmacy, retail shop, or small office. Floor-to-ceiling glass frontage. Generator backup available.',
@@ -173,14 +210,14 @@ INSERT INTO listings (
 -- ──────────────────────────────────────────────────────────────
 
 -- VEH-01 · Maruti Swift Dzire 2020 · Indiranagar
--- Nagesh | active | +22 days
+-- Seller A | active | +22 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   'veh', 'Cars',
   'Maruti Suzuki Swift Dzire VXI 2020 — Single Owner',
   'Well-maintained 2020 Swift Dzire VXI petrol, single owner. Full service history at Maruti authorised centre. No accidents, no repaint. Comprehensive insurance valid until Dec 2026. All original accessories.',
@@ -194,14 +231,14 @@ INSERT INTO listings (
 );
 
 -- VEH-02 · Royal Enfield Classic 350 2019 · JP Nagar
--- Nagesh | SOLD → tests ✅ Sold status display in My Ads
+-- Seller A | SOLD → tests ✅ Sold status display in My Ads
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   'veh', '2 Wheelers',
   'Royal Enfield Classic 350 2019 — 2 Owners',
   'Classic 350 in good condition. New Ceat tyres and battery fitted 6 months ago. All documents clear — RC, insurance, PUC valid. Selling due to upgrade to Thunderbird. Price is firm.',
@@ -215,14 +252,14 @@ INSERT INTO listings (
 );
 
 -- VEH-03 · TVS Jupiter 125 2022 · Kumaraswamy Layout
--- Nagesh | active | +12 days
+-- Seller A | active | +12 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   'veh', '2 Wheelers',
   'TVS Jupiter 125 2022 — Single Owner Only 8500 KMs',
   'Barely used TVS Jupiter 125 in showroom condition. Single female owner, company transferred to Mumbai. All original parts, never repaired. Full fuel, ready to ride. Original purchase invoice available.',
@@ -237,14 +274,14 @@ INSERT INTO listings (
 
 -- VEH-04 · Honda Activa 6G 2021 · Koramangala 5th Block
 -- ★ OVERLAP TEST POINT A (12.9352, 77.6245) — same as RE-01
--- Arun | active | +15 days
+-- Seller B | active | +15 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   'veh', '2 Wheelers',
   'Honda Activa 6G 2021 — Excellent Condition All Original',
   'Honda Activa 6G, single owner from new, all original parts. Recent full service at Honda authorised centre. PUC valid 8 months. Both side visor guards, back carrier included. No scratches.',
@@ -258,14 +295,14 @@ INSERT INTO listings (
 );
 
 -- VEH-05 · Hyundai Creta SX 2022 · HSR Layout
--- Arun | active | +28 days
+-- Seller B | active | +28 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   'veh', 'Cars',
   'Hyundai Creta SX(O) Diesel 2022 — Top Variant Single Owner',
   'Top-spec Creta SX(O) diesel, single owner, meticulous service history. Panoramic sunroof, ventilated seats, ADAS, wireless Android Auto. 360 camera. Comprehensive insurance with zero depreciation, valid until April 2027.',
@@ -279,14 +316,14 @@ INSERT INTO listings (
 );
 
 -- VEH-06 · Tata Tiago XZ 2021 · Banashankari
--- Arun | PENDING → tests pending status in My Ads (awaiting admin review)
+-- Seller B | PENDING → tests pending status in My Ads (awaiting admin review)
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   'veh', 'Cars',
   'Tata Tiago XZ+ 2021 — Single Owner Connected Car',
   'Well-maintained Tata Tiago XZ+ petrol, 1 owner. Arkamys sound system, 7" touchscreen infotainment with connected car features. Full service at Tata authorised centre. Teal Blue exterior, no accidents.',
@@ -300,14 +337,14 @@ INSERT INTO listings (
 );
 
 -- VEH-07 · Hero Sprint 26T Cycle · Malleshwaram
--- Arun | active | +10 days
+-- Seller B | active | +10 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   'veh', 'Cycles',
   'Hero Sprint 26T 21-Speed Mountain Cycle — Good Condition',
   'Hero Sprint 26T with Shimano 21-speed gearing. Adult size frame, good condition. Tyres have 60% tread remaining. Used for weekend rides. Suitable for daily commute or fitness. Self-pickup from Malleshwaram.',
@@ -327,7 +364,7 @@ INSERT INTO listings (
 
 -- HH-01 · Samsung 55" 4K Smart TV · Koramangala 5th Block
 -- ★ OVERLAP TEST POINT A (12.9352, 77.6245) — same as RE-01 and VEH-04
--- Nagesh | active | +20 days
+-- Seller A | active | +20 days
 -- (3 listings now share this exact pin — tests T7-1 same-location popup)
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
@@ -335,7 +372,7 @@ INSERT INTO listings (
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   'hh', 'Electronic Appliances',
   'Samsung 55" Crystal 4K UHD Smart TV — 2 Years Old',
   '2-year-old Samsung 55 inch 4K UHD Smart TV (Crystal Display technology). Excellent picture quality, no issues. All original accessories, remote, stand, and wall-mount bracket included. Sold as apartment is being vacated.',
@@ -349,14 +386,14 @@ INSERT INTO listings (
 );
 
 -- HH-02 · Teak Wood 5-Seater Sofa Set · Banashankari
--- Nagesh | active | +16 days
+-- Seller A | active | +16 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   'hh', 'Furniture',
   'Teak Wood 5-Seater Sofa Set with Centre Table — Like New',
   'Solid teak wood 3+1+1 sofa set with matching centre table. 3 years old, no damage, no stains. Cushion covers professionally dry-cleaned. Heavy-built, excellent craftsmanship. Selling as redecorating living room.',
@@ -370,14 +407,14 @@ INSERT INTO listings (
 );
 
 -- HH-03 · LG 260L Double Door Refrigerator · HSR Layout
--- Arun | active | +7 days
+-- Seller B | active | +7 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   'hh', 'Electronic Appliances',
   'LG 260L Double Door Refrigerator — Works Perfectly',
   '5-star energy rated LG 260L double door fridge, 5 years old, no issues. Frost-free, vegetable crisper, tempered glass shelves. Selling as relocating abroad. Buyer to arrange transport (ground floor, easy access).',
@@ -391,14 +428,14 @@ INSERT INTO listings (
 );
 
 -- HH-04 · Dell Inspiron 15 Laptop · Indiranagar
--- Nagesh | active | +14 days
+-- Seller A | active | +14 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   'hh', 'Electronic Appliances',
   'Dell Inspiron 15 i5 11th Gen 8GB 512GB SSD — Like New',
   'Dell Inspiron 15 3511 laptop in like-new condition. i5 11th Gen processor, 8GB RAM, 512GB NVMe SSD, Windows 11 Home licensed. 1.5 years old. Original box, charger, and Dell laptop bag included. Battery holds 5+ hours.',
@@ -412,14 +449,14 @@ INSERT INTO listings (
 );
 
 -- HH-05 · Whirlpool 7.5 Kg Washing Machine · Whitefield
--- Arun | active | +9 days
+-- Seller B | active | +9 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   'hh', 'Electronic Appliances',
   'Whirlpool 7.5 Kg Semi-Automatic Washing Machine — Good Condition',
   '4-year-old Whirlpool 7.5 kg semi-automatic top-load washing machine. Both wash and spin tubs working perfectly. Regularly serviced. Selling as upgrading to fully automatic. Drain pipe and water inlet pipe included.',
@@ -433,14 +470,14 @@ INSERT INTO listings (
 );
 
 -- HH-06 · 6-Seater Glass Top Dining Set · Malleshwaram
--- Arun | active | +21 days
+-- Seller B | active | +21 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'arun.bn1@gmail.com'),
+  v_b,
   'hh', 'Furniture',
   '6-Seater Dining Table with Glass Top and Chairs — Good Condition',
   'Engineered wood 6-seater dining table with toughened glass top and 6 cushioned chairs. 3 years old, minor scratches on legs only (not visible from standing). Sturdy structure. Disassembles for transport.',
@@ -454,14 +491,14 @@ INSERT INTO listings (
 );
 
 -- HH-07 · Nilkamal 3-Door Wardrobe · Electronic City
--- Nagesh | active | +18 days
+-- Seller A | active | +18 days
 INSERT INTO listings (
   seller_id, category, subcategory, title, description,
   price, price_label, lat, lng, address,
   specs, details, status,
   reference_code, expires_at, show_phone, views_count
 ) VALUES (
-  (SELECT id FROM auth.users WHERE email = 'nagesh.aadi@gmail.com'),
+  v_a,
   'hh', 'Furniture',
   'Nilkamal 3-Door Wardrobe with Mirror — 2 Years Old',
   'Nilkamal Marvel 3-door plastic wardrobe with full-length mirror on centre door. 2 years old, no cracks or damage, hinges working perfectly. Easy to disassemble and transport. Suitable for bedroom or kids room.',
@@ -474,6 +511,9 @@ INSERT INTO listings (
   'MP-BLR-UAT020', NOW() + INTERVAL '18 days', 'never', 17
 );
 
+
+  RAISE NOTICE 'Seeded 20 UAT listings';
+END $$;
 
 -- ============================================================
 -- STEP 3 — VERIFICATION
@@ -493,12 +533,52 @@ SELECT
   END                                                               AS expiry,
   l.show_phone,
   l.views_count                                                     AS views,
-  CASE WHEN u.email = 'nagesh.aadi@gmail.com' THEN 'Nagesh' ELSE 'Arun' END AS seller,
+  CASE WHEN u.email = 'nagesh.aadi@gmail.com' THEN 'Seller A' ELSE 'Seller B' END AS seller,
   l.lat || ', ' || l.lng                                            AS coordinates
 FROM listings l
 JOIN auth.users u ON u.id = l.seller_id
 WHERE l.reference_code LIKE 'MP-BLR-UAT%'
 ORDER BY l.category, l.subcategory, l.reference_code;
+
+
+-- ============================================================
+-- STEP 4 — EXPLAIN ANALYZE the radius search (Rule 10)  — run SEPARATELY
+-- Same query as listings_within_radius() (migration 013), centred on
+-- Koramangala 5th Block, 5 km radius. Expected: 7 rows (UAT001/010/014 at 0 m,
+-- BTM, HSR x2, Jayanagar; Indiranagar is ~5.1 km so just outside).
+--
+-- GOTCHA: with only ~20 rows the planner correctly prefers a Seq Scan
+-- (reading 1 page beats walking an index). That is NOT a bug. 4a shows
+-- the honest plan; 4b disables seq scans for this transaction only, to
+-- prove the GiST index idx_listings_ll_to_earth CAN be used — look for
+-- "Bitmap Index Scan on idx_listings_ll_to_earth" or "Index Scan".
+-- ============================================================
+
+-- 4a · honest plan (Seq Scan expected at this size)
+EXPLAIN ANALYZE
+SELECT id,
+       earth_distance(ll_to_earth(12.9352, 77.6245), ll_to_earth(lat, lng)) AS distance_m
+FROM listings
+WHERE status = 'active'
+  AND earth_box(ll_to_earth(12.9352, 77.6245), 5000) @> ll_to_earth(lat, lng)
+  AND earth_distance(ll_to_earth(12.9352, 77.6245), ll_to_earth(lat, lng)) <= 5000
+ORDER BY distance_m;
+
+-- 4b · prove the index is usable (SET LOCAL resets at ROLLBACK)
+BEGIN;
+SET LOCAL enable_seqscan = off;
+EXPLAIN ANALYZE
+SELECT id,
+       earth_distance(ll_to_earth(12.9352, 77.6245), ll_to_earth(lat, lng)) AS distance_m
+FROM listings
+WHERE status = 'active'
+  AND earth_box(ll_to_earth(12.9352, 77.6245), 5000) @> ll_to_earth(lat, lng)
+  AND earth_distance(ll_to_earth(12.9352, 77.6245), ll_to_earth(lat, lng)) <= 5000
+ORDER BY distance_m;
+ROLLBACK;
+
+-- 4c · the RPC itself, as the backend calls it (row count sanity check)
+SELECT * FROM listings_within_radius(12.9352, 77.6245, 5000);
 
 
 -- ============================================================
