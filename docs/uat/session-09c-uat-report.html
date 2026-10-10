@@ -69,6 +69,7 @@
   <div class="logo">Map<span>It</span> UAT</div>
   <h3>Session 09c</h3>
   <a href="#summary">Summary</a>
+  <a href="#rerun-9k">Re-run 2026-10-10 (9K)</a>
   <a href="#verdict">Verdict</a>
   <h3>Test Blocks</h3>
   <a href="#block-a">A · Login Required</a>
@@ -97,6 +98,17 @@
       <div class="scard"><div class="num num-fail">0</div><div class="lbl">Failed (1 fixed)</div></div>
       <div class="scard"><div class="num num-warn">0</div><div class="lbl">Warnings</div></div>
       <div class="scard"><div class="num num-skip">4</div><div class="lbl">Manual-only</div></div>
+    </div>
+  </section>
+
+  <section id="rerun-9k">
+    <h2>🔁 Re-run 2026-10-10 (Session 9K) — separate UAT database</h2>
+    <div class="verdict">
+      <div class="verdict-icon">✅</div>
+      <div>
+        <div class="verdict-text">35/35 PASS on the new UAT Supabase project.</div>
+        <div class="verdict-sub">Same 35 checks, now saved as a re-runnable script: <code>npm run uat:9c</code> (<code>scripts/uat/9c-phone-otp.suite.js</code>). Target: uat preview → Supabase <code>mapit-uat</code> (<code>xesekrkxbtybbxpsvxuz</code>), built from <code>000-baseline.sql</code> — production was not touched. Differences from the 2026-10-08 run: <b>zero WhatsApp sends</b> (codes for the verify checks are inserted with a known hash; every send call is refused before MSG91), accounts are admin-created (no emails), and the script refuses to start unless both the local <code>.env</code> and the target's <code>/api/config</code> point at UAT. Cleanup verified independently afterwards: 2 auth users, 20 seed listings, 0 <code>phone_otps</code>, 0 orphaned <code>audit_log</code> rows. Note: the send route allows 10 calls/hour per IP and the suite uses 9 — wait an hour between runs.</div>
+      </div>
     </div>
   </section>
 
