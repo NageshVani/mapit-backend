@@ -85,8 +85,10 @@ async function get(url, opts = {}) {
       body: JSON.stringify({ user_lat: 12.9716, user_lng: 77.5946, radius_m: 10000 }),
     });
   }
-  check('S-07', 'Radius search (RPC) returns active prod listings within 10 km of central Bangalore',
-    rpc.status === 200 && Array.isArray(rpc.json) && rpc.json.length > 0,
+  // 0 is valid: prod test data was cleared on 2026-10-10 (Session 9K step 8), so
+  // the map starts empty until real users post. This checks the RPC works.
+  check('S-07', 'Radius search (RPC) answers within 10 km of central Bangalore (0+ listings)',
+    rpc.status === 200 && Array.isArray(rpc.json),
     `HTTP ${rpc.status} · ${Array.isArray(rpc.json) ? rpc.json.length + ' listings' : JSON.stringify(rpc.json)?.slice(0, 120)}`);
 
   // S-08 · CORS whitelist (Rule 8): mapit.co.in allowed, others not
