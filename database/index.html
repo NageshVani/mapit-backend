@@ -33,9 +33,17 @@
 <body>
 <div class="wrap">
   <h1>MapIt — Database Script Index</h1>
-  <p class="sub">Local reference only — not served by the app. Links are relative; open this file directly from <code>database/index.html</code>. Every script is Supabase-SQL-Editor-run manually (Rule 10) — always uat first, then production, unless noted otherwise.</p>
+  <p class="sub">Local reference only — not served by the app. Links are relative; open this file directly from <code>database/index.html</code>. Every script is Supabase-SQL-Editor-run manually (Rule 10) — always the UAT project first, then production, unless noted otherwise.</p>
 
-  <h2>📐 Schema Migrations (numbered, run once, in order)</h2>
+  <div class="note">🗄️ <b>Two Supabase projects since Session 9K (2026-10-10).</b> <b>Production</b> = <code>jneoxwumccmjwaojfazh</code> (mapit.co.in, Vercel Production env). <b>UAT</b> = <code>mapit-uat</code> / <code>xesekrkxbtybbxpsvxuz</code> (free org “MapIt UAT”, Singapore — uat preview, Vercel Preview env, and local <code>.env</code>). Check the project picker at the top of the SQL Editor before every run. New migrations (018+) go to UAT first, are tested there, then run on production — both projects must stay identical (verify with <code>scripts/compare-schema-inventory.js</code>).</div>
+
+  <h2>🧱 Baseline (build a new, empty database)</h2>
+  <table>
+    <tr><th>File</th><th>Description</th><th>Session</th></tr>
+    <tr><td><a href="migrations/000-baseline.sql">000</a></td><td class="desc">Squashed snapshot of production as of 2026-10-09 (= migrations 001–017 plus hand-made prototype tables and unrecorded changes). Run <b>only</b> on an empty project; a guard aborts if <code>listings</code> already exists. Migrations 001–017 below are <b>history</b> — they cannot build a database from empty, never re-run them.</td><td class="meta">Session 9K</td></tr>
+  </table>
+
+  <h2>📐 Schema Migrations (history — already inside 000; 018+ run on UAT, then production)</h2>
   <table>
     <tr><th>File</th><th>Description</th><th>Session</th></tr>
     <tr><td><a href="migrations/001-mvp-auth-schema.sql">001</a></td><td class="desc">MVP auth columns on <code>profiles</code> — replaces invite-code auth with email+password / Google OAuth / OTP.</td><td class="meta">Session 2</td></tr>
@@ -51,10 +59,10 @@
     <tr><td><a href="migrations/011-listing-show-exact-location.sql">011</a></td><td class="desc">Seller opt-in (<code>show_exact_location</code>, default false) to reveal exact coordinates to buyers.</td><td class="meta">Session 9B</td></tr>
     <tr><td><a href="migrations/012-phone-verified.sql">012</a></td><td class="desc"><code>profiles.phone_verified</code> flag (default false) — set true only after WhatsApp OTP; existing free-text phones are not trusted.</td><td class="meta">Session 9C</td></tr>
     <tr><td><a href="migrations/013-listings-within-radius-rpc.sql">013</a></td><td class="desc">Redefines <code>listings_within_radius</code> to return only <code>(id, distance_m)</code> — DB-side radius filter with a GiST index; backend fetches full rows separately (Rule 9).</td><td class="meta">Pre-launch fix (2026-08-06)</td></tr>
-    <tr><td><a href="migrations/014-audit-log.sql">014</a></td><td class="desc"><code>audit_log</code> — IT Rules 2021 record of signup/login/listing/message events, 180-day retention, service-role only (RLS, no policies). Single project.</td><td class="meta">Pre-launch fix (2026-08-06)</td></tr>
+    <tr><td><a href="migrations/014-audit-log.sql">014</a></td><td class="desc"><code>audit_log</code> — IT Rules 2021 record of signup/login/listing/message events, 180-day retention, service-role only (RLS, no policies).</td><td class="meta">Pre-launch fix (2026-08-06)</td></tr>
     <tr><td><a href="migrations/015-content-moderation.sql">015</a></td><td class="desc">Nullable <code>moderation_verdict</code>/<code>_reason</code>/<code>_scored_at</code> on <code>listings</code> — Claude spam/fake screening verdict for the admin queue.</td><td class="meta">Session 9E</td></tr>
-    <tr><td><a href="migrations/016-phone-otps.sql">016</a></td><td class="desc"><code>phone_otps</code> (hashed WhatsApp OTP codes, 10-min life, rate limits) + unique index: one verified phone per account. Service-role only. Single project.</td><td class="meta">Session 9C</td></tr>
-    <tr><td><a href="migrations/017-lock-profile-client-writes.sql">017</a></td><td class="desc">Revokes direct INSERT/UPDATE/DELETE on <code>profiles</code> from <code>anon</code>/<code>authenticated</code> — users could self-set <code>phone_verified</code>, <code>suspended</code>, ratings. All writes go via the backend. Single project.</td><td class="meta">Session 9C UAT (T-027)</td></tr>
+    <tr><td><a href="migrations/016-phone-otps.sql">016</a></td><td class="desc"><code>phone_otps</code> (hashed WhatsApp OTP codes, 10-min life, rate limits) + unique index: one verified phone per account. Service-role only.</td><td class="meta">Session 9C</td></tr>
+    <tr><td><a href="migrations/017-lock-profile-client-writes.sql">017</a></td><td class="desc">Revokes direct INSERT/UPDATE/DELETE on <code>profiles</code> from <code>anon</code>/<code>authenticated</code> — users could self-set <code>phone_verified</code>, <code>suspended</code>, ratings. All writes go via the backend.</td><td class="meta">Session 9C UAT (T-027)</td></tr>
   </table>
 
   <h2>🧰 One-off Scripts <code style="font-size:.75rem;color:var(--muted);font-weight:400;">database/scripts/</code> (data cleanup / verification, not schema migrations)</h2>
@@ -63,10 +71,14 @@
     <tr><td><a href="scripts/cleanup-test-alias-accounts.sql">cleanup-test-alias-accounts.sql</a></td><td class="desc">Removes throwaway <code>nagesh.aadi+xxxx@gmail.com</code> test accounts from email-verification testing. Pattern can never match the real account.</td><td class="meta">Session 9a</td></tr>
     <tr><td><a href="scripts/reset-invite-code-profiles.sql">reset-invite-code-profiles.sql</a></td><td class="desc">Resets nickname/full-name/home-location for family/friends who joined via the old invite-code flow, so they go through real onboarding.</td><td class="meta">Session 8 follow-up</td></tr>
     <tr><td><a href="scripts/session-9a-rls-check.sql">session-9a-rls-check.sql</a></td><td class="desc">Read-only re-confirmation that no RLS regressions occurred since the Session 5 audit.</td><td class="meta">Session 9a</td></tr>
-    <tr><td><a href="scripts/uat-dummy-listings.sql">uat-dummy-listings.sql</a></td><td class="desc">Seed script — dummy listings for UAT/demo data.</td><td class="meta">Pre-launch UAT</td></tr>
+    <tr><td><a href="scripts/uat-dummy-listings.sql">uat-dummy-listings.sql</a></td><td class="desc"><b>UAT project only.</b> Seeds 20 listings (re/veh/hh, overlap pin, expiry/status mix, 2 sellers) as one guarded <code>DO</code> block — aborts on a prod-like database or an existing seed. STEP 4 = EXPLAIN ANALYZE for the radius search.</td><td class="meta">Pre-launch UAT · reworked 9K</td></tr>
+    <tr><td><a href="scripts/session-9k-schema-inventory.sql">session-9k-schema-inventory.sql</a></td><td class="desc">Read-only inventory of tables, columns, constraints, indexes, policies, grants, functions and triggers. Run on each project and save the output as JSON.</td><td class="meta">Session 9K</td></tr>
+    <tr><td><a href="scripts/compare-schema-inventory.js">compare-schema-inventory.js</a></td><td class="desc">Node script — diffs two inventory JSON files (prod vs UAT). Run after every migration to prove the projects are still identical.</td><td class="meta">Session 9K</td></tr>
   </table>
 
-  <div class="note">⚠️ Rule 10 reminder: always include a <code>WHERE</code> clause on any <code>DELETE</code>/<code>UPDATE</code> run from these files, check the schema before assuming a column exists, and run uat before production.</div>
+  <div class="note">⚠️ Rule 10 reminder: always include a <code>WHERE</code> clause on any <code>DELETE</code>/<code>UPDATE</code> run from these files, check the schema before assuming a column exists, and run the UAT project before production.</div>
+
+  <div class="note">🧪 Related test commands (project root): <code>npm run uat:9c</code> — 35-check phone-OTP / RLS regression suite against the uat preview (UAT project only, zero WhatsApp sends; wait 1 h between runs). <code>npm run smoke:prod</code> — 12-check read-only production smoke test (no login, no writes).</div>
 </div>
 </body>
 </html>
