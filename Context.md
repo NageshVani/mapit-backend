@@ -2079,6 +2079,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
+**⬅ AGREED ORDER TO LAUNCH (Nagesh, 2026-10-10):**
+1. **Nagesh:** UAT checks → sign off PR #21 → James merges → `npm run smoke:prod`.
+2. **Nagesh:** subscriptions (Supabase Pro, Vercel Pro, Resend review, MSG91 KYC, Anthropic spend limit) → then Session 9 config with James (`sin1`, uat.mapit.co.in → uat branch, PgBouncer, Storage CDN, backup test-restore, alerts, keep-warm).
+3. **Pre-launch security audit** (migration 018: UAT first → `npm run uat:9c` + inventory compare → prod; escape helper in the frontend).
+4. **Builds:** 9H auto-expiry → ToS/Privacy v2.0 → 9C.1 emoji avatars → launch gate (9a re-check → closed-group soft-release → announcement).
+5. **After launch:** 9I profile editing; frontend split option 1.
+
 **⬅ Immediate (2026-10-10 15:03 — 9K step 8 done, prod = clean slate):**
 1. ✅ Storage photos + 2 test grievances deleted — Session 9K fully complete.
 2. **PR #21 `uat → main`** (9K scripts/docs + smoke S-07 only, no app code) — Nagesh/Arun sign-off → merge → `npm run smoke:prod`.
