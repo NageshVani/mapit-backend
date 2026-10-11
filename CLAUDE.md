@@ -1,11 +1,11 @@
 # MapIt — Claude Collaboration Rules
-# Version: 4.0  |  Updated: June 2026  |  Session: 1
+# Version: 4.1  |  Updated: October 2026  |  Session: 9K (two Supabase projects)
 # Save this file as CLAUDE.md at the root of MAPIT-BACKEND/
 
 ## Project Overview
 MapIt is a location-first buy-and-sell marketplace for India (and USA).
 Core value proposition: exact GPS coordinates on every listing.
-Production URL: https://mapit.co.in
+Production URL: https://mapit.co.in  (canonical host www.mapit.co.in — the bare domain 308-redirects to www)
 GitHub repo: NageshVani/mapit-backend
 
 Stack:
@@ -116,13 +116,25 @@ If DB changes were made (in Supabase SQL Editor), note them in CONTEXT.md.
     `haversineM()` (`src/utils/geo.js`) is no longer used for this query —
     still used by `poiLookup.js`.
   - Helmet CSP disabled globally (contentSecurityPolicy: false)
-    → Required for inline scripts + CDN resources (Leaflet, Google Fonts, Font Awesome)
+    → Required for inline scripts + CDN resources (Leaflet, Google Fonts; icons are emoji / inline SVG)
   - Admin detection: nagesh.aadi@gmail.com / arun.bn1@gmail.com — no invite codes in MVP
   - Photo limit: 5 photos enforced in multer (backend) AND frontend slice
   - Invite codes: no longer used — REQUIRE_INVITE_CODE=false
   - invite_codes table: archived, do not delete (historical data)
 
 ## Rule 10 — DB Safety
+  - TWO Supabase projects since Session 9K (2026-10-10):
+      Production : jneoxwumccmjwaojfazh  (mapit.co.in, Vercel Production env)
+      UAT        : mapit-uat / xesekrkxbtybbxpsvxuz  (uat preview, Vercel Preview
+                   env, local .env) — free org "MapIt UAT", Singapore
+    Check the SQL Editor project picker before EVERY run.
+  - Migrations: run on UAT first, test there, then production. Both projects
+    must stay identical — re-run database/scripts/session-9k-schema-inventory.sql
+    on both and diff with compare-schema-inventory.js after each migration.
+  - 000-baseline.sql builds a NEW empty database; 001–017 are history only
+    (they cannot build from empty — never re-run them). New migrations = 018+.
+  - Test data lives in UAT only. Never create test accounts/listings on
+    production; post-release checks use `npm run smoke:prod` (read-only).
   - ALWAYS include a WHERE clause in DELETE or UPDATE SQL in SQL Editor
   - Check schema before changes — never assume a column exists
   - Run EXPLAIN ANALYZE if adding a new query — confirm GiST index is used
@@ -172,6 +184,17 @@ Migrations            : database/migrations/ (numbered SQL files); one-off scrip
 Docs                  : docs/ (see docs/index.html) — subfolders: uat/, legal/, business/, technical/, research/, other/, screenshots/
 Session history       : CONTEXT.md
 Environment template  : .env.example
+DB baseline (new DB)  : database/migrations/000-baseline.sql
+UAT seed data         : database/scripts/uat-dummy-listings.sql (UAT project only)
+```
+
+## Quick Reference: Supabase Projects + Test Commands
+```
+Production Supabase   : jneoxwumccmjwaojfazh   ← mapit.co.in
+UAT Supabase          : xesekrkxbtybbxpsvxuz   ← uat preview, localhost (.env)
+npm run uat:9c        : 35-check phone-OTP / RLS regression suite vs uat preview
+                        (UAT only, zero WhatsApp sends; wait 1 h between runs)
+npm run smoke:prod    : 12-check read-only production smoke test (no login/writes)
 ```
 
 ## Quick Reference: Category IDs
