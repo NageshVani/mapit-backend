@@ -104,6 +104,8 @@
 
 ## 🎯 Current Goal
 
+**NOW (2026-10-11 10:32) — Launch step 1 done: PR #21 merged.** Nagesh finished the UAT checks and signed off; he merged PR #21 `uat → main` in the GitHub UI (merge commit `4419d88`, 06:31 UTC; auto-mode blocked James's `gh pr merge`). The production deploy of `4419d88` succeeded; `npm run smoke:prod` 12/12 (0 listings, served page = main). Local `main` fast-forwarded. **Next: launch step 2**: Nagesh buys the subscriptions (Supabase Pro, Vercel Pro), reviews Resend, finishes MSG91 KYC and sets the Anthropic spend limit, then Session 9 config with James (`sin1` first).
+
 **NOW (2026-10-10 15:03) — Session 9K step 8 done: production is a clean slate.** Nagesh chose a manual export instead of waiting for Supabase Pro. (1) Backup: read-only SQL Editor export `database/scripts/session-9k-prod-backup-export.sql` → CSV at `C:/dev/mapit/backups/prod-before-cleanup-2026-10-10.csv` (outside the repo, contains PII; no password hashes), checked by `database/scripts/verify-backup-export.js` = 18/18 tables OK. (2) Dry run `session-9k-prod-cleanup-dryrun.sql` (masked emails) reviewed; Nagesh confirmed all 41 listings dummy incl. `MP-BLR-36XG7J` + `MP-BLR-7L67AD`, and all 7 feedback rows were his test input. (3) `session-9k-prod-cleanup-delete.sql` (one guarded DO block, exact counts, cut-off 2026-10-10 00:00 +04) run on prod by Nagesh: deleted 7 feedback, 41 listings (cascade: photos/chats/saved/legacy messages), 32 accounts (cascade: profiles/pins/OTPs). Verified: listings 0, users 2 (both admins), profiles 2, feedback 0, invite_codes 15 kept, audit_log 355 kept. (4) Smoke S-07 now accepts 0 listings → `npm run smoke:prod` 12/12 (0 listings). **Finished:** Nagesh deleted the 12 photo files (Storage `listing-photos` = 0) and the 2 test `grievances` (guarded DO block, now 0). Production = clean slate. Friends & family re-register (email + phone) at the **closed-group soft-release**, not now (Nagesh). PR #21 `uat → main` open for sign-off. Delete the backup CSV ~30 days after launch.
 
 **Earlier (2026-10-10 13:25, checkpoint) — Session 9K complete except step 8.** UAT has its own Supabase project (`xesek…`), wired to the uat preview + localhost, seeded, and regression-tested (9C 35/35); production verified untouched (smoke 12/12). All 9K work is on `uat` (`4b93747`), not yet on `main`. Next decision for Nagesh: Supabase Pro (unblocks step 8 = deleting test data from prod) vs opening the `uat → main` PR first.
@@ -2080,7 +2082,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ## 🔜 Next Steps (Queued)
 
 **⬅ AGREED ORDER TO LAUNCH (Nagesh, 2026-10-10):**
-1. **Nagesh:** UAT checks → sign off PR #21 → James merges → `npm run smoke:prod`.
+1. ✅ **Done 2026-10-11:** UAT checks + sign-off → PR #21 merged (`4419d88`) → `npm run smoke:prod` 12/12.
 2. **Nagesh:** subscriptions (Supabase Pro, Vercel Pro, Resend review, MSG91 KYC, Anthropic spend limit) → then Session 9 config with James (`sin1`, uat.mapit.co.in → uat branch, PgBouncer, Storage CDN, backup test-restore, alerts, keep-warm).
 3. **Pre-launch security audit** (migration 018: UAT first → `npm run uat:9c` + inventory compare → prod; escape helper in the frontend).
 4. **Builds:** 9H auto-expiry → ToS/Privacy v2.0 → 9C.1 emoji avatars → launch gate (9a re-check → closed-group soft-release → announcement).
