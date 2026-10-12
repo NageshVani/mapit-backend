@@ -225,8 +225,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .btn-icon:hover{background:var(--card2);}
 .btn-icon.saved{background:rgba(240,96,48,.15);border-color:rgba(240,96,48,.4);color:var(--orange);}
 .ld-close-row{display:flex;justify-content:space-between;align-items:center;padding:9px 13px 0;flex-shrink:0;}
-.ld-back{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:color .15s;}
-.ld-back:hover{color:var(--text);}
+.ld-back{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;padding:7px 14px;border:1px solid var(--border2);border-radius:8px;background:var(--card);transition:background .15s,border-color .15s;}
+.ld-back:hover{background:var(--card2);border-color:var(--orange);}
 .ld-nav{display:flex;gap:5px;}
 .ld-nav-btn{width:26px;height:26px;border-radius:50%;background:var(--card);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:var(--muted);transition:all .15s;}
 .ld-nav-btn:hover{background:var(--card2);color:var(--text);}
@@ -272,6 +272,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .leaflet-control-zoom{border:none !important;box-shadow:0 2px 10px rgba(0,0,0,.12) !important;}
 .leaflet-control-zoom a{background:var(--card) !important;color:var(--text) !important;border:1px solid var(--border2) !important;font-size:16px !important;}
 .leaflet-control-zoom a:hover{background:var(--card2) !important;}
+.map-home-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);background:var(--card);border:1px solid var(--border2);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.12);cursor:pointer;}
+.map-home-btn span{font-size:17px;line-height:1;color:var(--orange);}
+.map-home-btn:hover{background:var(--card2);}
 .leaflet-control-attribution{background:rgba(255,255,255,.85) !important;color:var(--muted) !important;font-size:9px !important;}
 .leaflet-control-attribution a{color:var(--muted) !important;}
 .leaflet-popup-content-wrapper{background:var(--card) !important;border:1px solid var(--border2) !important;border-radius:10px !important;box-shadow:var(--shadow) !important;color:var(--text) !important;}
@@ -2296,7 +2299,12 @@ function photonPlaces(features){
     })
     .map(f => {
       const p = f.properties;
-      const city = p.city && p.city !== p.name ? p.city : null;
+      // Villages outside the city often have no city, so fall back to the taluk
+      // ("Yelahanka taluku" → "Yelahanka"). Without it the three Thindlus all read
+      // "Thindlu, Karnataka" and the de-dupe below kept only one (final polish, Arun).
+      const taluk = (p.county || '').replace(/\s+taluk[ua]?$/i, '').trim();
+      const area = p.city || taluk;
+      const city = area && area !== p.name ? area : null;
       const isArea = p.osm_key === 'place' || p.osm_key === 'boundary';
       // Landmarks show their locality so "Forum Mall" reads "Forum Mall, Koramangala, Bengaluru"
       const parts = isArea ? [p.name, city, p.state] : [p.name, p.district || p.locality || p.street, city];
@@ -2521,7 +2529,7 @@ function onMyLocationClick(e){
     const tick = document.createElement('span'); tick.className = 'pmi-tick'; tick.textContent = p.id===ST.activePin?.id ? '✓' : '';
     const name = document.createElement('span'); name.className = 'pmi-name'; name.textContent = p.label;
     b.append(tick, name);
-    b.onclick = () => { closePinMenu(); if(p.id!==ST.activePin?.id) setDefaultPin(p.id, true); };
+    b.onclick = () => { closePinMenu(); if(p.id!==ST.activePin?.id) setDefaultPin(p.id, true); else goHomeArea(); };
     menu.appendChild(b);
   });
   const m = document.createElement('button');
@@ -2581,6 +2589,22 @@ function initMap(){
   }).addTo(map);
   runtimeCfgPromise.then(()=>_mainTiles.setUrl(mapboxTileUrl()));
   L.control.zoom({position:'bottomright'}).addTo(map);
+  // Final polish (Arun) — one-click way home from wherever the map was dragged
+  // or zoomed. Added after the zoom control so it stacks above it.
+  const HomeAreaCtl = L.Control.extend({
+    options:{position:'bottomright'},
+    onAdd(){
+      const b = L.DomUtil.create('button', 'map-home-btn');
+      b.type = 'button';
+      b.title = 'Back to my area';
+      b.setAttribute('aria-label', 'Back to my area');
+      b.innerHTML = '<span aria-hidden="true">⌂</span> My area';
+      L.DomEvent.disableClickPropagation(b);
+      L.DomEvent.on(b, 'click', goHomeArea);
+      return b;
+    }
+  });
+  new HomeAreaCtl().addTo(map);
   _applyRegionBounds(map);
   _pingMapLoad('browse');
 
@@ -3118,7 +3142,7 @@ function renderSidebar(){
   const photoUrls = (l.photos||[]).map(p=>p.public_url||p.url).filter(Boolean);
   el.innerHTML = `
     <div class="ld-close-row">
-      <div class="ld-back" onclick="closeDetail()">‹ Back</div>
+      <div class="ld-back" role="button" tabindex="0" onclick="closeDetail()" onkeydown="if(event.key==='Enter')closeDetail()"><span style="font-size:20px;line-height:1;">‹</span> Back</div>
       <div class="ld-nav">
         ${prev?`<div class="ld-nav-btn" title="Previous listing" onclick="selListing('${prev}'${(ST.tab==='mine'||ST.tab==='fav')?',true':''})">‹</div>`:''}
         ${next?`<div class="ld-nav-btn" title="Next listing" onclick="selListing('${next}'${(ST.tab==='mine'||ST.tab==='fav')?',true':''})">›</div>`:''}
@@ -3213,7 +3237,14 @@ function renderSidebar(){
 // ═══════════════════════════════════════════════
 // LISTING SELECTION
 // ═══════════════════════════════════════════════
+// Map view before a listing opened, restored by closeDetail() (final polish, Arun):
+// opening a listing zooms in on it, and keyword results follow the visible map,
+// so without this, Back left only that listing's neighbours in the results.
+let _preDetailView = null;
 async function selListing(id, keepTab=false){
+  // Save only when coming from the results, not when hopping listing → listing,
+  // or Back would return to the previous listing instead of the overview.
+  if(!ST.selId && map) _preDetailView = { center: map.getCenter(), zoom: map.getZoom() };
   expandSidebarForDetail();
   ST.selId=id; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatMsgs=[]; ST.chatConvId=null;
   if(!keepTab){
@@ -3259,6 +3290,12 @@ function closeDetail(){
   }
   ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
+  if(_preDetailView){
+    const v = _preDetailView; _preDetailView = null;
+    _rerenderAfterMove();
+    if(mapHidden()) map.setView(v.center, v.zoom, {animate:false});
+    else map.flyTo(v.center, v.zoom, {duration:.6});
+  }
   // If the panel only opened to show this listing, fold it back to the rail
   if(ST.sbAutoOpened){ ST.sbAutoOpened=false; setSidebarCollapsed(true, false); }
 }
@@ -4160,6 +4197,16 @@ function fitMapToRadius(fly){
   else{ const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180); bounds=L.latLngBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]]); pad=[20,20]; }
   if(fly) map.flyToBounds(bounds,{padding:pad,duration:.8});
   else map.fitBounds(bounds,{padding:pad,animate:true});
+}
+// Keyword results follow the visible map (filtered when the list is drawn),
+// so after a programmatic move the list is redrawn once the map settles.
+function _rerenderAfterMove(){ map.once('moveend', ()=>{ if(!ST.selId) renderSidebar(); }); }
+// "⌂ My area" map button + re-picking the active saved location (final polish, Arun).
+function goHomeArea(){
+  _preDetailView = null; // an explicit trip home replaces any view saved by an open listing
+  if(ST.exploreMode){ setSearchMode('pin'); return; }
+  _rerenderAfterMove();
+  fitMapToRadius(true);
 }
 function setSearchMode(mode){
   ST.exploreMode = (mode === 'explore');
