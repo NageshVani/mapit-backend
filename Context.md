@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-12 (later), (**Arun's results received (screenshots via Nagesh): 3 map fixes + bigger Back button built on `fix/final-polish-arun`, screenshots taken, awaiting Nagesh's localhost click-test. Delete-reason feature moved to 9H.**)
+- **Last updated:** 2026-10-12 (end of day), checkpoint (**Final polish on uat preview (`655108c`), localhost 4/4 PASS. ⏸ PLACEHOLDER: Nagesh's phone test on the uat preview — first thing 2026-10-13, then Arun re-check → PR → smoke:prod → subscriptions (planned for 2026-10-13).**)
+- **Last updated (previous):** 2026-10-12 (later), (**Arun's results received (screenshots via Nagesh): 3 map fixes + bigger Back button built on `fix/final-polish-arun`, screenshots taken, awaiting Nagesh's localhost click-test. Delete-reason feature moved to 9H.**)
 - **Last updated (previous):** 2026-10-12, (**Two post-launch items decided by Nagesh: (1) prod → UAT data refresh = option B, masked copy; (2) multi-step "Post a listing" wizard (Arun's suggestion). Arun's checklist results not received yet: the repo file is still the blank original (browser input is not saved to the file) and the artifact has no comments.**)
 - **Last updated (previous):** 2026-10-11 11:11, checkpoint (**Launch step 1 done: PR #21 merged by Nagesh in the GitHub UI (`4419d88`), prod deploy success, `smoke:prod` 12/12. Order changed after the Nagesh + Arun call: Arun does a final review first, then final CSS/text fixes ship, then subscriptions. Arun checklist (26 checks + change boxes) written, committed `7391465` and published as a private artifact.**)
 - **Last updated (previous):** 2026-10-10 13:25, checkpoint (**Session 9K done except step 8 — merged to `uat` (`4b93747`), uat deploy success, prod smoke 12/12. Today: UAT signup fixed (Resend key never created → 535), Google sign-in UAT + prod PASS, UAT seed (20 listings) + EXPLAIN ANALYZE Index Scan, saved suites `npm run uat:9c` (35/35) + `npm run smoke:prod` (12/12, read-only), CLAUDE.md v4.1 / database index / .env.example docs. Open: step 8 prod test-data clean-up after Supabase Pro; `uat → main` PR.**)
@@ -1626,6 +1627,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **⏸ PLACEHOLDER (2026-10-12 night): phone test of the final polish — Nagesh, on https://mapit-backend-git-uat-nagesh-n-arun.vercel.app (UAT account):** (1) open a listing → tap ‹ Back: easy to tap, map returns; (2) drag away → ⌂ My area flies home; (3) Explore → `thindlu` = 3 results; (4) List ↔ Map toggle, repeat (1) (map is hidden in List view on phones). Blocks: Arun re-check → PR `uat → main` → subscriptions.
 - **🔨 (2026-10-12) `fix/final-polish-arun` — Nagesh localhost click-test 4/4 PASS; merged to `uat` (`655108c`) + pushed, Vercel uat preview deployed and verified serving the new code. Next: Nagesh phone test on the uat preview → Arun re-check → PR `uat → main` → `smoke:prod` → subscriptions.** (was: built, awaiting localhost click-test) Arun's results (1e, 1h, 2c, section 9) arrived as screenshots. Fixes: (1) "⌂ My area" map button (bottom-right, above zoom) + re-picking the ticked saved location flies home (`goHomeArea()`); (2) map view saved when a listing opens from the results and restored on Back (`_preDetailView`; not overwritten listing → listing), list redrawn after the move because keyword results follow the visible map; Back button bigger (15px, bordered); (3) Explore/home-location place labels fall back to the taluk when Photon has no city — "Thindlu, Anekal / Yelahanka / Hosakote" instead of one "Thindlu, Karnataka" (side effect: e.g. "Koramangala, Bangalore South, Karnataka"). Question A (keyword search = whole circle?) not answered → kept as visible-map only. Screenshots: `docs/screenshots/session-9-final-polish/` before-{desktop,phone}-{1-map,2-listing-detail,3-after-back,4-explore-thindlu}.png and after-*-{1-map,2a-zoomed-out,2-listing-detail,3-after-back,5a-panned-away,5b-after-my-area,4-explore-thindlu}.png (throwaway UAT account, deleted by ID).
 - **✅ RESOLVED (2026-10-12) Arun's checklist results not yet in hand** — received as screenshots. `docs/uat/session-09-final-review-Arun.html` is unchanged since `7391465` (what he types in a browser is never saved to the file) and the artifact has no comment threads. Need his "Copy my results" text (WhatsApp) or a saved/printed copy.
 - **⏳ Waiting on Arun (2026-10-11): final review + CSS/text change list.** Subscriptions are on hold until his changes ship. Nagesh must share the artifact link with Arun (page's Share menu; it is private).
@@ -2101,6 +2103,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-13 — planned "subscriptions day", Nagesh):**
+1. **Nagesh:** phone test (placeholder in Open Issues) on the uat preview.
+2. **Arun:** re-check 1e / 1h / 2c on the uat preview (same link).
+3. **PR `uat → main`** — Nagesh merges in the GitHub UI → James runs `npm run smoke:prod`.
+4. **Subscriptions** (agreed order: only after Arun's changes are on prod): Supabase Pro (production org only, not "MapIt UAT"), Vercel Pro, Resend review, Anthropic spend limit, MSG91 KYC + WhatsApp wallet ≥ ₹500 before ~25 Oct. Flag any recurring cost surprises (Rule 11).
+5. Then Session 9 config with James: `sin1` region first (measure before/after), uat.mapit.co.in → uat branch, PgBouncer, Storage CDN, backup test-restore, alerts, keep-warm.
 
 **⬅ Immediate (2026-10-11 11:11 — checkpoint, waiting on Arun):**
 1. **Nagesh:** share https://claude.ai/artifact/S4KyCj7ppDtvVHMrrPL1Vt with Arun (Share menu).
