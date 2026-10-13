@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-13 (evening), (**Subscription 1/5 done: Supabase Pro on org renamed "MapIt Production" (only project = `mapit-prototype` / `jneoxwumccmjwaojfazh`); $25 + 18% GST (OIDAR, no GSTIN yet) = $29.50/mo; billing name Nakshe Ventures; spend cap ON; Nano → Micro; `smoke:prod` 12/12 after upgrade. Budget note: every foreign SaaS adds 18% GST + card forex markup → realistic total ≈ $85–88/mo, not $71. Pending: first daily backup visible within ~24 h. Then Vercel Pro (2/5) done — team "MapIt", smoke 12/12. Then Resend review (3/5) done — stay Free (20/3,000 month, 0/100 day), domain + DKIM + SPF verified, DMARC p=none; 2 fixes logged for the security audit (Full-access key swap, duplicate root SPF). Anthropic (4/5) checked — $5 prepaid, auto-reload off, fail-open verified. MSG91 (5/5) checked: WhatsApp balance ₹549.45 OK, but main wallet ₹0.00 + KYC incomplete → Nagesh submits KYC this week, then Add Funds ₹1,000 before ~25 Oct (Titan ₹590 on 1 Nov). Alert = 1 harmless failed inbound image.**)
+- **Last updated:** 2026-10-13 20:28 (UAE), checkpoint (**Final polish LIVE (PR #22, smoke 12/12); subscriptions done: Supabase Pro ✅, Vercel Pro ✅ (invoice "payment scheduled" — confirm Paid 14 Oct), Resend stays Free ✅, Anthropic $5 cap ✅; MSG91 KYC + ₹1,000 main-wallet top-up handed to Arun (before ~25 Oct). Security-audit adds: Resend Full-access key swap + duplicate root SPF. Next session (2026-10-14): Session 9 config, `sin1` first.**)
+- **Last updated (previous):** 2026-10-13 (evening), (**Subscription 1/5 done: Supabase Pro on org renamed "MapIt Production" (only project = `mapit-prototype` / `jneoxwumccmjwaojfazh`); $25 + 18% GST (OIDAR, no GSTIN yet) = $29.50/mo; billing name Nakshe Ventures; spend cap ON; Nano → Micro; `smoke:prod` 12/12 after upgrade. Budget note: every foreign SaaS adds 18% GST + card forex markup → realistic total ≈ $85–88/mo, not $71. Pending: first daily backup visible within ~24 h. Then Vercel Pro (2/5) done — team "MapIt", smoke 12/12. Then Resend review (3/5) done — stay Free (20/3,000 month, 0/100 day), domain + DKIM + SPF verified, DMARC p=none; 2 fixes logged for the security audit (Full-access key swap, duplicate root SPF). Anthropic (4/5) checked — $5 prepaid, auto-reload off, fail-open verified. MSG91 (5/5) checked: WhatsApp balance ₹549.45 OK, but main wallet ₹0.00 + KYC incomplete → Nagesh submits KYC this week, then Add Funds ₹1,000 before ~25 Oct (Titan ₹590 on 1 Nov). Alert = 1 harmless failed inbound image.**)
 - **Last updated (previous):** 2026-10-13 18:10, (**Final polish LIVE on production: PR #22 `uat → main` merged by Nagesh in GitHub UI (`26cb6d2`, 14:05 UTC), prod deploy success, `smoke:prod` 12/12. Signed off by Nagesh phone test (points 1–3) + Arun re-check 1e/1h/2c. Next: subscriptions → Session 9 config (`sin1` first).**)
 - **Last updated (previous):** 2026-10-12 (end of day), checkpoint (**Final polish on uat preview (`655108c`), localhost 4/4 PASS. ⏸ PLACEHOLDER: Nagesh's phone test on the uat preview — first thing 2026-10-13, then Arun re-check → PR → smoke:prod → subscriptions (planned for 2026-10-13).**)
 - **Last updated (previous):** 2026-10-12 (later), (**Arun's results received (screenshots via Nagesh): 3 map fixes + bigger Back button built on `fix/final-polish-arun`, screenshots taken, awaiting Nagesh's localhost click-test. Delete-reason feature moved to 9H.**)
@@ -109,6 +110,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-13 20:28) — Launch step 2 (subscriptions) done except MSG91 (Arun); next session = Session 9 config, starting with the Vercel `sin1` region move.** Today: Nagesh phone test + Arun re-check passed → PR #22 `uat → main` merged (`26cb6d2`) → `smoke:prod` 12/12. Supabase Pro (org "MapIt Production", Micro, backups verified, $29.50/mo), Vercel Pro (team "MapIt", slug `nagesh-n-arun` unchanged, $23.60/mo), Resend review (stay Free), Anthropic ($5 prepaid, auto-reload off, fail-open). MSG91: main wallet ₹0 + KYC pending → Arun. Tomorrow: confirm Vercel invoice Paid → `sin1` on a `fix/` branch (measure before/after) → uat → prod.
 
 **NOW (2026-10-11 11:15) — Arun's final review before subscriptions (Nagesh + Arun call).** Order changed: Arun reviews the latest changes first; any final CSS/text changes are built and released **before** the subscriptions. Checklist `docs/uat/session-09-final-review-Arun.html` (26 checks, 10 sections: sign-up on UAT with arun.bn1@ (UAT DB has no account for him; admin by email), his earlier requests re-checked (9G items + left-panel font + map-bounded search), finding/viewing/posting, admin (approve TEST plot, ✨ Draft Reply, 💰 Cost), Terms/Grievance Officer, contact-us@ mailbox, clean-up; a yellow "Changes you'd like" box per section; "Copy my results" → WhatsApp). Published as a private artifact for Arun: https://claude.ai/artifact/S4KyCj7ppDtvVHMrrPL1Vt (Nagesh must share it with Arun via the page's Share menu). Next: Arun's results → change list → `fix/final-polish-arun` (two-file rule, screenshots, localhost click-test) → uat → Arun re-check → PR → `smoke:prod` → subscriptions.
 
@@ -529,6 +532,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **Final polish signed off + LIVE (2026-10-13):** Nagesh phone test (points 1–3) PASS, Arun re-check 1e/1h/2c OK → PR #22 `uat → main` merged by Nagesh in GitHub UI (`26cb6d2`, 14:05 UTC) → prod deploy success → `smoke:prod` 12/12; local `main` updated.
+- ✅ **Supabase Pro (2026-10-13):** org renamed "MapIt Production" (only project `mapit-prototype` = `jneoxwumccmjwaojfazh`); invoice LEBXUZ-00006 $29.50 (18% IGST, OIDAR) to NAKSHE VENTURES; spend cap ON; Nano → Micro; 7 daily backups visible; `smoke:prod` 12/12 after upgrade.
+- ✅ **Vercel Pro (2026-10-13):** team renamed "MapIt" (slug unchanged), 1 seat (Nagesh), invoice PHTLKLLJ-0001 $23.60 to NAKSHE VENTURES ("Open — payment scheduled"); spend alert to ~$40; `smoke:prod` 12/12 + uat preview 200 after upgrade.
+- ✅ **Resend review (2026-10-13):** stay Free (20/3,000 month, 0/100 day); domain/DKIM/SPF verified; DMARC `p=none`; found Full-access `mapit-backend` key (shared by Production + Preview) + duplicate root SPF → both queued for the security audit; new `mapit-backend-send` key created (value saved offline by Nagesh).
+- ✅ **Anthropic check (2026-10-13):** $5.00, auto-reload OFF; fail-open to `unscreened` verified in code.
+- ✅ **MSG91 check (2026-10-13):** WhatsApp balance ₹549.45 OK; main wallet ₹0 + KYC incomplete → handed to Arun; "1 Alert" = harmless failed inbound image (9 Oct).
 - ✅ **PR #21 `uat → main` merged (2026-10-11 06:31 UTC, `4419d88`)** after Nagesh's UAT sign-off; Vercel Production deploy of `4419d88` success; `npm run smoke:prod` 12/12 (0 listings, served page = main); local `main` fast-forwarded.
 - ✅ **Arun final-review checklist (2026-10-11, `7391465`):** `docs/uat/session-09-final-review-Arun.html` — 26 checks in 10 sections, all of Arun's earlier requests re-checked, a "Changes you'd like" box per section, "Copy my results" → WhatsApp; row in `docs/index.html`; private artifact https://claude.ai/artifact/S4KyCj7ppDtvVHMrrPL1Vt.
 - ✅ **9K UAT signup fixed (2026-10-10):** Logs → Auth showed `535`; Resend key `mapit-uat-smtp` created (Sending access, mapit.co.in) + mapit-uat SMTP set → 6-digit code + login + `profiles` row verified.
@@ -1164,7 +1173,11 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Arun final review (before subscriptions)** | ⏳ Checklist sent; waiting for Arun's results | `docs/uat/session-09-final-review-Arun.html`, `docs/index.html` | Then change list → `fix/final-polish-arun` → uat → Arun re-check → PR → smoke:prod |
+| **Session 9 config — `sin1` first** | ⏭ Next session (2026-10-14) | `vercel.json` (to change) | `fix/` branch → measure before/after → uat → prod; then uat domain, Storage CDN, backup test-restore, alerts, keep-warm |
+| **Subscriptions (launch step 2)** | ✅ 4/5 done 2026-10-13; MSG91 → Arun | Supabase/Vercel/Resend/Anthropic/MSG91 dashboards | Supabase $29.50 + Vercel $23.60/mo; Vercel invoice Paid check 14 Oct |
+| **MSG91 KYC + ₹1,000 main wallet** | ⏳ Arun, before ~25 Oct | MSG91 "mapit2" | Titan ≈ ₹590 deducted 1 Nov; monthly from Dec |
+| **Final polish → production (PR #22)** | ✅ Merged `26cb6d2`, smoke 12/12 | git | Supersedes the Arun final-review row below |
+| **Arun final review (before subscriptions)** | ✅ Done (signed off 2026-10-13) — was: Checklist sent; waiting for Arun's results | `docs/uat/session-09-final-review-Arun.html`, `docs/index.html` | Then change list → `fix/final-polish-arun` → uat → Arun re-check → PR → smoke:prod |
 | **Session 9K — separate UAT Supabase project** | ✅ Steps 0–7, 9 done; merged to uat `4b93747` | Supabase, Vercel, scripts/, docs | Step 8 (prod test-data clean-up) waits for Supabase Pro backups + separate approval |
 | `uat → main` PR #21 (9K) | ✅ **Merged 2026-10-11 06:31 UTC (`4419d88`)**, prod deploy success, smoke 12/12 | git | Merged by Nagesh in GitHub UI (merge commit); auto-mode blocked `gh pr merge` |
 | **`uat → main` PR #20** | ✅ **Merged 2026-10-09 16:06 UTC (`7be83e4`), Vercel prod deploy success, smoke test 12/12** | git | Migrations 007–017 verified live (read-only probe). Remaining: Nagesh phone OTP test on prod |
@@ -1324,6 +1337,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+Context.md — 2026-10-13: PR #22 / subscriptions / Resend / Anthropic / MSG91 findings (docs only; no app code changed today).
 docs/uat/session-09-final-review-Arun.html — NEW (2026-10-11): Arun's 26-check final review + per-section change boxes + copy-to-WhatsApp summary (plain text via textContent).
 docs/index.html — row for the Arun final-review checklist.
 database/scripts/uat-dummy-listings.sql — 9K: UAT-only guarded DO-block seed (Seller B = oldest other account, no email in git) + STEP 4 EXPLAIN ANALYZE.
@@ -1784,6 +1798,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Rename dashboards: Supabase org "MapIt Production", Vercel team "MapIt"; never change the Vercel slug `nagesh-n-arun` (Nagesh, 2026-10-13)** | Names are labels only; "MapIt Production" vs "MapIt UAT" prevents wrong-project SQL. The slug is in the uat preview URL, smoke test, checklists and Supabase redirect URLs |
+| **Spend controls: Supabase spend cap ON, Vercel alert ~$40 (pause OFF), Anthropic prepaid $5 auto-reload OFF (2026-10-13)** | Rule 11 — no surprise bills; Vercel pause would take mapit.co.in offline, an alert is enough. Realistic total ≈ $85–88/mo incl. 18% GST + card forex |
+| **Resend stays Free; Full-access key swap + duplicate root SPF deferred to the security audit (Nagesh, 2026-10-13)** | 20/3,000 used; swap needs redeploy + UAT test of both envs — fits the audit, low risk until then |
+| **Never use Supabase "Restore to new project" / backups for UAT data (2026-10-13)** | Would be an unmasked prod copy (DPDP) + a paid project; masked script (option B) stays the plan |
+| **MSG91 KYC + wallet top-up owned by Arun (Nagesh, 2026-10-13)** | Business/KYC task; Nagesh focuses on Session 9 config |
 | **Delete-listing reason → paired with 9H auto-expiry (Nagesh, 2026-10-12)** | Arun asked for a reason when a seller deletes (Sold through MapIt / Sold elsewhere / No longer needed). Today delete is a hard row delete, so a reason needs DB columns (Nagesh OK with 1–2 extra columns) → soft "remove" with a reason; "Mark as sold" becomes one of the options. Same listing lifecycle as 9H, so built there, migration on UAT first. "Sold through MapIt" = key success metric |
 | **Prod → UAT data refresh = option B, masked copy, post-launch (Nagesh, 2026-10-12)** | Rejected A (full copy): real names/phones/emails in UAT break DPDP Act 2023 purpose limits, sit in a weaker free org, and UAT test runs could WhatsApp/email real users. Rejected C (synthetic only) as the long-term answer because it is less realistic. B: a script copies listings/categories/volumes, replaces names ("User 0042"), phones (`+9100000xxxxx`), emails (`user0042@example.test`), scrubs phone/email patterns from free text (title/description), drops seller identity, skips photos (placeholders), never copies `auth.users`. On demand (before big features / perf tests). Trigger: ~200+ real listings. UAT free-tier 500 MB cap → copy a recent sample. UAT is NOT a backup: backups = Supabase Pro daily/PITR |
 | **Multi-step "Post a listing" wizard, post-launch (Arun suggestion, Nagesh agreed 2026-10-12)** | Steps: 1 location (pin; MapIt's core value) → 2 category + subcategory → 3 subcategory-specific questions (existing dynamic fields) → 4 price + photos → 5 review + submit. Fewer fields per screen = less drop-off on phones. Frontend only, no DB, no cost, ~1 session. Build AFTER frontend split option 1 (new JS goes in `js/`). Gotchas: keep a draft across steps (phone back button / refresh), validate per step, edit-listing must reuse the same steps |
@@ -2112,6 +2131,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-13 20:28 — checkpoint; next session 2026-10-14):**
+1. **Nagesh:** Vercel → Billing → Invoices: PHTLKLLJ-0001 shows **Paid** (else Pay Invoice + bank OTP).
+2. **James + Nagesh:** Session 9 config item 1 — `"regions": ["sin1"]` in `vercel.json` on a `fix/` branch; measure API latency before/after (localhost can't show it — measure on uat preview); uat → Nagesh check → PR → prod → `smoke:prod`.
+3. Rest of Session 9 config: uat.mapit.co.in → uat branch, Storage CDN, backup test-restore (on UAT/new project, never overwrite prod), alerts, keep-warm, `audit_log` purge cron (now possible on Vercel Pro).
+4. **Arun:** MSG91 KYC → Add Funds ₹1,000 to the main wallet before ~25 Oct.
+5. **Pre-launch security audit** (migration 018 + escape helper + Resend key swap + duplicate root SPF).
+6. Builds: 9H auto-expiry → ToS/Privacy v2.0 → 9C.1 emoji avatars → launch gate.
 
 **⬅ Immediate (2026-10-13 — planned "subscriptions day", Nagesh):**
 1. ✅ **Nagesh:** phone test on the uat preview — PASS (2026-10-13).
