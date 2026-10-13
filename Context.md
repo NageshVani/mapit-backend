@@ -10,7 +10,12 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-10 13:25, checkpoint (**Session 9K done except step 8 — merged to `uat` (`4b93747`), uat deploy success, prod smoke 12/12. Today: UAT signup fixed (Resend key never created → 535), Google sign-in UAT + prod PASS, UAT seed (20 listings) + EXPLAIN ANALYZE Index Scan, saved suites `npm run uat:9c` (35/35) + `npm run smoke:prod` (12/12, read-only), CLAUDE.md v4.1 / database index / .env.example docs. Open: step 8 prod test-data clean-up after Supabase Pro; `uat → main` PR.**)
+- **Last updated:** 2026-10-13, (**Final polish signed off: Nagesh phone test PASS (points 1–3) + Arun re-check 1e/1h/2c OK. PR `uat → main` opened; next: Nagesh merges in GitHub UI → smoke:prod → subscriptions.**)
+- **Last updated (previous):** 2026-10-12 (end of day), checkpoint (**Final polish on uat preview (`655108c`), localhost 4/4 PASS. ⏸ PLACEHOLDER: Nagesh's phone test on the uat preview — first thing 2026-10-13, then Arun re-check → PR → smoke:prod → subscriptions (planned for 2026-10-13).**)
+- **Last updated (previous):** 2026-10-12 (later), (**Arun's results received (screenshots via Nagesh): 3 map fixes + bigger Back button built on `fix/final-polish-arun`, screenshots taken, awaiting Nagesh's localhost click-test. Delete-reason feature moved to 9H.**)
+- **Last updated (previous):** 2026-10-12, (**Two post-launch items decided by Nagesh: (1) prod → UAT data refresh = option B, masked copy; (2) multi-step "Post a listing" wizard (Arun's suggestion). Arun's checklist results not received yet: the repo file is still the blank original (browser input is not saved to the file) and the artifact has no comments.**)
+- **Last updated (previous):** 2026-10-11 11:11, checkpoint (**Launch step 1 done: PR #21 merged by Nagesh in the GitHub UI (`4419d88`), prod deploy success, `smoke:prod` 12/12. Order changed after the Nagesh + Arun call: Arun does a final review first, then final CSS/text fixes ship, then subscriptions. Arun checklist (26 checks + change boxes) written, committed `7391465` and published as a private artifact.**)
+- **Last updated (previous):** 2026-10-10 13:25, checkpoint (**Session 9K done except step 8 — merged to `uat` (`4b93747`), uat deploy success, prod smoke 12/12. Today: UAT signup fixed (Resend key never created → 535), Google sign-in UAT + prod PASS, UAT seed (20 listings) + EXPLAIN ANALYZE Index Scan, saved suites `npm run uat:9c` (35/35) + `npm run smoke:prod` (12/12, read-only), CLAUDE.md v4.1 / database index / .env.example docs. Open: step 8 prod test-data clean-up after Supabase Pro; `uat → main` PR.**)
 - **Last updated (previous):** 2026-10-09 22:30, checkpoint (**Session 9K in progress on `feat/session-9k-uat-supabase` — new free org "MapIt UAT" + project `mapit-uat` (`xesekrkxbtybbxpsvxuz`, Singapore) built from new `000-baseline.sql`, verified identical to prod; Auth/Google/Vercel Preview/local `.env` all point to UAT; open: UAT email signup fails "Error sending confirmation email".**)
 - **Last updated (previous):** 2026-10-09 20:13, checkpoint (**PR #20 `uat → main` MERGED (`7be83e4`) — production now runs 9C/9D/9E/9F/9G/9J; smoke test 12/12; 9J UAT polish (7 observations) + ToS 1.1 shipped; migrations 007–017 verified live; prod is OTP-live. Open: UAT/prod share one DB.**)
 - **Last updated (previous):** 2026-10-08 22:36, checkpoint (**9C automated UAT 35/35 + report; 9J built, pushed, merged to uat (`6e910d5`) incl. Nagesh’s 4 extra items; 2 bugs fixed (phone List/Map toggle; List-view phones could not open listings — also in production); User Guide now real phone screenshots (`npm run guide:shots`); 9J checklist written. Arun approved paid subscriptions. Nothing on main yet.**)
@@ -103,6 +108,10 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-11 11:15) — Arun's final review before subscriptions (Nagesh + Arun call).** Order changed: Arun reviews the latest changes first; any final CSS/text changes are built and released **before** the subscriptions. Checklist `docs/uat/session-09-final-review-Arun.html` (26 checks, 10 sections: sign-up on UAT with arun.bn1@ (UAT DB has no account for him; admin by email), his earlier requests re-checked (9G items + left-panel font + map-bounded search), finding/viewing/posting, admin (approve TEST plot, ✨ Draft Reply, 💰 Cost), Terms/Grievance Officer, contact-us@ mailbox, clean-up; a yellow "Changes you'd like" box per section; "Copy my results" → WhatsApp). Published as a private artifact for Arun: https://claude.ai/artifact/S4KyCj7ppDtvVHMrrPL1Vt (Nagesh must share it with Arun via the page's Share menu). Next: Arun's results → change list → `fix/final-polish-arun` (two-file rule, screenshots, localhost click-test) → uat → Arun re-check → PR → `smoke:prod` → subscriptions.
+
+**Earlier (2026-10-11 10:32) — Launch step 1 done: PR #21 merged.** Nagesh finished the UAT checks and signed off; he merged PR #21 `uat → main` in the GitHub UI (merge commit `4419d88`, 06:31 UTC; auto-mode blocked James's `gh pr merge`). The production deploy of `4419d88` succeeded; `npm run smoke:prod` 12/12 (0 listings, served page = main). Local `main` fast-forwarded. **Next: launch step 2**: Nagesh buys the subscriptions (Supabase Pro, Vercel Pro), reviews Resend, finishes MSG91 KYC and sets the Anthropic spend limit, then Session 9 config with James (`sin1` first).
 
 **NOW (2026-10-10 15:03) — Session 9K step 8 done: production is a clean slate.** Nagesh chose a manual export instead of waiting for Supabase Pro. (1) Backup: read-only SQL Editor export `database/scripts/session-9k-prod-backup-export.sql` → CSV at `C:/dev/mapit/backups/prod-before-cleanup-2026-10-10.csv` (outside the repo, contains PII; no password hashes), checked by `database/scripts/verify-backup-export.js` = 18/18 tables OK. (2) Dry run `session-9k-prod-cleanup-dryrun.sql` (masked emails) reviewed; Nagesh confirmed all 41 listings dummy incl. `MP-BLR-36XG7J` + `MP-BLR-7L67AD`, and all 7 feedback rows were his test input. (3) `session-9k-prod-cleanup-delete.sql` (one guarded DO block, exact counts, cut-off 2026-10-10 00:00 +04) run on prod by Nagesh: deleted 7 feedback, 41 listings (cascade: photos/chats/saved/legacy messages), 32 accounts (cascade: profiles/pins/OTPs). Verified: listings 0, users 2 (both admins), profiles 2, feedback 0, invite_codes 15 kept, audit_log 355 kept. (4) Smoke S-07 now accepts 0 listings → `npm run smoke:prod` 12/12 (0 listings). **Finished:** Nagesh deleted the 12 photo files (Storage `listing-photos` = 0) and the 2 test `grievances` (guarded DO block, now 0). Production = clean slate. Friends & family re-register (email + phone) at the **closed-group soft-release**, not now (Nagesh). PR #21 `uat → main` open for sign-off. Delete the backup CSV ~30 days after launch.
 
@@ -519,6 +528,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **PR #21 `uat → main` merged (2026-10-11 06:31 UTC, `4419d88`)** after Nagesh's UAT sign-off; Vercel Production deploy of `4419d88` success; `npm run smoke:prod` 12/12 (0 listings, served page = main); local `main` fast-forwarded.
+- ✅ **Arun final-review checklist (2026-10-11, `7391465`):** `docs/uat/session-09-final-review-Arun.html` — 26 checks in 10 sections, all of Arun's earlier requests re-checked, a "Changes you'd like" box per section, "Copy my results" → WhatsApp; row in `docs/index.html`; private artifact https://claude.ai/artifact/S4KyCj7ppDtvVHMrrPL1Vt.
 - ✅ **9K UAT signup fixed (2026-10-10):** Logs → Auth showed `535`; Resend key `mapit-uat-smtp` created (Sending access, mapit.co.in) + mapit-uat SMTP set → 6-digit code + login + `profiles` row verified.
 - ✅ **Google sign-in PASS on UAT (localhost) and on mapit.co.in (Nagesh, 2026-10-10)** — 9K step 1 closed.
 - ✅ **9K step 6:** `uat-dummy-listings.sql` reworked (one guarded DO block) and run on mapit-uat — 20 listings, 11/9 sellers; EXPLAIN ANALYZE = Index Scan on `idx_listings_ll_to_earth` (0.9 ms); RPC 7 rows / 5 km. Localhost click-test PASS.
@@ -1152,8 +1163,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **Arun final review (before subscriptions)** | ⏳ Checklist sent; waiting for Arun's results | `docs/uat/session-09-final-review-Arun.html`, `docs/index.html` | Then change list → `fix/final-polish-arun` → uat → Arun re-check → PR → smoke:prod |
 | **Session 9K — separate UAT Supabase project** | ✅ Steps 0–7, 9 done; merged to uat `4b93747` | Supabase, Vercel, scripts/, docs | Step 8 (prod test-data clean-up) waits for Supabase Pro backups + separate approval |
-| `uat → main` PR for 9K | ⏳ Not opened | git | Scripts + docs only, no runtime change; needs Nagesh/Arun sign-off |
+| `uat → main` PR #21 (9K) | ✅ **Merged 2026-10-11 06:31 UTC (`4419d88`)**, prod deploy success, smoke 12/12 | git | Merged by Nagesh in GitHub UI (merge commit); auto-mode blocked `gh pr merge` |
 | **`uat → main` PR #20** | ✅ **Merged 2026-10-09 16:06 UTC (`7be83e4`), Vercel prod deploy success, smoke test 12/12** | git | Migrations 007–017 verified live (read-only probe). Remaining: Nagesh phone OTP test on prod |
 | UAT/prod data separation | ✅ Done via Session 9K (2026-10-10) | Supabase | Old test data still on prod until step 8 |
 | `uat → main` PR (9D/9E/9F/9G/9C/9J, T-014, Option C) | ✅ Done → PR #20 merged 2026-10-09 | git | Migrations 015–017 already live in the shared DB; check 007; `ANTHROPIC_API_KEY` → Production at merge |
@@ -1311,6 +1323,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+docs/uat/session-09-final-review-Arun.html — NEW (2026-10-11): Arun's 26-check final review + per-section change boxes + copy-to-WhatsApp summary (plain text via textContent).
+docs/index.html — row for the Arun final-review checklist.
 database/scripts/uat-dummy-listings.sql — 9K: UAT-only guarded DO-block seed (Seller B = oldest other account, no email in git) + STEP 4 EXPLAIN ANALYZE.
 scripts/uat/9c-phone-otp.suite.js + package.json `uat:9c` — NEW: 35-check 9C regression suite (UAT guard, zero sends, cleanup in finally).
 scripts/smoke/prod-readonly.js + package.json `smoke:prod` — NEW: 12-check read-only production smoke test.
@@ -1614,6 +1628,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **✅ RESOLVED (2026-10-13): Nagesh ran the phone test on the uat preview — looks good (PASS).** Original: **⏸ PLACEHOLDER (2026-10-12 night): phone test of the final polish — Nagesh, on https://mapit-backend-git-uat-nagesh-n-arun.vercel.app (UAT account):** (1) open a listing → tap ‹ Back: easy to tap, map returns; (2) drag away → ⌂ My area flies home; (3) Explore → `thindlu` = 3 results; (4) List ↔ Map toggle, repeat (1) (map is hidden in List view on phones). Blocks: Arun re-check → PR `uat → main` → subscriptions.
+- **🔨 (2026-10-12) `fix/final-polish-arun` — Nagesh localhost click-test 4/4 PASS; merged to `uat` (`655108c`) + pushed, Vercel uat preview deployed and verified serving the new code. Next: Nagesh phone test on the uat preview → Arun re-check → PR `uat → main` → `smoke:prod` → subscriptions.** (was: built, awaiting localhost click-test) Arun's results (1e, 1h, 2c, section 9) arrived as screenshots. Fixes: (1) "⌂ My area" map button (bottom-right, above zoom) + re-picking the ticked saved location flies home (`goHomeArea()`); (2) map view saved when a listing opens from the results and restored on Back (`_preDetailView`; not overwritten listing → listing), list redrawn after the move because keyword results follow the visible map; Back button bigger (15px, bordered); (3) Explore/home-location place labels fall back to the taluk when Photon has no city — "Thindlu, Anekal / Yelahanka / Hosakote" instead of one "Thindlu, Karnataka" (side effect: e.g. "Koramangala, Bangalore South, Karnataka"). Question A (keyword search = whole circle?) not answered → kept as visible-map only. Screenshots: `docs/screenshots/session-9-final-polish/` before-{desktop,phone}-{1-map,2-listing-detail,3-after-back,4-explore-thindlu}.png and after-*-{1-map,2a-zoomed-out,2-listing-detail,3-after-back,5a-panned-away,5b-after-my-area,4-explore-thindlu}.png (throwaway UAT account, deleted by ID).
+- **✅ RESOLVED (2026-10-12) Arun's checklist results not yet in hand** — received as screenshots. `docs/uat/session-09-final-review-Arun.html` is unchanged since `7391465` (what he types in a browser is never saved to the file) and the artifact has no comment threads. Need his "Copy my results" text (WhatsApp) or a saved/printed copy.
+- **⏳ Waiting on Arun (2026-10-11): final review + CSS/text change list.** Subscriptions are on hold until his changes ship. Nagesh must share the artifact link with Arun (page's Share menu; it is private).
+- **ℹ️ Arun has no account on the UAT database** (built from scratch in 9K) — he signs up on the uat preview with arun.bn1@ (admin by email in `auth.js`); one real WhatsApp code (~₹0.2).
+- **ℹ️ Claude Code auto-mode blocks `gh pr merge` to main** — merges to main are done by Nagesh in the GitHub UI ("Merge pull request" = create a merge commit; ▾ to switch method).
 - **ℹ️ `npm run uat:9c` uses 9 of the 10/hour per-IP send limit** — wait 1 h between runs against the same target, or it fails with "Too many code requests".
 - **ℹ️ Supabase SQL Editor shows only the LAST result grid and may not keep TEMP TABLEs across statements** — use one `DO` block for multi-step scripts; run EXPLAINs on their own.
 - **✅ RESOLVED (2026-10-10 12:01, 9K) UAT signup "Error sending confirmation email".** Logs → Auth showed `535 "Authentication credentials invalid"` on POST /otp: the Resend key `mapit-uat-smtp` had never actually been created (correction to the 2026-10-09 note), so the SMTP password was invalid. Fix: created Resend key `mapit-uat-smtp` (Sending access, mapit.co.in), set mapit-uat SMTP = smtp.resend.com:465, user `resend`. Signup + 6-digit code from "MapIt UAT" + login verified; 1 `profiles` row in mapit-uat (trigger works). Side note: a 403 "unrecognized JWT kid" on /user = stale prod session in localhost storage; clear site data. Lesson: Supabase hides SMTP errors behind a generic message — always read Logs → Auth.
@@ -1756,6 +1776,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Delete-listing reason → paired with 9H auto-expiry (Nagesh, 2026-10-12)** | Arun asked for a reason when a seller deletes (Sold through MapIt / Sold elsewhere / No longer needed). Today delete is a hard row delete, so a reason needs DB columns (Nagesh OK with 1–2 extra columns) → soft "remove" with a reason; "Mark as sold" becomes one of the options. Same listing lifecycle as 9H, so built there, migration on UAT first. "Sold through MapIt" = key success metric |
+| **Prod → UAT data refresh = option B, masked copy, post-launch (Nagesh, 2026-10-12)** | Rejected A (full copy): real names/phones/emails in UAT break DPDP Act 2023 purpose limits, sit in a weaker free org, and UAT test runs could WhatsApp/email real users. Rejected C (synthetic only) as the long-term answer because it is less realistic. B: a script copies listings/categories/volumes, replaces names ("User 0042"), phones (`+9100000xxxxx`), emails (`user0042@example.test`), scrubs phone/email patterns from free text (title/description), drops seller identity, skips photos (placeholders), never copies `auth.users`. On demand (before big features / perf tests). Trigger: ~200+ real listings. UAT free-tier 500 MB cap → copy a recent sample. UAT is NOT a backup: backups = Supabase Pro daily/PITR |
+| **Multi-step "Post a listing" wizard, post-launch (Arun suggestion, Nagesh agreed 2026-10-12)** | Steps: 1 location (pin; MapIt's core value) → 2 category + subcategory → 3 subcategory-specific questions (existing dynamic fields) → 4 price + photos → 5 review + submit. Fewer fields per screen = less drop-off on phones. Frontend only, no DB, no cost, ~1 session. Build AFTER frontend split option 1 (new JS goes in `js/`). Gotchas: keep a draft across steps (phone back button / refresh), validate per step, edit-listing must reuse the same steps |
+| **Arun reviews before subscriptions; final CSS/text fixes ship first (2026-10-11, Nagesh + Arun)** | UAT/prod are now split and only Nagesh had signed off; avoid paying and configuring before the UI and copy are final |
+| **Arun reviews on the uat preview, not mapit.co.in (2026-10-11)** | Same app code as prod (`4419d88`); prod stays clean (test data UAT-only, Rule 10); UAT has 20 seed listings to test with |
+| **PR #21 merged with a merge commit, not squash (2026-10-11)** | Same as PR #20; keeps each 9K step in history; easy to undo with `git revert -m 1` |
 | **Frontend stays one file through launch; split after launch (2026-10-10, Nagesh)** | Splitting `MapIt_MVP_v1.html` (~4,970 lines) into separate pages = 3–5 days + full re-UAT (9C/9G/9J) in the launch runway, and pages would reload Leaflet + session on every move (slower for users; Lighthouse already 100). Post-launch plan: **option 1** = same single page, code moved to `css/app.css` + `js/*.js` via plain script tags (no build tool, ~1–2 days + re-test); **option 2** (v2, with the mobile app) = Vite build, enables CSP |
 | **Saved regression suites instead of one-off runs (2026-10-10, Nagesh)** | `npm run uat:9c` (35) + `npm run smoke:prod` (12) — needed again after the security audit (018+) and every release; one command each |
 | **9C suite seeds OTP rows with a known hash, sends zero WhatsApp (2026-10-10)** | Verify only checks the `phone_otps` hash; all send calls are refused before MSG91 → ₹0, no undeliverable sends |
@@ -2079,12 +2105,26 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
+**⬅ Immediate (2026-10-13 — planned "subscriptions day", Nagesh):**
+1. ✅ **Nagesh:** phone test on the uat preview — PASS (2026-10-13).
+2. ✅ **Arun:** re-check 1e / 1h / 2c on the uat preview — OK (2026-10-13).
+3. **PR `uat → main`** — Nagesh merges in the GitHub UI → James runs `npm run smoke:prod`.
+4. **Subscriptions** (agreed order: only after Arun's changes are on prod): Supabase Pro (production org only, not "MapIt UAT"), Vercel Pro, Resend review, Anthropic spend limit, MSG91 KYC + WhatsApp wallet ≥ ₹500 before ~25 Oct. Flag any recurring cost surprises (Rule 11).
+5. Then Session 9 config with James: `sin1` region first (measure before/after), uat.mapit.co.in → uat branch, PgBouncer, Storage CDN, backup test-restore, alerts, keep-warm.
+
+**⬅ Immediate (2026-10-11 11:11 — checkpoint, waiting on Arun):**
+1. **Nagesh:** share https://claude.ai/artifact/S4KyCj7ppDtvVHMrrPL1Vt with Arun (Share menu).
+2. **Arun:** run the checklist on the uat preview (sign up with arun.bn1@) → "Copy my results" → WhatsApp to Nagesh.
+3. **James:** turn Arun's results into a numbered change list → Nagesh confirms → build on `fix/final-polish-arun` (two-file rule, before/after screenshots, localhost click-test).
+4. Merge to uat → Arun re-checks → PR `uat → main` (Nagesh merges in GitHub UI) → `npm run smoke:prod`.
+5. **Then subscriptions** (Supabase Pro on prod org only, Vercel Pro, Anthropic limit, MSG91 KYC + wallet ≥ ₹500 before ~25 Oct) → Session 9 config (`sin1` first).
+
 **⬅ AGREED ORDER TO LAUNCH (Nagesh, 2026-10-10):**
-1. **Nagesh:** UAT checks → sign off PR #21 → James merges → `npm run smoke:prod`.
+1. ✅ **Done 2026-10-11:** UAT checks + sign-off → PR #21 merged (`4419d88`) → `npm run smoke:prod` 12/12.
 2. **Nagesh:** subscriptions (Supabase Pro, Vercel Pro, Resend review, MSG91 KYC, Anthropic spend limit) → then Session 9 config with James (`sin1`, uat.mapit.co.in → uat branch, PgBouncer, Storage CDN, backup test-restore, alerts, keep-warm).
 3. **Pre-launch security audit** (migration 018: UAT first → `npm run uat:9c` + inventory compare → prod; escape helper in the frontend).
 4. **Builds:** 9H auto-expiry → ToS/Privacy v2.0 → 9C.1 emoji avatars → launch gate (9a re-check → closed-group soft-release → announcement).
-5. **After launch:** 9I profile editing; frontend split option 1.
+5. **After launch:** 9I profile editing; frontend split option 1 → multi-step "Post a listing" wizard (Arun, 2026-10-12); masked prod → UAT data refresh script (option B, trigger ~200+ real listings) — see Decisions 2026-10-12.
 
 **⬅ Immediate (2026-10-10 15:03 — 9K step 8 done, prod = clean slate):**
 1. ✅ Storage photos + 2 test grievances deleted — Session 9K fully complete.
