@@ -10,7 +10,7 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-13, (**Final polish signed off: Nagesh phone test PASS (points 1–3) + Arun re-check 1e/1h/2c OK. PR `uat → main` opened; next: Nagesh merges in GitHub UI → smoke:prod → subscriptions.**)
+- **Last updated:** 2026-10-13 18:10, (**Final polish LIVE on production: PR #22 `uat → main` merged by Nagesh in GitHub UI (`26cb6d2`, 14:05 UTC), prod deploy success, `smoke:prod` 12/12. Signed off by Nagesh phone test (points 1–3) + Arun re-check 1e/1h/2c. Next: subscriptions → Session 9 config (`sin1` first).**)
 - **Last updated (previous):** 2026-10-12 (end of day), checkpoint (**Final polish on uat preview (`655108c`), localhost 4/4 PASS. ⏸ PLACEHOLDER: Nagesh's phone test on the uat preview — first thing 2026-10-13, then Arun re-check → PR → smoke:prod → subscriptions (planned for 2026-10-13).**)
 - **Last updated (previous):** 2026-10-12 (later), (**Arun's results received (screenshots via Nagesh): 3 map fixes + bigger Back button built on `fix/final-polish-arun`, screenshots taken, awaiting Nagesh's localhost click-test. Delete-reason feature moved to 9H.**)
 - **Last updated (previous):** 2026-10-12, (**Two post-launch items decided by Nagesh: (1) prod → UAT data refresh = option B, masked copy; (2) multi-step "Post a listing" wizard (Arun's suggestion). Arun's checklist results not received yet: the repo file is still the blank original (browser input is not saved to the file) and the artifact has no comments.**)
@@ -2108,7 +2108,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 **⬅ Immediate (2026-10-13 — planned "subscriptions day", Nagesh):**
 1. ✅ **Nagesh:** phone test on the uat preview — PASS (2026-10-13).
 2. ✅ **Arun:** re-check 1e / 1h / 2c on the uat preview — OK (2026-10-13).
-3. **PR `uat → main`** — Nagesh merges in the GitHub UI → James runs `npm run smoke:prod`.
+3. ✅ **PR #22 `uat → main`** merged by Nagesh (`26cb6d2`, 2026-10-13 14:05 UTC) → prod deploy success → `npm run smoke:prod` 12/12.
 4. **Subscriptions** (agreed order: only after Arun's changes are on prod): Supabase Pro (production org only, not "MapIt UAT"), Vercel Pro, Resend review, Anthropic spend limit, MSG91 KYC + WhatsApp wallet ≥ ₹500 before ~25 Oct. Flag any recurring cost surprises (Rule 11).
 5. Then Session 9 config with James: `sin1` region first (measure before/after), uat.mapit.co.in → uat branch, PgBouncer, Storage CDN, backup test-restore, alerts, keep-warm.
 
