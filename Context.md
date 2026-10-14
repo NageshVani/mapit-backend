@@ -112,6 +112,8 @@
 
 ## 🎯 Current Goal
 
+**NOW (2026-10-14 21:50) — Storage A + B, admin photo review and Post/Edit photo management are on uat (pushed, uat.mapit.co.in deployed, `smoke:prod` 13/13).** uat merges: `b9ec1fc` (fix/edit-listing-photos, contains B `9b4cae9` + `0f5100e`) and `8a7dbf5` (fix/admin-photo-review `552d185`). Nagesh localhost click-tests PASS: shrink 2.2 MB → 167–225 KB; admin queue shows photos for new and re-edited listings; seller sees latest photos after approval; Edit shows current photos (✕/↺, applied on Update), "📷 Add photos" with New-tagged previews and ✕ before submit, max 5. DELETE photo now renumbers sort_order (cover = sort_order 0). Next: **phone test on uat.mapit.co.in** (iPhone + Android camera photos, portrait/landscape rotation, HEIC fallback) → `uat → main` PR (also carries the noindex guard + Option A) → `smoke:prod`. Screenshots for Rule 12: Nagesh to save admin-queue + edit-form shots to docs/screenshots/session-9-photos/.
+
 **NOW (2026-10-14 21:30) — Storage option B committed (`9b4cae9` on `fix/storage-photo-resize`, from uat `ba16fb6`, not pushed).** `shrinkPhoto()` before upload (≤1600 px, JPEG 0.8, one at a time, original kept if undecodable/not smaller) + CSP `img-src 'blob:'` (without it the shrink silently fell back to the original — found in Nagesh's first localhost test: 4032×3024 / 2.2 MB stored) + warning toast when the photo upload fails. Localhost result after the fix: **167–225 KB, 1600×1200 / 1200×1600**, orientation kept, `max-age=5184000` (also confirms option A). Local phone verification done via `MSG91_DRY_RUN=true` code in the server terminal. Next: Nagesh's two pending items (below), then push A+B fixes to uat → phone test (iPhone/Android) → `uat → main` PR.
 
 **NOW (2026-10-14 20:32) — Storage option A committed (`252b91e` on `fix/storage-photo-cache`, not pushed).** Nagesh changed the cache from 1 year to **60 days** (`cacheControl: '5184000'` — covers the 30-day listing life + 15-day 9H grace and shortens how long a deleted photo stays reachable in browsers). `loading="lazy" decoding="async"` on 4 thumbnails (results list ~1568, Saved ~3001, My Listings ~3055, detail strip ~3185); gallery image unchanged. Localhost click-test PASS (Nagesh). No visual change → no before/after screenshots (Rule 12); evidence = `cache-control: max-age=5184000` header on a new photo. Next: merge to uat + push → header check on uat.mapit.co.in → option B. Two new issues logged (Open Issues): Google sign-in shows `<ref>.supabase.co`; map reportedly loads twice.
@@ -1191,7 +1193,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Session 9 config item 3 — Storage photos (A: 60-day cache + lazy load)** | 🟢 Committed `252b91e` on `fix/storage-photo-cache`, localhost PASS; not pushed (2026-10-14 20:32) | `src/routes/uploads.js`, `MapIt_MVP_v1.html` / `public/index.html` | B (browser resize) next as own sub-task; C (Image Transformations) rejected — cost |
+| **Session 9 config item 3 — Storage photos (A: 60-day cache + lazy load)** | ✅ A + B on uat (2026-10-14 21:50); phone test + PR pending | `src/routes/uploads.js`, `MapIt_MVP_v1.html` / `public/index.html` | B (browser resize) next as own sub-task; C (Image Transformations) rejected — cost |
 | **Session 9 config items 1–2 — `sin1` + uat.mapit.co.in** | ✅ Done 2026-10-14 | `vercel.json`, `src/server.js`, `scripts/smoke/prod-readonly.js`, CLAUDE.md | PR #23 merged (`7e55d9c`); noindex guard on uat only (`1941c2b`) — reaches prod with next PR |
 | **Subscriptions (launch step 2)** | ✅ 4/5 done 2026-10-13; MSG91 → Arun | Supabase/Vercel/Resend/Anthropic/MSG91 dashboards | Supabase $29.50 + Vercel $23.60/mo; Vercel invoice Paid check 14 Oct |
 | **MSG91 KYC + ₹1,000 main wallet** | ⏳ Arun, before ~25 Oct | MSG91 "mapit2" | Titan ≈ ₹590 deducted 1 Nov; monthly from Dec |
@@ -1666,8 +1668,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **🔴 (2026-10-14, Nagesh) Admin approval queue shows no photos.** `/api/listings/pending/all` selects `*, profiles(...)` only; `admin.html` has no photo UI → admin approves photos unseen (moderation gap). Fix before launch: include `listing_photos(public_url, sort_order)` + thumbnails (click = full size) in the queue.
-- **🔴 (2026-10-14, Nagesh) Edit listing: existing photos not shown, new photos silently ignored.** `submitListing()` uploads only when `!ST.editingId`; the edit form never loads current photos. Fix (option a, recommended): show current photos in the edit form, allow adding up to 5 in total (server already enforces the cap). Maybe delete per photo (route `DELETE /api/uploads/photo/:id` exists).
+- **✅ RESOLVED on uat 2026-10-14 (`552d185`, merged `8a7dbf5`) — 🔴 (2026-10-14, Nagesh) Admin approval queue shows no photos.** `/api/listings/pending/all` selects `*, profiles(...)` only; `admin.html` has no photo UI → admin approves photos unseen (moderation gap). Fix before launch: include `listing_photos(public_url, sort_order)` + thumbnails (click = full size) in the queue.
+- **✅ RESOLVED on uat 2026-10-14 (`0f5100e`, merged `b9ec1fc`) — 🔴 (2026-10-14, Nagesh) Edit listing: existing photos not shown, new photos silently ignored.** `submitListing()` uploads only when `!ST.editingId`; the edit form never loads current photos. Fix (option a, recommended): show current photos in the edit form, allow adding up to 5 in total (server already enforces the cap). Maybe delete per photo (route `DELETE /api/uploads/photo/:id` exists).
 - **🟡 (2026-10-14) Pin shows 📦 "Price on request" after selecting a listing from My Listings** — `selListing()` (~3263) rebuilds every marker icon looking in `ST.listings`/`ST.favListings` only, not `ST.myListings`, so it falls back to `{category:'all', price:0}`. One-line fix (add `ST.myListings`).
 - **🟡 (2026-10-14) Google sign-in says "to continue to `xesekrkxbtybbxpsvxuz.supabase.co`"** (prod: `jneox….supabase.co`). Google names the OAuth redirect host, which is Supabase. Options: (a) Supabase Custom Domain add-on → `auth.mapit.co.in` (~$10/mo — confirm price, Rule 11; mostly config: DNS + Supabase + Google Console redirect URI) — James recommends, prod only, just before launch; (b) Google Identity Services button + `signInWithIdToken` (₹0, ~½ day, touches the auth flow → security check). Decision: Nagesh + Arun. Own branch.
 - **⏸ PLACEHOLDER (parked by Nagesh 2026-10-14 20:45 — resume when he has a new recording that starts before page load, runs 15–20 s past the first map, new file name, + entry path / site / device). 🟡 (2026-10-14) Map reportedly loads, returns to the "Loading your map…" splash, then loads again (Nagesh, long-standing).** Recording `C:/dev/mapit/Recording 2026-10-14 195553.mp4` (Google sign-in on localhost) checked frame-by-frame (1/30 s): only ONE load (login → blank 2.2–2.9 s → splash 3.0–5.5 s → map). Not reproduced yet. Code note: 6 paths call `showLoadingSplash()` + `initApp()` (and `initApp()`/`initMap()` have no re-entry guard), so a double init is plausible. Need from Nagesh: device, prod/uat, entry path (fresh visit / refresh / Who's using MapIt? / first login), then reproduce before fixing.
@@ -2165,7 +2167,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ Immediate (2026-10-14 20:32):**
+**⬅ Immediate (2026-10-14 21:50):**
+1. **Nagesh:** phone test on uat.mapit.co.in — post a listing with camera photos (iPhone + Android, portrait + landscape): previews, ✕, upright after upload, admin queue thumbnails, Edit add/remove.
+2. **James:** `uat → main` PR (noindex guard, Storage A + B, admin photos, Post/Edit photos) → Nagesh merges in GitHub UI → `smoke:prod` → upload-check on prod is NOT allowed (no test data on prod) — rely on uat.
+3. Pin-price bug (📦 "Price on request" after selecting from My Listings) — one-line fix, own branch.
+4. Rest of Session 9 config: backup test-restore, alerts, keep-warm, `audit_log` purge cron. Parked: double map load (placeholder), Google sign-in host name (decision).
+
+**⬅ Immediate (2026-10-14 20:32, superseded above):**
 1. Merge `fix/storage-photo-cache` → uat, push (Nagesh's go) → upload a photo on uat.mapit.co.in → `cache-control: max-age=5184000`.
 2. Storage option B (browser-side resize, ~1,600 px / 200–400 KB) on its own branch + phone test.
 3. Double map load: Nagesh describes/records the trigger → reproduce → fix on a `fix/` branch.
