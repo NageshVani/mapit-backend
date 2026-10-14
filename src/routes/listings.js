@@ -73,7 +73,8 @@ router.get('/pending/all', requireAuth, requireAdmin, async (req, res, next) => 
   try {
     const { data: listings, error } = await supabaseAdmin
       .from('listings')
-      .select('*, profiles(full_name, avatar_color, suspended)')
+      // listing_photos: the reviewer must see the photos they approve
+      .select('*, profiles(full_name, avatar_color, suspended), listing_photos(public_url, sort_order)')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
     if (error) return next(createError(error.message));
