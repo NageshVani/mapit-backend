@@ -117,6 +117,14 @@ async function get(url, opts = {}) {
   const warm = await get(PROD + '/api/config');
   check('S-12', 'Warm API response under 1.5 s', warm.ms < 1500, `/api/config ${warm.ms} ms (first call ${cfg.ms} ms — includes any cold start)`);
 
+  // S-13 · production is indexable, uat is not (noindex guard in server.js)
+  const uatHome = await get(UAT + '/');
+  const prodRobots = h.get('x-robots-tag') || '';
+  const uatRobots  = uatHome.headers.get('x-robots-tag') || '';
+  check('S-13', 'Production has no noindex; uat has X-Robots-Tag: noindex',
+    !/noindex/i.test(prodRobots) && /noindex/i.test(uatRobots),
+    `prod=${prodRobots || '(none)'} · uat=${uatRobots || '(none)'}`);
+
   const pass = results.filter(r => r.pass).length;
   console.log(`\n${pass}/${results.length} PASS — read-only, nothing written to production.`);
   process.exit(pass === results.length ? 0 : 1);

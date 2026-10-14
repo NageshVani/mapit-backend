@@ -99,6 +99,16 @@ app.use(helmet({
 app.use(compression());
 app.use(morgan('dev'));
 
+// ── Keep non-production hosts out of search engines ──────────
+// Vercel adds X-Robots-Tag: noindex only on *.vercel.app URLs, not on custom
+// domains — uat.mapit.co.in (UAT dummy listings) would otherwise be indexable.
+// Allowlist by host, so production can never be noindexed by a missing env var.
+const INDEXABLE_HOSTS = ['www.mapit.co.in', 'mapit.co.in'];
+app.use((req, res, next) => {
+  if (!INDEXABLE_HOSTS.includes(req.hostname)) res.setHeader('X-Robots-Tag', 'noindex');
+  next();
+});
+
 // ── CORS ─────────────────────────────────────────────────────
 // Allow requests from the frontend (update APP_URL in .env)
 const allowedOrigins = [
