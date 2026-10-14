@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-14 18:23 (UAE), checkpoint (**Session 9 config items 1–2 DONE: `sin1` live on prod (PR #23 `7e55d9c`, 1-query route ~1000 → ~210 ms), uat.mapit.co.in → `uat` branch + noindex guard (uat `1941c2b`), prod Supabase redirect list cleaned, prod Google sign-in OK, `smoke:prod` 13/13. Paused for dinner at item 3 (Storage): option A proposed, awaiting Nagesh's go.**)
+- **Last updated:** 2026-10-14 22:04 (UAE), checkpoint (**Photo work on uat: Storage A (60-day cache + lazy thumbnails) + B (browser shrink, CSP `blob:`), admin photo review, Post/Edit photo management (current photos ✕/↺, 📷 Add photos with previews, max 5, `sort_order` renumber). All localhost-tested by Nagesh, pushed, uat deployed, `smoke:prod` 13/13, screenshots saved. Plan: 15 Oct = pending todos + security audit; 16 Oct = pre-launch builds.**)
+- **Last updated (previous):** 2026-10-14 18:23 (UAE), checkpoint (**Session 9 config items 1–2 DONE: `sin1` live on prod (PR #23 `7e55d9c`, 1-query route ~1000 → ~210 ms), uat.mapit.co.in → `uat` branch + noindex guard (uat `1941c2b`), prod Supabase redirect list cleaned, prod Google sign-in OK, `smoke:prod` 13/13. Paused for dinner at item 3 (Storage): option A proposed, awaiting Nagesh's go.**)
 - **Last updated (previous):** 2026-10-13 20:28 (UAE), checkpoint (**Final polish LIVE (PR #22, smoke 12/12); subscriptions done: Supabase Pro ✅, Vercel Pro ✅ (invoice "payment scheduled" — confirm Paid 14 Oct), Resend stays Free ✅, Anthropic $5 cap ✅; MSG91 KYC + ₹1,000 main-wallet top-up handed to Arun (before ~25 Oct). Security-audit adds: Resend Full-access key swap + duplicate root SPF. Next session (2026-10-14): Session 9 config, `sin1` first.**)
 - **Last updated (previous):** 2026-10-13 (evening), (**Subscription 1/5 done: Supabase Pro on org renamed "MapIt Production" (only project = `mapit-prototype` / `jneoxwumccmjwaojfazh`); $25 + 18% GST (OIDAR, no GSTIN yet) = $29.50/mo; billing name Nakshe Ventures; spend cap ON; Nano → Micro; `smoke:prod` 12/12 after upgrade. Budget note: every foreign SaaS adds 18% GST + card forex markup → realistic total ≈ $85–88/mo, not $71. Pending: first daily backup visible within ~24 h. Then Vercel Pro (2/5) done — team "MapIt", smoke 12/12. Then Resend review (3/5) done — stay Free (20/3,000 month, 0/100 day), domain + DKIM + SPF verified, DMARC p=none; 2 fixes logged for the security audit (Full-access key swap, duplicate root SPF). Anthropic (4/5) checked — $5 prepaid, auto-reload off, fail-open verified. MSG91 (5/5) checked: WhatsApp balance ₹549.45 OK, but main wallet ₹0.00 + KYC incomplete → Nagesh submits KYC this week, then Add Funds ₹1,000 before ~25 Oct (Titan ₹590 on 1 Nov). Alert = 1 harmless failed inbound image.**)
 - **Last updated (previous):** 2026-10-13 18:10, (**Final polish LIVE on production: PR #22 `uat → main` merged by Nagesh in GitHub UI (`26cb6d2`, 14:05 UTC), prod deploy success, `smoke:prod` 12/12. Signed off by Nagesh phone test (points 1–3) + Arun re-check 1e/1h/2c. Next: subscriptions → Session 9 config (`sin1` first).**)
@@ -111,6 +112,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NEXT SESSION (2026-10-15, Nagesh's plan): finish ALL pending todos + the full pre-launch security audit in one day; the after-audit / before-launch builds (9H, ToS v2.0, 9C.1, launch gate) move to 2026-10-16.** Start: phone test of the photo work on uat.mapit.co.in → `uat → main` PR → Haiku 4.5 retirement decision (retirement possible from 15 Oct) → pin-price fix → rest of Session 9 config → security audit. See Next Steps.
 
 **NOW (2026-10-14 21:50) — Storage A + B, admin photo review and Post/Edit photo management are on uat (pushed, uat.mapit.co.in deployed, `smoke:prod` 13/13).** uat merges: `b9ec1fc` (fix/edit-listing-photos, contains B `9b4cae9` + `0f5100e`) and `8a7dbf5` (fix/admin-photo-review `552d185`). Nagesh localhost click-tests PASS: shrink 2.2 MB → 167–225 KB; admin queue shows photos for new and re-edited listings; seller sees latest photos after approval; Edit shows current photos (✕/↺, applied on Update), "📷 Add photos" with New-tagged previews and ✕ before submit, max 5. DELETE photo now renumbers sort_order (cover = sort_order 0). Next: **phone test on uat.mapit.co.in** (iPhone + Android camera photos, portrait/landscape rotation, HEIC fallback) → `uat → main` PR (also carries the noindex guard + Option A) → `smoke:prod`. Screenshots (Rule 12, saved by Nagesh): `docs/screenshots/session-9-photos/Admin pending listing.png` + `Edit listing.png` (after; before = no photos in either view). Session paused 22:00 — resume 2026-10-15 with the phone test.
 
@@ -547,6 +550,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **Storage option A (2026-10-14):** `cacheControl: '5184000'` (60 days — Nagesh chose over 1 year) + `loading="lazy"` on 4 thumbnails (`252b91e`); header `public, max-age=5184000` verified on real UAT uploads.
+- ✅ **Storage option B (2026-10-14):** `shrinkPhoto()` ≤1600 px JPEG 0.8 + CSP `img-src 'blob:'` + upload-failure warning (`9b4cae9`); Nagesh's test 2.2 MB 4032×3024 → 167–225 KB 1600×1200, orientation kept.
+- ✅ **Admin photo review (2026-10-14):** pending queue thumbnails, click = full size (`552d185`); PASS for new + re-edited listings; seller sees latest photos after approval (Nagesh).
+- ✅ **Post/Edit photo management (2026-10-14):** current photos ✕/↺ (applied on Update), 📷 Add photos with "New" previews + ✕, max 5 total, DELETE renumbers `sort_order`, picker state cleared between listings (`0f5100e`); Nagesh PASS.
+- ✅ **Merged to uat (`b9ec1fc`, `8a7dbf5`), pushed, uat.mapit.co.in deployed, `smoke:prod` 13/13; screenshots in `docs/screenshots/session-9-photos/` (`adec29a`).**
+- ✅ **Investigated (2026-10-14):** Google sign-in host name (options logged), double map load (recording = 1 load → parked), pin "Price on request" root cause (`selListing()` marker refresh skips `ST.myListings`).
 - ✅ **Prod Supabase redirect URLs cleaned (2026-10-14, Nagesh):** removed `uat.mapit.co.in` + `/**` (4 left); `smoke:prod` 13/13; Nagesh confirmed Google sign-in on www.mapit.co.in works.
 - ✅ **Vercel invoice PHTLKLLJ-0001 Paid (2026-10-14)** — receipt 2425-6432-1273, $23.60 (keep for CA).
 - ✅ **uat.mapit.co.in → `uat` branch (2026-10-14):** Vercel domain set to Preview/`uat` (Nagesh); serves UAT DB `xesek…`; noindex guard for non-prod hosts (`1941c2b`), `smoke:prod` S-13 added → 13/13.
@@ -1193,7 +1202,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Session 9 config item 3 — Storage photos (A: 60-day cache + lazy load)** | ✅ A + B on uat (2026-10-14 21:50); phone test + PR pending | `src/routes/uploads.js`, `MapIt_MVP_v1.html` / `public/index.html` | B (browser resize) next as own sub-task; C (Image Transformations) rejected — cost |
+| **Session 9 config item 3 — Storage photos (A: 60-day cache + lazy load)** | ✅ A + B + admin photos + Post/Edit photos on uat (2026-10-14 22:04); phone test + `uat → main` PR on 15 Oct | `src/routes/uploads.js`, `MapIt_MVP_v1.html` / `public/index.html` | B (browser resize) next as own sub-task; C (Image Transformations) rejected — cost |
 | **Session 9 config items 1–2 — `sin1` + uat.mapit.co.in** | ✅ Done 2026-10-14 | `vercel.json`, `src/server.js`, `scripts/smoke/prod-readonly.js`, CLAUDE.md | PR #23 merged (`7e55d9c`); noindex guard on uat only (`1941c2b`) — reaches prod with next PR |
 | **Subscriptions (launch step 2)** | ✅ 4/5 done 2026-10-13; MSG91 → Arun | Supabase/Vercel/Resend/Anthropic/MSG91 dashboards | Supabase $29.50 + Vercel $23.60/mo; Vercel invoice Paid check 14 Oct |
 | **MSG91 KYC + ₹1,000 main wallet** | ⏳ Arun, before ~25 Oct | MSG91 "mapit2" | Titan ≈ ₹590 deducted 1 Nov; monthly from Dec |
@@ -1358,6 +1367,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+src/routes/uploads.js — 2026-10-14: `cacheControl` 60 days (`252b91e`); DELETE photo renumbers `sort_order` 0..n-1 (`0f5100e`).
+src/server.js — 2026-10-14: CSP `img-src` adds `blob:` for in-browser photo shrink/preview (`9b4cae9`).
+src/routes/listings.js — 2026-10-14: `/pending/all` also selects `listing_photos(public_url, sort_order)` (`552d185`).
+MapIt_MVP_v1.html / public/index.html — 2026-10-14: lazy thumbnails; `shrinkPhoto()`; photo-failure toast; Post/Edit photo manager (`resetPostPhotos`, `onPostPhotosPicked`, `renderPostPhotos`, `toggleEditPhoto`, `removeNewPhoto`, 📷 Add photos button).
+MapIt_Admin_v1.html / public/admin.html — 2026-10-14: `adminPhotosHtml()` thumbnails in the pending queue (https-only, escaped, lazy).
+docs/screenshots/session-9-photos/ — NEW 2026-10-14: `Admin pending listing.png`, `Edit listing.png`.
 vercel.json — 2026-10-14: `"regions": ["sin1"]` (`fe4f809`, live on prod via PR #23).
 src/server.js — 2026-10-14: `X-Robots-Tag: noindex` for every host except www.mapit.co.in / mapit.co.in (`ec48710`, on uat).
 scripts/smoke/prod-readonly.js — 2026-10-14: new S-13 (prod indexable, uat noindex) → 13 checks.
@@ -1668,6 +1683,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🔴 DECIDE 2026-10-15: `claude-haiku-4-5-20251001` retirement "not sooner than October 15, 2026"** — used by `contentModeration.js` + `leadScoring.js`; both fail OPEN (listings/messages keep working, moderation flag + spam screening stop, seller emails get the `[Unscreened]` prefix). Options: swap model (Sonnet ≈ 2× cost per call) — Nagesh's cost call; check the model's current status first.
+- **ℹ️ (2026-10-14) Localhost OTP:** `.env` has `MSG91_DRY_RUN=true` → no WhatsApp; the code is printed in the `npm run dev` terminal (`[whatsappOtp] DRY RUN — code …`). Nagesh's UAT account is now phone-verified.
 - **✅ RESOLVED on uat 2026-10-14 (`552d185`, merged `8a7dbf5`) — 🔴 (2026-10-14, Nagesh) Admin approval queue shows no photos.** `/api/listings/pending/all` selects `*, profiles(...)` only; `admin.html` has no photo UI → admin approves photos unseen (moderation gap). Fix before launch: include `listing_photos(public_url, sort_order)` + thumbnails (click = full size) in the queue.
 - **✅ RESOLVED on uat 2026-10-14 (`0f5100e`, merged `b9ec1fc`) — 🔴 (2026-10-14, Nagesh) Edit listing: existing photos not shown, new photos silently ignored.** `submitListing()` uploads only when `!ST.editingId`; the edit form never loads current photos. Fix (option a, recommended): show current photos in the edit form, allow adding up to 5 in total (server already enforces the cap). Maybe delete per photo (route `DELETE /api/uploads/photo/:id` exists).
 - **🟡 (2026-10-14) Pin shows 📦 "Price on request" after selecting a listing from My Listings** — `selListing()` (~3263) rebuilds every marker icon looking in `ST.listings`/`ST.favListings` only, not `ST.myListings`, so it falls back to `{category:'all', price:0}`. One-line fix (add `ST.myListings`).
@@ -1829,6 +1846,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Photo cache 60 days, not 1 year (Nagesh, 2026-10-14)** | Covers the 30-day listing + 15-day grace; shortens how long a deleted photo stays reachable in browsers. Safe only because file names are unique + `upsert: false` |
+| **Shrink photos in the browser (canvas, ≤1600 px, JPEG 0.8) — no library, no Supabase Image Transformations (2026-10-14)** | ~30 lines vs a CDN library; server never receives the full file; Transformations rejected on cost (Rule 11). Original kept if undecodable (HEIC on Chrome) or not smaller |
+| **CSP `img-src` allows `blob:` (2026-10-14)** | Needed to decode/preview picked files; blob: URLs are created only by our own script from local data (narrower than the existing `data:`). `createImageBitmap()` rejected — inconsistent EXIF rotation |
+| **Edit photo removals staged until Update; new photos kept in an app-side list (2026-10-14)** | Closing the form changes nothing; the native file input can't remove one file or keep earlier picks. Removals run before uploads so the 5-photo cap sees the final set |
+| **Keep `listing_photos.sort_order` contiguous 0..n-1 on delete (2026-10-14)** | Cover photo = sort_order 0 and uploads number from the count — gaps would lose the cover or duplicate positions |
+| **Plan (Nagesh, 2026-10-14): 15 Oct = pending todos + security audit; 16 Oct = pre-launch builds** | Audit before new features, so fixes land on a stable base |
 | **Function region via `vercel.json` `regions: ["sin1"]`, not the dashboard setting (2026-10-14)** | Versioned in git, tested on uat before prod, one-line revert; dashboard setting would hit all branches at once |
 | **noindex by host allowlist (www/bare mapit.co.in indexable, everything else noindex), not by `VERCEL_ENV` (2026-10-14)** | Fails safe: a missing env var can never noindex production; Vercel only noindexes *.vercel.app, not custom domains |
 | **Keep the 2 `mapit-backend-*.vercel.app` entries in the PROD Supabase redirect list for now (2026-10-14)** | Production's own vercel.app URLs use the prod DB; review in the security audit |
@@ -2166,6 +2189,20 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ 2026-10-15 — pending todos + security audit (Nagesh's target: all done today):**
+1. **Nagesh (+ Arun's phone):** phone test on uat.mapit.co.in — camera photos iPhone + Android, portrait + landscape: Add/✕ previews, upright after upload, admin thumbnails, Edit add/remove.
+2. **James:** `uat → main` PR (noindex guard, Storage A + B, admin photos, Post/Edit photos) → Nagesh merges in GitHub UI → `smoke:prod` (no test uploads on prod).
+3. **Haiku 4.5 retirement:** check status → Nagesh decides model swap → James updates `contentModeration.js` / `leadScoring.js` on a `fix/` branch.
+4. **James:** pin-price fix (add `ST.myListings` to the `selListing()` marker refresh), own branch.
+5. **Rest of Session 9 config:** backup test-restore (UAT/new project, never prod), alerts, keep-warm, `audit_log` purge cron.
+6. **Pre-launch security audit:** migration 018 (listings public-read policy, UPDATE USING, `handle_new_user` search_path, T-027 column-grant check on all tables) UAT first → `npm run uat:9c` + inventory compare → prod; frontend escape helper (titles, details, `ST.q`, names); `npm audit` (11); CSP review + CLAUDE.md Rule 9 wording; Resend sending-only key swap; duplicate root SPF; prod redirect `vercel.app` pair.
+7. **Arun (deadline ~25 Oct):** MSG91 KYC + ₹1,000 main wallet.
+8. **Decision (Nagesh + Arun):** Google sign-in host name — Supabase custom domain (~$10/mo) vs Google Identity Services button (₹0, ~½ day).
+- Parked: double map load (new recording needed).
+
+**⬅ 2026-10-16 — after audit, before launch:** 9H auto-expiry (+ delete reason) → ToS/Privacy v2.0 (Arun approves) → 9C.1 emoji avatars → externals (contact-us@ in Google consent / WhatsApp / MSG91, `SENTRY_DSN=`, partnership-registration advice) → launch gate (9a re-check + cron firing → closed-group soft release → announcement). After launch: delete the prod backup CSV (~10 Nov).
+
 
 **⬅ Immediate (2026-10-14 21:50):**
 1. **Nagesh:** phone test on uat.mapit.co.in — post a listing with camera photos (iPhone + Android, portrait + landscape): previews, ✕, upright after upload, admin queue thumbnails, Edit add/remove.
