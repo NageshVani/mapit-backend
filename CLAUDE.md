@@ -194,7 +194,7 @@ Production Supabase   : jneoxwumccmjwaojfazh   ← mapit.co.in
 UAT Supabase          : xesekrkxbtybbxpsvxuz   ← uat preview, localhost (.env)
 npm run uat:9c        : 35-check phone-OTP / RLS regression suite vs uat preview
                         (UAT only, zero WhatsApp sends; wait 1 h between runs)
-npm run smoke:prod    : 12-check read-only production smoke test (no login/writes)
+npm run smoke:prod    : 13-check read-only production smoke test (no login/writes)
 ```
 
 ## Quick Reference: Category IDs

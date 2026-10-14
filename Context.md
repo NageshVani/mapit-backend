@@ -111,7 +111,9 @@
 
 ## 🎯 Current Goal
 
-**NOW (2026-10-14 17:55) — Session 9 config item 1 DONE: `sin1` live on production.** Nagesh click-tested uat ("feels faster") → PR #23 `uat → main` merged by Nagesh (`7e55d9c`, 13:50 UTC) → prod `x-vercel-id` = `bom1::sin1` within ~30 s → `smoke:prod` 12/12. Prod medians (8 calls): 1-DB-query route 211 ms, Auth check 205 ms. Next: Session 9 config item 2 (uat.mapit.co.in → uat branch), then Storage CDN, backup test-restore, alerts, keep-warm, `audit_log` purge cron.
+**NOW (2026-10-14) — Session 9 config item 2 DONE: https://uat.mapit.co.in now serves the `uat` branch** (Vercel Domains → Preview, branch `uat`, set by Nagesh; DNS was already a CNAME to Vercel, no change). Verified: `/api/config` → UAT project `xesek…`, page identical to the uat preview, CORS 200, Google OAuth `redirect_to=https://uat.mapit.co.in`; mapit-uat redirect URL `https://uat.mapit.co.in/**` was already present. New noindex guard (`ec48710` on `fix/uat-domain-noindex`, merged to uat `1941c2b`): every host except www.mapit.co.in / mapit.co.in gets `X-Robots-Tag: noindex` (Vercel only does this on *.vercel.app, not custom domains); `smoke:prod` S-13 checks it → 13/13. The guard is on uat only — it reaches prod with the next `uat → main` PR (no effect on prod hosts). Testers can now use **uat.mapit.co.in** instead of the long vercel.app URL. Optional: remove `uat.mapit.co.in` from the PRODUCTION Supabase redirect list. Next: Session 9 config item 3 (Storage CDN).
+
+**Earlier (2026-10-14 17:55) — Session 9 config item 1 DONE: `sin1` live on production.** Nagesh click-tested uat ("feels faster") → PR #23 `uat → main` merged by Nagesh (`7e55d9c`, 13:50 UTC) → prod `x-vercel-id` = `bom1::sin1` within ~30 s → `smoke:prod` 12/12. Prod medians (8 calls): 1-DB-query route 211 ms, Auth check 205 ms. Next: Session 9 config item 2 (uat.mapit.co.in → uat branch), then Storage CDN, backup test-restore, alerts, keep-warm, `audit_log` purge cron.
 
 **Earlier (2026-10-14) — `sin1` on uat:** Vercel invoice PHTLKLLJ-0001 confirmed **Paid** (receipt 2425-6432-1273, 13 Oct; keep for CA — says "reverse charge" yet IGST $3.60 was charged). `"regions": ["sin1"]` in `vercel.json` (`fe4f809` on `fix/vercel-region-sin1`, merged to uat `4d85d60`, pushed). uat preview now `bom1::sin1` (was `bom1::iad1`). Medians on uat preview (12 calls): `/health` 290 → 193 ms; 1-DB-query route 1003 → 313 ms; Supabase Auth check 598 → 305 ms. `smoke:prod` 12/12 after the push. Next: Nagesh click-tests uat (login, map, listing detail) → PR `uat → main` → prod `x-vercel-id` shows `sin1` → `smoke:prod`.
 
@@ -536,6 +538,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **uat.mapit.co.in → `uat` branch (2026-10-14):** Vercel domain set to Preview/`uat` (Nagesh); serves UAT DB `xesek…`; noindex guard for non-prod hosts (`1941c2b`), `smoke:prod` S-13 added → 13/13.
 - ✅ **`sin1` LIVE ON PRODUCTION (2026-10-14):** PR #23 merged (`7e55d9c`) → prod `bom1::sin1`, `smoke:prod` 12/12; prod 1-query route 211 ms, auth 205 ms (median).
 - ✅ **`sin1` region live on uat (2026-10-14):** `vercel.json` `regions: ["sin1"]` → uat preview served from `sin1`; DB-backed calls ~3× faster (1-query route 1003 → 313 ms, auth 598 → 305 ms, median). Vercel invoice confirmed Paid.
 - ✅ **Final polish signed off + LIVE (2026-10-13):** Nagesh phone test (points 1–3) PASS, Arun re-check 1e/1h/2c OK → PR #22 `uat → main` merged by Nagesh in GitHub UI (`26cb6d2`, 14:05 UTC) → prod deploy success → `smoke:prod` 12/12; local `main` updated.
@@ -1649,6 +1652,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🟡 (2026-10-14) Doc mismatch for the security audit:** CLAUDE.md Rule 9 says "Helmet CSP disabled globally", but `src/server.js` (~line 66) has a real CSP allowlist enabled (with documented `'unsafe-inline'` gaps). Update Rule 9 to match the code during the pre-launch security audit; no code change needed.
 - **🔴 DEADLINE ~25 Oct (2026-10-13 MSG91 check, account "mapit2"): main MSG91 wallet = ₹0.00, KYC NOT complete.** Two separate balances: (a) **WhatsApp prepaid balance ₹549.45** on 91 78924 00329 "MapIt" (Active) — pays per-OTP Meta charges (~₹0.14 incl. GST), fine; (b) **main wallet ₹0.00** — pays Titan ₹500 + GST (≈ ₹590) on **1 Nov** → renewal fails → WhatsApp OTP may stop. **Owner: Arun (handed over by Nagesh 2026-10-13).** Order: complete KYC (Nakshe Ventures, firm PAN; screenshots to James via Nagesh before Submit if unsure) → after approval Add Funds ₹1,000 to the main wallet. **Monthly from Dec: ≈ ₹590 must be in the main wallet on the 1st.**
 - **ℹ️ (2026-10-13) MSG91 "1 Alert" = 1 failed INBOUND image to the OTP number (2026-10-09 19:19, from 91 78993 40xxx — likely Nagesh/Arun's prod OTP test day).** Not an OTP failure: the number has no inbound integration, so incoming messages go nowhere. After launch users may reply to the OTP number expecting support — nobody reads it. Free fix (not built): phone-step copy "This WhatsApp number only sends login codes — for help email contact-us@mapit.co.in".
 - **🟡 (2026-10-13, Resend review) Two email items → do in the pre-launch security audit (Nagesh's call):**
