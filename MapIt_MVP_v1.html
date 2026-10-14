@@ -1565,7 +1565,7 @@ function listingRow(l){
   const d   = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
   const sel = l.id === ST.selId;
   return `<div class="lr-row ${sel?'sel':''}" onclick="selListing('${l.id}', ST.tab==='fav'||ST.tab==='mine')">
-    <div class="lr-ico">${l.cover_photo?`<img src="${l.cover_photo}" alt=""/>`:`<span>${listingEmoji(l)}</span>`}</div>
+    <div class="lr-ico">${l.cover_photo?`<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}</div>
     <div class="lr-info">
       <div class="lr-title">${l.title}</div>
       <div class="lr-price">${priceText(l)}</div>
@@ -2998,7 +2998,7 @@ async function renderFavs(el){
       ST.favListings.map(l=>`
         <div class="fav-card" onclick="viewFav('${l.id}')">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
-            ${l.cover_photo ? `<img src="${l.cover_photo}" alt=""/>` : (CAT_EMOJI[l.category]||'📦')}
+            ${l.cover_photo ? `<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>` : (CAT_EMOJI[l.category]||'📦')}
           </div>
           <div class="fav-info">
             <div class="fav-ttl">${l.title}</div>
@@ -3052,7 +3052,7 @@ async function renderMyAds(el){
         return `
         <div class="fav-card" onclick="selListing('${l.id}',true)">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
-            ${l.cover_photo?`<img src="${l.cover_photo}" alt=""/>`:`<span>${listingEmoji(l)}</span>`}
+            ${l.cover_photo?`<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}
           </div>
           <div class="fav-info">
             <div class="fav-ttl">${l.title}</div>
@@ -3182,7 +3182,7 @@ function renderSidebar(){
           <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote('${l.id}')" disabled>Send</button>
         </div>
       </div>
-      ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}"/></div>`).join('')}</div>`:''}</div>
+      ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}" loading="lazy" decoding="async"/></div>`).join('')}</div>`:''}</div>
     <div class="ld-body">
       ${(()=>{
         const det = l.details || {};

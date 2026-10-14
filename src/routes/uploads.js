@@ -78,6 +78,9 @@ router.post('/listing/:listing_id', requireAuth, upload.array('photos', 5), asyn
         .from(bucket)
         .upload(storagePath, file.buffer, {
           contentType: file.mimetype,
+          // 60 days (> 30-day listing life + 15-day grace). Safe only because
+          // every file name is unique and upsert is false — never reuse a path.
+          cacheControl: '5184000',
           upsert: false,
         });
 
