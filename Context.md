@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-13 20:28 (UAE), checkpoint (**Final polish LIVE (PR #22, smoke 12/12); subscriptions done: Supabase Pro ✅, Vercel Pro ✅ (invoice "payment scheduled" — confirm Paid 14 Oct), Resend stays Free ✅, Anthropic $5 cap ✅; MSG91 KYC + ₹1,000 main-wallet top-up handed to Arun (before ~25 Oct). Security-audit adds: Resend Full-access key swap + duplicate root SPF. Next session (2026-10-14): Session 9 config, `sin1` first.**)
+- **Last updated:** 2026-10-14 18:23 (UAE), checkpoint (**Session 9 config items 1–2 DONE: `sin1` live on prod (PR #23 `7e55d9c`, 1-query route ~1000 → ~210 ms), uat.mapit.co.in → `uat` branch + noindex guard (uat `1941c2b`), prod Supabase redirect list cleaned, prod Google sign-in OK, `smoke:prod` 13/13. Paused for dinner at item 3 (Storage): option A proposed, awaiting Nagesh's go.**)
+- **Last updated (previous):** 2026-10-13 20:28 (UAE), checkpoint (**Final polish LIVE (PR #22, smoke 12/12); subscriptions done: Supabase Pro ✅, Vercel Pro ✅ (invoice "payment scheduled" — confirm Paid 14 Oct), Resend stays Free ✅, Anthropic $5 cap ✅; MSG91 KYC + ₹1,000 main-wallet top-up handed to Arun (before ~25 Oct). Security-audit adds: Resend Full-access key swap + duplicate root SPF. Next session (2026-10-14): Session 9 config, `sin1` first.**)
 - **Last updated (previous):** 2026-10-13 (evening), (**Subscription 1/5 done: Supabase Pro on org renamed "MapIt Production" (only project = `mapit-prototype` / `jneoxwumccmjwaojfazh`); $25 + 18% GST (OIDAR, no GSTIN yet) = $29.50/mo; billing name Nakshe Ventures; spend cap ON; Nano → Micro; `smoke:prod` 12/12 after upgrade. Budget note: every foreign SaaS adds 18% GST + card forex markup → realistic total ≈ $85–88/mo, not $71. Pending: first daily backup visible within ~24 h. Then Vercel Pro (2/5) done — team "MapIt", smoke 12/12. Then Resend review (3/5) done — stay Free (20/3,000 month, 0/100 day), domain + DKIM + SPF verified, DMARC p=none; 2 fixes logged for the security audit (Full-access key swap, duplicate root SPF). Anthropic (4/5) checked — $5 prepaid, auto-reload off, fail-open verified. MSG91 (5/5) checked: WhatsApp balance ₹549.45 OK, but main wallet ₹0.00 + KYC incomplete → Nagesh submits KYC this week, then Add Funds ₹1,000 before ~25 Oct (Titan ₹590 on 1 Nov). Alert = 1 harmless failed inbound image.**)
 - **Last updated (previous):** 2026-10-13 18:10, (**Final polish LIVE on production: PR #22 `uat → main` merged by Nagesh in GitHub UI (`26cb6d2`, 14:05 UTC), prod deploy success, `smoke:prod` 12/12. Signed off by Nagesh phone test (points 1–3) + Arun re-check 1e/1h/2c. Next: subscriptions → Session 9 config (`sin1` first).**)
 - **Last updated (previous):** 2026-10-12 (end of day), checkpoint (**Final polish on uat preview (`655108c`), localhost 4/4 PASS. ⏸ PLACEHOLDER: Nagesh's phone test on the uat preview — first thing 2026-10-13, then Arun re-check → PR → smoke:prod → subscriptions (planned for 2026-10-13).**)
@@ -111,7 +112,9 @@
 
 ## 🎯 Current Goal
 
-**NOW (2026-10-14) — Session 9 config item 2 DONE: https://uat.mapit.co.in now serves the `uat` branch** (Vercel Domains → Preview, branch `uat`, set by Nagesh; DNS was already a CNAME to Vercel, no change). Verified: `/api/config` → UAT project `xesek…`, page identical to the uat preview, CORS 200, Google OAuth `redirect_to=https://uat.mapit.co.in`; mapit-uat redirect URL `https://uat.mapit.co.in/**` was already present. New noindex guard (`ec48710` on `fix/uat-domain-noindex`, merged to uat `1941c2b`): every host except www.mapit.co.in / mapit.co.in gets `X-Robots-Tag: noindex` (Vercel only does this on *.vercel.app, not custom domains); `smoke:prod` S-13 checks it → 13/13. The guard is on uat only — it reaches prod with the next `uat → main` PR (no effect on prod hosts). Testers can now use **uat.mapit.co.in** instead of the long vercel.app URL. ✅ Nagesh removed `uat.mapit.co.in` + `uat.mapit.co.in/**` from the PRODUCTION Supabase redirect list (4 left: mapit.co.in/**, www.mapit.co.in/**, 2× mapit-backend-*.vercel.app — review the vercel.app pair in the security audit); smoke 13/13 after. Next: Session 9 config item 3 (Storage CDN).
+**NOW (2026-10-14 18:23, checkpoint — paused for dinner) — Session 9 config item 3: Storage photos.** Finding: Supabase public buckets are already served via its CDN (Pro = Smart CDN) — nothing to switch on. Real gaps: (1) `uploads.js` sets no `cacheControl` → Supabase default 3600 s; (2) photos up to 5 MB stored + served full-size, also in list/popup/detail thumbnails (`MapIt_MVP_v1.html` ~1568/3001/3055/3185). Proposed (awaiting Nagesh's go): **A now** = `cacheControl: '31536000'` on upload + `loading="lazy"` on photo `<img>`s (`fix/` branch, two-file rule, localhost click-test); **B next, own sub-task** = browser-side resize before upload (~1600 px, ~200–400 KB); **C rejected** = Supabase Image Transformations (Rule 11: 100 origin images/mo on Pro, then $5/1,000). Prod Storage is empty since 10 Oct → no backfill needed.
+
+**Earlier (2026-10-14) — Session 9 config item 2 DONE: https://uat.mapit.co.in now serves the `uat` branch** (Vercel Domains → Preview, branch `uat`, set by Nagesh; DNS was already a CNAME to Vercel, no change). Verified: `/api/config` → UAT project `xesek…`, page identical to the uat preview, CORS 200, Google OAuth `redirect_to=https://uat.mapit.co.in`; mapit-uat redirect URL `https://uat.mapit.co.in/**` was already present. New noindex guard (`ec48710` on `fix/uat-domain-noindex`, merged to uat `1941c2b`): every host except www.mapit.co.in / mapit.co.in gets `X-Robots-Tag: noindex` (Vercel only does this on *.vercel.app, not custom domains); `smoke:prod` S-13 checks it → 13/13. The guard is on uat only — it reaches prod with the next `uat → main` PR (no effect on prod hosts). Testers can now use **uat.mapit.co.in** instead of the long vercel.app URL. ✅ Nagesh removed `uat.mapit.co.in` + `uat.mapit.co.in/**` from the PRODUCTION Supabase redirect list (4 left: mapit.co.in/**, www.mapit.co.in/**, 2× mapit-backend-*.vercel.app — review the vercel.app pair in the security audit); smoke 13/13 after. Next: Session 9 config item 3 (Storage CDN).
 
 **Earlier (2026-10-14 17:55) — Session 9 config item 1 DONE: `sin1` live on production.** Nagesh click-tested uat ("feels faster") → PR #23 `uat → main` merged by Nagesh (`7e55d9c`, 13:50 UTC) → prod `x-vercel-id` = `bom1::sin1` within ~30 s → `smoke:prod` 12/12. Prod medians (8 calls): 1-DB-query route 211 ms, Auth check 205 ms. Next: Session 9 config item 2 (uat.mapit.co.in → uat branch), then Storage CDN, backup test-restore, alerts, keep-warm, `audit_log` purge cron.
 
@@ -538,6 +541,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **Prod Supabase redirect URLs cleaned (2026-10-14, Nagesh):** removed `uat.mapit.co.in` + `/**` (4 left); `smoke:prod` 13/13; Nagesh confirmed Google sign-in on www.mapit.co.in works.
+- ✅ **Vercel invoice PHTLKLLJ-0001 Paid (2026-10-14)** — receipt 2425-6432-1273, $23.60 (keep for CA).
 - ✅ **uat.mapit.co.in → `uat` branch (2026-10-14):** Vercel domain set to Preview/`uat` (Nagesh); serves UAT DB `xesek…`; noindex guard for non-prod hosts (`1941c2b`), `smoke:prod` S-13 added → 13/13.
 - ✅ **`sin1` LIVE ON PRODUCTION (2026-10-14):** PR #23 merged (`7e55d9c`) → prod `bom1::sin1`, `smoke:prod` 12/12; prod 1-query route 211 ms, auth 205 ms (median).
 - ✅ **`sin1` region live on uat (2026-10-14):** `vercel.json` `regions: ["sin1"]` → uat preview served from `sin1`; DB-backed calls ~3× faster (1-query route 1003 → 313 ms, auth 598 → 305 ms, median). Vercel invoice confirmed Paid.
@@ -1182,7 +1187,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Session 9 config — `sin1` first** | ⏭ Next session (2026-10-14) | `vercel.json` (to change) | `fix/` branch → measure before/after → uat → prod; then uat domain, Storage CDN, backup test-restore, alerts, keep-warm |
+| **Session 9 config item 3 — Storage photos (A: 1-year cache + lazy load)** | ⏸ Proposed, awaiting Nagesh's go (paused 2026-10-14 18:23) | `src/routes/uploads.js`, `MapIt_MVP_v1.html` / `public/index.html` (planned) | B (browser resize) next as own sub-task; C (Image Transformations) rejected — cost |
+| **Session 9 config items 1–2 — `sin1` + uat.mapit.co.in** | ✅ Done 2026-10-14 | `vercel.json`, `src/server.js`, `scripts/smoke/prod-readonly.js`, CLAUDE.md | PR #23 merged (`7e55d9c`); noindex guard on uat only (`1941c2b`) — reaches prod with next PR |
 | **Subscriptions (launch step 2)** | ✅ 4/5 done 2026-10-13; MSG91 → Arun | Supabase/Vercel/Resend/Anthropic/MSG91 dashboards | Supabase $29.50 + Vercel $23.60/mo; Vercel invoice Paid check 14 Oct |
 | **MSG91 KYC + ₹1,000 main wallet** | ⏳ Arun, before ~25 Oct | MSG91 "mapit2" | Titan ≈ ₹590 deducted 1 Nov; monthly from Dec |
 | **Final polish → production (PR #22)** | ✅ Merged `26cb6d2`, smoke 12/12 | git | Supersedes the Arun final-review row below |
@@ -1346,6 +1352,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+vercel.json — 2026-10-14: `"regions": ["sin1"]` (`fe4f809`, live on prod via PR #23).
+src/server.js — 2026-10-14: `X-Robots-Tag: noindex` for every host except www.mapit.co.in / mapit.co.in (`ec48710`, on uat).
+scripts/smoke/prod-readonly.js — 2026-10-14: new S-13 (prod indexable, uat noindex) → 13 checks.
+CLAUDE.md — 2026-10-14: smoke:prod quick ref "13-check".
 Context.md — 2026-10-13: PR #22 / subscriptions / Resend / Anthropic / MSG91 findings (docs only; no app code changed today).
 docs/uat/session-09-final-review-Arun.html — NEW (2026-10-11): Arun's 26-check final review + per-section change boxes + copy-to-WhatsApp summary (plain text via textContent).
 docs/index.html — row for the Arun final-review checklist.
@@ -1808,6 +1818,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Function region via `vercel.json` `regions: ["sin1"]`, not the dashboard setting (2026-10-14)** | Versioned in git, tested on uat before prod, one-line revert; dashboard setting would hit all branches at once |
+| **noindex by host allowlist (www/bare mapit.co.in indexable, everything else noindex), not by `VERCEL_ENV` (2026-10-14)** | Fails safe: a missing env var can never noindex production; Vercel only noindexes *.vercel.app, not custom domains |
+| **Keep the 2 `mapit-backend-*.vercel.app` entries in the PROD Supabase redirect list for now (2026-10-14)** | Production's own vercel.app URLs use the prod DB; review in the security audit |
+| **Storage: A (1-year cache + lazy) + B (browser resize) instead of Supabase Image Transformations (proposed 2026-10-14, awaiting go)** | Filenames are unique + never overwritten → immutable caching safe; transformations bill $5/1,000 origin images beyond 100/mo (Rule 11). Gotcha: any future in-place photo replace must use a new filename |
 | **Rename dashboards: Supabase org "MapIt Production", Vercel team "MapIt"; never change the Vercel slug `nagesh-n-arun` (Nagesh, 2026-10-13)** | Names are labels only; "MapIt Production" vs "MapIt UAT" prevents wrong-project SQL. The slug is in the uat preview URL, smoke test, checklists and Supabase redirect URLs |
 | **Spend controls: Supabase spend cap ON, Vercel alert ~$40 (pause OFF), Anthropic prepaid $5 auto-reload OFF (2026-10-13)** | Rule 11 — no surprise bills; Vercel pause would take mapit.co.in offline, an alert is enough. Realistic total ≈ $85–88/mo incl. 18% GST + card forex |
 | **Resend stays Free; Full-access key swap + duplicate root SPF deferred to the security audit (Nagesh, 2026-10-13)** | 20/3,000 used; swap needs redeploy + UAT test of both envs — fits the audit, low risk until then |
@@ -2141,6 +2155,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-14 18:23 — checkpoint, after dinner):**
+1. **Nagesh:** go / no-go on Storage option A → James builds on `fix/storage-photo-cache` (1-year `cacheControl` + `loading="lazy"`, two-file rule, before/after screenshots, localhost click-test) → uat → check `cache-control` header on a new UAT photo.
+2. Storage option B (browser-side resize before upload) as its own sub-task; phone test.
+3. Rest of Session 9 config: backup test-restore (UAT/new project, never prod), alerts, keep-warm, `audit_log` purge cron.
+4. Next `uat → main` PR carries the noindex guard (+ Storage A/B) → `smoke:prod` 13/13.
+5. **Arun:** MSG91 KYC + ₹1,000 main wallet before ~25 Oct.
+6. Pre-launch security audit (migration 018, escape helper, Resend key swap, duplicate SPF, CLAUDE.md Rule 9 CSP wording, prod redirect vercel.app pair) → builds 9H → ToS v2.0 → 9C.1 → launch gate.
 
 **⬅ Immediate (2026-10-13 20:28 — checkpoint; next session 2026-10-14):**
 1. **Nagesh:** Vercel → Billing → Invoices: PHTLKLLJ-0001 shows **Paid** (else Pay Invoice + bank OTP).
