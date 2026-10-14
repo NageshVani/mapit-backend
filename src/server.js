@@ -84,7 +84,7 @@ app.use(helmet({
       // with degraded residential-street labels. cartocdn.com kept alongside
       // it (cartoTileUrl() is still defined in the frontend, unused, as a
       // one-line rollback path if the Mapbox switch needs to be undone).
-      imgSrc:      ["'self'", 'data:', 'https://*.basemaps.cartocdn.com', 'https://api.mapbox.com', 'https://cdnjs.cloudflare.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
+      imgSrc:      ["'self'", 'data:', 'blob:', 'https://*.basemaps.cartocdn.com', 'https://api.mapbox.com', 'https://cdnjs.cloudflare.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
       connectSrc:  ["'self'", 'https://api.mapit.co.in', 'https://nominatim.openstreetmap.org', 'https://photon.komoot.io', ...(supabaseHost ? [`https://${supabaseHost}`, `wss://${supabaseHost}`] : [])],
       objectSrc:   ["'none'"],
       baseUri:     ["'self'"],
