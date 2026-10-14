@@ -112,6 +112,8 @@
 
 ## 🎯 Current Goal
 
+**NOW (2026-10-14 20:32) — Storage option A committed (`252b91e` on `fix/storage-photo-cache`, not pushed).** Nagesh changed the cache from 1 year to **60 days** (`cacheControl: '5184000'` — covers the 30-day listing life + 15-day 9H grace and shortens how long a deleted photo stays reachable in browsers). `loading="lazy" decoding="async"` on 4 thumbnails (results list ~1568, Saved ~3001, My Listings ~3055, detail strip ~3185); gallery image unchanged. Localhost click-test PASS (Nagesh). No visual change → no before/after screenshots (Rule 12); evidence = `cache-control: max-age=5184000` header on a new photo. Next: merge to uat + push → header check on uat.mapit.co.in → option B. Two new issues logged (Open Issues): Google sign-in shows `<ref>.supabase.co`; map reportedly loads twice.
+
 **NOW (2026-10-14 18:23, checkpoint — paused for dinner) — Session 9 config item 3: Storage photos.** Finding: Supabase public buckets are already served via its CDN (Pro = Smart CDN) — nothing to switch on. Real gaps: (1) `uploads.js` sets no `cacheControl` → Supabase default 3600 s; (2) photos up to 5 MB stored + served full-size, also in list/popup/detail thumbnails (`MapIt_MVP_v1.html` ~1568/3001/3055/3185). Proposed (awaiting Nagesh's go): **A now** = `cacheControl: '31536000'` on upload + `loading="lazy"` on photo `<img>`s (`fix/` branch, two-file rule, localhost click-test); **B next, own sub-task** = browser-side resize before upload (~1600 px, ~200–400 KB); **C rejected** = Supabase Image Transformations (Rule 11: 100 origin images/mo on Pro, then $5/1,000). Prod Storage is empty since 10 Oct → no backfill needed.
 
 **Earlier (2026-10-14) — Session 9 config item 2 DONE: https://uat.mapit.co.in now serves the `uat` branch** (Vercel Domains → Preview, branch `uat`, set by Nagesh; DNS was already a CNAME to Vercel, no change). Verified: `/api/config` → UAT project `xesek…`, page identical to the uat preview, CORS 200, Google OAuth `redirect_to=https://uat.mapit.co.in`; mapit-uat redirect URL `https://uat.mapit.co.in/**` was already present. New noindex guard (`ec48710` on `fix/uat-domain-noindex`, merged to uat `1941c2b`): every host except www.mapit.co.in / mapit.co.in gets `X-Robots-Tag: noindex` (Vercel only does this on *.vercel.app, not custom domains); `smoke:prod` S-13 checks it → 13/13. The guard is on uat only — it reaches prod with the next `uat → main` PR (no effect on prod hosts). Testers can now use **uat.mapit.co.in** instead of the long vercel.app URL. ✅ Nagesh removed `uat.mapit.co.in` + `uat.mapit.co.in/**` from the PRODUCTION Supabase redirect list (4 left: mapit.co.in/**, www.mapit.co.in/**, 2× mapit-backend-*.vercel.app — review the vercel.app pair in the security audit); smoke 13/13 after. Next: Session 9 config item 3 (Storage CDN).
@@ -1187,7 +1189,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Session 9 config item 3 — Storage photos (A: 1-year cache + lazy load)** | ⏸ Proposed, awaiting Nagesh's go (paused 2026-10-14 18:23) | `src/routes/uploads.js`, `MapIt_MVP_v1.html` / `public/index.html` (planned) | B (browser resize) next as own sub-task; C (Image Transformations) rejected — cost |
+| **Session 9 config item 3 — Storage photos (A: 60-day cache + lazy load)** | 🟢 Committed `252b91e` on `fix/storage-photo-cache`, localhost PASS; not pushed (2026-10-14 20:32) | `src/routes/uploads.js`, `MapIt_MVP_v1.html` / `public/index.html` | B (browser resize) next as own sub-task; C (Image Transformations) rejected — cost |
 | **Session 9 config items 1–2 — `sin1` + uat.mapit.co.in** | ✅ Done 2026-10-14 | `vercel.json`, `src/server.js`, `scripts/smoke/prod-readonly.js`, CLAUDE.md | PR #23 merged (`7e55d9c`); noindex guard on uat only (`1941c2b`) — reaches prod with next PR |
 | **Subscriptions (launch step 2)** | ✅ 4/5 done 2026-10-13; MSG91 → Arun | Supabase/Vercel/Resend/Anthropic/MSG91 dashboards | Supabase $29.50 + Vercel $23.60/mo; Vercel invoice Paid check 14 Oct |
 | **MSG91 KYC + ₹1,000 main wallet** | ⏳ Arun, before ~25 Oct | MSG91 "mapit2" | Titan ≈ ₹590 deducted 1 Nov; monthly from Dec |
@@ -1662,6 +1664,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🟡 (2026-10-14) Google sign-in says "to continue to `xesekrkxbtybbxpsvxuz.supabase.co`"** (prod: `jneox….supabase.co`). Google names the OAuth redirect host, which is Supabase. Options: (a) Supabase Custom Domain add-on → `auth.mapit.co.in` (~$10/mo — confirm price, Rule 11; mostly config: DNS + Supabase + Google Console redirect URI) — James recommends, prod only, just before launch; (b) Google Identity Services button + `signInWithIdToken` (₹0, ~½ day, touches the auth flow → security check). Decision: Nagesh + Arun. Own branch.
+- **🟡 (2026-10-14) Map reportedly loads, returns to the "Loading your map…" splash, then loads again (Nagesh, long-standing).** Recording `C:/dev/mapit/Recording 2026-10-14 195553.mp4` (Google sign-in on localhost) checked frame-by-frame (1/30 s): only ONE load (login → blank 2.2–2.9 s → splash 3.0–5.5 s → map). Not reproduced yet. Code note: 6 paths call `showLoadingSplash()` + `initApp()` (and `initApp()`/`initMap()` have no re-entry guard), so a double init is plausible. Need from Nagesh: device, prod/uat, entry path (fresh visit / refresh / Who's using MapIt? / first login), then reproduce before fixing.
 - **🟡 (2026-10-14) Doc mismatch for the security audit:** CLAUDE.md Rule 9 says "Helmet CSP disabled globally", but `src/server.js` (~line 66) has a real CSP allowlist enabled (with documented `'unsafe-inline'` gaps). Update Rule 9 to match the code during the pre-launch security audit; no code change needed.
 - **🔴 DEADLINE ~25 Oct (2026-10-13 MSG91 check, account "mapit2"): main MSG91 wallet = ₹0.00, KYC NOT complete.** Two separate balances: (a) **WhatsApp prepaid balance ₹549.45** on 91 78924 00329 "MapIt" (Active) — pays per-OTP Meta charges (~₹0.14 incl. GST), fine; (b) **main wallet ₹0.00** — pays Titan ₹500 + GST (≈ ₹590) on **1 Nov** → renewal fails → WhatsApp OTP may stop. **Owner: Arun (handed over by Nagesh 2026-10-13).** Order: complete KYC (Nakshe Ventures, firm PAN; screenshots to James via Nagesh before Submit if unsure) → after approval Add Funds ₹1,000 to the main wallet. **Monthly from Dec: ≈ ₹590 must be in the main wallet on the 1st.**
 - **ℹ️ (2026-10-13) MSG91 "1 Alert" = 1 failed INBOUND image to the OTP number (2026-10-09 19:19, from 91 78993 40xxx — likely Nagesh/Arun's prod OTP test day).** Not an OTP failure: the number has no inbound integration, so incoming messages go nowhere. After launch users may reply to the OTP number expecting support — nobody reads it. Free fix (not built): phone-step copy "This WhatsApp number only sends login codes — for help email contact-us@mapit.co.in".
@@ -2155,6 +2159,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ Immediate (2026-10-14 20:32):**
+1. Merge `fix/storage-photo-cache` → uat, push (Nagesh's go) → upload a photo on uat.mapit.co.in → `cache-control: max-age=5184000`.
+2. Storage option B (browser-side resize, ~1,600 px / 200–400 KB) on its own branch + phone test.
+3. Double map load: Nagesh describes/records the trigger → reproduce → fix on a `fix/` branch.
+4. Google sign-in host name: Nagesh + Arun choose custom domain (~$10/mo) vs GIS button.
+5. Then the rest of the 18:23 list below (Session 9 config, MSG91 by Arun, security audit).
 
 **⬅ Immediate (2026-10-14 18:23 — checkpoint, after dinner):**
 1. **Nagesh:** go / no-go on Storage option A → James builds on `fix/storage-photo-cache` (1-year `cacheControl` + `loading="lazy"`, two-file rule, before/after screenshots, localhost click-test) → uat → check `cache-control` header on a new UAT photo.
