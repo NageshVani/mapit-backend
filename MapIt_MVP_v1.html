@@ -438,6 +438,20 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .tos-row{display:flex;align-items:flex-start;gap:8px;margin-top:6px;}
 
 /* ── POST LISTING MODAL ── */
+/* Edit listing — current photos; ✕ stages a removal (applied on Update), ↺ undoes it */
+.post-cur-photos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.pcp{position:relative;width:64px;height:64px;border-radius:6px;overflow:hidden;border:1px solid var(--border2);}
+.pcp img{width:100%;height:100%;object-fit:cover;display:block;}
+.pcp button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(0,0,0,.65);color:#fff;font-size:12px;line-height:22px;padding:0;cursor:pointer;}
+.pcp.removed img{opacity:.25;}
+.pcp img{position:relative;z-index:1;}
+.pcp-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--card2);}
+.pcp button{z-index:2;}
+.pcp-new{position:absolute;left:3px;bottom:3px;z-index:2;padding:1px 5px;border-radius:4px;background:var(--orange);color:#fff;font-size:9.5px;font-weight:700;}
+.pcp-hint{width:100%;font-size:11px;color:var(--muted);}
+.pcp-add{padding:9px 14px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.pcp-add:hover:not(:disabled){border-color:var(--orange);color:var(--orange);}
+.pcp-add:disabled{opacity:.45;cursor:not-allowed;}
 .post-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
 .post-modal.hide{display:none;}
 .post-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:840px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);}
@@ -909,7 +923,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <!-- Photos -->
         <div class="form-group">
           <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5 · optional for Plots)</span></label>
-          <input type="file" class="form-input" id="postPhotos" accept="image/*" multiple style="padding:8px;cursor:pointer;"/>
+          <div id="postCurPhotos" class="post-cur-photos" style="display:none;"></div>
+          <input type="file" id="postPhotos" accept="image/*" multiple style="display:none;" onchange="onPostPhotosPicked(this)"/>
+          <button type="button" class="pcp-add" id="postPhotosAdd" onclick="document.getElementById('postPhotos').click()">📷 Add photos</button>
         </div>
         <!-- Phone visibility -->
         <div class="form-group">
@@ -3521,6 +3537,7 @@ async function openPostModal(){
     } catch(_){}
   }
   ST.editingId = null;
+  resetPostPhotos();
   document.getElementById('postSubmitBtn').textContent = 'Submit for Review 🚀';
   document.getElementById('postModal').classList.remove('hide');
   updatePostSubcats(); // also triggers renderDynamicFields
@@ -3693,6 +3710,65 @@ function closePostModal(){
   if(_postPickerMap){ _postPickerMap.remove(); _postPickerMap = null; _postPickerMarker = null; _postPickerCoords = null; }
 }
 
+// Post / Edit form photos. Two lists:
+//  _editPhotos — already uploaded (Edit only). ✕ only stages a removal;
+//    submitListing() applies it on Update, so closing the form changes nothing.
+//  _newPhotos  — picked but not uploaded yet, previewed from local blob: URLs.
+//    ✕ drops one straight away. Kept in our own array because the browser's
+//    file input can't remove a single file and replaces its list on every pick.
+const MAX_PHOTOS = 5;
+let _editPhotos = [], _editPhotosRemove = new Set(), _newPhotos = [];
+function keptPhotoTotal(){ return _editPhotos.length - _editPhotosRemove.size; }
+function resetPostPhotos(){
+  // Clear everything — otherwise photos picked for one listing would be
+  // uploaded to the next listing opened in the form.
+  document.getElementById('postPhotos').value = '';
+  _newPhotos.forEach(p=>URL.revokeObjectURL(p.url));
+  _editPhotos = []; _editPhotosRemove = new Set(); _newPhotos = [];
+  renderPostPhotos();
+}
+function onPostPhotosPicked(input){
+  const files = Array.from(input.files || []);
+  input.value = ''; // so picking the same file again still fires onchange
+  const room = MAX_PHOTOS - keptPhotoTotal() - _newPhotos.length;
+  if(files.length > room){
+    toast(room > 0 ? `Only ${room} more photo${room===1?'':'s'} fit — max ${MAX_PHOTOS} per listing.`
+                   : `Max ${MAX_PHOTOS} photos — remove one to add another.`);
+  }
+  files.slice(0, Math.max(0, room)).forEach(f=>_newPhotos.push({ file:f, url:URL.createObjectURL(f) }));
+  renderPostPhotos();
+}
+function removeNewPhoto(i){
+  const p = _newPhotos.splice(i, 1)[0];
+  if(p) URL.revokeObjectURL(p.url);
+  renderPostPhotos();
+}
+function toggleEditPhoto(id){
+  _editPhotosRemove.has(id) ? _editPhotosRemove.delete(id) : _editPhotosRemove.add(id);
+  renderPostPhotos();
+}
+function renderPostPhotos(){
+  const box = document.getElementById('postCurPhotos');
+  const cur = ST.editingId ? _editPhotos : [];
+  const total = keptPhotoTotal() + _newPhotos.length;
+  document.getElementById('postPhotosAdd').disabled = total >= MAX_PHOTOS;
+  if(!cur.length && !_newPhotos.length){ box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.style.display = '';
+  // .pcp-ph (📷) sits behind each image — shows when the browser can't
+  // preview the format (e.g. HEIC on Chrome); the file still uploads.
+  box.innerHTML =
+    cur.map((p,i)=>{
+      const rm = _editPhotosRemove.has(p.id);
+      return `<div class="pcp${rm?' removed':''}"><span class="pcp-ph">📷</span><img src="${escHtml(p.public_url)}" alt="Photo ${i+1}" loading="lazy" decoding="async" onerror="this.remove()"/>`+
+        `<button type="button" title="${rm?'Keep this photo':'Remove this photo'}" onclick="toggleEditPhoto('${escHtml(p.id)}')">${rm?'↺':'✕'}</button></div>`;
+    }).join('') +
+    _newPhotos.map((p,i)=>
+      `<div class="pcp"><span class="pcp-ph">📷</span><img src="${escHtml(p.url)}" alt="New photo ${i+1}" onerror="this.remove()"/><span class="pcp-new">New</span>`+
+      `<button type="button" title="Remove this photo" onclick="removeNewPhoto(${i})">✕</button></div>`
+    ).join('') +
+    `<div class="pcp-hint">${total} of ${MAX_PHOTOS} photos${_editPhotosRemove.size?' · removals apply when you press Update':''}${_newPhotos.length?' · new photos upload when you submit':''}</div>`;
+}
+
 async function editListing(id){
   // Fetch full listing data if not already available with details
   let l = ST.listings.find(x=>x.id===id);
@@ -3700,6 +3776,13 @@ async function editListing(id){
     try { const d = await apiGet(`/api/listings/${id}`); l = d.listing; } catch(e){ toast('Could not load listing data.'); return; }
   }
   ST.editingId = id;
+  resetPostPhotos();
+  // Current photos come from the detail route (the list rows only carry the cover)
+  apiGet(`/api/listings/${id}`).then(d=>{
+    if(ST.editingId !== id) return; // form was closed or switched meanwhile
+    _editPhotos = (d.listing?.photos||[]).filter(p=>p.id && /^https:\/\//.test(p.public_url||''));
+    renderPostPhotos();
+  }).catch(()=>{});
 
   // Open modal and set heading/button
   document.getElementById('postModal').classList.remove('hide');
@@ -3944,6 +4027,39 @@ async function saveNewLocation(){
   } catch(e){ toast('Could not save pin: '+e.message); btn.disabled = false; }
 }
 
+// Storage option B — shrink a photo in the browser before upload: longest side
+// ≤ 1600 px, JPEG quality 0.8 (~200–400 KB instead of 3–12 MB from a phone).
+// Never loses a photo: if the browser can't decode it (e.g. HEIC on Android
+// Chrome), or the result isn't smaller, the original file is returned and the
+// server's 5 MB limit still applies. Browsers apply EXIF rotation when drawing
+// an <img> to a canvas, so photos keep their orientation.
+const PHOTO_MAX_PX = 1600, PHOTO_JPEG_Q = 0.8;
+async function shrinkPhoto(file){
+  if(!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const scale = Math.min(1, PHOTO_MAX_PX / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';            // transparent PNG → white, not black, in JPEG
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', PHOTO_JPEG_Q));
+    if(!blob || blob.size >= file.size) return file;
+    const name = (file.name.replace(/\.[^.]+$/, '') || 'photo') + '.jpg';
+    return new File([blob], name, { type: 'image/jpeg' });
+  } catch(_){
+    return file;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 async function submitListing(){
   const btn = document.getElementById('postSubmitBtn');
   const title = document.getElementById('postTitle').value.trim();
@@ -3971,8 +4087,16 @@ async function submitListing(){
   if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
   // Session 9G (Arun): an empty plot often has nothing worth photographing,
   // so Plots may be posted without a photo. Every other type still needs one.
-  if(!ST.editingId && subcategory !== 'Plots' && document.getElementById('postPhotos').files.length === 0){
+  const newPhotoCount  = _newPhotos.length;
+  const keptPhotoCount = ST.editingId ? keptPhotoTotal() : 0;
+  // New listing: needs a photo. Edit: may not remove every photo (older
+  // photo-less listings can still be edited without adding one).
+  const needsPhoto = subcategory !== 'Plots' && (!ST.editingId || _editPhotos.length > 0);
+  if(needsPhoto && keptPhotoCount + newPhotoCount === 0){
     toast('Please add at least 1 photo.'); return;
+  }
+  if(keptPhotoCount + newPhotoCount > MAX_PHOTOS){
+    toast(`Max ${MAX_PHOTOS} photos per listing — you can add ${MAX_PHOTOS-keptPhotoCount} more.`); return;
   }
 
   // Resolve location — saved pin or tap-to-drop pin on the map
@@ -4014,27 +4138,42 @@ async function submitListing(){
       data = await apiPost('/api/listings', payload);
     }
 
-    // Upload photos if any (new listings only — editing doesn't replace photos)
-    const photoFiles = document.getElementById('postPhotos').files;
-    if(photoFiles.length>0 && data.listing && !ST.editingId){
+    // Photos — new listing: upload; edit: apply staged removals first (so the
+    // server's 5-photo cap and sort_order renumbering see the final set),
+    // then upload any added photos.
+    const listingId  = ST.editingId || data.listing?.id;
+    let photoFailed = false;
+    if(ST.editingId){
+      for(const pid of _editPhotosRemove){
+        try { await apiDelete(`/api/uploads/photo/${pid}`); } catch(_){ photoFailed = true; }
+      }
+    }
+    if(_newPhotos.length>0 && listingId){
+      btn.textContent = 'Preparing photos…';
       const fd = new FormData();
-      Array.from(photoFiles).slice(0,5).forEach(f=>fd.append('photos',f));
+      // One at a time — keeps phone memory low (no 5 full-size images at once)
+      for(const p of _newPhotos.slice(0, MAX_PHOTOS - keptPhotoCount)) fd.append('photos', await shrinkPhoto(p.file));
+      btn.textContent = 'Uploading photos…';
       try {
-        await fetch(`${API_URL}/api/uploads/listing/${data.listing.id}`,{
+        const up = await fetch(`${API_URL}/api/uploads/listing/${listingId}`,{
           method:'POST',
           headers:{ Authorization:`Bearer ${ST.session?.access_token}` },
           body:fd,
         });
-      } catch(_){}
+        photoFailed = !up.ok;
+      } catch(_){ photoFailed = true; }
     }
 
-    const msg = ST.editingId
-      ? '🔄 Listing updated and re-submitted for review.'
-      : '🚀 Listing submitted! It will be reviewed and go live within 4 hours.';
+    const msg = photoFailed
+      ? '⚠️ Listing saved, but some photo changes failed. Open Edit to check its photos (each must be under 5 MB).'
+      : ST.editingId
+        ? '🔄 Listing updated and re-submitted for review.'
+        : '🚀 Listing submitted! It will be reviewed and go live within 4 hours.';
     closePostModal();
     toast(msg);
     // Reset form
     ['postTitle','postDesc'].forEach(id=>document.getElementById(id).value='');
+    resetPostPhotos();
     document.getElementById('dynamicFields').innerHTML = '';
     if(ST.tab==='mine') renderMyAds(document.getElementById('sb-content'));
   } catch(e){
