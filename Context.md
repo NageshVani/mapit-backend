@@ -114,6 +114,8 @@
 
 ## 🎯 Current Goal
 
+**NOW (2026-10-15 ~21:15) — Session 9 config: backup test-restore DONE (PASS, copy deleted, smoke 13/13, runbook written). Next: alerts → keep-warm → `audit_log` purge cron → security audit.**
+
 **NOW (2026-10-15 18:01) — Session 9 config: backup test-restore proposed (option C = Supabase "Restore to new project" `mapit-restore-test` from today's prod backup, ~cents for 1–2 h, delete same day). Awaiting Nagesh's go.** Today so far: phone test PASS → PR #24 `uat → main` merged (`f70709b`) → `smoke:prod` 13/13. Haiku 4.5 still Active (no swap). New phone bug (details hidden in Map view) + pin-price bug fixed, Nagesh localhost PASS, on uat (`e380a3b`). uat locked: Vercel Authentication, Standard Protection (Nagesh), bypass secret in `.env`; scripts send it (`64e7687`, uat `a862292`). Then: alerts, keep-warm, `audit_log` purge cron, security audit (target: today).
 
 **NEXT SESSION (2026-10-15, Nagesh's plan): finish ALL pending todos + the full pre-launch security audit in one day; the after-audit / before-launch builds (9H, ToS v2.0, 9C.1, launch gate) move to 2026-10-16.** Start: phone test of the photo work on uat.mapit.co.in → `uat → main` PR → Haiku 4.5 retirement decision (retirement possible from 15 Oct) → pin-price fix → rest of Session 9 config → security audit. See Next Steps.
@@ -553,6 +555,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **Backup test-restore (Session 9 config, 2026-10-15): PASS.** Prod backup 14 Oct 21:04 UTC → "Restore to new project" `mapit-restore-test` (`exjny…`, Micro, ~$0.013/h). Counts identical (2 users, 2 profiles, 0 listings, 360 audit_log, 15 invite_codes, 6 pins); schema identical via `compare-schema-inventory.js` + independent check (16 tables, 153 cols, 41 idx, 26 policies, 32 grants, 4 functions, 4 triggers, 8 extensions incl. PostGIS, 1 bucket def, 1 Realtime table); only diff Postgres 17.6 vs 17.11. Copy deleted by Nagesh same day (host no longer resolves); `smoke:prod` 13/13. Runbook `docs/technical/backup-restore-runbook.html` + 6 screenshots `docs/screenshots/session-9-restore-test/`.
 - ✅ **Arun (2026-10-15):** MSG91 KYC complete + ₹1,000 in the main wallet; Vercel access request for uat sent (Hobby account via Google).
 - ✅ **Decision (2026-10-15):** Google sign-in host name → Google Identity Services button, after launch (placeholder in Open Issues).
 - ✅ **Phone test of photo work on uat.mapit.co.in (2026-10-15, Nagesh):** PASS.
@@ -1214,7 +1217,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Session 9 config — backup test-restore** | ⏳ Plan given (option C), awaiting Nagesh's go | `database/scripts/session-9-restore-test-counts.sql` (new, uncommitted) | Restore to new project `mapit-restore-test` → counts + schema inventory vs prod → delete same day |
+| **Session 9 config — backup test-restore** | ✅ PASS 2026-10-15, copy deleted | `database/scripts/session-9-restore-test-counts.sql`, `docs/technical/backup-restore-runbook.html`, `docs/index.html`, `docs/screenshots/session-9-restore-test/` | Restore to new project `mapit-restore-test` → counts + schema inventory vs prod → delete same day |
 | **uat lock (Vercel Authentication)** | ✅ Done 2026-10-15 except Arun's access (step 4) | `scripts/smoke/prod-readonly.js`, `scripts/uat/9c-phone-otp.suite.js`, `package.json`, `.env.example` (Nagesh) | Bypass header verified via smoke S-04 |
 | **Phone details from Map view + My Listings pin price** | ✅ On uat 2026-10-15; to prod with next PR | `MapIt_MVP_v1.html` / `public/index.html` | Branch `fix/phone-view-details-pin-price` |
 | **Session 9 config item 3 — Storage photos (A: 60-day cache + lazy load)** | ✅ A + B + admin photos + Post/Edit photos on uat (2026-10-14 22:04); phone test + `uat → main` PR on 15 Oct | `src/routes/uploads.js`, `MapIt_MVP_v1.html` / `public/index.html` | B (browser resize) next as own sub-task; C (Image Transformations) rejected — cost |
@@ -1382,6 +1385,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+docs/technical/backup-restore-runbook.html — NEW 2026-10-15: restore buttons (never in-place for tests), drill procedure + scripts, emergency switch-over checklist, drill log (2026-10-15 PASS); linked from docs/index.html.
+docs/screenshots/session-9-restore-test/ — NEW 2026-10-15: 6 screenshots of the drill (backups tab → confirm → healthy → delete).
 MapIt_MVP_v1.html / public/index.html — 2026-10-15: `_detailFromMap` + List switch in `selListing()`, Back-to-map in `closeDetail()`, reset in `setViewMode(persist)`/`switchTab()` (`978123b`); marker refresh includes `ST.myListings` (`cd37be5`).
 scripts/smoke/prod-readonly.js — 2026-10-15: sends `x-vercel-protection-bypass` to the uat host only (`64e7687`).
 scripts/uat/9c-phone-otp.suite.js — 2026-10-15: sends the bypass header on every API call (`64e7687`).
@@ -1869,6 +1874,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Backup drill cadence: ~1 month after launch, then every 3 months (2026-10-15)** | First drill passed on a near-empty DB (proves procedure + schema); repeat with real data. Keep `C:\dev\mapit\schema-prod-2026-10-15.json` as the reference inventory (no PII, outside the repo) |
 | **Google sign-in host name: GIS button after launch (Nagesh + Arun, 2026-10-15)** | ₹0 vs ~$10/mo custom domain (Rule 11); launch is not blocked — the Supabase host name on Google's consent screen is cosmetic |
 | **uat private via Vercel Authentication + Standard Protection (2026-10-15)** | Free on Pro; protects every non-prod URL, prod stays public. Password Protection rejected ($20/mo, Rule 11); app-level password rejected (code on every request, weaker). Testers: free Vercel account + access request, or Shareable Link; scripts use the bypass secret |
 | **Bypass secret sent to the uat host only by `smoke:prod` (2026-10-15)** | Least exposure: prod needs no bypass, so the secret never travels there |
@@ -2220,7 +2226,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ## 🔜 Next Steps (Queued)
 
 **⬅ NOW (2026-10-15 18:01) — rest of today:**
-1. **Nagesh:** go/no-go on backup test-restore option C → Restore to new project `mapit-restore-test` (NOT plain "Restore") → run `session-9-restore-test-counts.sql` on prod + copy, `session-9k-schema-inventory.sql` on the copy → James compares → delete the copy the same day → document.
+1. ✅ Backup test-restore PASS (copy deleted, runbook written). Next drill ~1 month after launch.
 2. **Nagesh:** commit `.env.example` (empty `VERCEL_AUTOMATION_BYPASS_SECRET=`). Approve Arun's Vercel access request (email / bell / deployment Share menu — no "Requests" section visible in settings). Arun: phone re-check of the map fixes on uat.
 3. **Session 9 config:** alerts → keep-warm → `audit_log` purge cron.
 4. **Security audit:** migration 018 (UAT first → `uat:9c` + inventory compare → prod, explicit go), frontend escape helper, `npm audit`, CSP + Rule 9 wording, Resend key swap, duplicate SPF, prod redirect vercel.app pair.

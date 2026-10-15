@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Database Backup &amp; Restore Runbook</title>
+<style>
+  :root {
+    --orange: #f06030; --teal: #0d9488; --red: #dc2626; --red-light: #fef2f2;
+    --yellow: #b45309; --yellow-light: #fffbeb; --green: #16a34a; --green-light: #f0fdf4;
+    --grey-50: #f9fafb; --grey-200: #e5e7eb; --grey-500: #6b7280; --grey-700: #374151; --grey-900: #111827;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: var(--font); font-size: 15px; line-height: 1.6; color: var(--grey-900); background: #fff; margin: 0; padding: 24px 16px 64px; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 2px solid var(--orange); }
+  h3 { font-size: 16px; margin: 20px 0 6px; }
+  .meta { color: var(--grey-500); font-size: 13px; margin-bottom: 20px; }
+  code { font-family: var(--mono); font-size: 13px; background: var(--grey-50); border: 1px solid var(--grey-200); border-radius: 4px; padding: 1px 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; border: 1px solid var(--grey-200); padding: 6px 8px; }
+  th { background: var(--grey-50); }
+  .box { border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+  .danger { background: var(--red-light); border-left: 4px solid var(--red); }
+  .warn { background: var(--yellow-light); border-left: 4px solid var(--yellow); }
+  .ok { background: var(--green-light); border-left: 4px solid var(--green); }
+  ol li, ul li { margin-bottom: 4px; }
+  .shots a { display: inline-block; margin-right: 12px; }
+  @media (max-width: 600px) { table { font-size: 13px; } th, td { padding: 4px 6px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Database Backup &amp; Restore Runbook</h1>
+<div class="meta">Production Supabase project <code>jneoxwumccmjwaojfazh</code> (org "MapIt Production", Pro plan, Singapore). First drill: 2026-10-15 — PASSED. Written by James for Nagesh &amp; Arun.</div>
+
+<div class="danger"><b>The one rule:</b> under <b>Database → Backups → Scheduled backups</b>, the plain <b>"Restore"</b> button <b>overwrites the live production database</b> and takes the site offline while it runs. Everything written since that backup is lost. Never click it for a test, and never in an emergency without a written plan agreed by Nagesh + Arun.</div>
+
+<h2>1. What we have</h2>
+<ul>
+  <li><b>Daily physical backups</b>, kept 7 days, taken about <b>21:04 UTC</b> (01:04 UAE / 02:34 IST next day). Times in the dashboard are UTC (<code>+0000</code>).</li>
+  <li><b>No Point-in-Time Recovery</b> (paid add-on, not bought). Worst case we lose up to ~24 h of changes.</li>
+  <li><b>Not in the backup:</b> Storage files (listing photos), Auth settings, API keys, Edge Functions. The UAT project (Free plan) has <b>no backups</b>.</li>
+</ul>
+
+<h2>2. The two kinds of restore</h2>
+<table>
+  <tr><th>Button</th><th>Where</th><th>What it does</th><th>Use</th></tr>
+  <tr><td><b>Restore</b></td><td>Backups → Scheduled backups</td><td>Replaces the <b>live</b> database with the backup. Downtime; changes since the backup are lost.</td><td>Last resort only (section 4B)</td></tr>
+  <tr><td><b>Restore to new project</b></td><td>Backups → <b>"Restore to new project"</b> tab (BETA)</td><td>Builds a <b>separate</b> project from the backup. Production keeps running.</td><td>Drills, and inspecting / recovering data (section 4A)</td></tr>
+</table>
+
+<h2>3. Drill procedure (repeat ~1 month after launch, then every 3 months)</h2>
+<ol>
+  <li>Production project → <b>Database → Backups → "Restore to new project"</b> tab → newest backup → <b>Restore</b>.</li>
+  <li>Confirm dialog must say <i>"create a new project and restore your database to it"</i>. Name <code>mapit-restore-test</code>; generated password (don't keep it). Cost shown is monthly (~$9.68 Micro) but billed <b>by the hour</b> (~$0.013/h).</li>
+  <li>Wait until the new project shows <b>Healthy</b> (~10–20 min).</li>
+  <li>SQL Editor (check the project picker every time), on <b>production and the copy</b>, save each single result cell <b>outside the repo</b> in <code>C:\dev\mapit\</code>:
+    <ul>
+      <li><code>database/scripts/session-9-restore-test-counts.sql</code> → <code>counts-prod.json</code> / <code>counts-restore.json</code> (row counts only, no PII)</li>
+      <li><code>database/scripts/session-9k-schema-inventory.sql</code> → <code>schema-prod-YYYY-MM-DD.json</code> / <code>schema-restore.json</code></li>
+    </ul></li>
+  <li>Compare: counts must match (differences only from activity after the backup — see <code>newest_audit_log</code>); then <code>node database/scripts/compare-schema-inventory.js &lt;prod.json&gt; &lt;restore.json&gt;</code> → "Schemas match". Expected difference: the copy runs a newer Postgres minor version.</li>
+  <li><b>Delete the copy the same day</b> (it holds real user data): open it, check the address is <b>not</b> <code>jneox…</code>, Project Settings → General → Delete project → type the name. Then <code>npm run smoke:prod</code>.</li>
+  <li>Record the result in section 6 and CONTEXT.md.</li>
+</ol>
+<div class="warn"><b>Gotcha:</b> every Supabase project shows a "main · PRODUCTION" branch label in its header — that's the project's own default database branch, not MapIt production. Identify a project by its <b>name and ref</b> (<code>jneox…</code> = production).</div>
+
+<h2>4. Real emergency</h2>
+<h3>4A. Preferred: restore to a new project, then switch over</h3>
+<p>Use when data is damaged (bad migration, wrong <code>DELETE</code>/<code>UPDATE</code>). Production stays up (read-only maintenance message if needed) while the copy is built and checked. If only a few rows/tables were lost, copy just those back from the new project into production instead of switching.</p>
+<p>Switch-over checklist (the restored project has a <b>new URL and new keys</b>):</p>
+<ol>
+  <li>Vercel → <b>Production</b> env: <code>SUPABASE_URL</code>, <code>SUPABASE_ANON_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code> → new project; redeploy production.</li>
+  <li>Auth settings by hand: Site URL <code>https://www.mapit.co.in</code>, redirect URLs (<code>mapit.co.in/**</code>, <code>www.mapit.co.in/**</code>), "Confirm email" OFF, Email OTP length 6, Resend SMTP (<code>smtp.resend.com:465</code>, user <code>resend</code>), email templates, Google provider.</li>
+  <li>Google Cloud Console → OAuth client → add the new <code>https://&lt;new-ref&gt;.supabase.co/auth/v1/callback</code> redirect URI.</li>
+  <li>Storage: create bucket <code>listing-photos</code> (public) and copy the photo files over from the old project if it is still reachable; otherwise sellers re-upload.</li>
+  <li>Re-run the schema inventory on the new project and compare with the last good prod file; <code>npm run smoke:prod</code>; one manual login + listing view.</li>
+  <li>Keep the old project (paused) until everything is confirmed, then delete it.</li>
+</ol>
+<h3>4B. Last resort: in-place Restore</h3>
+<p>Only if production itself is unusable and a switch-over is not possible. Agree in writing (Nagesh + Arun) which backup and what is lost, put the site in maintenance first, then Backups → Scheduled backups → <b>Restore</b>. Afterwards: smoke test, manual checks, CONTEXT.md entry.</p>
+
+<h2>5. Scripts</h2>
+<table>
+  <tr><th>File</th><th>Purpose</th></tr>
+  <tr><td><code>database/scripts/session-9-restore-test-counts.sql</code></td><td>Read-only row counts per table + <code>auth.users</code> + newest timestamps</td></tr>
+  <tr><td><code>database/scripts/session-9k-schema-inventory.sql</code></td><td>Read-only schema inventory (tables, columns, RLS policies, grants, functions, extensions …)</td></tr>
+  <tr><td><code>database/scripts/compare-schema-inventory.js</code></td><td>Compares two inventories, ignoring order and <code>generated_at</code></td></tr>
+</table>
+
+<h2>6. Drill log</h2>
+<table>
+  <tr><th>Date</th><th>Backup used</th><th>Result</th></tr>
+  <tr><td>2026-10-15</td><td>14 Oct 2026 21:04 UTC</td><td>
+    <div class="ok" style="margin:0"><b>PASS.</b> Counts identical (2 users, 2 profiles, 0 listings, 360 audit_log, 15 invite_codes, 6 pins …; newest audit_log 14 Oct 16:44 UTC). Schema identical: 16 tables, 153 columns, 41 indexes, 26 RLS policies, 32 grants, 4 functions, 4 triggers, 8 extensions (PostGIS, cube, earthdistance restored despite the dialog's "manual reconfiguration" note), 1 storage bucket definition, 1 Realtime table. Only difference: Postgres 17.6 (prod) vs 17.11 (copy). Copy <code>mapit-restore-test</code> (<code>exjny…</code>) deleted the same day. Cost: a few cents.</div>
+  </td></tr>
+</table>
+<p class="shots">Screenshots (<code>docs/screenshots/session-9-restore-test/</code>):
+  <a href="../screenshots/session-9-restore-test/1-backups-restore-to-new-project-tab.png">1 tab</a>
+  <a href="../screenshots/session-9-restore-test/2-confirm-restore-to-new-project.png">2 confirm</a>
+  <a href="../screenshots/session-9-restore-test/3-create-new-project-name-password.png">3 name</a>
+  <a href="../screenshots/session-9-restore-test/4-restored-project-healthy.png">4 healthy</a>
+  <a href="../screenshots/session-9-restore-test/5-delete-project-settings.png">5 delete</a>
+  <a href="../screenshots/session-9-restore-test/6-confirm-delete-restore-test.png">6 confirm delete</a>
+</p>
+</main>
+</body>
+</html>
