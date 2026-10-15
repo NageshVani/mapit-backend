@@ -5,7 +5,9 @@
 // the 9K UAT/prod split, so a smoke test must never create anything there.
 // The radius check calls the public listings_within_radius RPC with prod's
 // public anon key (exactly what a browser can do) and only counts the ids.
-// Needs no .env. Uses git to compare the served page with origin/main.
+// Uses git to compare the served page with origin/main. From .env it reads only
+// VERCEL_AUTOMATION_BYPASS_SECRET: uat sits behind Vercel Authentication
+// (2026-10-15), and the secret is sent to the uat host only, never to prod.
 const crypto = require('crypto'), { execSync } = require('child_process');
 
 // Canonical host is www: Vercel 308-redirects the bare domain to it.
@@ -23,6 +25,8 @@ function check(id, desc, pass, evidence) {
 }
 async function get(url, opts = {}) {
   const t = Date.now();
+  const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  if (bypass && url.startsWith(UAT)) opts = { ...opts, headers: { ...opts.headers, 'x-vercel-protection-bypass': bypass } };
   const res = await fetch(url, { redirect: 'manual', ...opts });
   const text = await res.text();
   let json = null; try { json = JSON.parse(text); } catch { /* html */ }

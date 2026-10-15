@@ -40,6 +40,8 @@ function check(id, area, desc, pass, evidence) {
 async function api(method, route, token, body) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = 'Bearer ' + token;
+  // uat is behind Vercel Authentication (2026-10-15); localhost ignores the header
+  if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) headers['x-vercel-protection-bypass'] = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
   const res = await fetch(BASE + route, { method, headers, body: body ? JSON.stringify(body) : undefined });
   let json = null; try { json = await res.json(); } catch { /* non-JSON */ }
   return { status: res.status, body: json };
