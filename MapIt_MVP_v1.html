@@ -3257,10 +3257,18 @@ function renderSidebar(){
 // opening a listing zooms in on it, and keyword results follow the visible map,
 // so without this, Back left only that listing's neighbours in the results.
 let _preDetailView = null;
+// Phones in Map view hide the list pane (#main.view-map #sb), so details opened
+// from a pin would render out of sight. selListing() switches to List and sets
+// this, so closeDetail() can take the user back to the map.
+let _detailFromMap = false;
 async function selListing(id, keepTab=false){
   // Save only when coming from the results, not when hopping listing → listing,
   // or Back would return to the previous listing instead of the overview.
   if(!ST.selId && map) _preDetailView = { center: map.getCenter(), zoom: map.getZoom() };
+  if(ST.viewMode==='map' && document.getElementById('sb').offsetParent === null){
+    setViewMode('list', false);
+    _detailFromMap = true;
+  }
   expandSidebarForDetail();
   ST.selId=id; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatMsgs=[]; ST.chatConvId=null;
   if(!keepTab){
@@ -3277,7 +3285,7 @@ async function selListing(id, keepTab=false){
     else map.flyTo([l.lat,l.lng], z, {animate:true,duration:.6});
   }
   Object.keys(mMarkers).forEach(k=>{
-    const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
+    const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || ST.myListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
     mMarkers[k].setIcon(mkIcon(ml, k===id));
   });
   mStackMarkers.forEach(s=>s.marker.setIcon(mkStackIcon(s.group[0], s.group.length, s.ids.has(id))));
@@ -3306,10 +3314,14 @@ function closeDetail(){
   }
   ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
+  const backToMap = _detailFromMap; _detailFromMap = false;
+  if(backToMap) setViewMode('map', false);
   if(_preDetailView){
     const v = _preDetailView; _preDetailView = null;
     _rerenderAfterMove();
-    if(mapHidden()) map.setView(v.center, v.zoom, {animate:false});
+    // Just un-hidden: Leaflet needs a moment to measure the map before setView
+    if(backToMap) setTimeout(() => map.setView(v.center, v.zoom, {animate:false}), 80);
+    else if(mapHidden()) map.setView(v.center, v.zoom, {animate:false});
     else map.flyTo(v.center, v.zoom, {duration:.6});
   }
   // If the panel only opened to show this listing, fold it back to the rail
@@ -4461,6 +4473,7 @@ document.addEventListener('click', (e) => {
 // CSS) — harmless no-op on desktop, which always shows both panes.
 function setViewMode(mode, persist=true){
   ST.viewMode = mode;
+  if(persist) _detailFromMap = false;   // the user picked a view themselves — Back must not override it
   document.getElementById('main').classList.toggle('view-map', mode==='map');
   document.getElementById('main').classList.toggle('view-list', mode==='list');
   document.getElementById('vbtnList').classList.toggle('on', mode==='list');
@@ -4476,6 +4489,7 @@ function setViewMode(mode, persist=true){
 function switchTab(tab){
   ST.tab=tab;
   ST.selId=null; // clear stale selection so a previously-viewed listing can't leak into another tab's detail view
+  _detailFromMap = false;
   document.getElementById('tab-browse').classList.toggle('on',tab==='browse');
   document.getElementById('tab-fav').classList.toggle('on',tab==='fav');
   document.getElementById('tab-mine').classList.toggle('on',tab==='mine');
