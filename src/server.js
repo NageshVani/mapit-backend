@@ -27,7 +27,9 @@ const Sentry = require('@sentry/node');
 // same fail-open pattern as the other optional integrations in this app.
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV || 'development',
+  // VERCEL_ENV tells prod ('production') from uat ('preview'); NODE_ENV is
+  // 'production' on both (vercel.json), which made uat errors look like prod ones.
+  environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
   sendDefaultPii: false, // Rule 8: never send PII (emails, phone numbers, cookies) to a third party
 });
 
