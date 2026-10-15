@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-15 18:01 (UAE), checkpoint (**PR #24 merged (photos + noindex live on prod, smoke 13/13); phone fixes (List view from map pins, My Listings pin price) on uat; uat.mapit.co.in + vercel.app uat link locked behind Vercel Authentication (302 → login, prod 200, smoke 13/13 via bypass secret); Haiku 4.5 = Active, no swap. Next: backup test-restore (option C, awaiting Nagesh's go) → alerts → keep-warm → audit_log purge → security audit.**)
+- **Last updated:** 2026-10-15 ~23:30 (UAE), checkpoint (**Restore drill PASS (copy deleted, runbook). Alerts mostly done: Sentry env fix (`VERCEL_ENV`) + admin-only `/api/admin/sentry-test` on uat — uat test = preview / configured / delivered; alert rule = production only → member (mapit.backend@gmail.com, the only Sentry user on the free plan); local SENTRY_DSN cleared. mapit-uat Site URL → uat.mapit.co.in. Security audit NOT started — moves to 16 Oct, first.**)
+- **Last updated (previous):** 2026-10-15 18:01 (UAE), checkpoint (**PR #24 merged (photos + noindex live on prod, smoke 13/13); phone fixes (List view from map pins, My Listings pin price) on uat; uat.mapit.co.in + vercel.app uat link locked behind Vercel Authentication (302 → login, prod 200, smoke 13/13 via bypass secret); Haiku 4.5 = Active, no swap. Next: backup test-restore (option C, awaiting Nagesh's go) → alerts → keep-warm → audit_log purge → security audit.**)
 - **Last updated (previous):** 2026-10-14 22:04 (UAE), checkpoint (**Photo work on uat: Storage A (60-day cache + lazy thumbnails) + B (browser shrink, CSP `blob:`), admin photo review, Post/Edit photo management (current photos ✕/↺, 📷 Add photos with previews, max 5, `sort_order` renumber). All localhost-tested by Nagesh, pushed, uat deployed, `smoke:prod` 13/13, screenshots saved. Plan: 15 Oct = pending todos + security audit; 16 Oct = pre-launch builds.**)
 - **Last updated (previous):** 2026-10-14 18:23 (UAE), checkpoint (**Session 9 config items 1–2 DONE: `sin1` live on prod (PR #23 `7e55d9c`, 1-query route ~1000 → ~210 ms), uat.mapit.co.in → `uat` branch + noindex guard (uat `1941c2b`), prod Supabase redirect list cleaned, prod Google sign-in OK, `smoke:prod` 13/13. Paused for dinner at item 3 (Storage): option A proposed, awaiting Nagesh's go.**)
 - **Last updated (previous):** 2026-10-13 20:28 (UAE), checkpoint (**Final polish LIVE (PR #22, smoke 12/12); subscriptions done: Supabase Pro ✅, Vercel Pro ✅ (invoice "payment scheduled" — confirm Paid 14 Oct), Resend stays Free ✅, Anthropic $5 cap ✅; MSG91 KYC + ₹1,000 main-wallet top-up handed to Arun (before ~25 Oct). Security-audit adds: Resend Full-access key swap + duplicate root SPF. Next session (2026-10-14): Session 9 config, `sin1` first.**)
@@ -113,6 +114,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-15 ~23:30, end of day) — Session 9 config: alerts nearly done (uptime monitor + Gmail forwarding left); keep-warm + `audit_log` purge cron not started; pre-launch security audit not started → first thing 16 Oct.** uat = `f7b2d7a` (map fixes, bypass scripts, Sentry env fix, sentry-test route) — next `uat → main` PR after Arun's phone check of the map fixes.
 
 **NOW (2026-10-15 ~21:15) — Session 9 config: backup test-restore DONE (PASS, copy deleted, smoke 13/13, runbook written). Next: alerts → keep-warm → `audit_log` purge cron → security audit.**
 
@@ -555,6 +558,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **Sentry environment label (2026-10-15, `a5db34c`, uat `948db29`):** `environment: VERCEL_ENV || NODE_ENV` — uat now reports `preview`, not `production` (vercel.json sets NODE_ENV=production everywhere). Vercel "Enable access to System Environment Variables" confirmed ticked.
+- ✅ **Admin-only Sentry test route (2026-10-15, `f781f95` + fix, uat `f7b2d7a`):** `POST /api/admin/sentry-test` → one fixed info message + `Sentry.flush(3000)`; returns environment / sentryConfigured (bool) / eventId / delivered (false when no DSN). Localhost: development, not configured. **uat: preview, configured, delivered ✅** (event `43e617c2…`) → Vercel SENTRY_DSN valid. Prod test after the next PR.
+- ✅ **Sentry alert rule (Nagesh, 2026-10-15):** "Send a notification for high priority issues" (node project) → IF all: environment equals `production` → notify member (Sentry account mapit.backend@gmail.com — free plan = 1 user). Local `.env` SENTRY_DSN cleared (the 2 open issues EADDRINUSE + SyntaxError `<<` were laptop errors; prod had 0 events ever).
+- ✅ **mapit-uat Auth URL fix (Nagesh, 2026-10-15):** Site URL → `https://uat.mapit.co.in` + exact redirect `https://uat.mapit.co.in` (the `/**` pattern does not match a bare origin → Supabase silently fell back to the old vercel.app Site URL). Google sign-in on uat lands on uat.mapit.co.in again.
 - ✅ **Backup test-restore (Session 9 config, 2026-10-15): PASS.** Prod backup 14 Oct 21:04 UTC → "Restore to new project" `mapit-restore-test` (`exjny…`, Micro, ~$0.013/h). Counts identical (2 users, 2 profiles, 0 listings, 360 audit_log, 15 invite_codes, 6 pins); schema identical via `compare-schema-inventory.js` + independent check (16 tables, 153 cols, 41 idx, 26 policies, 32 grants, 4 functions, 4 triggers, 8 extensions incl. PostGIS, 1 bucket def, 1 Realtime table); only diff Postgres 17.6 vs 17.11. Copy deleted by Nagesh same day (host no longer resolves); `smoke:prod` 13/13. Runbook `docs/technical/backup-restore-runbook.html` + 6 screenshots `docs/screenshots/session-9-restore-test/`.
 - ✅ **Arun (2026-10-15):** MSG91 KYC complete + ₹1,000 in the main wallet; Vercel access request for uat sent (Hobby account via Google).
 - ✅ **Decision (2026-10-15):** Google sign-in host name → Google Identity Services button, after launch (placeholder in Open Issues).
@@ -1385,6 +1392,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+src/server.js — 2026-10-15: Sentry `environment: VERCEL_ENV || NODE_ENV || 'development'` (`a5db34c`).
+src/routes/admin.js — 2026-10-15: `POST /api/admin/sentry-test` (requireAuth + requireAdmin), imports `@sentry/node` (`f781f95` + fix).
 docs/technical/backup-restore-runbook.html — NEW 2026-10-15: restore buttons (never in-place for tests), drill procedure + scripts, emergency switch-over checklist, drill log (2026-10-15 PASS); linked from docs/index.html.
 docs/screenshots/session-9-restore-test/ — NEW 2026-10-15: 6 screenshots of the drill (backups tab → confirm → healthy → delete).
 MapIt_MVP_v1.html / public/index.html — 2026-10-15: `_detailFromMap` + List switch in `selListing()`, Back-to-map in `closeDetail()`, reset in `setViewMode(persist)`/`switchTab()` (`978123b`); marker refresh includes `ST.myListings` (`cd37be5`).
@@ -1709,6 +1718,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🟡 (2026-10-15) Security audit adds:** (1) remove `SUPABASE_DB_PASSWORD` from Vercel (unused by the app; only a July local script); (2) prod Supabase Redirect URLs: add exact `https://www.mapit.co.in` + `https://mapit.co.in` (today `/**` entries don't match the bare origin and Google sign-in works only via the Site URL fallback); (3) a red CSP message in the uat admin console ("…used as a fallback. The action has been blocked") — get the full text, may be the Vercel toolbar/extension.
+- **⏳ (2026-10-15) Alerts left:** Sentry uptime monitor `https://www.mapit.co.in/health` (GET, 1 min, production, node project — free plan has 1); Gmail filter in mapit.backend@gmail.com forwarding `sentry.io` mails to nagesh.aadi@ (+ Arun optional); confirm the uat test event appears in Sentry Issues (All Envs).
+- **ℹ️ Sentry free plan = 1 user (mapit.backend@gmail.com, the ops mailbox).** Don't invite members (paid Team plan, Rule 11) — forward alert mails instead.
 - **⏳ (2026-10-15) uat lock step 4 pending:** Arun's access — free Vercel account → "Request access" → Nagesh approves (Deployment Protection → Requests), or a Shareable Link for the `uat` branch. Gotcha: the Vercel cookie is per URL — use uat.mapit.co.in, not the vercel.app link.
 - **ℹ️ (2026-10-15) `npm run smoke:prod` / `uat:9c` need `VERCEL_AUTOMATION_BYPASS_SECRET` in local `.env`** — without it the uat checks get 302 to the Vercel login. If the secret is rotated in Vercel, update `.env`.
 - **✅ RESOLVED 2026-10-15 (Anthropic page: Active, not deprecated → stay; swap to `claude-haiku-5-5` when a notice arrives) — ~~DECIDE 2026-10-15~~: `claude-haiku-4-5-20251001` retirement "not sooner than October 15, 2026"** — used by `contentModeration.js` + `leadScoring.js`; both fail OPEN (listings/messages keep working, moderation flag + spam screening stop, seller emails get the `[Unscreened]` prefix). Options: swap model (Sonnet ≈ 2× cost per call) — Nagesh's cost call; check the model's current status first.
@@ -1874,6 +1886,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Sentry stays on the free plan; alerts via the ops mailbox + Gmail forwarding (2026-10-15)** | 1 user limit; a second member needs a paid plan (Rule 11). Shared ops mailbox is not tied to one person |
+| **Uptime via Sentry's free uptime monitor, not a new vendor (2026-10-15)** | ₹0, same account; the 1-min ping also keeps one function instance warm (keep-warm). /health doesn't touch the DB — Supabase-only outages not caught (acceptable at launch) |
+| **Admin-only Sentry test route with flush-before-respond (2026-10-15)** | Proves each deployment reports without breaking anything; serverless functions can freeze before queued events are sent |
 | **Backup drill cadence: ~1 month after launch, then every 3 months (2026-10-15)** | First drill passed on a near-empty DB (proves procedure + schema); repeat with real data. Keep `C:\dev\mapit\schema-prod-2026-10-15.json` as the reference inventory (no PII, outside the repo) |
 | **Google sign-in host name: GIS button after launch (Nagesh + Arun, 2026-10-15)** | ₹0 vs ~$10/mo custom domain (Rule 11); launch is not blocked — the Supabase host name on Google's consent screen is cosmetic |
 | **uat private via Vercel Authentication + Standard Protection (2026-10-15)** | Free on Pro; protects every non-prod URL, prod stays public. Password Protection rejected ($20/mo, Rule 11); app-level password rejected (code on every request, weaker). Testers: free Vercel account + access request, or Shareable Link; scripts use the bypass secret |
@@ -2224,6 +2239,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ 2026-10-16 (revised at end of 15 Oct) — security audit first:**
+1. **Security audit (HIGH, blocks launch):** migration 018 (listings public-read → restricted, UPDATE USING, `handle_new_user` search_path, column-grant check on all tables) UAT first → `uat:9c` + inventory compare → prod (explicit go); frontend escape helper (titles, details, `ST.q`, names); `npm audit` (11); CSP review + Rule 9 wording; Resend sending-only key swap; duplicate root SPF; prod redirect URLs (vercel.app pair + exact www/apex); remove `SUPABASE_DB_PASSWORD` from Vercel.
+2. **Finish alerts:** uptime monitor, Gmail forwarding, Sentry Issues check (Nagesh, ~10 min).
+3. **Session 9 config:** keep-warm (measure cold starts with the uptime ping running) → `audit_log` purge cron (+ Sentry cron monitor).
+4. **Arun:** phone check of the map fixes on uat → **James:** `uat → main` PR (map fixes, bypass scripts, Sentry env + test route) → Nagesh merges → `smoke:prod` → sentry-test on prod (expect `production`).
+5. **Nagesh:** commit `.env.example` (empty `VERCEL_AUTOMATION_BYPASS_SECRET=`).
+6. Then pre-launch builds: 9H auto-expiry → ToS/Privacy v2.0 (Arun approves) → 9C.1 emoji avatars → externals (contact-us@ in Google consent / WhatsApp / MSG91, partnership advice) → launch gate. Likely spills past 16 Oct — re-plan the launch date with Arun if needed.
 
 **⬅ NOW (2026-10-15 18:01) — rest of today:**
 1. ✅ Backup test-restore PASS (copy deleted, runbook written). Next drill ~1 month after launch.
