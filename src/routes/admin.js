@@ -161,8 +161,10 @@ router.post('/sentry-test', requireAuth, requireAdmin, async (req, res, next) =>
     const eventId = Sentry.captureMessage('MapIt Sentry test (admin-triggered)', 'info');
     // Serverless: the function can freeze right after the response, dropping
     // queued events — wait (max 3 s) until Sentry has actually sent it.
-    const delivered = await Sentry.flush(3000);
-    res.json({ ok: true, environment, sentryConfigured: !!process.env.SENTRY_DSN, eventId, delivered });
+    // flush() is trivially true with no DSN (nothing queued), so report false then.
+    const sentryConfigured = !!process.env.SENTRY_DSN;
+    const delivered = sentryConfigured ? await Sentry.flush(3000) : false;
+    res.json({ ok: true, environment, sentryConfigured, eventId, delivered });
   } catch (err) { next(err); }
 });
 
