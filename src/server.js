@@ -84,7 +84,7 @@ app.use(helmet({
       // with degraded residential-street labels. cartocdn.com kept alongside
       // it (cartoTileUrl() is still defined in the frontend, unused, as a
       // one-line rollback path if the Mapbox switch needs to be undone).
-      imgSrc:      ["'self'", 'data:', 'https://*.basemaps.cartocdn.com', 'https://api.mapbox.com', 'https://cdnjs.cloudflare.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
+      imgSrc:      ["'self'", 'data:', 'blob:', 'https://*.basemaps.cartocdn.com', 'https://api.mapbox.com', 'https://cdnjs.cloudflare.com', ...(supabaseHost ? [`https://${supabaseHost}`] : [])],
       connectSrc:  ["'self'", 'https://api.mapit.co.in', 'https://nominatim.openstreetmap.org', 'https://photon.komoot.io', ...(supabaseHost ? [`https://${supabaseHost}`, `wss://${supabaseHost}`] : [])],
       objectSrc:   ["'none'"],
       baseUri:     ["'self'"],
@@ -98,6 +98,16 @@ app.use(helmet({
 // already-compressed assets are skipped automatically.
 app.use(compression());
 app.use(morgan('dev'));
+
+// ── Keep non-production hosts out of search engines ──────────
+// Vercel adds X-Robots-Tag: noindex only on *.vercel.app URLs, not on custom
+// domains — uat.mapit.co.in (UAT dummy listings) would otherwise be indexable.
+// Allowlist by host, so production can never be noindexed by a missing env var.
+const INDEXABLE_HOSTS = ['www.mapit.co.in', 'mapit.co.in'];
+app.use((req, res, next) => {
+  if (!INDEXABLE_HOSTS.includes(req.hostname)) res.setHeader('X-Robots-Tag', 'noindex');
+  next();
+});
 
 // ── CORS ─────────────────────────────────────────────────────
 // Allow requests from the frontend (update APP_URL in .env)

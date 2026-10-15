@@ -78,6 +78,9 @@ router.post('/listing/:listing_id', requireAuth, upload.array('photos', 5), asyn
         .from(bucket)
         .upload(storagePath, file.buffer, {
           contentType: file.mimetype,
+          // 60 days (> 30-day listing life + 15-day grace). Safe only because
+          // every file name is unique and upsert is false — never reuse a path.
+          cacheControl: '5184000',
           upsert: false,
         });
 
@@ -150,6 +153,21 @@ router.delete('/photo/:photo_id', requireAuth, async (req, res, next) => {
 
     // Delete from database
     await supabaseAdmin.from('listing_photos').delete().eq('id', photo_id);
+
+    // Keep sort_order 0..n-1: the list/map cover photo is the sort_order 0
+    // row, and uploads number new photos from the current count — so a gap
+    // left by a deleted photo would cost the listing its cover.
+    const { data: rest } = await supabaseAdmin
+      .from('listing_photos')
+      .select('id, sort_order')
+      .eq('listing_id', photo.listing_id)
+      .order('sort_order')
+      .order('created_at');
+    for (let i = 0; i < (rest || []).length; i++) {
+      if (rest[i].sort_order !== i) {
+        await supabaseAdmin.from('listing_photos').update({ sort_order: i }).eq('id', rest[i].id);
+      }
+    }
 
     res.json({ message: 'Photo deleted successfully.' });
   } catch (err) { next(err); }

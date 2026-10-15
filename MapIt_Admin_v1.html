@@ -85,6 +85,11 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .admin-item:last-child{border-bottom:none;}
 .admin-item-title{font-size:13px;font-weight:600;margin-bottom:4px;}
 .admin-item-meta{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+/* Pending queue — photo thumbnails; click opens the full photo in a new tab */
+.admin-photos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.admin-photos a{display:block;width:72px;height:72px;border-radius:6px;overflow:hidden;border:1px solid var(--border2);background:var(--deep);}
+.admin-photos img{width:100%;height:100%;object-fit:cover;display:block;}
+.admin-photos-none{font-size:11px;color:var(--muted);margin-bottom:8px;}
 .admin-approve-btn{padding:6px 16px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
 .admin-reject-btn{padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;margin-left:6px;}
 .admin-reject-btn:hover{border-color:var(--red);color:var(--red);}
@@ -622,6 +627,18 @@ function setBlockCount(id, n){
   document.getElementById(id).textContent = n===1 ? '1 item' : `${n} items`;
 }
 
+// Pending queue thumbnails — https only, escaped (T-014 lesson: nothing
+// from the DB goes into innerHTML raw). Lazy so a long queue stays light.
+function adminPhotosHtml(photos){
+  const urls = (photos||[])
+    .slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0))
+    .map(p=>p.public_url).filter(u=>/^https:\/\//.test(u||''));
+  if(!urls.length) return '<div class="admin-photos-none">📷 No photos</div>';
+  return `<div class="admin-photos">${urls.map((u,i)=>
+    `<a href="${escapeHtmlAdm(u)}" target="_blank" rel="noopener" title="Photo ${i+1} — open full size"><img src="${escapeHtmlAdm(u)}" alt="Photo ${i+1}" loading="lazy" decoding="async"/></a>`
+  ).join('')}</div>`;
+}
+
 async function loadPendingListings(){
   document.getElementById('adminList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
   try {
@@ -644,6 +661,7 @@ async function loadPendingListings(){
           <span style="color:var(--muted);">${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
         </div>
         ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${escapeHtmlAdm(l.description.slice(0,120))}${l.description.length>120?'…':''}</div>`:''}
+        ${adminPhotosHtml(l.listing_photos)}
         <div>
           <button class="admin-approve-btn" onclick="approveAdminListing('${l.id}')">✅ Approve & Go Live</button>
           <button class="admin-reject-btn" onclick="rejectAdminListing('${l.id}')">🗑 Remove</button>
