@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-15 21:51 (UAE), checkpoint (**Restore drill PASS (copy deleted, runbook). Alerts mostly done: Sentry env fix (`VERCEL_ENV`) + admin-only `/api/admin/sentry-test` on uat — uat test = preview / configured / delivered; alert rule = production only → member (mapit.backend@gmail.com, the only Sentry user on the free plan); local SENTRY_DSN cleared. mapit-uat Site URL → uat.mapit.co.in. Security audit NOT started — moves to 16 Oct, first.**)
+- **Last updated:** 2026-10-15 22:05 (UAE), checkpoint (**Development time-spent doc added (≈171 h over 69 days, 30 May–15 Oct; by month, weekday/weekend, laptop). Otherwise unchanged from the 21:51 end-of-day checkpoint — security audit first on 16 Oct.**)
+- **Last updated (previous):** 2026-10-15 21:51 (UAE), checkpoint (**Restore drill PASS (copy deleted, runbook). Alerts mostly done: Sentry env fix (`VERCEL_ENV`) + admin-only `/api/admin/sentry-test` on uat — uat test = preview / configured / delivered; alert rule = production only → member (mapit.backend@gmail.com, the only Sentry user on the free plan); local SENTRY_DSN cleared. mapit-uat Site URL → uat.mapit.co.in. Security audit NOT started — moves to 16 Oct, first.**)
 - **Last updated (previous):** 2026-10-15 18:01 (UAE), checkpoint (**PR #24 merged (photos + noindex live on prod, smoke 13/13); phone fixes (List view from map pins, My Listings pin price) on uat; uat.mapit.co.in + vercel.app uat link locked behind Vercel Authentication (302 → login, prod 200, smoke 13/13 via bypass secret); Haiku 4.5 = Active, no swap. Next: backup test-restore (option C, awaiting Nagesh's go) → alerts → keep-warm → audit_log purge → security audit.**)
 - **Last updated (previous):** 2026-10-14 22:04 (UAE), checkpoint (**Photo work on uat: Storage A (60-day cache + lazy thumbnails) + B (browser shrink, CSP `blob:`), admin photo review, Post/Edit photo management (current photos ✕/↺, 📷 Add photos with previews, max 5, `sort_order` renumber). All localhost-tested by Nagesh, pushed, uat deployed, `smoke:prod` 13/13, screenshots saved. Plan: 15 Oct = pending todos + security audit; 16 Oct = pre-launch builds.**)
 - **Last updated (previous):** 2026-10-14 18:23 (UAE), checkpoint (**Session 9 config items 1–2 DONE: `sin1` live on prod (PR #23 `7e55d9c`, 1-query route ~1000 → ~210 ms), uat.mapit.co.in → `uat` branch + noindex guard (uat `1941c2b`), prod Supabase redirect list cleaned, prod Google sign-in OK, `smoke:prod` 13/13. Paused for dinner at item 3 (Storage): option A proposed, awaiting Nagesh's go.**)
@@ -558,6 +559,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **Development time spent doc (2026-10-15, `06f4993`):** `docs/business/mapit-time-spent-2026-10-15.html` — ≈171 h (range 140–205) over 69 days, 30 May–15 Oct: weekdays 47 d / 116 h, weekends 22 d / 55 h; per month and per laptop (C340 ≈20 h, MacBook ≈126 h, Slim 3 ≈25 h measured). Days from git + CONTEXT + session log; hours measured from Claude Code logs for 6–15 Oct (2.5 h/day), that average applied earlier. Prototype started 30 May (before the repo, 1 Jun).
 - ✅ **Sentry environment label (2026-10-15, `a5db34c`, uat `948db29`):** `environment: VERCEL_ENV || NODE_ENV` — uat now reports `preview`, not `production` (vercel.json sets NODE_ENV=production everywhere). Vercel "Enable access to System Environment Variables" confirmed ticked.
 - ✅ **Admin-only Sentry test route (2026-10-15, `f781f95` + fix, uat `f7b2d7a`):** `POST /api/admin/sentry-test` → one fixed info message + `Sentry.flush(3000)`; returns environment / sentryConfigured (bool) / eventId / delivered (false when no DSN). Localhost: development, not configured. **uat: preview, configured, delivered ✅** (event `43e617c2…`) → Vercel SENTRY_DSN valid. Prod test after the next PR.
 - ✅ **Sentry alert rule (Nagesh, 2026-10-15):** "Send a notification for high priority issues" (node project) → IF all: environment equals `production` → notify member (Sentry account mapit.backend@gmail.com — free plan = 1 user). Local `.env` SENTRY_DSN cleared (the 2 open issues EADDRINUSE + SyntaxError `<<` were laptop errors; prod had 0 events ever).
@@ -1224,6 +1226,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **Development time-spent record** | ✅ Done 2026-10-15 | `docs/business/mapit-time-spent-2026-10-15.html`, `docs/index.html` | Refine Jun–Sep with the MacBook `~/.claude/projects/` logs if still available |
 | **Session 9 config — alerts** | ⏳ Mostly done 2026-10-15; uptime monitor + Gmail forwarding + Sentry Issues check left (Nagesh) | `src/server.js`, `src/routes/admin.js` | uat sentry-test PASS (preview/configured/delivered); prod test after next PR |
 | **Session 9 config — keep-warm, audit_log purge cron** | ⬜ Not started | — | Keep-warm: measure after uptime ping is live |
 | **Pre-launch security audit** | ⬜ Not started — first on 2026-10-16 | — | See Next Steps 2026-10-16 item 1 |
@@ -1395,6 +1398,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+docs/business/mapit-time-spent-2026-10-15.html — NEW 2026-10-15: actual time spent by month (weekday/weekend days + hours) and by laptop; method + exclusions; linked from docs/index.html.
 src/server.js — 2026-10-15: Sentry `environment: VERCEL_ENV || NODE_ENV || 'development'` (`a5db34c`).
 src/routes/admin.js — 2026-10-15: `POST /api/admin/sentry-test` (requireAuth + requireAdmin), imports `@sentry/node` (`f781f95` + fix).
 docs/technical/backup-restore-runbook.html — NEW 2026-10-15: restore buttons (never in-place for tests), drill procedure + scripts, emergency switch-over checklist, drill log (2026-10-15 PASS); linked from docs/index.html.
@@ -1721,6 +1725,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **💡 (2026-10-15, optional) Time-spent doc Jun–Sep hours are estimates** (2.5 h/day average). Copy the MacBook's `~/.claude/projects/` .jsonl logs to the Slim 3 to measure them; the C340 period likely has no logs.
 - **🟡 (2026-10-15) Security audit adds:** (1) remove `SUPABASE_DB_PASSWORD` from Vercel (unused by the app; only a July local script); (2) prod Supabase Redirect URLs: add exact `https://www.mapit.co.in` + `https://mapit.co.in` (today `/**` entries don't match the bare origin and Google sign-in works only via the Site URL fallback); (3) a red CSP message in the uat admin console ("…used as a fallback. The action has been blocked") — get the full text, may be the Vercel toolbar/extension.
 - **⏳ (2026-10-15) Alerts left:** Sentry uptime monitor `https://www.mapit.co.in/health` (GET, 1 min, production, node project — free plan has 1); Gmail filter in mapit.backend@gmail.com forwarding `sentry.io` mails to nagesh.aadi@ (+ Arun optional); confirm the uat test event appears in Sentry Issues (All Envs).
 - **ℹ️ Sentry free plan = 1 user (mapit.backend@gmail.com, the ops mailbox).** Don't invite members (paid Team plan, Rule 11) — forward alert mails instead.
@@ -1889,6 +1894,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Time spent = days from project records × measured hours/day (2026-10-15)** | Commit times alone miss ~1 in 4 working days and undercount batch-commit months; measured Claude Code logs exist only for the Slim 3 period, so they calibrate the average |
 | **Sentry stays on the free plan; alerts via the ops mailbox + Gmail forwarding (2026-10-15)** | 1 user limit; a second member needs a paid plan (Rule 11). Shared ops mailbox is not tied to one person |
 | **Uptime via Sentry's free uptime monitor, not a new vendor (2026-10-15)** | ₹0, same account; the 1-min ping also keeps one function instance warm (keep-warm). /health doesn't touch the DB — Supabase-only outages not caught (acceptable at launch) |
 | **Admin-only Sentry test route with flush-before-respond (2026-10-15)** | Proves each deployment reports without breaking anything; serverless functions can freeze before queued events are sent |
