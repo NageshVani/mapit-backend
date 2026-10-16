@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-15 22:05 (UAE), checkpoint (**Development time-spent doc added (≈171 h over 69 days, 30 May–15 Oct; by month, weekday/weekend, laptop). Otherwise unchanged from the 21:51 end-of-day checkpoint — security audit first on 16 Oct.**)
+- **Last updated:** 2026-10-16 20:39 (UAE), checkpoint (**Sunday 18 Oct friends & family start agreed. Security must-fixes DONE: migration 018 (deny client access by default) live on UAT + prod (smoke 14/14, inventories match); frontend escape helper on uat. Also on uat: admin Reported listings details + photos, Share Feedback background, phone List-view search fix. Phone check mostly PASS; Share Feedback still hidden on the phone (investigating). uat = `8b1e0d3`; nothing new on main yet.**)
+- **Last updated (previous):** 2026-10-15 22:05 (UAE), checkpoint (**Development time-spent doc added (≈171 h over 69 days, 30 May–15 Oct; by month, weekday/weekend, laptop). Otherwise unchanged from the 21:51 end-of-day checkpoint — security audit first on 16 Oct.**)
 - **Last updated (previous):** 2026-10-15 21:51 (UAE), checkpoint (**Restore drill PASS (copy deleted, runbook). Alerts mostly done: Sentry env fix (`VERCEL_ENV`) + admin-only `/api/admin/sentry-test` on uat — uat test = preview / configured / delivered; alert rule = production only → member (mapit.backend@gmail.com, the only Sentry user on the free plan); local SENTRY_DSN cleared. mapit-uat Site URL → uat.mapit.co.in. Security audit NOT started — moves to 16 Oct, first.**)
 - **Last updated (previous):** 2026-10-15 18:01 (UAE), checkpoint (**PR #24 merged (photos + noindex live on prod, smoke 13/13); phone fixes (List view from map pins, My Listings pin price) on uat; uat.mapit.co.in + vercel.app uat link locked behind Vercel Authentication (302 → login, prod 200, smoke 13/13 via bypass secret); Haiku 4.5 = Active, no swap. Next: backup test-restore (option C, awaiting Nagesh's go) → alerts → keep-warm → audit_log purge → security audit.**)
 - **Last updated (previous):** 2026-10-14 22:04 (UAE), checkpoint (**Photo work on uat: Storage A (60-day cache + lazy thumbnails) + B (browser shrink, CSP `blob:`), admin photo review, Post/Edit photo management (current photos ✕/↺, 📷 Add photos with previews, max 5, `sort_order` renumber). All localhost-tested by Nagesh, pushed, uat deployed, `smoke:prod` 13/13, screenshots saved. Plan: 15 Oct = pending todos + security audit; 16 Oct = pre-launch builds.**)
@@ -116,7 +117,9 @@
 
 ## 🎯 Current Goal
 
-**NOW (2026-10-16) — Goal: start spreading MapIt to friends & family on Sunday 18 Oct (festive season, Nagesh).** Must-fix before announcing: ✅ migration 018 (deny client access by default — the listings/doxxing leak) live on UAT + prod; ✅ frontend escape helper (`4277c2f`, ~35 sinks + `jsArg()`; XSS proved on uat before, fixed on localhost after — screenshots `docs/screenshots/session-9-escape/`; Nagesh regression check PASS). Both branches merged to uat + pushed 2026-10-16 (uat `47f63dc`, deployed, attack check 31/0/1, smoke 14/14). Next: Arun phone check on uat.mapit.co.in → PR `uat → main` → `smoke:prod`. Then: push branch → uat → PR `uat → main` (with map fixes) → `smoke:prod`; Arun decides ToS v1.0 vs v2.0 for the closed group; Nagesh + Arun post 3–5 real listings on prod before announcing. Rest of the audit (Resend key swap, SPF, `npm audit`, CSP wording, redirect URLs, `SUPABASE_DB_PASSWORD`) + 9H etc. continue in the background.
+**NOW (2026-10-16 20:39) — Goal: friends & family start on Sunday 18 Oct. Both security must-fixes are done (018 on prod; escape helper on uat). Open before the PR: Share Feedback button still not visible on Nagesh's iPhone (Chrome) — likely the browser's bottom toolbar covers the end of the 100vh layout; fix next. Then chat checks E 13–15 → PR `uat → main` → `smoke:prod`. Arun: ToS v1.0 OK for the closed group (today). Nagesh + Arun: real listings on prod.**
+
+**Earlier (2026-10-16) — Goal: start spreading MapIt to friends & family on Sunday 18 Oct (festive season, Nagesh).** Must-fix before announcing: ✅ migration 018 (deny client access by default — the listings/doxxing leak) live on UAT + prod; ✅ frontend escape helper (`4277c2f`, ~35 sinks + `jsArg()`; XSS proved on uat before, fixed on localhost after — screenshots `docs/screenshots/session-9-escape/`; Nagesh regression check PASS). Both branches merged to uat + pushed 2026-10-16 (uat `47f63dc`, deployed, attack check 31/0/1, smoke 14/14). Next: Arun phone check on uat.mapit.co.in → PR `uat → main` → `smoke:prod`. Then: push branch → uat → PR `uat → main` (with map fixes) → `smoke:prod`; Arun decides ToS v1.0 vs v2.0 for the closed group; Nagesh + Arun post 3–5 real listings on prod before announcing. Rest of the audit (Resend key swap, SPF, `npm audit`, CSP wording, redirect URLs, `SUPABASE_DB_PASSWORD`) + 9H etc. continue in the background.
 
 **NOW (2026-10-15 21:51, end of day) — Session 9 config: alerts nearly done (uptime monitor + Gmail forwarding left); keep-warm + `audit_log` purge cron not started; pre-launch security audit not started → first thing 16 Oct.** uat = `f7b2d7a` (map fixes, bypass scripts, Sentry env fix, sentry-test route) — next `uat → main` PR after Arun's phone check of the map fixes.
 
@@ -561,6 +564,13 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **Migration 018 — deny direct client access by default (2026-10-16, `c233341` + `5e11dd7`):** read-only audit (`session-9-security-audit-grants.sql`) showed anon/authenticated held ALL privileges on every table + defaults for new tables; 018 revokes all, keeps SELECT on `chat_messages` + `conversations` (Realtime), drops 25 policies, closes default privileges, pins `handle_new_user` search_path, closes the radius RPC; self-verifying. UAT: attack check 12 FAIL → 31 PASS / 1 WARN, `uat:9c` 35/35, Nagesh localhost 7/7. Prod: 1st run rolled back (verify `::regclass` → fixed `to_regclass`), 2nd Success, `smoke:prod` 14/14, inventories identical, www.mapit.co.in map + admin OK.
+- ✅ **New security scripts (2026-10-16):** `npm run security:client-check` (UAT-only attack check, 32 checks incl. Realtime), `scripts/security/xss-test-listing.js create|delete`, `database/scripts/018-rollback.sql`; `smoke:prod` S-07 now expects RPC refused + new S-14 listings refused (14 checks).
+- ✅ **Frontend escape helper (2026-10-16, `4277c2f`):** existing `escHtml()` applied to ~35 innerHTML/popup sinks (titles, details, description, address, names, chat, inbox, `ST.q`, pin labels, POI names, URLs, errors) + new `jsArg()` for inline-handler args (Sold/Del). XSS proven on uat (alert on map load), gone on localhost; screenshots `docs/screenshots/session-9-escape/`; Nagesh regression PASS.
+- ✅ **Admin Reported listings show full listing (2026-10-16, `82378f4`):** reports queue returns category/price/address/description/ref/seller + `listing_photos`; card shows details + thumbnails; View Chat nicknames escaped. Nagesh localhost PASS, screenshots `session-9-polish/`.
+- ✅ **Share Feedback button background (2026-10-16, `8391575`):** soft orange tint + orange text, solid orange on hover.
+- ✅ **Phone fixes from Nagesh's phone check (2026-10-16, `4d5bd05`):** (C.7) keyword search in phone List view always said "No results" — viewport filter ran on the hidden map; now only when the map is visible → verified on phone. (D.9) feedback strip padding on phones — NOT enough, still hidden (see Open Issues).
+- ✅ **All of the above merged to uat + pushed (2026-10-16):** uat `8b1e0d3`, uat.mapit.co.in deployed each time, `smoke:prod` 14/14. Nagesh phone check: A, B, C.5–6, D.8, D.10–12, F.16–17 PASS; E 13–15 (chat) pending.
 - ✅ **Development time spent doc (2026-10-15, `06f4993`):** `docs/business/mapit-time-spent-2026-10-15.html` — ≈171 h (range 140–205) over 69 days, 30 May–15 Oct: weekdays 47 d / 116 h, weekends 22 d / 55 h; per month and per laptop (C340 ≈20 h, MacBook ≈126 h, Slim 3 ≈25 h measured). Days from git + CONTEXT + session log; hours measured from Claude Code logs for 6–15 Oct (2.5 h/day), that average applied earlier. Prototype started 30 May (before the repo, 1 Jun).
 - ✅ **Sentry environment label (2026-10-15, `a5db34c`, uat `948db29`):** `environment: VERCEL_ENV || NODE_ENV` — uat now reports `preview`, not `production` (vercel.json sets NODE_ENV=production everywhere). Vercel "Enable access to System Environment Variables" confirmed ticked.
 - ✅ **Admin-only Sentry test route (2026-10-15, `f781f95` + fix, uat `f7b2d7a`):** `POST /api/admin/sentry-test` → one fixed info message + `Sentry.flush(3000)`; returns environment / sentryConfigured (bool) / eventId / delivered (false when no DSN). Localhost: development, not configured. **uat: preview, configured, delivered ✅** (event `43e617c2…`) → Vercel SENTRY_DSN valid. Prod test after the next PR.
@@ -1228,6 +1238,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **Share Feedback hidden on phone (D.9)** | 🔴 Open 2026-10-16 — padding fix on uat did not help on iPhone Chrome | `MapIt_MVP_v1.html` / `public/index.html` | Suspect `100vh` layout taller than the visible area (browser bottom bar); only entry to the feedback form |
+| **PR `uat → main` (security + polish)** | ⏳ After D.9 fix + chat checks E 13–15 | git | Carries map fixes, 018 scripts, escape helper, admin report photos, feedback button, phone search |
+| **Migration 018** | ✅ UAT + prod 2026-10-16 | `database/migrations/018-*.sql`, scripts | Leftover: PostGIS `spatial_ref_sys` writable (WARN A-18) |
+| **Frontend escape helper** | ✅ On uat 2026-10-16 | `MapIt_MVP_v1.html` / `public/index.html` | Prod with the PR |
+| **Admin Reported listings photos** | ✅ On uat 2026-10-16 | `src/routes/listings.js`, `MapIt_Admin_v1.html` / `public/admin.html` | Prod with the PR |
+| **Pre-launch security audit — remaining** | ⏳ Background | — | `npm audit`, Resend key swap, duplicate SPF, CSP + Rule 9 wording, prod redirect URLs, remove `SUPABASE_DB_PASSWORD` from Vercel |
 | **Development time-spent record** | ✅ Done 2026-10-15 | `docs/business/mapit-time-spent-2026-10-15.html`, `docs/index.html` | Refine Jun–Sep with the MacBook `~/.claude/projects/` logs if still available |
 | **Session 9 config — alerts** | ⏳ Mostly done 2026-10-15; uptime monitor + Gmail forwarding + Sentry Issues check left (Nagesh) | `src/server.js`, `src/routes/admin.js` | uat sentry-test PASS (preview/configured/delivered); prod test after next PR |
 | **Session 9 config — keep-warm, audit_log purge cron** | ⬜ Not started | — | Keep-warm: measure after uptime ping is live |
@@ -1400,6 +1416,17 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+database/migrations/018-deny-client-access-by-default.sql — NEW 2026-10-16: revoke client grants, keep chat SELECT, drop 25 policies, close default privileges, verify block (run UAT + prod).
+database/scripts/018-rollback.sql — NEW 2026-10-16: restores pre-018 grants/policies/defaults (emergency only).
+database/scripts/session-9-security-audit-grants.sql — NEW 2026-10-16: read-only one-grid inventory of client access.
+scripts/security/client-access-check.js — NEW 2026-10-16: UAT-only attack check (`npm run security:client-check`).
+scripts/security/xss-test-listing.js — NEW 2026-10-16: create/delete a UAT listing with HTML in title/description/address.
+scripts/smoke/prod-readonly.js — 2026-10-16: S-07 = RPC refused for anon, new S-14 = listings refused (14 checks).
+database/index.html — 2026-10-16: migration 018 + the two new scripts.
+MapIt_MVP_v1.html / public/index.html — 2026-10-16: escHtml on ~35 sinks + `jsArg()`; Share Feedback style; phone feedback padding; search viewport filter only when map visible.
+src/routes/listings.js — 2026-10-16: reports queue selects listing details + `listing_photos`.
+MapIt_Admin_v1.html / public/admin.html — 2026-10-16: report cards show details/description/photos; View Chat nicknames escaped.
+docs/screenshots/session-9-escape/, docs/screenshots/session-9-polish/ — NEW 2026-10-16: before/after (XSS listing, admin report, phone search/feedback).
 docs/business/mapit-time-spent-2026-10-15.html — NEW 2026-10-15: actual time spent by month (weekday/weekend days + hours) and by laptop; method + exclusions; linked from docs/index.html.
 src/server.js — 2026-10-15: Sentry `environment: VERCEL_ENV || NODE_ENV || 'development'` (`a5db34c`).
 src/routes/admin.js — 2026-10-15: `POST /api/admin/sentry-test` (requireAuth + requireAdmin), imports `@sentry/node` (`f781f95` + fix).
@@ -1727,6 +1754,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🔴 (2026-10-16) Share Feedback button not visible on Nagesh's iPhone (Chrome)** even after the phone padding fix (`4d5bd05`). It is the ONLY entry to the feedback form → phone users cannot send feedback. Likely cause: layout uses `100vh`, which on mobile browsers is taller than the visible area, so the bottom of the list sits under the browser toolbar. Fix next (e.g. `100dvh`), verify on the real phone before the PR.
+- **🟡 (2026-10-16) Rotate `VERCEL_AUTOMATION_BYPASS_SECRET`** — the bypass URL was sent over WhatsApp to open uat on Nagesh's phone (Share link gave no token). After chat checks E 13–15: Vercel → Deployment Protection → regenerate → update local `.env` → James re-runs `smoke:prod`.
+- **ℹ️ (2026-10-16) Phone access to uat:** Vercel login on the phone hit a passkey loop; Vercel "Share → Copy link" gave only the plain URL (no `_vercel_share` token). Workaround used: bypass-cookie URL. For Arun: still needs his Vercel access (uat lock step 4) or a working share link.
+- **ℹ️ (2026-10-16) Git tracks `Context.md` (not `CONTEXT.md`)** — on Windows `git add CONTEXT.md` silently stages nothing; use `git add Context.md`.
 - **🟡 (2026-10-16, Nagesh) Admin "Reported listings" should show the listing photos** like the pending queue does (`552d185`) — admin needs the full listing to judge a report. Query `/api/listings/reports/queue` + thumbnails in `admin.html`. Own `fix/` branch after the escape helper; not a Sunday blocker.
 - **🟡 (2026-10-16) PostGIS `spatial_ref_sys` writable by the anon key** (attack check A-18, WARN). Owned by `supabase_admin` → migration 018 cannot revoke it. Worst case: someone deletes SRID 4326 → new listings fail to save until the row is restored; no user data exposed. Real fix = move PostGIS out of `public` (touches `listings.location`) — post-launch, ask Supabase support first.
 - **✅ (2026-10-16) Migration 018 on UAT + PRODUCTION** — attack check 12 FAIL → 31 PASS / 1 WARN, `uat:9c` 35/35, Nagesh localhost click-test 7/7 PASS. Prod: first run rolled back (verify-step `::regclass` hit `realtime.subscription`; fixed with `to_regclass`, `5e11dd7`), second run Success → `smoke:prod` **14/14** (new S-07 RPC refused, S-14 listings refused), prod vs UAT inventories match, Nagesh checked www.mapit.co.in (map + admin OK). Branch `fix/security-018-deny-by-default` (`c233341`, `5e11dd7` + docs), not pushed.
@@ -1899,6 +1930,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Friends & family start Sunday 18 Oct (Nagesh, 2026-10-16)** | Festive season; gate = the two security must-fixes (018 + escape helper); other audit items + 9H continue in the background |
+| **Migration 018 = deny by default, not per-policy fixes (2026-10-16)** | Backend uses the service role for every table; the browser only needs chat Realtime → revoke all client grants, re-grant 2 SELECTs; future tables closed by default; one fix for all 7 holes |
+| **Drop unused policies in 018, not just revoke (2026-10-16)** | A future GRANT would silently re-activate them; 2 chat SELECT policies kept (to authenticated) |
+| **PostGIS `spatial_ref_sys` leftover accepted for launch (2026-10-16)** | Owned by supabase_admin, can't revoke; worst case = new listings fail until row restored, no data exposure; real fix = move PostGIS out of `public` post-launch (ask Supabase) |
+| **Escape at output (`escHtml`/`jsArg`), not sanitize input (2026-10-16)** | DB keeps what users typed; each sink escapes for its context (HTML text, attribute, JS-in-attribute) |
+| **Keyword search viewport filter only when the map is visible (2026-10-16)** | Keeps Arun's 9G "follow the visible map" on desktop/Map view; phone List view searches the radius results |
+| **Reported listings show full listing + photos in admin (Nagesh, 2026-10-16)** | Admin judges a report against the complete listing, same as the pending queue |
 | **Time spent = days from project records × measured hours/day (2026-10-15)** | Commit times alone miss ~1 in 4 working days and undercount batch-commit months; measured Claude Code logs exist only for the Slim 3 period, so they calibrate the average |
 | **Sentry stays on the free plan; alerts via the ops mailbox + Gmail forwarding (2026-10-15)** | 1 user limit; a second member needs a paid plan (Rule 11). Shared ops mailbox is not tied to one person |
 | **Uptime via Sentry's free uptime monitor, not a new vendor (2026-10-15)** | ₹0, same account; the 1-min ping also keeps one function instance warm (keep-warm). /health doesn't touch the DB — Supabase-only outages not caught (acceptable at launch) |
@@ -2253,6 +2291,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-16 20:39) — towards Sunday 18 Oct:**
+1. **James:** fix Share Feedback visibility on phones (100vh vs browser toolbar) → Nagesh verifies on the real iPhone (uat).
+2. **Nagesh:** chat checks E 13–15 on uat (second account; reply arrives live).
+3. **Nagesh:** rotate `VERCEL_AUTOMATION_BYPASS_SECRET` → update `.env` → James re-runs `smoke:prod`.
+4. **James:** PR `uat → main` → Nagesh merges in GitHub UI → `smoke:prod` (14/14) + Sentry test on prod.
+5. **Arun (today):** ToS v1.0 OK for the friends & family group (else v2.0 first).
+6. **Nagesh + Arun:** 3–5 real listings on production → Sunday announcement.
+7. Background: rest of the audit (`npm audit`, Resend key swap, duplicate SPF, CSP + Rule 9 wording, prod redirect URLs, `SUPABASE_DB_PASSWORD`), finish alerts, keep-warm, `audit_log` purge cron, then 9H → ToS v2.0 → 9C.1. Post-launch: PostGIS out of `public`.
 
 **⬅ 2026-10-16 (revised at end of 15 Oct) — security audit first:**
 1. **Security audit (HIGH, blocks launch):** migration 018 (listings public-read → restricted, UPDATE USING, `handle_new_user` search_path, column-grant check on all tables) UAT first → `uat:9c` + inventory compare → prod (explicit go); frontend escape helper (titles, details, `ST.q`, names); `npm audit` (11); CSP review + Rule 9 wording; Resend sending-only key swap; duplicate root SPF; prod redirect URLs (vercel.app pair + exact www/apex); remove `SUPABASE_DB_PASSWORD` from Vercel.
