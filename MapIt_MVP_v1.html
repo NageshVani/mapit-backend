@@ -1542,8 +1542,10 @@ function renderWhoamiScreen(){
   const entries = Object.entries(all).sort((a,b)=>new Date(b[1].last_login||0)-new Date(a[1].last_login||0));
   const list = document.getElementById('whoamiUserList');
   list.innerHTML = entries.map(([uid, u])=>{
-    const displayName = u.nickname || u.created_for || u.name || 'Family Member';
-    const displayInit = displayName !== 'Family Member' ? getInitials(displayName) : (u.initials || '?');
+    const rawName = u.nickname || u.created_for || u.name || 'Family Member';
+    const displayInit = escHtml(rawName !== 'Family Member' ? getInitials(rawName) : (u.initials || '?'));
+    const displayName = escHtml(rawName);
+    uid = escHtml(uid); u = { ...u, invite_code: escHtml(u.invite_code) };
     return `
     <div style="position:relative;">
       <button class="whoami-yes" onclick="continueAs('${uid}')" title="${displayName}"
@@ -1581,11 +1583,11 @@ function listingRow(l){
   const d   = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
   const sel = l.id === ST.selId;
   return `<div class="lr-row ${sel?'sel':''}" onclick="selListing('${l.id}', ST.tab==='fav'||ST.tab==='mine')">
-    <div class="lr-ico">${l.cover_photo?`<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}</div>
+    <div class="lr-ico">${l.cover_photo?`<img src="${escHtml(l.cover_photo)}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}</div>
     <div class="lr-info">
-      <div class="lr-title">${l.title}</div>
+      <div class="lr-title">${escHtml(l.title)}</div>
       <div class="lr-price">${priceText(l)}</div>
-      <div class="lr-meta">📍 ${fmtD(d)} · ${l.subcategory||''} · ${timeAgo(l.created_at)}</div>
+      <div class="lr-meta">📍 ${fmtD(d)} · ${escHtml(l.subcategory)} · ${timeAgo(l.created_at)}</div>
     </div>
   </div>`;
 }
@@ -1993,7 +1995,7 @@ async function sendPasswordReset(){
   try {
     await apiPost('/api/auth/reset-password', { email, redirectTo: window.location.origin + '/' });
     document.getElementById('resetSentMsg').innerHTML =
-      `A password reset link has been sent to<br><b>${email}</b><br><br>Click the link in the email to set a new password. The link expires in 1 hour.`;
+      `A password reset link has been sent to<br><b>${escHtml(email)}</b><br><br>Click the link in the email to set a new password. The link expires in 1 hour.`;
     goToStep('step-reset-sent');
   } catch(e){ showErr('authError', 'Could not send reset link. Please try again.'); }
 }
@@ -2645,7 +2647,7 @@ function initMap(){
     icon:L.divIcon({className:'',html:`<div class="umark"><div class="upulse"></div><div class="udot"></div></div>`,iconSize:[44,44],iconAnchor:[22,22]}),
     zIndexOffset:1000,
   }).addTo(map);
-  _userMarker.bindPopup(`<b style="color:#F06030">📍 ${ST.activePin?.label||'Your Location'}</b>`);
+  _userMarker.bindPopup(`<b style="color:#F06030">📍 ${escHtml(ST.activePin?.label||'Your Location')}</b>`);
 
   // Tapping empty map area dismisses an open tap-preview tooltip (mobile pin-tooltip flow)
   map.on('click', ()=>{
@@ -2780,7 +2782,7 @@ function openStackPopup(group, isFav){
       ${group.map(l=>`<div class="stack-popup-item" onclick="closeStackPopupAndSelect('${l.id}',${isFav})">
         <span class="stack-popup-emoji">${listingEmoji(l)}</span>
         <div class="stack-popup-mid">
-          <div class="stack-popup-title">${l.title}</div>
+          <div class="stack-popup-title">${escHtml(l.title)}</div>
           <div class="stack-popup-price">${priceText(l)}</div>
         </div>
       </div>`).join('')}
@@ -2823,7 +2825,7 @@ function showClusterHoverCard(latlng, listings){
   if(top<8) top = pt.y+18;
   hc.style.left = left+'px'; hc.style.top = top+'px';
   const shown = listings.slice(0, CLUSTER_HOVER_MAX_LINES);
-  const rows = shown.map(l=>`<div class="hc-row"><span>${listingEmoji(l)} ${l.subcategory||l.category}</span></div>`).join('');
+  const rows = shown.map(l=>`<div class="hc-row"><span>${listingEmoji(l)} ${escHtml(l.subcategory||l.category)}</span></div>`).join('');
   const more = listings.length > CLUSTER_HOVER_MAX_LINES
     ? `<div class="hc-row">+${listings.length - CLUSTER_HOVER_MAX_LINES} more…</div>` : '';
   document.getElementById('hcInner').innerHTML = `
@@ -2841,7 +2843,7 @@ function drawPinMarkers(){
     const m = L.marker([p.lat,p.lng],{
       icon:L.divIcon({
         className:'',
-        html:`<div class="pin-marker"><div class="pin-dot-inactive"></div><div class="pin-label-muted">${p.label}</div></div>`,
+        html:`<div class="pin-marker"><div class="pin-dot-inactive"></div><div class="pin-label-muted">${escHtml(p.label)}</div></div>`,
         iconSize:[80,30],iconAnchor:[40,5],
       }),zIndexOffset:200,
     }).addTo(map);
@@ -2879,7 +2881,7 @@ function showHoverCard(l, isFav, tapMode){
   const details = l.details || {};
   const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
   const starredHtml = subFields.filter(f=>f.starred && details[f.id] != null && details[f.id] !== '')
-    .map(f=>`<div class="hc-row"><span style="color:var(--muted2)">${f.label}</span><b>${details[f.id]}</b></div>`)
+    .map(f=>`<div class="hc-row"><span style="color:var(--muted2)">${f.label}</span><b>${escHtml(details[f.id])}</b></div>`)
     .join('');
   // Tap mode (mobile): the tip becomes a real tappable "View" button, since a
   // second tap on a tiny map pin is an easy miss — hover mode (desktop, where
@@ -2888,8 +2890,8 @@ function showHoverCard(l, isFav, tapMode){
     ? `<button class="hc-view-btn" onclick="_tapPreviewId=null;document.getElementById('hoverCard').classList.remove('show','tap-mode');selListing('${l.id}', ${!!isFav})">View full details →</button>`
     : `<div class="hc-tip">Click pin to view full details →</div>`;
   document.getElementById('hcInner').innerHTML = `
-    <div class="hc-cat" style="color:${col}">${catLbl(l.category||l.cat)} · ${l.subcategory||l.sub}</div>
-    <div class="hc-title">${l.title}</div>
+    <div class="hc-cat" style="color:${col}">${catLbl(l.category||l.cat)} · ${escHtml(l.subcategory||l.sub)}</div>
+    <div class="hc-title">${escHtml(l.title)}</div>
     <div class="hc-price">${priceText(l)}</div>
     ${starredHtml}
     <div class="hc-row" style="margin-top:4px">
@@ -3014,12 +3016,12 @@ async function renderFavs(el){
       ST.favListings.map(l=>`
         <div class="fav-card" onclick="viewFav('${l.id}')">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
-            ${l.cover_photo ? `<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>` : (CAT_EMOJI[l.category]||'📦')}
+            ${l.cover_photo ? `<img src="${escHtml(l.cover_photo)}" alt="" loading="lazy" decoding="async"/>` : (CAT_EMOJI[l.category]||'📦')}
           </div>
           <div class="fav-info">
-            <div class="fav-ttl">${l.title}</div>
+            <div class="fav-ttl">${escHtml(l.title)}</div>
             <div class="fav-price">${priceText(l)}</div>
-            <div class="fav-dist">📍 ${fmtD(l.d)} · ${l.address||''}</div>
+            <div class="fav-dist">📍 ${fmtD(l.d)} · ${escHtml(l.address)}</div>
           </div>
           <div class="fav-rm" onclick="event.stopPropagation();removeFav('${l.id}')" title="Remove">✕</div>
         </div>`).join('');
@@ -3064,27 +3066,27 @@ async function renderMyAds(el){
           if(days <= 5) return `<div class="fav-dist" style="color:var(--orange);">⚠️ Expires in ${days}d</div>`;
           return `<div class="fav-dist" style="color:var(--muted);">Expires in ${days}d</div>`;
         })();
-        const safeTtl = (l.title||'').replace(/'/g,"\\'");
+        const ttlArg = jsArg(l.title);
         return `
         <div class="fav-card" onclick="selListing('${l.id}',true)">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
-            ${l.cover_photo?`<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}
+            ${l.cover_photo?`<img src="${escHtml(l.cover_photo)}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}
           </div>
           <div class="fav-info">
-            <div class="fav-ttl">${l.title}</div>
+            <div class="fav-ttl">${escHtml(l.title)}</div>
             <div class="fav-price">${priceText(l)}</div>
             <div class="fav-dist" style="color:${STATUS_COLOR[l.status]||'var(--muted)'};">● ${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
             ${expiryHtml}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;">
             <button class="edit-btn" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit</button>
-            ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}','${safeTtl}')">✅ Sold</button>`:''}
-            <button class="del-btn" onclick="event.stopPropagation();deleteListing('${l.id}','${safeTtl}')">🗑️ Del</button>
+            ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}',${ttlArg})">✅ Sold</button>`:''}
+            <button class="del-btn" onclick="event.stopPropagation();deleteListing('${l.id}',${ttlArg})">🗑️ Del</button>
           </div>
         </div>`;
       }).join('');
   } catch(e){
-    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">📋</div><div class="sb-empty-ttl">Could not load listings</div><div class="sb-empty-sub">${e.message}</div></div>`;
+    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">📋</div><div class="sb-empty-ttl">Could not load listings</div><div class="sb-empty-sub">${escHtml(e.message)}</div></div>`;
   }
 }
 
@@ -3136,9 +3138,9 @@ function renderSidebar(){
   const fl = ST.tab==='mine' ? ST.myListings : ST.tab==='fav' ? ST.favListings : filtered();
   if(!ST.selId){
     if(ST.q && fl.length){
-      el.innerHTML = `<div class="nearby-hd">🔍 ${fl.length} result${fl.length!==1?'s':''} for "${ST.q}"</div>`+fl.map(listingRow).join('');
+      el.innerHTML = `<div class="nearby-hd">🔍 ${fl.length} result${fl.length!==1?'s':''} for "${escHtml(ST.q)}"</div>`+fl.map(listingRow).join('');
     } else if(ST.q){
-      el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">🔍</div><div class="sb-empty-ttl">No results for "${ST.q}"</div><div class="sb-empty-sub">Try a different word or clear the search.</div></div>`;
+      el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">🔍</div><div class="sb-empty-ttl">No results for "${escHtml(ST.q)}"</div><div class="sb-empty-sub">Try a different word or clear the search.</div></div>`;
     } else {
       el.innerHTML = `<div class="nearby-hd">📍 ${fl.length} listing${fl.length!==1?'s':''} within ${ST.rad>=999?'Bangalore':ST.rad+' km'}</div>`+(fl.length?fl.map(listingRow).join(''):`<div class="sb-empty"><div class="sb-empty-ico">📍</div><div class="sb-empty-ttl">No listings nearby</div><div class="sb-empty-sub">Try increasing the radius or switching category.</div></div>`);
     }
@@ -3168,12 +3170,12 @@ function renderSidebar(){
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
         <div class="ld-dist-row"><span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span><button class="ld-map-btn" type="button" onclick="showListingOnMap('${l.id}')">🗺 Show on map</button></div>
-        <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${l.reference_code}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
+        <span class="ld-dist-sub">${l.address ? escHtml(l.address)+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${escHtml(l.reference_code)}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
       </div>
       <div class="ld-info-top">
         <div class="ld-info-thumb"><span>${listingEmoji(l)}</span></div>
         <div class="ld-info-mid">
-          <div class="ld-info-ttl">${l.title}</div>
+          <div class="ld-info-ttl">${escHtml(l.title)}</div>
           <div class="ld-info-price${fmtPrice(l.price).length>=6?' sm':''}">${l.price>0 ? fmtPrice(l.price)+(isRental(l)?'<span class="per-mo">/mo</span>':'') : '<span class="per-mo">Price on request</span>'}</div>
           ${/negotiable/i.test(l.price_label||'') ? '<div class="ld-info-neg">Negotiable</div>' : ''}
         </div>
@@ -3198,29 +3200,29 @@ function renderSidebar(){
           <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote('${l.id}')" disabled>Send</button>
         </div>
       </div>
-      ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}" loading="lazy" decoding="async"/></div>`).join('')}</div>`:''}</div>
+      ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${escHtml(JSON.stringify(photoUrls))},${i})"><img src="${escHtml(u)}" alt="photo ${i+1}" loading="lazy" decoding="async"/></div>`).join('')}</div>`:''}</div>
     <div class="ld-body">
       ${(()=>{
         const det = l.details || {};
         const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
         const items = subFields.filter(f=>det[f.id]!=null && det[f.id]!=='');
         if(!items.length) return '';
-        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${f.id==='total_price' ? (fmtINRWords(det[f.id]) || det[f.id]) : det[f.id]}</div></div>`).join('')}</div>`;
+        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${escHtml(f.id==='total_price' ? (fmtINRWords(det[f.id]) || det[f.id]) : det[f.id])}</div></div>`).join('')}</div>`;
       })()}
-      ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${l.details.transaction_type}</div></div>` : '')}
+      ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${escHtml(l.details.transaction_type)}</div></div>` : '')}
       ${(()=>{
         const pois = l.details?.nearby_pois;
         if(!pois || !pois.length) return '';
         const poiIcon = {school:'🏫', mall:'🏬', supermarket:'🛒'};
-        return `<div class="ld-nearby"><div class="ld-nearby-hd">📍 Nearby</div>${pois.map(p=>`<div class="ld-nearby-item">${poiIcon[p.type]||'📍'} ${p.name} · ${p.distance_m<1000?p.distance_m+'m':(p.distance_m/1000).toFixed(1)+'km'}</div>`).join('')}</div>`;
+        return `<div class="ld-nearby"><div class="ld-nearby-hd">📍 Nearby</div>${pois.map(p=>`<div class="ld-nearby-item">${poiIcon[p.type]||'📍'} ${escHtml(p.name)} ·${p.distance_m<1000?p.distance_m+'m':(p.distance_m/1000).toFixed(1)+'km'}</div>`).join('')}</div>`;
       })()}
-      ${l.description ? `<div class="ld-desc">${l.description}</div>` : ''}
+      ${l.description ? `<div class="ld-desc">${escHtml(l.description)}</div>` : ''}
     </div>
     <div id="chatBox" class="${ST.chatOpen?'':'hide'}">
       <div class="ch-hd">
         <span class="ch-hd-name">${(()=>{
           const openConv = ST.chatOpen ? ST.allConversations.get(ST.chatConvId) : null;
-          return openConv?.other_user?.nickname || openConv?.other_user?.full_name || seller.full_name || 'Chat';
+          return escHtml(openConv?.other_user?.nickname || openConv?.other_user?.full_name || seller.full_name || 'Chat');
         })()}</span>
         <div class="ch-hd-close" onclick="closeChat()">✕</div>
       </div>
@@ -3244,7 +3246,7 @@ function renderSidebar(){
     if(others.length){
       const hd = ST.tab==='fav'
         ? `❤ Other saved listings (${others.length})`
-        : ST.q ? `🔍 Other listings matching "${ST.q}" (${others.length})` : `📍 Other nearby listings (${others.length})`;
+        : ST.q ? `🔍 Other listings matching "${escHtml(ST.q)}" (${others.length})` : `📍 Other nearby listings (${others.length})`;
       el.innerHTML += `<div class="nearby-hd">${hd}</div>`+others.map(listingRow).join('');
     }
   }
@@ -3450,7 +3452,7 @@ function renderChatMsgs(){
   const el=document.getElementById('cmsgs'); if(!el) return;
   el.innerHTML=ST.chatMsgs.map(m=>`
     <div>
-      <div class="bubble ${m.type==='sent'?'bsent':'brecv'}">${m.text}</div>
+      <div class="bubble ${m.type==='sent'?'bsent':'brecv'}">${escHtml(m.text)}</div>
       <div class="btime ${m.type==='sent'?'r':''}">${m.t}</div>
     </div>`).join('');
 }
@@ -4219,7 +4221,7 @@ async function loadAndRenderPins(){
       document.getElementById('activePinLabel').textContent = def.label;
       if(_userMarker){
         _userMarker.setLatLng([def.lat, def.lng]);
-        _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${def.label}</b>`);
+        _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${escHtml(def.label)}</b>`);
       }
       if(map) map.setView([def.lat, def.lng], 14, {animate:!mapHidden()});
       updateCircle();
@@ -4514,9 +4516,17 @@ function toast(msg){
 }
 
 // Escape user-typed text before putting it into innerHTML.
+// Rule (pre-launch security audit, 2026-10-16): every value that came from a
+// user, the API or another site (titles, details, names, chat, addresses,
+// search text, error messages, URLs) goes through escHtml() inside an HTML
+// template. Our own constants (labels, emoji, icons) don't need it.
 function escHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+// A value passed as a JS argument inside an inline handler, e.g.
+//   onclick="markAsSold('${id}', ${jsArg(title)})"   ← no quotes around ${…}
+// JSON.stringify makes a valid JS string; escHtml keeps it inside the attribute.
+function jsArg(s){ return escHtml(JSON.stringify(String(s ?? ''))); }
 
 // ── In-app dialog ─────────────────────────────────────────────────
 // Replaces the browser's prompt()/confirm(): those can't be styled, show the
@@ -5037,7 +5047,7 @@ async function openInboxModal(){
         <div class="inbox-av" style="background:var(--orange)">📢</div>
         <div class="inbox-meta">
           <div class="inbox-name">MapIt Team</div>
-          <div class="inbox-preview">${m.content}</div>
+          <div class="inbox-preview">${escHtml(m.content)}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
         </div>
         ${m.is_read?'':'<div class="inbox-unread-dot"></div>'}
@@ -5050,21 +5060,21 @@ async function openInboxModal(){
     } else {
       const convHtml = convs.map(c=>{
         const other = c.other_user || {};
-        const col = other.avatar_color || 'var(--orange)';
-        const initials = getInitials(other.nickname || other.full_name || '?');
+        const col = escHtml(other.avatar_color || 'var(--orange)');
+        const initials = escHtml(getInitials(other.nickname || other.full_name || '?'));
         const listing = c.listing || {};
         const unread = (c.unread_count||0) > 0;
         const timeStr = c.last_message?.sent_at
           ? new Date(c.last_message.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
           : '';
         const context = listing.title
-          ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${listing.title}</span>`
+          ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${escHtml(listing.title)}</span>`
           : '';
         return `<div class="inbox-item ${unread?'unread':''}" style="cursor:pointer" onclick="openConversationFromInbox('${c.id}','${c.listing_id}')">
           <div class="inbox-av" style="background:${col}">${initials}</div>
           <div class="inbox-meta">
-            <div class="inbox-name">${other.nickname||other.full_name||'User'}${context}</div>
-            <div class="inbox-preview">${c.last_message?.content||''}</div>
+            <div class="inbox-name">${escHtml(other.nickname||other.full_name||'User')}${context}</div>
+            <div class="inbox-preview">${escHtml(c.last_message?.content)}</div>
             <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
           </div>
           ${unread?'<div class="inbox-unread-dot"></div>':''}
@@ -5077,7 +5087,7 @@ async function openInboxModal(){
     // existing pattern in openConversationFromInbox — reading = marking read).
     if(teamMsgs.some(m=>!m.is_read)) apiPut('/api/messages/mark-all-read', {}).catch(()=>{});
   } catch(e){
-    document.getElementById('inboxList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
+    document.getElementById('inboxList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${escHtml(e.message)}</div>`;
   }
 }
 function closeInboxModal(){ document.getElementById('inboxModal').classList.add('hide'); }
