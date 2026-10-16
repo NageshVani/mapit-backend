@@ -127,7 +127,7 @@ BEGIN
              AND g.table_name IN ('chat_messages', 'conversations'))
     AND NOT EXISTS (SELECT 1 FROM pg_depend d
                     WHERE d.classid = 'pg_class'::regclass AND d.deptype = 'e'
-                      AND d.objid = ('public.' || quote_ident(g.table_name))::regclass);
+                      AND d.objid = to_regclass('public.' || quote_ident(g.table_name)));
   IF bad_grants IS NOT NULL THEN
     RAISE EXCEPTION '018 verify: unexpected client grants left: %', bad_grants;
   END IF;
@@ -139,7 +139,7 @@ BEGIN
   WHERE g.table_schema = 'public' AND g.grantee IN ('anon', 'authenticated')
     AND EXISTS (SELECT 1 FROM pg_depend d
                 WHERE d.classid = 'pg_class'::regclass AND d.deptype = 'e'
-                  AND d.objid = ('public.' || quote_ident(g.table_name))::regclass);
+                  AND d.objid = to_regclass('public.' || quote_ident(g.table_name)));
   IF ext_grants IS NOT NULL THEN
     RAISE NOTICE '018 verify: extension-owned objects still granted (not ours to revoke): %', ext_grants;
   END IF;
@@ -150,7 +150,7 @@ BEGIN
     AND c.table_name NOT IN ('chat_messages', 'conversations')
     AND NOT EXISTS (SELECT 1 FROM pg_depend d
                     WHERE d.classid = 'pg_class'::regclass AND d.deptype = 'e'
-                      AND d.objid = ('public.' || quote_ident(c.table_name))::regclass);
+                      AND d.objid = to_regclass('public.' || quote_ident(c.table_name)));
   IF bad_cols > 0 THEN
     RAISE EXCEPTION '018 verify: % column-level client grants left', bad_cols;
   END IF;
