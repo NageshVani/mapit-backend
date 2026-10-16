@@ -311,6 +311,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #sb{width:100%;}
   #main.view-list #mapc{display:none;}
   #main.view-map #sb{display:none;}
+  /* Share Feedback sat under the fixed List/Map toggle (bottom:16px, centred) — lift it above (2026-10-16) */
+  .feedback-strip{padding-bottom:68px;}
 }
 @media(max-width:380px){
   .cat-lbl{white-space:normal;text-align:center;line-height:1.2;max-width:64px;}
@@ -2947,8 +2949,10 @@ function filtered(){
       (l.address||'').toLowerCase().includes(ql)||
       (l.subcategory||'').toLowerCase().includes(ql)
     );
-    // Also constrain to current map viewport so results respect where the user is looking
-    if(map && map.getBounds){
+    // Also constrain to current map viewport so results respect where the user is looking.
+    // Only when the map is on screen: in phone List view it is display:none, its
+    // bounds collapse to a point and every listing was filtered out (2026-10-16).
+    if(map && map.getBounds && !mapHidden()){
       try {
         const bounds = map.getBounds();
         list = list.filter(l => l.lat && l.lng && bounds.contains([l.lat, l.lng]));
