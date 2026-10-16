@@ -116,6 +116,8 @@
 
 ## 🎯 Current Goal
 
+**NOW (2026-10-16) — Goal: start spreading MapIt to friends & family on Sunday 18 Oct (festive season, Nagesh).** Must-fix before announcing: ✅ migration 018 (deny client access by default — the listings/doxxing leak) live on UAT + prod; ⏳ frontend escape helper (titles, details, `ST.q`, names). Then: push branch → uat → PR `uat → main` (with map fixes) → `smoke:prod`; Arun decides ToS v1.0 vs v2.0 for the closed group; Nagesh + Arun post 3–5 real listings on prod before announcing. Rest of the audit (Resend key swap, SPF, `npm audit`, CSP wording, redirect URLs, `SUPABASE_DB_PASSWORD`) + 9H etc. continue in the background.
+
 **NOW (2026-10-15 21:51, end of day) — Session 9 config: alerts nearly done (uptime monitor + Gmail forwarding left); keep-warm + `audit_log` purge cron not started; pre-launch security audit not started → first thing 16 Oct.** uat = `f7b2d7a` (map fixes, bypass scripts, Sentry env fix, sentry-test route) — next `uat → main` PR after Arun's phone check of the map fixes.
 
 **NOW (2026-10-15 ~21:15) — Session 9 config: backup test-restore DONE (PASS, copy deleted, smoke 13/13, runbook written). Next: alerts → keep-warm → `audit_log` purge cron → security audit.**
@@ -1725,6 +1727,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🟡 (2026-10-16, Nagesh) Admin "Reported listings" should show the listing photos** like the pending queue does (`552d185`) — admin needs the full listing to judge a report. Query `/api/listings/reports/queue` + thumbnails in `admin.html`. Own `fix/` branch after the escape helper; not a Sunday blocker.
+- **🟡 (2026-10-16) PostGIS `spatial_ref_sys` writable by the anon key** (attack check A-18, WARN). Owned by `supabase_admin` → migration 018 cannot revoke it. Worst case: someone deletes SRID 4326 → new listings fail to save until the row is restored; no user data exposed. Real fix = move PostGIS out of `public` (touches `listings.location`) — post-launch, ask Supabase support first.
+- **✅ (2026-10-16) Migration 018 on UAT + PRODUCTION** — attack check 12 FAIL → 31 PASS / 1 WARN, `uat:9c` 35/35, Nagesh localhost click-test 7/7 PASS. Prod: first run rolled back (verify-step `::regclass` hit `realtime.subscription`; fixed with `to_regclass`, `5e11dd7`), second run Success → `smoke:prod` **14/14** (new S-07 RPC refused, S-14 listings refused), prod vs UAT inventories match, Nagesh checked www.mapit.co.in (map + admin OK). Branch `fix/security-018-deny-by-default` (`c233341`, `5e11dd7` + docs), not pushed.
 - **💡 (2026-10-15, optional) Time-spent doc Jun–Sep hours are estimates** (2.5 h/day average). Copy the MacBook's `~/.claude/projects/` .jsonl logs to the Slim 3 to measure them; the C340 period likely has no logs.
 - **🟡 (2026-10-15) Security audit adds:** (1) remove `SUPABASE_DB_PASSWORD` from Vercel (unused by the app; only a July local script); (2) prod Supabase Redirect URLs: add exact `https://www.mapit.co.in` + `https://mapit.co.in` (today `/**` entries don't match the bare origin and Google sign-in works only via the Site URL fallback); (3) a red CSP message in the uat admin console ("…used as a fallback. The action has been blocked") — get the full text, may be the Vercel toolbar/extension.
 - **⏳ (2026-10-15) Alerts left:** Sentry uptime monitor `https://www.mapit.co.in/health` (GET, 1 min, production, node project — free plan has 1); Gmail filter in mapit.backend@gmail.com forwarding `sentry.io` mails to nagesh.aadi@ (+ Arun optional); confirm the uat test event appears in Sentry Issues (All Envs).
