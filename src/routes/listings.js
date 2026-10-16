@@ -108,12 +108,15 @@ router.put('/:id/approve', requireAuth, requireAdmin, async (req, res, next) => 
 // ── GET reported-listings queue (admin) ───────────────────────
 // GET /api/listings/reports/queue
 // Returns open (unresolved) listing_reports, joined with the reported
-// listing's title/status and the reporter's nickname, newest first.
+// listing's details + photos (the admin judges the report against the full
+// listing, same as the pending queue) and the reporter's nickname, newest first.
 router.get('/reports/queue', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { data: reports, error } = await supabaseAdmin
       .from('listing_reports')
-      .select('*, listings(id, title, status, seller_id, profiles(suspended)), profiles!reporter_id(nickname, full_name)')
+      .select(`*, listings(id, title, status, seller_id, category, subcategory, price, price_label, address,
+        description, reference_code, profiles(suspended, full_name), listing_photos(public_url, sort_order)),
+        profiles!reporter_id(nickname, full_name)`)
       .eq('status', 'open')
       .order('created_at', { ascending: false });
 

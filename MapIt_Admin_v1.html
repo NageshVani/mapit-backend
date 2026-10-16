@@ -736,6 +736,16 @@ async function loadReportsQueue(){
           <span style="color:var(--muted);">${new Date(r.created_at).toLocaleDateString('en-IN')}</span>
         </div>
         ${r.note?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">"${escapeHtmlAdm(r.note)}"</div>`:''}
+        ${listing ? `<div class="admin-item-meta">
+          <span>${escapeHtmlAdm(listing.subcategory||listing.category)}</span>
+          <span>₹ ${escapeHtmlAdm(listing.price_label||fmtPrice(listing.price))}</span>
+          <span>👤 Seller ${escapeHtmlAdm(listing.profiles?.full_name||'Unknown')}</span>
+          <span>📍 ${escapeHtmlAdm(listing.address||'No address')}</span>
+          <span>● ${escapeHtmlAdm(listing.status)}</span>
+          ${listing.reference_code?`<span style="color:var(--muted);">Ref ${escapeHtmlAdm(listing.reference_code)}</span>`:''}
+        </div>
+        ${listing.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${escapeHtmlAdm(listing.description.slice(0,300))}${listing.description.length>300?'…':''}</div>`:''}
+        ${adminPhotosHtml(listing.listing_photos)}` : ''}
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
           <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>
           <select class="admin-reason-sel" id="report-reason-${r.id}">${reasonOpts}</select>
@@ -781,7 +791,7 @@ async function openReportChat(reportId){
       const roleTag = isBuyer ? 'Buyer' : 'Seller';
       return `
       <div class="chatview-msg">
-        <div class="chatview-msg-meta">${who} (${roleTag}) · ${new Date(m.sent_at).toLocaleString('en-IN')}</div>
+        <div class="chatview-msg-meta">${escapeHtmlAdm(who)} (${roleTag}) ·${new Date(m.sent_at).toLocaleString('en-IN')}</div>
         <div class="chatview-msg-content">${escapeHtmlAdm(m.content||'')}</div>
       </div>`;
     }).join('');
