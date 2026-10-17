@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-16 20:39 (UAE), checkpoint (**Sunday 18 Oct friends & family start agreed. Security must-fixes DONE: migration 018 (deny client access by default) live on UAT + prod (smoke 14/14, inventories match); frontend escape helper on uat. Also on uat: admin Reported listings details + photos, Share Feedback background, phone List-view search fix. Phone check mostly PASS; Share Feedback still hidden on the phone (investigating). uat = `8b1e0d3`; nothing new on main yet.**)
+- **Last updated:** 2026-10-17 11:42 (UAE), checkpoint (**Saturday pre-launch polish, all on uat `45131cc` (smoke 14/14): Share Feedback on phones fixed (dvh + cascade), chat safety (banner, risky-message notes, Safety tips), pre-login welcome page (launch-video wording, logo pins + category chips, transparent logo), Explore distance fix (Arun). ToS v1.2 drafted on `docs/tos-v1.2` (`36ceebc`) — awaiting Arun. Found: server distance uses exact location (trilateration leak). Nothing new on main yet.**)
+- **Last updated (previous):** 2026-10-16 20:39 (UAE), checkpoint (**Sunday 18 Oct friends & family start agreed. Security must-fixes DONE: migration 018 (deny client access by default) live on UAT + prod (smoke 14/14, inventories match); frontend escape helper on uat. Also on uat: admin Reported listings details + photos, Share Feedback background, phone List-view search fix. Phone check mostly PASS; Share Feedback still hidden on the phone (investigating). uat = `8b1e0d3`; nothing new on main yet.**)
 - **Last updated (previous):** 2026-10-15 22:05 (UAE), checkpoint (**Development time-spent doc added (≈171 h over 69 days, 30 May–15 Oct; by month, weekday/weekend, laptop). Otherwise unchanged from the 21:51 end-of-day checkpoint — security audit first on 16 Oct.**)
 - **Last updated (previous):** 2026-10-15 21:51 (UAE), checkpoint (**Restore drill PASS (copy deleted, runbook). Alerts mostly done: Sentry env fix (`VERCEL_ENV`) + admin-only `/api/admin/sentry-test` on uat — uat test = preview / configured / delivered; alert rule = production only → member (mapit.backend@gmail.com, the only Sentry user on the free plan); local SENTRY_DSN cleared. mapit-uat Site URL → uat.mapit.co.in. Security audit NOT started — moves to 16 Oct, first.**)
 - **Last updated (previous):** 2026-10-15 18:01 (UAE), checkpoint (**PR #24 merged (photos + noindex live on prod, smoke 13/13); phone fixes (List view from map pins, My Listings pin price) on uat; uat.mapit.co.in + vercel.app uat link locked behind Vercel Authentication (302 → login, prod 200, smoke 13/13 via bypass secret); Haiku 4.5 = Active, no swap. Next: backup test-restore (option C, awaiting Nagesh's go) → alerts → keep-warm → audit_log purge → security audit.**)
@@ -116,6 +117,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-17 11:42, Saturday) — Goal: friends & family start Sunday 18 Oct. Today's polish is all on uat (`45131cc`, smoke 14/14). Open before the `uat → main` PR: Arun re-checks the Explore distance scenario + approves ToS v1.2 (`docs/tos-v1.2`, not on uat); Nagesh: iPhone check of welcome page + chat safety, chat checks E 13–15, rotate the bypass secret; decide the quick server distance fix (today vs after launch). Then PR → `smoke:prod` → real listings → announcement.**
 
 **NOW (2026-10-16 20:39) — Goal: friends & family start on Sunday 18 Oct. Both security must-fixes are done (018 on prod; escape helper on uat). Open before the PR: Share Feedback button still not visible on Nagesh's iPhone (Chrome) — likely the browser's bottom toolbar covers the end of the 100vh layout; fix next. Then chat checks E 13–15 → PR `uat → main` → `smoke:prod`. Arun: ToS v1.0 OK for the closed group (today). Nagesh + Arun: real listings on prod.**
 
@@ -564,6 +567,13 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **Share Feedback visible on phones (2026-10-17, `6d0b999` + `18d90c5`, uat `0e9df8a`):** two causes — `#main` used `100vh` (under the iPhone toolbar) → `100dvh` via `@supports`; phone `.feedback-strip` padding rule lost to the later base rule → `#sb .feedback-strip`. Nagesh iPhone Chrome + Safari 4/4 PASS. Screenshots `session-9-polish/before-/after-phone-sharefeedback`.
+- ✅ **Chat safety (2026-10-17, `a7c1634`, uat `211fa90`):** 🛡 Safety tips button in the chat header + banner "Keep chatting in MapIt. Never share OTPs or pay in advance."; note under risky messages (browser keyword check: OTP/UPI PIN/advance/QR/UPI-ID → payment warning; phone/email/link/WhatsApp/Telegram → contact warning; sender told their details are now visible; never blocks); Safety tips popup (Everyone/Buyers/Sellers/Something wrong incl. 1930 + cybercrime.gov.in), also linked from Help. Regex tested on 17 messages. Nagesh localhost PASS. Screenshots `session-9-final-polish/after-chat-safety.png`, `after-safety-tips.png` (no before).
+- ✅ **Launch video reviewed (2026-10-17):** frames via portable ffmpeg (scratchpad); voice-over transcribed locally with Whisper (transformers.js, audio never left the laptop). Video kept out of git (`docs/Videos/` in .gitignore). Electronics dropped from wording (not a MapIt category).
+- ✅ **Pre-login welcome page (2026-10-17, `df256b8`, uat `840a1b4`):** mockup iterated 5× with Nagesh, then built: voice-over headline, "Free to use" pill, map USP tile (incl. 150–400 m default-location note), Search / Buy-sell-rent / Connect safely, Buying/Selling steps, one "Start exploring →" (+ "Sign up or sign in on the next step"), "Don't show this again" (`mapit_welcome_hide`); shared `#listing-` links and saved accounts skip it. SVG map background (no tiles, ₹0), MapIt-logo pins dropping in + category chips (Rent/Buy Property, Vehicles, Household; chips overlapping the card hidden). Old `step-landing` retired. Phones: compact tiles, sticky button. Nagesh localhost PASS. Screenshots `after-welcome-desktop/phone.png` (no before).
+- ✅ **Transparent logo (2026-10-17):** sources in `docs/other/` (`6aab568`); web copy `public/mapit-logo.png` (trimmed, 114×152, 33 KB).
+- ✅ **ToS & Privacy v1.2 drafted (2026-10-17, `36ceebc` on `docs/tos-v1.2`, pushed, NOT on uat):** approximate pin 150–400 m by default + "Show my exact pin" opt-in (old text said exact GPS public — wrong since 9B); 30-day listing life / may remove after expiry (no auto-delete promised); providers + Mapbox, MSG91, Sentry, Anthropic's 3 uses. Awaiting Arun.
+- ✅ **Explore distance fix (2026-10-17, `f099fe8`, uat `45131cc`, Arun's report):** opening a listing in Explore flew the map → re-search from the listing's own pin → distance = 150–400 m display offset, labelled "from your location". Map moves no longer shift the Explore search point while a listing is open; label "from the search point" in Explore. Nagesh localhost PASS; Arun re-check pending.
 - ✅ **Migration 018 — deny direct client access by default (2026-10-16, `c233341` + `5e11dd7`):** read-only audit (`session-9-security-audit-grants.sql`) showed anon/authenticated held ALL privileges on every table + defaults for new tables; 018 revokes all, keeps SELECT on `chat_messages` + `conversations` (Realtime), drops 25 policies, closes default privileges, pins `handle_new_user` search_path, closes the radius RPC; self-verifying. UAT: attack check 12 FAIL → 31 PASS / 1 WARN, `uat:9c` 35/35, Nagesh localhost 7/7. Prod: 1st run rolled back (verify `::regclass` → fixed `to_regclass`), 2nd Success, `smoke:prod` 14/14, inventories identical, www.mapit.co.in map + admin OK.
 - ✅ **New security scripts (2026-10-16):** `npm run security:client-check` (UAT-only attack check, 32 checks incl. Realtime), `scripts/security/xss-test-listing.js create|delete`, `database/scripts/018-rollback.sql`; `smoke:prod` S-07 now expects RPC refused + new S-14 listings refused (14 checks).
 - ✅ **Frontend escape helper (2026-10-16, `4277c2f`):** existing `escHtml()` applied to ~35 innerHTML/popup sinks (titles, details, description, address, names, chat, inbox, `ST.q`, pin labels, POI names, URLs, errors) + new `jsArg()` for inline-handler args (Sold/Del). XSS proven on uat (alert on map load), gone on localhost; screenshots `docs/screenshots/session-9-escape/`; Nagesh regression PASS.
@@ -1239,7 +1249,11 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
 | **Share Feedback hidden on phone (D.9)** | ✅ Fixed 2026-10-17, on uat `0e9df8a`; Nagesh iPhone Chrome + Safari PASS (4/4) | `MapIt_MVP_v1.html` / `public/index.html` | Two causes: `100vh` under the iPhone toolbar → `100dvh` (`6d0b999`); phone padding rule lost to the later base rule → `#sb .feedback-strip` (`18d90c5`). Screenshots `docs/screenshots/session-9-polish/before-/after-phone-sharefeedback` |
-| **PR `uat → main` (security + polish)** | ⏳ After D.9 fix + chat checks E 13–15 | git | Carries map fixes, 018 scripts, escape helper, admin report photos, feedback button, phone search |
+| **ToS & Privacy v1.2** | ⏳ Drafted `36ceebc` on `docs/tos-v1.2`; awaiting Arun | `docs/legal/terms-privacy-draft2.html` | Merge to uat only after Arun's OK |
+| **Explore distance fix** | ✅ On uat `45131cc`; Arun re-check pending | `MapIt_MVP_v1.html` / `public/index.html` | Needs Arun uat access |
+| **Welcome page + chat safety** | ✅ On uat; Nagesh iPhone check pending | `MapIt_MVP_v1.html` / `public/index.html`, `public/mapit-logo.png` | Private tab to see the welcome page |
+| **Server distance from exact location (trilateration)** | ⬜ Quick fix: decision pending; radius filter → after launch (migration 019) | `src/routes/listings.js`, RPC 013 | See Open Issues |
+| **PR `uat → main` (security + polish)** | ⏳ After Arun's checks + Nagesh iPhone + chat checks E 13–15 | git | Carries map fixes, 018 scripts, escape helper, admin report photos, feedback button, phone search |
 | **Migration 018** | ✅ UAT + prod 2026-10-16 | `database/migrations/018-*.sql`, scripts | Leftover: PostGIS `spatial_ref_sys` writable (WARN A-18) |
 | **Frontend escape helper** | ✅ On uat 2026-10-16 | `MapIt_MVP_v1.html` / `public/index.html` | Prod with the PR |
 | **Admin Reported listings photos** | ✅ On uat 2026-10-16 | `src/routes/listings.js`, `MapIt_Admin_v1.html` / `public/admin.html` | Prod with the PR |
@@ -1416,6 +1430,11 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+MapIt_MVP_v1.html / public/index.html — 2026-10-17: #main 100dvh; #sb .feedback-strip; chat safety (banner, header button, chatRisk notes, Safety tips modal, Help link); welcome page (step-landing removed); Explore search point frozen while a listing is open + "from the search point".
+public/mapit-logo.png — NEW 2026-10-17: transparent logo for the welcome page (from docs/other/mapit-logo-400x400.png).
+docs/other/mapit-logo-400x400.png, mapit-logo-transparent-300dpi.png, Mapit Logo.jpeg — NEW 2026-10-17: brand source files.
+docs/legal/terms-privacy-draft2.html — 2026-10-17 (branch docs/tos-v1.2 only): v1.2 location, retention, providers.
+.gitignore — 2026-10-17: docs/Videos/ (launch video first cut).
 database/migrations/018-deny-client-access-by-default.sql — NEW 2026-10-16: revoke client grants, keep chat SELECT, drop 25 policies, close default privileges, verify block (run UAT + prod).
 database/scripts/018-rollback.sql — NEW 2026-10-16: restores pre-018 grants/policies/defaults (emergency only).
 database/scripts/session-9-security-audit-grants.sql — NEW 2026-10-16: read-only one-grid inventory of client access.
@@ -1754,6 +1773,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🟡 (2026-10-17) Listing distance computed from the EXACT location** — `distance_m` from the radius RPC (migration 013, `listings.lat/lng`) is returned to buyers and shown on cards even when the pin is fuzzed → a buyer could trilaterate the exact spot using Explore from 3 points. Quick fix (server: distance from the displayed point for non-exact listings) = Nagesh's decision; radius-filter membership on exact location → after launch (migration 019). When fixed, ToS can add "distances are calculated from the approximate point".
+- **🟡 (2026-10-17) Listing expiry not enforced** — `expires_at` = +30 days, but nothing hides/deletes expired listings (admin Cleanup tab only). ToS v1.2 only says "may remove after expiry"; the 27/30/45-day schedule goes into ToS when 9H ships.
+- **ℹ️ (2026-10-17) Favicon + og-image still old** — not the new logo; small follow-up after launch.
+- **ℹ️ (2026-10-17) Phone access to uat — still unresolved:** the 2026-10-16 note below (Vercel login passkey loop; Share link without token) still applies; James's 2026-10-17 phone steps did not account for it. Arun's re-check needs a working route.
+- **✅ (2026-10-17) Share Feedback hidden on phone — FIXED** (see Completed; entry below kept for history).
 - **🔴 (2026-10-16) Share Feedback button not visible on Nagesh's iPhone (Chrome)** even after the phone padding fix (`4d5bd05`). It is the ONLY entry to the feedback form → phone users cannot send feedback. Likely cause: layout uses `100vh`, which on mobile browsers is taller than the visible area, so the bottom of the list sits under the browser toolbar. Fix next (e.g. `100dvh`), verify on the real phone before the PR.
 - **🟡 (2026-10-16) Rotate `VERCEL_AUTOMATION_BYPASS_SECRET`** — the bypass URL was sent over WhatsApp to open uat on Nagesh's phone (Share link gave no token). After chat checks E 13–15: Vercel → Deployment Protection → regenerate → update local `.env` → James re-runs `smoke:prod`.
 - **ℹ️ (2026-10-16) Phone access to uat:** Vercel login on the phone hit a passkey loop; Vercel "Share → Copy link" gave only the plain URL (no `_vercel_share` token). Workaround used: bypass-cookie URL. For Arun: still needs his Vercel access (uat lock step 4) or a working share link.
@@ -1930,6 +1954,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Chat safety = browser keyword nudge; AI scam screening after launch (Nagesh, 2026-10-17)** | ₹0, no message text leaves the device, never blocks; AI needs ToS coverage + cost decision (Rule 8/11) |
+| **Welcome page before login, one "Start exploring" button, "Don't show again" in localStorage (2026-10-17)** | First-run gate; no DB change; shared links + saved accounts skip it; old step-landing retired (pre-9B wording) |
+| **Welcome background = SVG drawn map, not live tiles or video (2026-10-17)** | Live tiles = Mapbox cost per visitor (Rule 11); video 10 MB too heavy; frames blurry |
+| **ToS stays v1.2 (not 2.0); retention wording option A (2026-10-17)** | v2.0 = the planned firm/Grievance Officer rewrite; don't promise auto-delete before 9H exists |
+| **Launch video not in git (2026-10-17)** | First cut, 10 MB; `docs/Videos/` ignored |
+| **Radius-filter location fix after launch (Nagesh, 2026-10-17)** | Needs migration 019; weaker leak than distance |
 | **Friends & family start Sunday 18 Oct (Nagesh, 2026-10-16)** | Festive season; gate = the two security must-fixes (018 + escape helper); other audit items + 9H continue in the background |
 | **Migration 018 = deny by default, not per-policy fixes (2026-10-16)** | Backend uses the service role for every table; the browser only needs chat Realtime → revoke all client grants, re-grant 2 SELECTs; future tables closed by default; one fix for all 7 holes |
 | **Drop unused policies in 018, not just revoke (2026-10-16)** | A future GRANT would silently re-activate them; 2 chat SELECT policies kept (to authenticated) |
@@ -2291,6 +2321,16 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-17 11:42) — towards Sunday 18 Oct:**
+1. **Nagesh:** get Arun into uat (working share link / Vercel access — see Open Issues) → **Arun:** re-check Explore distance + approve ToS v1.2 + OK ToS for the group.
+2. **James (after Arun's OK):** merge `docs/tos-v1.2` → uat.
+3. **Nagesh:** iPhone check on uat (private tab): welcome page, Start exploring, Don't show again; chat safety notes with two accounts.
+4. **Nagesh:** chat checks E 13–15; rotate `VERCEL_AUTOMATION_BYPASS_SECRET` → **James:** `smoke:prod`.
+5. **Nagesh decides:** quick server distance fix today (~30–45 min) or after launch.
+6. **James:** PR `uat → main` → Nagesh merges → `smoke:prod` + Sentry test on prod.
+7. **Nagesh + Arun:** 3–5 real listings on prod → Sunday announcement.
+8. After launch: radius filter on display location (migration 019), favicon/og-image with new logo, AI chat scam screening (with ToS v2.0), rest of the audit, 9H, ToS v2.0, 9C.1.
 
 **⬅ NOW (2026-10-17, Saturday) — towards Sunday 18 Oct:**
 1. ✅ Share Feedback on phones fixed (uat `0e9df8a`, iPhone Chrome + Safari PASS, smoke 14/14).
