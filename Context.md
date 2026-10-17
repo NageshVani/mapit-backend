@@ -1238,7 +1238,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Share Feedback hidden on phone (D.9)** | 🔴 Open 2026-10-16 — padding fix on uat did not help on iPhone Chrome | `MapIt_MVP_v1.html` / `public/index.html` | Suspect `100vh` layout taller than the visible area (browser bottom bar); only entry to the feedback form |
+| **Share Feedback hidden on phone (D.9)** | ✅ Fixed 2026-10-17, on uat `0e9df8a`; Nagesh iPhone Chrome + Safari PASS (4/4) | `MapIt_MVP_v1.html` / `public/index.html` | Two causes: `100vh` under the iPhone toolbar → `100dvh` (`6d0b999`); phone padding rule lost to the later base rule → `#sb .feedback-strip` (`18d90c5`). Screenshots `docs/screenshots/session-9-polish/before-/after-phone-sharefeedback` |
 | **PR `uat → main` (security + polish)** | ⏳ After D.9 fix + chat checks E 13–15 | git | Carries map fixes, 018 scripts, escape helper, admin report photos, feedback button, phone search |
 | **Migration 018** | ✅ UAT + prod 2026-10-16 | `database/migrations/018-*.sql`, scripts | Leftover: PostGIS `spatial_ref_sys` writable (WARN A-18) |
 | **Frontend escape helper** | ✅ On uat 2026-10-16 | `MapIt_MVP_v1.html` / `public/index.html` | Prod with the PR |
@@ -2292,7 +2292,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-16 20:39) — towards Sunday 18 Oct:**
+**⬅ NOW (2026-10-17, Saturday) — towards Sunday 18 Oct:**
+1. ✅ Share Feedback on phones fixed (uat `0e9df8a`, iPhone Chrome + Safari PASS, smoke 14/14).
+2. **James:** chat safety alert (keep chatting in MapIt, no OTP/advance/links) — approved before launch, ~1 h.
+3. **James:** pre-login welcome page with "Don't show again" (circlestore.in style) — mockup first; drop to Monday if late.
+4. AI scam detection in chat → after launch (needs ToS v2.0 coverage + cost decision; keyword warning covers most of it).
+5. Then items 2–7 of the 2026-10-16 list below (chat checks E 13–15, bypass secret, PR `uat → main`, Arun ToS OK, real listings).
+
+**⬅ 2026-10-16 20:39 — towards Sunday 18 Oct:**
 1. **James:** fix Share Feedback visibility on phones (100vh vs browser toolbar) → Nagesh verifies on the real iPhone (uat).
 2. **Nagesh:** chat checks E 13–15 on uat (second account; reply arrives live).
 3. **Nagesh:** rotate `VERCEL_AUTOMATION_BYPASS_SECRET` → update `.env` → James re-runs `smoke:prod`.
