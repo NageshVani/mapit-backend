@@ -330,8 +330,8 @@
     <h1 class="doc-title">Terms of Service &amp; Privacy Policy</h1>
     <p class="doc-sub">Terms of Service &amp; Privacy Policy, finalized by Nagesh &amp; Arun ahead of the Bengaluru MVP launch.</p>
     <div class="meta-row">
-      <span><b>Version</b> 1.1</span>
-      <span><b>Prepared</b> 2026-07-13, finalized 2026-07-21, updated 2026-10-09 (operator name)</span>
+      <span><b>Version</b> 1.2</span>
+      <span><b>Prepared</b> 2026-07-13, finalized 2026-07-21, updated 2026-10-09 (operator name), 2026-10-17 (approximate listing location, listing retention, service providers)</span>
       <span><b>Jurisdiction</b> Karnataka, India</span>
     </div>
   </div>
@@ -405,7 +405,7 @@
 
     <section class="clause" id="t3">
       <h3><span class="num">3</span> Nature of the Service</h3>
-      <p>MapIt is a <b>location-based classifieds and discovery platform</b>. We provide the technology that lets a Seller post a listing pinned to an exact GPS location, and lets a Buyer search, filter, and message nearby listings.</p>
+      <p>MapIt is a <b>location-based classifieds and discovery platform</b>. We provide the technology that lets a Seller post a listing pinned to a location on the map, and lets a Buyer search, filter, and message nearby listings.</p>
       <h4>MapIt is not a party to any transaction</h4>
       <ul>
         <li>MapIt does not buy, sell, own, inspect, warehouse, ship, or take title to any item listed on the platform.</li>
@@ -436,9 +436,10 @@
 
     <section class="clause" id="t6">
       <h3><span class="num">6</span> Location &amp; GPS Data — Special Notice</h3>
-      <p>MapIt's core feature is exact-location listings. When you post a listing, the GPS coordinates you provide (via tap-to-pin, device GPS, or manually entered coordinates) are <b>displayed publicly</b> to other users of the Service, together with your listing.</p>
-      <p>Separately, if you save a home or other personal location to your profile (for example, to center your search radius), that location is used only to power your own search experience and is <b>not</b> shown to other users unless you separately attach it to a public listing.</p>
-      <p>You should not post a listing at your home address unless you are comfortable with that exact location being publicly visible. See also Section 6 of the Privacy Policy.</p>
+      <p>When you post a listing, you pin its location (by tapping the map, using your device GPS, or entering coordinates). <b>By default, other users see an approximate location: the pin is shown at a fixed point 150–400 m from the location you entered</b>.</p>
+      <p>For each listing you may choose <b>"Show my exact pin to buyers"</b>. Only if you turn this on is the exact location you entered shown publicly with that listing. You always see your own exact pin.</p>
+      <p>Separately, if you save a home or other personal location to your profile (for example, to center your search radius), that location is used only to power your own search experience and is <b>not</b> shown to other users.</p>
+      <p>Only turn on the exact pin if you are comfortable with that precise location (for example, your home) being visible to anyone using the Service. See also Section 6 of the Privacy Policy.</p>
     </section>
 
     <section class="clause" id="t7">
@@ -601,10 +602,10 @@
       <h3><span class="num">6</span> Location Data — Special Notice</h3>
       <p>MapIt distinguishes between two kinds of location data:</p>
       <ul>
-        <li><b>Listing location (public):</b> the GPS coordinates attached to a published listing are visible to any user Browse the Service.</li>
+        <li><b>Listing location (public, approximate by default):</b> other users see a listing's pin at a fixed point 150–400 m from the location the Seller entered. The exact location is shown publicly only if the Seller chooses "Show my exact pin to buyers" for that listing; otherwise it is stored securely and used only to place the approximate pin and show the listing to its Seller.</li>
         <li><b>Personal/saved location (private):</b> a home address or other pin saved to your profile for search convenience is used only to power your own search radius and is never shown to other users, and never sold or shared with advertisers.</li>
       </ul>
-      <p>Because listing locations are precise and public by design, do not attach your home address to a listing unless you are comfortable with that exact point being publicly visible.</p>
+      <p>If you choose to show the exact pin, that precise point becomes publicly visible; do not do so for your home unless you are comfortable with that.</p>
     </section>
 
     <section class="clause" id="p7">
@@ -620,8 +621,11 @@
           <tr><td>Supabase</td><td>Database, authentication, and photo storage</td></tr>
           <tr><td>Resend</td><td>Transactional email delivery (sign-in, password reset, one-time passcodes, notifications)</td></tr>
           <tr><td>Google</td><td>"Sign in with Google" authentication, if you choose that option</td></tr>
-          <tr><td>OpenStreetMap / Nominatim / Photon / Overpass</td><td>Map rendering, place search, and nearby-point-of-interest lookups (only the listing's coordinates are sent, never your personal saved locations)</td></tr>
-          <tr><td>Anthropic</td><td>Automated spam/genuine screening of buyer message text, to flag low-quality enquiries for Sellers</td></tr>
+          <tr><td>Mapbox</td><td>Map display: your browser loads map images for the area you are viewing directly from Mapbox, which receives your IP address and that map area (not your account details)</td></tr>
+          <tr><td>OpenStreetMap / Nominatim / Photon / Overpass</td><td>Map data, place search, and nearby-point-of-interest lookups (only the listing's coordinates are sent, never your personal saved locations)</td></tr>
+          <tr><td>Anthropic</td><td>Automated screening of text you submit: listing titles and descriptions (to flag possible spam or prohibited listings for our review team; it never approves or rejects a listing on its own), buyer "Interested" message text (to flag low-quality enquiries for Sellers), and feedback text and rating (to help our team draft a reply, which a team member always reviews)</td></tr>
+          <tr><td>MSG91</td><td>Delivery of phone-verification one-time codes via WhatsApp (receives your mobile number and the code)</td></tr>
+          <tr><td>Sentry</td><td>Error monitoring of our servers (receives technical error details; configured not to send personal identifiers such as your email, phone number, IP address or cookies)</td></tr>
           <tr><td>Vercel</td><td>Application hosting</td></tr>
         </table>
       </div>
@@ -636,6 +640,7 @@
     <section class="clause" id="p9">
       <h3><span class="num">9</span> Data Retention</h3>
       <p>We retain your account and listing data for as long as your account is active. If you delete your account, we delete your personal profile data and associated photographs within 90 days, except where retention is required to comply with a legal obligation, resolve a dispute, or enforce these Terms. Listings you delete are removed immediately, together with their stored photographs.</p>
+      <p><b>Listings:</b> each listing is active for <b>30 days</b> from posting, with up to 5 photographs. After a listing expires, we may remove it, together with its stored photographs, without further notice.</p>
       <p>Separately, in accordance with the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021, we retain limited registration and access records (such as IP address and timestamp associated with account creation, sign-in, listing creation, and messaging) for 180 days, so that we can respond to a valid request from law enforcement or a court. This compliance record is separate from, and retained independently of, the 90-day account-deletion window above.</p>
     </section>
 
