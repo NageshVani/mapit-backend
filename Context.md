@@ -1252,7 +1252,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | **ToS & Privacy v1.2** | ⏳ Drafted `36ceebc` on `docs/tos-v1.2`; awaiting Arun | `docs/legal/terms-privacy-draft2.html` | Merge to uat only after Arun's OK |
 | **Explore distance fix** | ✅ On uat `45131cc`; Arun re-check pending | `MapIt_MVP_v1.html` / `public/index.html` | Needs Arun uat access |
 | **Welcome page + chat safety** | ✅ On uat; Nagesh iPhone check pending | `MapIt_MVP_v1.html` / `public/index.html`, `public/mapit-logo.png` | Private tab to see the welcome page |
-| **Server distance from exact location (trilateration)** | ⬜ Quick fix: decision pending; radius filter → after launch (migration 019) | `src/routes/listings.js`, RPC 013 | See Open Issues |
+| **Server distance from exact location (trilateration)** | ✅ Quick fix on uat 2026-10-17 (`780f370`, merge `d543e28`); Nagesh localhost PASS; UAT data check 19/19 fuzzed listings measured from the display point. Radius membership → after launch (migration 019) | `src/routes/listings.js` (`visiblePoint()`), CLAUDE.md Rule 9 | No UI change → no screenshots |
+| **"Why approximate location is safer" short video** | 💡 Idea (Nagesh, 2026-10-17) — after launch | User Guide | Show exact vs approximate pin + distance; wording "safer", never "safe/anonymous" (radius edge, address text, photos can still reveal) |
 | **PR `uat → main` (security + polish)** | ⏳ After Arun's checks + Nagesh iPhone + chat checks E 13–15 | git | Carries map fixes, 018 scripts, escape helper, admin report photos, feedback button, phone search |
 | **Migration 018** | ✅ UAT + prod 2026-10-16 | `database/migrations/018-*.sql`, scripts | Leftover: PostGIS `spatial_ref_sys` writable (WARN A-18) |
 | **Frontend escape helper** | ✅ On uat 2026-10-16 | `MapIt_MVP_v1.html` / `public/index.html` | Prod with the PR |
@@ -2321,6 +2322,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**Update (2026-10-17, afternoon):** ✅ Arun re-checked Explore — OK. ✅ Nagesh iPhone check on uat (welcome page + chat safety) — OK. ✅ Server distance quick fix built + localhost PASS + on uat (`d543e28`). Nagesh uses one browser for uat (Vercel cookie; no bypass bookmark). Still open: Arun's ToS v1.2 OK → merge `docs/tos-v1.2`; Nagesh chat checks E 13–15 + rotate bypass secret; then PR `uat → main`. After launch: short "approximate location is safer" video for the User Guide.
 
 **⬅ NOW (2026-10-17 11:42) — towards Sunday 18 Oct:**
 1. **Nagesh:** get Arun into uat (working share link / Vercel access — see Open Issues) → **Arun:** re-check Explore distance + approve ToS v1.2 + OK ToS for the group.
