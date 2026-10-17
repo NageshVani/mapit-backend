@@ -2294,8 +2294,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 **⬅ NOW (2026-10-17, Saturday) — towards Sunday 18 Oct:**
 1. ✅ Share Feedback on phones fixed (uat `0e9df8a`, iPhone Chrome + Safari PASS, smoke 14/14).
-2. **James:** chat safety alert (keep chatting in MapIt, no OTP/advance/links) — approved before launch, ~1 h.
-3. **James:** pre-login welcome page with "Don't show again" (circlestore.in style) — mockup first; drop to Monday if late.
+2. ✅ Chat safety (uat `211fa90`): 🛡 Safety tips header button + banner, risky-message notes (contact / OTP-payment, browser keyword check, never blocks), Safety tips popup (also in Help). Nagesh localhost PASS; iPhone check pending.
+3. ✅ Welcome page before login (uat `840a1b4`, deploy success, smoke 14/14): launch-video wording (Whisper transcript), map USP tile with 150–400 m note, Free to use, one "Start exploring →" button, "Don't show this again" (`mapit_welcome_hide`), shared links skip it; SVG map background with MapIt-logo pins + category chips (no tiles, ₹0); old `step-landing` retired; transparent logo `public/mapit-logo.png` (sources in `docs/other/`). Nagesh localhost PASS. Pending: iPhone check on uat; `before-welcome.png` not taken. Follow-up (later): favicon + og-image with the new logo. `docs/Videos/` git-ignored (launch video first cut).
 4. AI scam detection in chat → after launch (needs ToS v2.0 coverage + cost decision; keyword warning covers most of it).
 5. Then items 2–7 of the 2026-10-16 list below (chat checks E 13–15, bypass secret, PR `uat → main`, Arun ToS OK, real listings).
 
