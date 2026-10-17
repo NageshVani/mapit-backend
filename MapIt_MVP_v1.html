@@ -82,6 +82,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
 /* ── LAYOUT ── */
 #main{display:flex;height:calc(100vh - var(--hdr-h,56px));}
+/* Phones: 100vh = height with the browser toolbars hidden, so the bottom of the
+   page (Share Feedback) sat under the toolbar. dvh = the visible area (2026-10-17). */
+@supports(height:100dvh){#main{height:calc(100dvh - var(--hdr-h,56px));}}
 
 /* ── SIDEBAR ── */
 #sb{width:var(--sb-w);flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
