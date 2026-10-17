@@ -315,7 +315,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #main.view-list #mapc{display:none;}
   #main.view-map #sb{display:none;}
   /* Share Feedback sat under the fixed List/Map toggle (bottom:16px, centred) — lift it above (2026-10-16) */
-  .feedback-strip{padding-bottom:68px;}
+  /* #sb prefix: the base .feedback-strip rule comes later in the file and reset this to 7px (2026-10-17) */
+  #sb .feedback-strip{padding-bottom:68px;}
 }
 @media(max-width:380px){
   .cat-lbl{white-space:normal;text-align:center;line-height:1.2;max-width:64px;}
