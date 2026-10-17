@@ -2323,7 +2323,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**Update (2026-10-17, afternoon):** ✅ Arun re-checked Explore — OK. ✅ Nagesh iPhone check on uat (welcome page + chat safety) — OK. ✅ Server distance quick fix built + localhost PASS + on uat (`d543e28`). Nagesh uses one browser for uat (Vercel cookie; no bypass bookmark). Still open: Arun's ToS v1.2 OK → merge `docs/tos-v1.2`; Nagesh chat checks E 13–15 + rotate bypass secret; then PR `uat → main`. After launch: short "approximate location is safer" video for the User Guide.
+**Update (2026-10-17, afternoon):** ✅ Arun re-checked Explore — OK. ✅ Nagesh iPhone check on uat (welcome page + chat safety) — OK. ✅ Server distance quick fix built + localhost PASS + on uat (`d543e28`). Nagesh uses one browser for uat (Vercel cookie; no bypass bookmark). ✅ Arun approved ToS v1.2 → merged to uat (`9a4d3b5`, /terms on uat). Nagesh: chat passed on localhost. Still open (after lunch): chat checks E 13–15 on uat.mapit.co.in with phone (account B) + laptop (account A) — live delivery both ways + safety note; rotate bypass secret → `.env` → James `smoke:prod` → PR `uat → main`. After launch: short "approximate location is safer" video for the User Guide.
 
 **⬅ NOW (2026-10-17 11:42) — towards Sunday 18 Oct:**
 1. **Nagesh:** get Arun into uat (working share link / Vercel access — see Open Issues) → **Arun:** re-check Explore distance + approve ToS v1.2 + OK ToS for the group.
