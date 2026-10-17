@@ -17,7 +17,7 @@ const crypto          = require('crypto');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
-const { fuzzLocation } = require('../utils/geo');
+const { fuzzLocation, haversineM } = require('../utils/geo');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 const { scoreListing } = require('../utils/contentModeration');
@@ -46,20 +46,19 @@ function generateRefCode() {
 // is normally pre-computed at write time, but falls back to computing it
 // here for any row that predates migration 010 — safe because fuzzLocation
 // is deterministic (same listing id always yields the same fuzzed point).
-function resolveListingLocation(listing, viewerId) {
+function visiblePoint(listing, viewerId) {
   const isOwner = !!viewerId && listing.seller_id === viewerId;
   const exact = isOwner || !!listing.show_exact_location;
-  let lat = listing.lat, lng = listing.lng;
-  if (!exact) {
-    if (listing.display_lat != null && listing.display_lng != null) {
-      lat = listing.display_lat;
-      lng = listing.display_lng;
-    } else {
-      const fuzzed = fuzzLocation(listing.lat, listing.lng, listing.id);
-      lat = fuzzed.lat;
-      lng = fuzzed.lng;
-    }
+  if (exact) return { lat: listing.lat, lng: listing.lng, exact };
+  if (listing.display_lat != null && listing.display_lng != null) {
+    return { lat: listing.display_lat, lng: listing.display_lng, exact };
   }
+  const fuzzed = fuzzLocation(listing.lat, listing.lng, listing.id);
+  return { lat: fuzzed.lat, lng: fuzzed.lng, exact };
+}
+
+function resolveListingLocation(listing, viewerId) {
+  const { lat, lng, exact } = visiblePoint(listing, viewerId);
   // Moderation fields (migration 015) are admin-only — strip them from every
   // buyer/seller-facing response. The admin queue reads them via /pending/all,
   // which doesn't go through this function.
@@ -396,8 +395,17 @@ router.get('/', requireAuth, async (req, res, next) => {
           .in('id', ids);
 
         if (error) return next(createError(error.message));
+        // The RPC measures from the exact lat/lng. For a fuzzed listing that
+        // number (and the sort order) would let a buyer trilaterate the real
+        // spot from three searches, so measure from the point they can see.
         listings = (data || [])
-          .map(l => ({ ...l, distance_m: distanceById.get(l.id) }))
+          .map(l => {
+            const p = visiblePoint(l, req.user.id);
+            const distance_m = p.exact
+              ? distanceById.get(l.id)
+              : Math.round(haversineM(uLat, uLng, p.lat, p.lng));
+            return { ...l, distance_m };
+          })
           .sort((a, b) => a.distance_m - b.distance_m);
       }
     } else {
