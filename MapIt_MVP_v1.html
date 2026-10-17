@@ -365,7 +365,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #chatBox{flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:280px;}
 #chatBox.hide{display:none;}
 .ch-hd{padding:8px 13px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.ch-hd-name{font-size:12px;font-weight:600;}
+.ch-hd-name{font-size:12px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ch-hd-close{margin-left:auto;cursor:pointer;font-size:13px;color:var(--muted);width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;}
 .ch-hd-close:hover{background:var(--card2);color:var(--text);}
 .cmsgs{flex:1;overflow-y:auto;padding:9px 11px;display:flex;flex-direction:column;gap:6px;}
@@ -384,6 +384,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .qm{padding:4px 11px;background:var(--card);border:1px solid var(--border2);border-radius:16px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;}
 .qm:hover{border-color:var(--orange);color:var(--orange);}
 .cinput-row{display:flex;gap:7px;padding:7px 10px;border-top:1px solid var(--border);flex-shrink:0;}
+/* Chat safety (2026-10-17): banner under the header + a note under risky messages */
+.ch-safe{padding:6px 12px;font-size:11.5px;line-height:1.4;color:var(--muted);background:rgba(240,96,48,.07);border-bottom:1px solid var(--border);flex-shrink:0;}
+.ch-hd-safe{margin-left:auto;display:flex;align-items:center;gap:5px;padding:4px 11px;border-radius:16px;border:1px solid rgba(240,96,48,.35);background:rgba(240,96,48,.1);color:var(--orange);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;}
+.ch-hd-safe span{font-size:16px;line-height:1;}
+.ch-hd-safe:hover{background:var(--orange);color:#fff;}
+.ch-hd-safe + .ch-hd-close{margin-left:4px;}
+.bwarn{font-size:10px;line-height:1.4;color:#b45309;background:#fef3c7;border-radius:6px;padding:3px 7px;margin-top:3px;max-width:82%;}
+.bwarn.r{margin-left:auto;}
+.safety-box h4{font-size:14px;margin:14px 0 4px;color:var(--text);}
+.safety-box ul{margin:0;padding-left:20px;line-height:1.55;font-size:13.5px;color:var(--text);}
+.safety-box li{margin-bottom:5px;}
 .cinput{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:7px 13px;color:var(--text);font-size:12px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .15s;}
 .cinput:focus{border-color:var(--orange);}
 .cinput::placeholder{color:var(--muted);}
@@ -1183,6 +1194,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <li>🤝 <b>Contact a seller:</b> open a listing and tap <b>I'm Interested</b> to send them a note</li>
       <li>💬 <b>Chat:</b> once a seller replies, tap <b>💬 Chat with seller</b> on the listing, or open <b>📥 Inbox</b> from your avatar menu</li>
       <li>📍 <b>Nearby places:</b> open any listing to see nearby schools, malls, and supermarkets in the "📍 Nearby" section</li>
+      <li>🛡 <b>Stay safe:</b> keep chatting in MapIt and never share an OTP or pay in advance — <a onclick="openSafetyModal()" style="color:var(--orange);font-weight:600;cursor:pointer;text-decoration:underline;">read the safety tips</a></li>
       <li>🚩 <b>Report a listing:</b> something looks wrong or suspicious? Open the listing and tap 🚩 to flag it for review</li>
       <li>📋 <b>Your listings:</b> open the <b>My Listings</b> tab to edit, mark as sold, or delete</li>
       <li>📍 <b>Change your location:</b> use <b>My Locations</b> in the avatar menu, or pick a saved one from <b>📍 My location ▾</b></li>
@@ -1192,6 +1204,43 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </ul>
     </div>
     <button class="modal-btn" onclick="closeHelpModal()" style="margin-top:10px;">Got it</button>
+  </div>
+</div>
+
+<!-- ── SAFETY TIPS MODAL (2026-10-17) — opened from the chat banner/notes and the Help popup ── -->
+<div class="feedback-modal hide" id="safetyModal" onclick="if(event.target===this)closeSafetyModal()">
+  <div class="feedback-box help-box safety-box">
+    <h3>🛡 Stay safe when buying &amp; selling</h3>
+    <div class="help-scroll">
+      <h4>Everyone</h4>
+      <ul>
+        <li><b>Keep chatting in MapIt.</b> Your phone number stays private. Be careful if someone pushes you to WhatsApp, Telegram or a call straight away</li>
+        <li><b>Never share an OTP, UPI PIN or card details.</b> No buyer, seller or MapIt team member ever needs them</li>
+        <li><b>You never need a UPI PIN or a QR scan to <i>receive</i> money.</b> If someone asks you to scan or enter a PIN "to get paid", it is a scam</li>
+        <li><b>Meet in a public place, in daylight</b> — a mall, a busy café, outside a police station. Take a friend or family member along, and tell someone where you are going</li>
+        <li><b>Too good to be true?</b> Very low prices, "urgent" pressure, or a story about being transferred (often "army / defence officer") are common scam signs</li>
+        <li><b>Don't share Aadhaar, PAN or bank documents</b> in chat</li>
+      </ul>
+      <h4>Buyers</h4>
+      <ul>
+        <li><b>See it before you pay.</b> Never pay an advance, "token amount", courier or gate-pass fee for an item you haven't seen</li>
+        <li><b>Vehicles:</b> check the RC, insurance and that the chassis/engine numbers match; verify the registration on the official mParivahan / VAHAN service</li>
+        <li><b>Property:</b> visit in person, meet the owner, and verify ownership documents (sale deed, khata, encumbrance certificate) before paying anything. For big amounts, use a lawyer</li>
+        <li><b>Pay safely:</b> pay only when you collect the item, and keep a written receipt</li>
+      </ul>
+      <h4>Sellers</h4>
+      <ul>
+        <li><b>Hand over the item only after the money is in your bank account</b> — check your bank app, not an SMS or a payment screenshot (both are easy to fake)</li>
+        <li><b>Refuse "overpayments"</b> where the buyer sends extra and asks you to return the difference</li>
+        <li><b>Test drives / visits:</b> go along, keep the keys, and check the buyer's ID first</li>
+      </ul>
+      <h4>Something wrong?</h4>
+      <ul>
+        <li>Open the listing and tap 🚩 to report it, or write to <b>contact-us@mapit.co.in</b></li>
+        <li>Lost money to fraud? Call the national cyber-crime helpline <b>1930</b> straight away or report at <b>cybercrime.gov.in</b></li>
+      </ul>
+    </div>
+    <button class="modal-btn" onclick="closeSafetyModal()" style="margin-top:10px;">Got it</button>
   </div>
 </div>
 
@@ -3232,8 +3281,10 @@ function renderSidebar(){
           const openConv = ST.chatOpen ? ST.allConversations.get(ST.chatConvId) : null;
           return escHtml(openConv?.other_user?.nickname || openConv?.other_user?.full_name || seller.full_name || 'Chat');
         })()}</span>
+        <button class="ch-hd-safe" type="button" onclick="openSafetyModal()" title="Safety tips"><span>🛡</span>Safety tips</button>
         <div class="ch-hd-close" onclick="closeChat()">✕</div>
       </div>
+      <div class="ch-safe">🔒 Keep chatting in MapIt. Never share OTPs or pay in advance.</div>
       <div class="cmsgs" id="cmsgs"></div>
       <div class="qmsgs" id="qmsgs"></div>
       <div class="cinput-row">
@@ -3456,11 +3507,33 @@ function addMsg(type,text,sentAtIso){
   renderChatMsgs(); scrollChat();
 }
 
+// Chat safety nudge (2026-10-17): a plain keyword check in the browser — the
+// message text goes nowhere and is never blocked or changed, only annotated.
+// 'pay' wins over 'contact' (an OTP/advance request is the bigger risk).
+const CHAT_RISK_PAY = /\botp\b|upi\s*pin|\badvance\b|token\s*(amount|money)|\bqr\b|scan\s*(the|this)?\s*code|gift\s*card|\b[\w.\-]{2,}@(ok\w+|ybl|ibl|axl|paytm|upi|apl|yapl|fbl|jupiteraxis)\b/i;
+const CHAT_RISK_CONTACT = /(?:\+?\d[\s\-.]?){10,}|[\w.+\-]+@[\w\-]+\.\w{2,}|https?:\/\/|www\.|\b(wa\.me|t\.me|bit\.ly|tinyurl\.com|chat\.whatsapp\.com)\b|whats\s*app|telegram|\bsignal\b/i;
+function chatRisk(text){
+  const t = String(text||'');
+  if(CHAT_RISK_PAY.test(t)) return 'pay';
+  if(CHAT_RISK_CONTACT.test(t)) return 'contact';
+  return null;
+}
+function chatRiskNote(type, text){
+  const risk = chatRisk(text); if(!risk) return '';
+  const msg = type==='sent'
+    ? (risk==='pay' ? '🔒 Never share an OTP or UPI PIN — MapIt and genuine buyers/sellers never need them.'
+                    : '🔒 Your contact details are now visible to this person. MapIt chat keeps them private.')
+    : (risk==='pay' ? '⚠️ Never share an OTP or UPI PIN, and never pay before seeing the item.'
+                    : '⚠️ Has contact details or a link. Scammers move chats off MapIt — keep chatting here.');
+  return `<div class="bwarn ${type==='sent'?'r':''}">${msg} <a onclick="openSafetyModal()" style="cursor:pointer;text-decoration:underline;">Tips</a></div>`;
+}
+
 function renderChatMsgs(){
   const el=document.getElementById('cmsgs'); if(!el) return;
   el.innerHTML=ST.chatMsgs.map(m=>`
     <div>
       <div class="bubble ${m.type==='sent'?'bsent':'brecv'}">${escHtml(m.text)}</div>
+      ${chatRiskNote(m.type, m.text)}
       <div class="btime ${m.type==='sent'?'r':''}">${m.t}</div>
     </div>`).join('');
 }
@@ -4878,6 +4951,8 @@ function openHelpModal(){
   document.getElementById('helpModal').classList.remove('hide');
 }
 function closeHelpModal(){ document.getElementById('helpModal').classList.add('hide'); }
+function openSafetyModal(){ document.getElementById('safetyModal').classList.remove('hide'); }
+function closeSafetyModal(){ document.getElementById('safetyModal').classList.add('hide'); }
 
 // ── View Profile (Session 9C) ──
 // Read-only. Every value goes in via textContent, never innerHTML — name,
