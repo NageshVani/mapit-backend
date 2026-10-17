@@ -3,9 +3,12 @@
 //   npm run smoke:prod
 // No login, no accounts, no writes: production data is real user data since
 // the 9K UAT/prod split, so a smoke test must never create anything there.
-// The radius check calls the public listings_within_radius RPC with prod's
-// public anon key (exactly what a browser can do) and only counts the ids.
-// Needs no .env. Uses git to compare the served page with origin/main.
+// S-07 / S-14 call Supabase with prod's public anon key (exactly what a
+// browser can do) and expect a refusal: since migration 018 the anon key can
+// read no table and call no RPC. Both FAIL until 018 has run on production.
+// Uses git to compare the served page with origin/main. From .env it reads only
+// VERCEL_AUTOMATION_BYPASS_SECRET: uat sits behind Vercel Authentication
+// (2026-10-15), and the secret is sent to the uat host only, never to prod.
 const crypto = require('crypto'), { execSync } = require('child_process');
 
 // Canonical host is www: Vercel 308-redirects the bare domain to it.
@@ -23,6 +26,8 @@ function check(id, desc, pass, evidence) {
 }
 async function get(url, opts = {}) {
   const t = Date.now();
+  const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  if (bypass && url.startsWith(UAT)) opts = { ...opts, headers: { ...opts.headers, 'x-vercel-protection-bypass': bypass } };
   const res = await fetch(url, { redirect: 'manual', ...opts });
   const text = await res.text();
   let json = null; try { json = JSON.parse(text); } catch { /* html */ }
@@ -76,20 +81,20 @@ async function get(url, opts = {}) {
   check('S-06', 'Protected routes return 401 without a login (incl. POST /api/listings)',
     prot.every(r => r.status === 401), prot.map(r => r.status).join(' · '));
 
-  // S-07 · radius search on prod data (ids only, counted)
+  // S-07 · the radius RPC is closed to the public anon key (migration 018,
+  // 2026-10-16) — only the backend (service role) may call it. Radius search
+  // itself needs a login (GET /api/listings), so it is click-tested, not here.
+  const sbHeaders = { apikey: cfg.json?.supabaseAnonKey, Authorization: 'Bearer ' + cfg.json?.supabaseAnonKey, 'Content-Type': 'application/json' };
   let rpc = { status: 0, json: null };
   if (cfg.json?.supabaseUrl) {
     rpc = await get(`${cfg.json.supabaseUrl}/rest/v1/rpc/listings_within_radius`, {
-      method: 'POST',
-      headers: { apikey: cfg.json.supabaseAnonKey, Authorization: 'Bearer ' + cfg.json.supabaseAnonKey, 'Content-Type': 'application/json' },
+      method: 'POST', headers: sbHeaders,
       body: JSON.stringify({ user_lat: 12.9716, user_lng: 77.5946, radius_m: 10000 }),
     });
   }
-  // 0 is valid: prod test data was cleared on 2026-10-10 (Session 9K step 8), so
-  // the map starts empty until real users post. This checks the RPC works.
-  check('S-07', 'Radius search (RPC) answers within 10 km of central Bangalore (0+ listings)',
-    rpc.status === 200 && Array.isArray(rpc.json),
-    `HTTP ${rpc.status} · ${Array.isArray(rpc.json) ? rpc.json.length + ' listings' : JSON.stringify(rpc.json)?.slice(0, 120)}`);
+  check('S-07', 'Radius RPC is refused for the public anon key (401/403)',
+    [401, 403].includes(rpc.status),
+    `HTTP ${rpc.status} · ${Array.isArray(rpc.json) ? '⚠ OPEN: ' + rpc.json.length + ' listings returned' : JSON.stringify(rpc.json)?.slice(0, 120)}`);
 
   // S-08 · CORS whitelist (Rule 8): mapit.co.in allowed, others not
   const good = await get(PROD + '/api/auth/status', { headers: { Origin: PROD } });
@@ -124,6 +129,16 @@ async function get(url, opts = {}) {
   check('S-13', 'Production has no noindex; uat has X-Robots-Tag: noindex',
     !/noindex/i.test(prodRobots) && /noindex/i.test(uatRobots),
     `prod=${prodRobots || '(none)'} · uat=${uatRobots || '(none)'}`);
+
+  // S-14 · the public anon key cannot read listings directly (migration 018).
+  // Read-only: a GET for ids only; before 018 this returned every listing.
+  let lst = { status: 0, json: null };
+  if (cfg.json?.supabaseUrl) {
+    lst = await get(`${cfg.json.supabaseUrl}/rest/v1/listings?select=id&limit=1`, { headers: sbHeaders });
+  }
+  check('S-14', 'Listings table is refused for the public anon key (401/403)',
+    [401, 403].includes(lst.status),
+    `HTTP ${lst.status} · ${Array.isArray(lst.json) ? '⚠ OPEN: table readable' : JSON.stringify(lst.json)?.slice(0, 120)}`);
 
   const pass = results.filter(r => r.pass).length;
   console.log(`\n${pass}/${results.length} PASS — read-only, nothing written to production.`);

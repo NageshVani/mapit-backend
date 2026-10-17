@@ -113,8 +113,11 @@ If DB changes were made (in Supabase SQL Editor), note them in CONTEXT.md.
     filtering (fixed 2026-08-06, migration 013) — the RPC returns only
     `(id, distance_m)`, and the backend does a follow-up `select('*')` for
     full rows, so every column (including `subcategory`) is always present.
-    `haversineM()` (`src/utils/geo.js`) is no longer used for this query —
-    still used by `poiLookup.js`.
+    The RPC's `distance_m` is measured from the EXACT lat/lng, so for fuzzed
+    listings (not owner, `show_exact_location` false) the route recomputes
+    `distance_m` with `haversineM()` from the display point before sorting
+    (2026-10-17, anti-trilateration). Radius membership still uses the exact
+    point — planned fix: migration 019, after launch.
   - Helmet CSP disabled globally (contentSecurityPolicy: false)
     → Required for inline scripts + CDN resources (Leaflet, Google Fonts; icons are emoji / inline SVG)
   - Admin detection: nagesh.aadi@gmail.com / arun.bn1@gmail.com — no invite codes in MVP

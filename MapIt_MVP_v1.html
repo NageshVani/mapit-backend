@@ -82,6 +82,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
 /* ── LAYOUT ── */
 #main{display:flex;height:calc(100vh - var(--hdr-h,56px));}
+/* Phones: 100vh = height with the browser toolbars hidden, so the bottom of the
+   page (Share Feedback) sat under the toolbar. dvh = the visible area (2026-10-17). */
+@supports(height:100dvh){#main{height:calc(100dvh - var(--hdr-h,56px));}}
 
 /* ── SIDEBAR ── */
 #sb{width:var(--sb-w);flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
@@ -311,6 +314,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #sb{width:100%;}
   #main.view-list #mapc{display:none;}
   #main.view-map #sb{display:none;}
+  /* Share Feedback sat under the fixed List/Map toggle (bottom:16px, centred) — lift it above (2026-10-16) */
+  /* #sb prefix: the base .feedback-strip rule comes later in the file and reset this to 7px (2026-10-17) */
+  #sb .feedback-strip{padding-bottom:68px;}
 }
 @media(max-width:380px){
   .cat-lbl{white-space:normal;text-align:center;line-height:1.2;max-width:64px;}
@@ -359,7 +365,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #chatBox{flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:280px;}
 #chatBox.hide{display:none;}
 .ch-hd{padding:8px 13px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.ch-hd-name{font-size:12px;font-weight:600;}
+.ch-hd-name{font-size:12px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ch-hd-close{margin-left:auto;cursor:pointer;font-size:13px;color:var(--muted);width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;}
 .ch-hd-close:hover{background:var(--card2);color:var(--text);}
 .cmsgs{flex:1;overflow-y:auto;padding:9px 11px;display:flex;flex-direction:column;gap:6px;}
@@ -378,6 +384,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .qm{padding:4px 11px;background:var(--card);border:1px solid var(--border2);border-radius:16px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;}
 .qm:hover{border-color:var(--orange);color:var(--orange);}
 .cinput-row{display:flex;gap:7px;padding:7px 10px;border-top:1px solid var(--border);flex-shrink:0;}
+/* Chat safety (2026-10-17): banner under the header + a note under risky messages */
+.ch-safe{padding:6px 12px;font-size:11.5px;line-height:1.4;color:var(--muted);background:rgba(240,96,48,.07);border-bottom:1px solid var(--border);flex-shrink:0;}
+.ch-hd-safe{margin-left:auto;display:flex;align-items:center;gap:5px;padding:4px 11px;border-radius:16px;border:1px solid rgba(240,96,48,.35);background:rgba(240,96,48,.1);color:var(--orange);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;}
+.ch-hd-safe span{font-size:16px;line-height:1;}
+.ch-hd-safe:hover{background:var(--orange);color:#fff;}
+.ch-hd-safe + .ch-hd-close{margin-left:4px;}
+.bwarn{font-size:10px;line-height:1.4;color:#b45309;background:#fef3c7;border-radius:6px;padding:3px 7px;margin-top:3px;max-width:82%;}
+.bwarn.r{margin-left:auto;}
+.safety-box h4{font-size:14px;margin:14px 0 4px;color:var(--text);}
+.safety-box ul{margin:0;padding-left:20px;line-height:1.55;font-size:13.5px;color:var(--text);}
+.safety-box li{margin-bottom:5px;}
 .cinput{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:7px 13px;color:var(--text);font-size:12px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .15s;}
 .cinput:focus{border-color:var(--orange);}
 .cinput::placeholder{color:var(--muted);}
@@ -418,12 +435,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .modal-link span:hover{text-decoration:underline;}
 .modal-step{display:none;}
 .modal-step.active{display:block;}
-.landing-hero{font-size:17px;font-weight:700;color:var(--text);line-height:1.45;text-align:center;margin-bottom:20px;}
-.landing-bullets{display:flex;flex-direction:column;gap:14px;margin-bottom:24px;}
-.landing-bullet{display:flex;align-items:flex-start;gap:12px;}
-.landing-ico{font-size:24px;flex-shrink:0;line-height:1.2;}
-.landing-bttl{font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px;}
-.landing-bsub{font-size:13.5px;color:var(--muted);line-height:1.45;}
 .modal-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:14px;}
 .modal-success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:14px;}
 .otp-hint{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px;}
@@ -555,8 +566,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 
 /* ── FEEDBACK ── */
 .feedback-strip{padding:7px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.feedback-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border2);border-radius:20px;padding:5px 16px;font-size:11.5px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;font-weight:600;}
-.feedback-btn:hover{border-color:var(--orange);color:var(--orange);}
+.feedback-btn{display:flex;align-items:center;gap:6px;background:rgba(240,96,48,.12);border:1px solid rgba(240,96,48,.35);border-radius:20px;padding:5px 16px;font-size:11.5px;color:var(--orange);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;font-weight:600;}
+.feedback-btn:hover{background:var(--orange);border-color:var(--orange);color:#fff;}
 .feedback-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;}
 .feedback-modal.hide{display:none;}
 .feedback-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:460px;box-shadow:var(--shadow);padding:28px 28px 22px;}
@@ -657,6 +668,93 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .inbox-preview{font-size:11.5px;color:var(--muted);line-height:1.5;}
 .inbox-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:6px;}
 
+/* ── WELCOME PAGE (pre-login, 2026-10-17) — content from the launch video; map drawn in SVG, no tiles ── */
+.wl.hide{display:none;}
+.wl{position:fixed;inset:0;overflow-y:auto;background:#EEF1F5;z-index:1300;}
+/* Drawn map background — inline SVG, no tiles, no network */
+.wl-map{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;}
+.wl-pins,.wl-tags{position:fixed;inset:0;pointer-events:none;}
+.wl-pin{position:absolute;width:30px;height:40px;transform:translate(-50%,-100%);animation:wlDrop .7s cubic-bezier(.3,1.6,.5,1) both;}
+/* Category chip beside each pin — fades in after its pin lands */
+.wl-tagchip{position:absolute;white-space:nowrap;font-size:11.5px;font-weight:600;color:var(--text);background:#fff;border:1px solid var(--border2);border-left:3px solid var(--orange);border-radius:6px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,.10);animation:wlTag .5s ease-out both;}
+.wl-tagchip.r{transform:translate(18px,-32px);}
+.wl-tagchip.l{transform:translate(calc(-100% - 18px),-32px);}
+@keyframes wlTag{0%{opacity:0;}100%{opacity:1;}}
+@keyframes wlDrop{0%{opacity:0;transform:translate(-50%,-160%);}100%{opacity:1;transform:translate(-50%,-100%);}}
+.wl-ring{position:fixed;left:50%;top:50%;width:min(92vw,880px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:2px dashed rgba(240,96,48,.35);background:radial-gradient(circle,rgba(240,96,48,.07) 0%,rgba(240,96,48,.03) 55%,transparent 70%);pointer-events:none;}
+.wl-ring::before{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid rgba(240,96,48,.45);animation:wlPulse 3.2s ease-out infinite;}
+@keyframes wlPulse{0%{transform:scale(.35);opacity:.9;}100%{transform:scale(1);opacity:0;}}
+
+.wl-wrap{position:relative;min-height:100%;display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+.wl-card{width:100%;max-width:760px;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border:1px solid var(--border2);border-radius:22px;box-shadow:0 18px 60px rgba(17,24,39,.14);padding:34px 40px 26px;}
+.wl-brand{display:flex;align-items:center;justify-content:center;gap:14px;}
+.wl-logo{width:auto;height:76px;}
+.wl-name{font-family:'Playfair Display',serif;font-size:46px;line-height:1;}
+.wl-name em{font-style:normal;color:var(--orange);}
+.wl-tag{text-align:center;font-size:14px;font-weight:600;letter-spacing:.5px;color:var(--muted);margin-top:6px;text-transform:uppercase;}
+.wl-h1{text-align:center;font-size:30px;line-height:1.25;font-weight:700;margin:22px auto 8px;max-width:560px;}
+.wl-h1 span{color:var(--orange);}
+.wl-sub{text-align:center;font-size:17px;color:var(--muted2);}
+
+/* USP tile — the map — full width and highlighted; the other three sit in one even row */
+.wl-usp{display:flex;align-items:center;gap:18px;margin:24px 0 12px;padding:16px 22px;border-radius:14px;background:linear-gradient(135deg,rgba(240,96,48,.12),rgba(240,96,48,.04));border:1.5px solid rgba(240,96,48,.45);}
+.wl-usp-ico{font-size:38px;line-height:1;flex-shrink:0;}
+.wl-usp-t{font-size:17px;font-weight:700;margin-bottom:2px;}
+.wl-usp-d{font-size:14px;color:var(--muted2);}
+.wl-usp-n{font-size:12px;color:var(--muted);margin-top:4px;}
+.wl-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 22px;}
+.wl-feat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;}
+.wl-ico{font-size:26px;line-height:1;margin-bottom:8px;}
+.wl-ft{font-size:14px;font-weight:700;margin-bottom:3px;}
+.wl-fnote{font-size:11px;color:var(--muted);line-height:1.4;margin-top:6px;padding-top:6px;border-top:1px dashed var(--border2);}
+.wl-fd{font-size:12.5px;color:var(--muted);line-height:1.45;}
+
+.wl-how{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.wl-how-col{border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
+.wl-how-h{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--orange);margin-bottom:8px;}
+.wl-steps{display:flex;align-items:flex-start;gap:6px;}
+.wl-step{flex:1;text-align:center;font-size:12.5px;color:var(--muted2);line-height:1.35;}
+.wl-num{width:26px;height:26px;border-radius:50%;background:var(--orange);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 5px;}
+.wl-arrow{color:var(--orange);font-weight:700;padding-top:4px;}
+
+.wl-cta{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:24px;}
+.wl-btn{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;border-radius:10px;padding:13px 30px;cursor:pointer;border:none;}
+.wl-btn.pri{background:var(--orange);color:#fff;box-shadow:0 6px 18px rgba(240,96,48,.35);}
+.wl-btn.pri:hover{background:var(--orange2);}
+.wl-btn.sec{background:#fff;color:var(--text);border:1.5px solid var(--border2);}
+.wl-btn.sec:hover{border-color:var(--orange);color:var(--orange);}
+.wl-cta-note{font-size:12.5px;color:var(--muted);line-height:1.4;text-align:left;}
+.wl-free{display:inline-block;margin-left:6px;padding:2px 11px;border-radius:12px;background:var(--orange);color:#fff;font-size:13px;font-weight:700;letter-spacing:.3px;vertical-align:1px;white-space:nowrap;}
+.wl-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;}
+.wl-foot label{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.wl-foot input{accent-color:var(--orange);width:16px;height:16px;}
+.wl-safe{display:flex;align-items:center;gap:5px;}
+
+@media(max-width:768px){
+  .wl-wrap{align-items:flex-start;padding:18px 16px 28px;}
+  .wl-tagchip{font-size:10px;padding:2px 6px;}
+  .wl-card{padding:24px 18px 20px;border-radius:18px;}
+  .wl-logo{height:58px;}
+  .wl-name{font-size:36px;}
+  .wl-tag{font-size:12px;}
+  .wl-h1{font-size:23px;margin-top:16px;}
+  .wl-sub{font-size:15px;}
+  .wl-usp{margin:18px 0 10px;padding:14px;gap:12px;align-items:flex-start;}
+  .wl-usp-ico{font-size:30px;}
+  .wl-usp-t{font-size:16px;}
+  /* Phones: the three tiles become compact rows (icon left) */
+  .wl-feats{grid-template-columns:1fr;gap:8px;margin:0 0 16px;}
+  .wl-feat{display:grid;grid-template-columns:64px 1fr;column-gap:8px;align-items:center;text-align:left;padding:10px 12px;}
+  .wl-feat .wl-ico{grid-row:1/3;margin:0;font-size:20px;text-align:center;white-space:nowrap;letter-spacing:-2px;}
+  .wl-feat .wl-ft{margin:0;}
+  .wl-how{grid-template-columns:1fr;gap:10px;}
+  /* Phones: the button bar stays on screen while the card scrolls behind it */
+  .wl-cta{position:sticky;bottom:0;margin:16px -18px 0;padding:12px 18px;background:linear-gradient(to top,rgba(255,255,255,.98) 70%,rgba(255,255,255,0));z-index:2;}
+  .wl-btn{width:100%;}
+  .wl-cta-note{display:none;}  /* phones: keep the sticky bar slim — the sign-in screen comes next anyway */
+  .wl-foot{justify-content:center;flex-direction:column;}
+}
+@media(prefers-reduced-motion:reduce){.wl-pin,.wl-tagchip{animation:none;}.wl-ring::before{animation:none;opacity:0;}}
 </style>
 </head>
 <body>
@@ -677,41 +775,96 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <div class="splash-msg" id="splashMsg">Loading your map…</div>
 </div>
 
+<!-- ── WELCOME PAGE (pre-login) ── -->
+<div class="wl hide" id="welcomeScreen">
+  <!-- Drawn map: blocks, roads, a lake and parks (pure SVG pattern + shapes) -->
+  <svg class="wl-map" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 1000" aria-hidden="true">
+    <defs>
+      <pattern id="wlBlocks" width="80" height="80" patternUnits="userSpaceOnUse">
+        <rect width="80" height="80" fill="#EEF1F5"/>
+        <rect x="6" y="6" width="30" height="30" rx="3" fill="#E2E7EE"/>
+        <rect x="42" y="6" width="32" height="18" rx="3" fill="#E2E7EE"/>
+        <rect x="42" y="28" width="32" height="8" rx="2" fill="#E5E9F0"/>
+        <rect x="6" y="42" width="18" height="32" rx="3" fill="#E5E9F0"/>
+        <rect x="28" y="42" width="46" height="32" rx="3" fill="#E2E7EE"/>
+        <path d="M0 0H80M0 0V80" stroke="#FFFFFF" stroke-width="3"/>
+      </pattern>
+    </defs>
+    <rect width="1600" height="1000" fill="url(#wlBlocks)"/>
+    <!-- parks + lake -->
+    <path d="M90 620 q90 -60 180 0 t150 70 v140 h-330z" fill="#D6EBD3"/>
+    <ellipse cx="1340" cy="230" rx="150" ry="85" fill="#CFE3F3"/>
+    <rect x="1110" y="690" width="210" height="150" rx="14" fill="#D6EBD3"/>
+    <path d="M-20 360 C 300 300, 520 470, 820 400 S 1300 280, 1640 380" stroke="#CFE3F3" stroke-width="34" fill="none"/>
+    <!-- main roads -->
+    <path d="M0 160 H1600 M0 520 H1600 M0 860 H1600 M260 0 V1000 M760 0 V1000 M1240 0 V1000" stroke="#FFFFFF" stroke-width="12"/>
+    <path d="M-40 980 L1640 40" stroke="#FFF4DD" stroke-width="16"/>
+    <path d="M0 520 H1600 M760 0 V1000" stroke="#FCE7C8" stroke-width="5"/>
+  </svg>
+  <div class="wl-ring" aria-hidden="true"></div>
+  <div class="wl-pins" id="wlPins" aria-hidden="true"></div>
+  <div class="wl-tags" id="wlTags" aria-hidden="true"></div>
+
+  <div class="wl-wrap">
+    <div class="wl-card" role="dialog" aria-labelledby="wlTitle">
+      <div class="wl-brand">
+        <img class="wl-logo" src="/mapit-logo.png" width="57" height="76" alt="MapIt logo">
+        <div class="wl-name">Map<em>It</em></div>
+      </div>
+      <div class="wl-tag">The geo-based marketplace</div>
+      <h1 class="wl-h1" id="wlTitle">What if everything around you was <span>just one search away?</span></h1>
+      <p class="wl-sub">Everything around you. All in one place. <span class="wl-free">Free to use</span></p>
+
+      <div class="wl-usp">
+        <div class="wl-usp-ico">📍</div>
+        <div>
+          <div class="wl-usp-t">See it on the map</div>
+          <div class="wl-usp-d">Every listing is a pin, with its distance from you.</div>
+          <div class="wl-usp-n">Sellers choose whether to show their exact location. By default the pin is placed 150–400 m away.</div>
+        </div>
+      </div>
+      <div class="wl-feats">
+        <div class="wl-feat"><div class="wl-ico">🔍</div><div class="wl-ft">Search nearby</div><div class="wl-fd">Your neighbourhood, or explore anywhere you choose</div></div>
+        <div class="wl-feat"><div class="wl-ico">🏠🚗🛋</div><div class="wl-ft">Buy, sell, rent</div><div class="wl-fd">Homes, vehicles, furniture and household items</div></div>
+        <div class="wl-feat"><div class="wl-ico">💬</div><div class="wl-ft">Connect safely</div><div class="wl-fd">Chat with nearby buyers and sellers — your number stays private</div></div>
+      </div>
+
+      <div class="wl-how">
+        <div class="wl-how-col">
+          <div class="wl-how-h">Buying</div>
+          <div class="wl-steps">
+            <div class="wl-step"><div class="wl-num">1</div>Browse the map</div><div class="wl-arrow">→</div>
+            <div class="wl-step"><div class="wl-num">2</div>Tap “I’m Interested”</div><div class="wl-arrow">→</div>
+            <div class="wl-step"><div class="wl-num">3</div>Chat &amp; meet safely</div>
+          </div>
+        </div>
+        <div class="wl-how-col">
+          <div class="wl-how-h">Selling</div>
+          <div class="wl-steps">
+            <div class="wl-step"><div class="wl-num">1</div>Post with photos</div><div class="wl-arrow">→</div>
+            <div class="wl-step"><div class="wl-num">2</div>Live within 4 hours</div><div class="wl-arrow">→</div>
+            <div class="wl-step"><div class="wl-num">3</div>Nearby buyers find you</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wl-cta">
+        <button class="wl-btn pri" onclick="closeWelcome()">Start exploring →</button>
+        <span class="wl-cta-note">Sign up or sign in<br>on the next step</span>
+      </div>
+      <div class="wl-foot">
+        <label><input type="checkbox" id="wlNoShow" onchange="setWelcomeHidden(this.checked)"> Don’t show this again</label>
+        <span class="wl-safe">🛡 Every listing is reviewed by the MapIt team</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── AUTH MODAL ── -->
 <div class="modal-overlay hide" id="authModal">
   <div class="modal-box">
     <div class="modal-logo" id="modalLogo">Map<em>It</em></div>
     <div class="modal-sub" id="modalSub">Geo-based Marketplace</div>
-
-    <!-- Step 0: Landing — value proposition for first-time visitors -->
-    <div class="modal-step" id="step-landing">
-      <div class="landing-hero">Find what's for sale <span style="color:var(--orange)">right near you</span> — on a live map.</div>
-      <div class="landing-bullets">
-        <div class="landing-bullet">
-          <span class="landing-ico">📍</span>
-          <div>
-            <div class="landing-bttl">See exactly how far away it is</div>
-            <div class="landing-bsub">Every listing shows real distance from you — not just a vague neighbourhood name.</div>
-          </div>
-        </div>
-        <div class="landing-bullet">
-          <span class="landing-ico">🗺</span>
-          <div>
-            <div class="landing-bttl">Browse on a live map</div>
-            <div class="landing-bsub">Tap any pin to explore homes, vehicles, and furniture all around you.</div>
-          </div>
-        </div>
-        <div class="landing-bullet">
-          <span class="landing-ico">🤝</span>
-          <div>
-            <div class="landing-bttl">Free to post, free to browse</div>
-            <div class="landing-bsub">No listing fees. No subscriptions. Post in minutes, connect locally.</div>
-          </div>
-        </div>
-      </div>
-      <button class="modal-btn" onclick="startOnboarding()">Get Started →</button>
-      <div class="modal-link" style="margin-top:10px;" onclick="startOnboarding()">Already have an account? <span>Sign in →</span></div>
-    </div>
 
     <!-- Step 1: Email + Password (primary auth) -->
     <div class="modal-step active" id="step-auth">
@@ -1177,6 +1330,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <li>🤝 <b>Contact a seller:</b> open a listing and tap <b>I'm Interested</b> to send them a note</li>
       <li>💬 <b>Chat:</b> once a seller replies, tap <b>💬 Chat with seller</b> on the listing, or open <b>📥 Inbox</b> from your avatar menu</li>
       <li>📍 <b>Nearby places:</b> open any listing to see nearby schools, malls, and supermarkets in the "📍 Nearby" section</li>
+      <li>🛡 <b>Stay safe:</b> keep chatting in MapIt and never share an OTP or pay in advance — <a onclick="openSafetyModal()" style="color:var(--orange);font-weight:600;cursor:pointer;text-decoration:underline;">read the safety tips</a></li>
       <li>🚩 <b>Report a listing:</b> something looks wrong or suspicious? Open the listing and tap 🚩 to flag it for review</li>
       <li>📋 <b>Your listings:</b> open the <b>My Listings</b> tab to edit, mark as sold, or delete</li>
       <li>📍 <b>Change your location:</b> use <b>My Locations</b> in the avatar menu, or pick a saved one from <b>📍 My location ▾</b></li>
@@ -1186,6 +1340,43 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     </ul>
     </div>
     <button class="modal-btn" onclick="closeHelpModal()" style="margin-top:10px;">Got it</button>
+  </div>
+</div>
+
+<!-- ── SAFETY TIPS MODAL (2026-10-17) — opened from the chat banner/notes and the Help popup ── -->
+<div class="feedback-modal hide" id="safetyModal" onclick="if(event.target===this)closeSafetyModal()">
+  <div class="feedback-box help-box safety-box">
+    <h3>🛡 Stay safe when buying &amp; selling</h3>
+    <div class="help-scroll">
+      <h4>Everyone</h4>
+      <ul>
+        <li><b>Keep chatting in MapIt.</b> Your phone number stays private. Be careful if someone pushes you to WhatsApp, Telegram or a call straight away</li>
+        <li><b>Never share an OTP, UPI PIN or card details.</b> No buyer, seller or MapIt team member ever needs them</li>
+        <li><b>You never need a UPI PIN or a QR scan to <i>receive</i> money.</b> If someone asks you to scan or enter a PIN "to get paid", it is a scam</li>
+        <li><b>Meet in a public place, in daylight</b> — a mall, a busy café, outside a police station. Take a friend or family member along, and tell someone where you are going</li>
+        <li><b>Too good to be true?</b> Very low prices, "urgent" pressure, or a story about being transferred (often "army / defence officer") are common scam signs</li>
+        <li><b>Don't share Aadhaar, PAN or bank documents</b> in chat</li>
+      </ul>
+      <h4>Buyers</h4>
+      <ul>
+        <li><b>See it before you pay.</b> Never pay an advance, "token amount", courier or gate-pass fee for an item you haven't seen</li>
+        <li><b>Vehicles:</b> check the RC, insurance and that the chassis/engine numbers match; verify the registration on the official mParivahan / VAHAN service</li>
+        <li><b>Property:</b> visit in person, meet the owner, and verify ownership documents (sale deed, khata, encumbrance certificate) before paying anything. For big amounts, use a lawyer</li>
+        <li><b>Pay safely:</b> pay only when you collect the item, and keep a written receipt</li>
+      </ul>
+      <h4>Sellers</h4>
+      <ul>
+        <li><b>Hand over the item only after the money is in your bank account</b> — check your bank app, not an SMS or a payment screenshot (both are easy to fake)</li>
+        <li><b>Refuse "overpayments"</b> where the buyer sends extra and asks you to return the difference</li>
+        <li><b>Test drives / visits:</b> go along, keep the keys, and check the buyer's ID first</li>
+      </ul>
+      <h4>Something wrong?</h4>
+      <ul>
+        <li>Open the listing and tap 🚩 to report it, or write to <b>contact-us@mapit.co.in</b></li>
+        <li>Lost money to fraud? Call the national cyber-crime helpline <b>1930</b> straight away or report at <b>cybercrime.gov.in</b></li>
+      </ul>
+    </div>
+    <button class="modal-btn" onclick="closeSafetyModal()" style="margin-top:10px;">Got it</button>
   </div>
 </div>
 
@@ -1542,8 +1733,10 @@ function renderWhoamiScreen(){
   const entries = Object.entries(all).sort((a,b)=>new Date(b[1].last_login||0)-new Date(a[1].last_login||0));
   const list = document.getElementById('whoamiUserList');
   list.innerHTML = entries.map(([uid, u])=>{
-    const displayName = u.nickname || u.created_for || u.name || 'Family Member';
-    const displayInit = displayName !== 'Family Member' ? getInitials(displayName) : (u.initials || '?');
+    const rawName = u.nickname || u.created_for || u.name || 'Family Member';
+    const displayInit = escHtml(rawName !== 'Family Member' ? getInitials(rawName) : (u.initials || '?'));
+    const displayName = escHtml(rawName);
+    uid = escHtml(uid); u = { ...u, invite_code: escHtml(u.invite_code) };
     return `
     <div style="position:relative;">
       <button class="whoami-yes" onclick="continueAs('${uid}')" title="${displayName}"
@@ -1569,8 +1762,7 @@ function removeMultiSession(userId, ev){
   localStorage.setItem('mapit_sessions', JSON.stringify(all));
   if(Object.keys(all).length === 0){
     document.getElementById('whoamiScreen').classList.add('hide');
-    document.getElementById('authModal').classList.remove('hide');
-    if(!localStorage.getItem('mapit_seen_landing')) goToStep('step-landing');
+    showAuthOrWelcome();
     return;
   }
   renderWhoamiScreen();
@@ -1581,11 +1773,11 @@ function listingRow(l){
   const d   = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
   const sel = l.id === ST.selId;
   return `<div class="lr-row ${sel?'sel':''}" onclick="selListing('${l.id}', ST.tab==='fav'||ST.tab==='mine')">
-    <div class="lr-ico">${l.cover_photo?`<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}</div>
+    <div class="lr-ico">${l.cover_photo?`<img src="${escHtml(l.cover_photo)}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}</div>
     <div class="lr-info">
-      <div class="lr-title">${l.title}</div>
+      <div class="lr-title">${escHtml(l.title)}</div>
       <div class="lr-price">${priceText(l)}</div>
-      <div class="lr-meta">📍 ${fmtD(d)} · ${l.subcategory||''} · ${timeAgo(l.created_at)}</div>
+      <div class="lr-meta">📍 ${fmtD(d)} · ${escHtml(l.subcategory)} · ${timeAgo(l.created_at)}</div>
     </div>
   </div>`;
 }
@@ -1993,7 +2185,7 @@ async function sendPasswordReset(){
   try {
     await apiPost('/api/auth/reset-password', { email, redirectTo: window.location.origin + '/' });
     document.getElementById('resetSentMsg').innerHTML =
-      `A password reset link has been sent to<br><b>${email}</b><br><br>Click the link in the email to set a new password. The link expires in 1 hour.`;
+      `A password reset link has been sent to<br><b>${escHtml(email)}</b><br><br>Click the link in the email to set a new password. The link expires in 1 hour.`;
     goToStep('step-reset-sent');
   } catch(e){ showErr('authError', 'Could not send reset link. Please try again.'); }
 }
@@ -2645,7 +2837,7 @@ function initMap(){
     icon:L.divIcon({className:'',html:`<div class="umark"><div class="upulse"></div><div class="udot"></div></div>`,iconSize:[44,44],iconAnchor:[22,22]}),
     zIndexOffset:1000,
   }).addTo(map);
-  _userMarker.bindPopup(`<b style="color:#F06030">📍 ${ST.activePin?.label||'Your Location'}</b>`);
+  _userMarker.bindPopup(`<b style="color:#F06030">📍 ${escHtml(ST.activePin?.label||'Your Location')}</b>`);
 
   // Tapping empty map area dismisses an open tap-preview tooltip (mobile pin-tooltip flow)
   map.on('click', ()=>{
@@ -2780,7 +2972,7 @@ function openStackPopup(group, isFav){
       ${group.map(l=>`<div class="stack-popup-item" onclick="closeStackPopupAndSelect('${l.id}',${isFav})">
         <span class="stack-popup-emoji">${listingEmoji(l)}</span>
         <div class="stack-popup-mid">
-          <div class="stack-popup-title">${l.title}</div>
+          <div class="stack-popup-title">${escHtml(l.title)}</div>
           <div class="stack-popup-price">${priceText(l)}</div>
         </div>
       </div>`).join('')}
@@ -2823,7 +3015,7 @@ function showClusterHoverCard(latlng, listings){
   if(top<8) top = pt.y+18;
   hc.style.left = left+'px'; hc.style.top = top+'px';
   const shown = listings.slice(0, CLUSTER_HOVER_MAX_LINES);
-  const rows = shown.map(l=>`<div class="hc-row"><span>${listingEmoji(l)} ${l.subcategory||l.category}</span></div>`).join('');
+  const rows = shown.map(l=>`<div class="hc-row"><span>${listingEmoji(l)} ${escHtml(l.subcategory||l.category)}</span></div>`).join('');
   const more = listings.length > CLUSTER_HOVER_MAX_LINES
     ? `<div class="hc-row">+${listings.length - CLUSTER_HOVER_MAX_LINES} more…</div>` : '';
   document.getElementById('hcInner').innerHTML = `
@@ -2841,7 +3033,7 @@ function drawPinMarkers(){
     const m = L.marker([p.lat,p.lng],{
       icon:L.divIcon({
         className:'',
-        html:`<div class="pin-marker"><div class="pin-dot-inactive"></div><div class="pin-label-muted">${p.label}</div></div>`,
+        html:`<div class="pin-marker"><div class="pin-dot-inactive"></div><div class="pin-label-muted">${escHtml(p.label)}</div></div>`,
         iconSize:[80,30],iconAnchor:[40,5],
       }),zIndexOffset:200,
     }).addTo(map);
@@ -2879,7 +3071,7 @@ function showHoverCard(l, isFav, tapMode){
   const details = l.details || {};
   const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
   const starredHtml = subFields.filter(f=>f.starred && details[f.id] != null && details[f.id] !== '')
-    .map(f=>`<div class="hc-row"><span style="color:var(--muted2)">${f.label}</span><b>${details[f.id]}</b></div>`)
+    .map(f=>`<div class="hc-row"><span style="color:var(--muted2)">${f.label}</span><b>${escHtml(details[f.id])}</b></div>`)
     .join('');
   // Tap mode (mobile): the tip becomes a real tappable "View" button, since a
   // second tap on a tiny map pin is an easy miss — hover mode (desktop, where
@@ -2888,8 +3080,8 @@ function showHoverCard(l, isFav, tapMode){
     ? `<button class="hc-view-btn" onclick="_tapPreviewId=null;document.getElementById('hoverCard').classList.remove('show','tap-mode');selListing('${l.id}', ${!!isFav})">View full details →</button>`
     : `<div class="hc-tip">Click pin to view full details →</div>`;
   document.getElementById('hcInner').innerHTML = `
-    <div class="hc-cat" style="color:${col}">${catLbl(l.category||l.cat)} · ${l.subcategory||l.sub}</div>
-    <div class="hc-title">${l.title}</div>
+    <div class="hc-cat" style="color:${col}">${catLbl(l.category||l.cat)} · ${escHtml(l.subcategory||l.sub)}</div>
+    <div class="hc-title">${escHtml(l.title)}</div>
     <div class="hc-price">${priceText(l)}</div>
     ${starredHtml}
     <div class="hc-row" style="margin-top:4px">
@@ -2945,8 +3137,10 @@ function filtered(){
       (l.address||'').toLowerCase().includes(ql)||
       (l.subcategory||'').toLowerCase().includes(ql)
     );
-    // Also constrain to current map viewport so results respect where the user is looking
-    if(map && map.getBounds){
+    // Also constrain to current map viewport so results respect where the user is looking.
+    // Only when the map is on screen: in phone List view it is display:none, its
+    // bounds collapse to a point and every listing was filtered out (2026-10-16).
+    if(map && map.getBounds && !mapHidden()){
       try {
         const bounds = map.getBounds();
         list = list.filter(l => l.lat && l.lng && bounds.contains([l.lat, l.lng]));
@@ -3014,12 +3208,12 @@ async function renderFavs(el){
       ST.favListings.map(l=>`
         <div class="fav-card" onclick="viewFav('${l.id}')">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
-            ${l.cover_photo ? `<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>` : (CAT_EMOJI[l.category]||'📦')}
+            ${l.cover_photo ? `<img src="${escHtml(l.cover_photo)}" alt="" loading="lazy" decoding="async"/>` : (CAT_EMOJI[l.category]||'📦')}
           </div>
           <div class="fav-info">
-            <div class="fav-ttl">${l.title}</div>
+            <div class="fav-ttl">${escHtml(l.title)}</div>
             <div class="fav-price">${priceText(l)}</div>
-            <div class="fav-dist">📍 ${fmtD(l.d)} · ${l.address||''}</div>
+            <div class="fav-dist">📍 ${fmtD(l.d)} · ${escHtml(l.address)}</div>
           </div>
           <div class="fav-rm" onclick="event.stopPropagation();removeFav('${l.id}')" title="Remove">✕</div>
         </div>`).join('');
@@ -3064,27 +3258,27 @@ async function renderMyAds(el){
           if(days <= 5) return `<div class="fav-dist" style="color:var(--orange);">⚠️ Expires in ${days}d</div>`;
           return `<div class="fav-dist" style="color:var(--muted);">Expires in ${days}d</div>`;
         })();
-        const safeTtl = (l.title||'').replace(/'/g,"\\'");
+        const ttlArg = jsArg(l.title);
         return `
         <div class="fav-card" onclick="selListing('${l.id}',true)">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
-            ${l.cover_photo?`<img src="${l.cover_photo}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}
+            ${l.cover_photo?`<img src="${escHtml(l.cover_photo)}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}
           </div>
           <div class="fav-info">
-            <div class="fav-ttl">${l.title}</div>
+            <div class="fav-ttl">${escHtml(l.title)}</div>
             <div class="fav-price">${priceText(l)}</div>
             <div class="fav-dist" style="color:${STATUS_COLOR[l.status]||'var(--muted)'};">● ${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
             ${expiryHtml}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;">
             <button class="edit-btn" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit</button>
-            ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}','${safeTtl}')">✅ Sold</button>`:''}
-            <button class="del-btn" onclick="event.stopPropagation();deleteListing('${l.id}','${safeTtl}')">🗑️ Del</button>
+            ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}',${ttlArg})">✅ Sold</button>`:''}
+            <button class="del-btn" onclick="event.stopPropagation();deleteListing('${l.id}',${ttlArg})">🗑️ Del</button>
           </div>
         </div>`;
       }).join('');
   } catch(e){
-    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">📋</div><div class="sb-empty-ttl">Could not load listings</div><div class="sb-empty-sub">${e.message}</div></div>`;
+    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">📋</div><div class="sb-empty-ttl">Could not load listings</div><div class="sb-empty-sub">${escHtml(e.message)}</div></div>`;
   }
 }
 
@@ -3136,9 +3330,9 @@ function renderSidebar(){
   const fl = ST.tab==='mine' ? ST.myListings : ST.tab==='fav' ? ST.favListings : filtered();
   if(!ST.selId){
     if(ST.q && fl.length){
-      el.innerHTML = `<div class="nearby-hd">🔍 ${fl.length} result${fl.length!==1?'s':''} for "${ST.q}"</div>`+fl.map(listingRow).join('');
+      el.innerHTML = `<div class="nearby-hd">🔍 ${fl.length} result${fl.length!==1?'s':''} for "${escHtml(ST.q)}"</div>`+fl.map(listingRow).join('');
     } else if(ST.q){
-      el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">🔍</div><div class="sb-empty-ttl">No results for "${ST.q}"</div><div class="sb-empty-sub">Try a different word or clear the search.</div></div>`;
+      el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">🔍</div><div class="sb-empty-ttl">No results for "${escHtml(ST.q)}"</div><div class="sb-empty-sub">Try a different word or clear the search.</div></div>`;
     } else {
       el.innerHTML = `<div class="nearby-hd">📍 ${fl.length} listing${fl.length!==1?'s':''} within ${ST.rad>=999?'Bangalore':ST.rad+' km'}</div>`+(fl.length?fl.map(listingRow).join(''):`<div class="sb-empty"><div class="sb-empty-ico">📍</div><div class="sb-empty-ttl">No listings nearby</div><div class="sb-empty-sub">Try increasing the radius or switching category.</div></div>`);
     }
@@ -3167,13 +3361,13 @@ function renderSidebar(){
     <!-- Block A: distance bar + category icon + title/price + actions + photo strip -->
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
-        <div class="ld-dist-row"><span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span><button class="ld-map-btn" type="button" onclick="showListingOnMap('${l.id}')">🗺 Show on map</button></div>
-        <span class="ld-dist-sub">${l.address ? l.address+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${l.reference_code}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
+        <div class="ld-dist-row"><span class="ld-dist-txt">📍 ${fmtD(d)} from ${ST.exploreMode ? 'the search point' : 'your location'}</span><button class="ld-map-btn" type="button" onclick="showListingOnMap('${l.id}')">🗺 Show on map</button></div>
+        <span class="ld-dist-sub">${l.address ? escHtml(l.address)+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${escHtml(l.reference_code)}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
       </div>
       <div class="ld-info-top">
         <div class="ld-info-thumb"><span>${listingEmoji(l)}</span></div>
         <div class="ld-info-mid">
-          <div class="ld-info-ttl">${l.title}</div>
+          <div class="ld-info-ttl">${escHtml(l.title)}</div>
           <div class="ld-info-price${fmtPrice(l.price).length>=6?' sm':''}">${l.price>0 ? fmtPrice(l.price)+(isRental(l)?'<span class="per-mo">/mo</span>':'') : '<span class="per-mo">Price on request</span>'}</div>
           ${/negotiable/i.test(l.price_label||'') ? '<div class="ld-info-neg">Negotiable</div>' : ''}
         </div>
@@ -3198,32 +3392,34 @@ function renderSidebar(){
           <button class="ld-interest-send" id="interestSendBtn" onclick="sendInterestNote('${l.id}')" disabled>Send</button>
         </div>
       </div>
-      ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${JSON.stringify(photoUrls).replace(/"/g,'&quot;')},${i})"><img src="${u}" alt="photo ${i+1}" loading="lazy" decoding="async"/></div>`).join('')}</div>`:''}</div>
+      ${photoUrls.length?`<div class="ld-photo-strip"><span class="ld-photo-lbl">📷 Images</span>${photoUrls.map((u,i)=>`<div class="ld-photo-thumb" onclick="openPhotoGallery(${escHtml(JSON.stringify(photoUrls))},${i})"><img src="${escHtml(u)}" alt="photo ${i+1}" loading="lazy" decoding="async"/></div>`).join('')}</div>`:''}</div>
     <div class="ld-body">
       ${(()=>{
         const det = l.details || {};
         const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
         const items = subFields.filter(f=>det[f.id]!=null && det[f.id]!=='');
         if(!items.length) return '';
-        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${f.id==='total_price' ? (fmtINRWords(det[f.id]) || det[f.id]) : det[f.id]}</div></div>`).join('')}</div>`;
+        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${escHtml(f.id==='total_price' ? (fmtINRWords(det[f.id]) || det[f.id]) : det[f.id])}</div></div>`).join('')}</div>`;
       })()}
-      ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${l.details.transaction_type}</div></div>` : '')}
+      ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${escHtml(l.details.transaction_type)}</div></div>` : '')}
       ${(()=>{
         const pois = l.details?.nearby_pois;
         if(!pois || !pois.length) return '';
         const poiIcon = {school:'🏫', mall:'🏬', supermarket:'🛒'};
-        return `<div class="ld-nearby"><div class="ld-nearby-hd">📍 Nearby</div>${pois.map(p=>`<div class="ld-nearby-item">${poiIcon[p.type]||'📍'} ${p.name} · ${p.distance_m<1000?p.distance_m+'m':(p.distance_m/1000).toFixed(1)+'km'}</div>`).join('')}</div>`;
+        return `<div class="ld-nearby"><div class="ld-nearby-hd">📍 Nearby</div>${pois.map(p=>`<div class="ld-nearby-item">${poiIcon[p.type]||'📍'} ${escHtml(p.name)} ·${p.distance_m<1000?p.distance_m+'m':(p.distance_m/1000).toFixed(1)+'km'}</div>`).join('')}</div>`;
       })()}
-      ${l.description ? `<div class="ld-desc">${l.description}</div>` : ''}
+      ${l.description ? `<div class="ld-desc">${escHtml(l.description)}</div>` : ''}
     </div>
     <div id="chatBox" class="${ST.chatOpen?'':'hide'}">
       <div class="ch-hd">
         <span class="ch-hd-name">${(()=>{
           const openConv = ST.chatOpen ? ST.allConversations.get(ST.chatConvId) : null;
-          return openConv?.other_user?.nickname || openConv?.other_user?.full_name || seller.full_name || 'Chat';
+          return escHtml(openConv?.other_user?.nickname || openConv?.other_user?.full_name || seller.full_name || 'Chat');
         })()}</span>
+        <button class="ch-hd-safe" type="button" onclick="openSafetyModal()" title="Safety tips"><span>🛡</span>Safety tips</button>
         <div class="ch-hd-close" onclick="closeChat()">✕</div>
       </div>
+      <div class="ch-safe">🔒 Keep chatting in MapIt. Never share OTPs or pay in advance.</div>
       <div class="cmsgs" id="cmsgs"></div>
       <div class="qmsgs" id="qmsgs"></div>
       <div class="cinput-row">
@@ -3244,7 +3440,7 @@ function renderSidebar(){
     if(others.length){
       const hd = ST.tab==='fav'
         ? `❤ Other saved listings (${others.length})`
-        : ST.q ? `🔍 Other listings matching "${ST.q}" (${others.length})` : `📍 Other nearby listings (${others.length})`;
+        : ST.q ? `🔍 Other listings matching "${escHtml(ST.q)}" (${others.length})` : `📍 Other nearby listings (${others.length})`;
       el.innerHTML += `<div class="nearby-hd">${hd}</div>`+others.map(listingRow).join('');
     }
   }
@@ -3257,10 +3453,18 @@ function renderSidebar(){
 // opening a listing zooms in on it, and keyword results follow the visible map,
 // so without this, Back left only that listing's neighbours in the results.
 let _preDetailView = null;
+// Phones in Map view hide the list pane (#main.view-map #sb), so details opened
+// from a pin would render out of sight. selListing() switches to List and sets
+// this, so closeDetail() can take the user back to the map.
+let _detailFromMap = false;
 async function selListing(id, keepTab=false){
   // Save only when coming from the results, not when hopping listing → listing,
   // or Back would return to the previous listing instead of the overview.
   if(!ST.selId && map) _preDetailView = { center: map.getCenter(), zoom: map.getZoom() };
+  if(ST.viewMode==='map' && document.getElementById('sb').offsetParent === null){
+    setViewMode('list', false);
+    _detailFromMap = true;
+  }
   expandSidebarForDetail();
   ST.selId=id; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatMsgs=[]; ST.chatConvId=null;
   if(!keepTab){
@@ -3277,7 +3481,7 @@ async function selListing(id, keepTab=false){
     else map.flyTo([l.lat,l.lng], z, {animate:true,duration:.6});
   }
   Object.keys(mMarkers).forEach(k=>{
-    const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
+    const ml = ST.listings.find(x=>x.id===k) || ST.favListings.find(x=>x.id===k) || ST.myListings.find(x=>x.id===k) || {id:k,category:'all',price:0,price_label:''};
     mMarkers[k].setIcon(mkIcon(ml, k===id));
   });
   mStackMarkers.forEach(s=>s.marker.setIcon(mkStackIcon(s.group[0], s.group.length, s.ids.has(id))));
@@ -3306,10 +3510,14 @@ function closeDetail(){
   }
   ST.selId=null; unsubscribeChatChannel(); ST.chatOpen=false; ST.chatConvId=null;
   drawMarkers(); renderSidebar();
+  const backToMap = _detailFromMap; _detailFromMap = false;
+  if(backToMap) setViewMode('map', false);
   if(_preDetailView){
     const v = _preDetailView; _preDetailView = null;
     _rerenderAfterMove();
-    if(mapHidden()) map.setView(v.center, v.zoom, {animate:false});
+    // Just un-hidden: Leaflet needs a moment to measure the map before setView
+    if(backToMap) setTimeout(() => map.setView(v.center, v.zoom, {animate:false}), 80);
+    else if(mapHidden()) map.setView(v.center, v.zoom, {animate:false});
     else map.flyTo(v.center, v.zoom, {duration:.6});
   }
   // If the panel only opened to show this listing, fold it back to the rail
@@ -3434,11 +3642,33 @@ function addMsg(type,text,sentAtIso){
   renderChatMsgs(); scrollChat();
 }
 
+// Chat safety nudge (2026-10-17): a plain keyword check in the browser — the
+// message text goes nowhere and is never blocked or changed, only annotated.
+// 'pay' wins over 'contact' (an OTP/advance request is the bigger risk).
+const CHAT_RISK_PAY = /\botp\b|upi\s*pin|\badvance\b|token\s*(amount|money)|\bqr\b|scan\s*(the|this)?\s*code|gift\s*card|\b[\w.\-]{2,}@(ok\w+|ybl|ibl|axl|paytm|upi|apl|yapl|fbl|jupiteraxis)\b/i;
+const CHAT_RISK_CONTACT = /(?:\+?\d[\s\-.]?){10,}|[\w.+\-]+@[\w\-]+\.\w{2,}|https?:\/\/|www\.|\b(wa\.me|t\.me|bit\.ly|tinyurl\.com|chat\.whatsapp\.com)\b|whats\s*app|telegram|\bsignal\b/i;
+function chatRisk(text){
+  const t = String(text||'');
+  if(CHAT_RISK_PAY.test(t)) return 'pay';
+  if(CHAT_RISK_CONTACT.test(t)) return 'contact';
+  return null;
+}
+function chatRiskNote(type, text){
+  const risk = chatRisk(text); if(!risk) return '';
+  const msg = type==='sent'
+    ? (risk==='pay' ? '🔒 Never share an OTP or UPI PIN — MapIt and genuine buyers/sellers never need them.'
+                    : '🔒 Your contact details are now visible to this person. MapIt chat keeps them private.')
+    : (risk==='pay' ? '⚠️ Never share an OTP or UPI PIN, and never pay before seeing the item.'
+                    : '⚠️ Has contact details or a link. Scammers move chats off MapIt — keep chatting here.');
+  return `<div class="bwarn ${type==='sent'?'r':''}">${msg} <a onclick="openSafetyModal()" style="cursor:pointer;text-decoration:underline;">Tips</a></div>`;
+}
+
 function renderChatMsgs(){
   const el=document.getElementById('cmsgs'); if(!el) return;
   el.innerHTML=ST.chatMsgs.map(m=>`
     <div>
-      <div class="bubble ${m.type==='sent'?'bsent':'brecv'}">${m.text}</div>
+      <div class="bubble ${m.type==='sent'?'bsent':'brecv'}">${escHtml(m.text)}</div>
+      ${chatRiskNote(m.type, m.text)}
       <div class="btime ${m.type==='sent'?'r':''}">${m.t}</div>
     </div>`).join('');
 }
@@ -4207,7 +4437,7 @@ async function loadAndRenderPins(){
       document.getElementById('activePinLabel').textContent = def.label;
       if(_userMarker){
         _userMarker.setLatLng([def.lat, def.lng]);
-        _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${def.label}</b>`);
+        _userMarker.setPopupContent(`<b style="color:#F06030">📍 ${escHtml(def.label)}</b>`);
       }
       if(map) map.setView([def.lat, def.lng], 14, {animate:!mapHidden()});
       updateCircle();
@@ -4385,13 +4615,18 @@ function _placeExploreMarker(){
   });
   _exploreMarker = L.marker([c.lat,c.lng],{icon,interactive:false,zIndexOffset:-100}).addTo(map);
 }
+// While a listing is open, the map flies to it — that move must not shift the
+// Explore search point, or the list re-searches from the listing's own pin and
+// its distance becomes the 150–400 m display offset (Arun, 2026-10-17).
+// Back (closeDetail) restores the previous view, which re-syncs everything.
 function _onExploreMove(){
-  if(!_exploreMarker) return;
+  if(!_exploreMarker || ST.selId) return;
   const c = map.getCenter();
   _exploreMarker.setLatLng(c);
   if(radCircle) radCircle.setLatLng(c);
 }
 function _onExploreMoveEnd(){
+  if(ST.selId) return;
   clearTimeout(_exploreMoveTO);
   _exploreMoveTO = setTimeout(loadListings, 800);
 }
@@ -4461,6 +4696,7 @@ document.addEventListener('click', (e) => {
 // CSS) — harmless no-op on desktop, which always shows both panes.
 function setViewMode(mode, persist=true){
   ST.viewMode = mode;
+  if(persist) _detailFromMap = false;   // the user picked a view themselves — Back must not override it
   document.getElementById('main').classList.toggle('view-map', mode==='map');
   document.getElementById('main').classList.toggle('view-list', mode==='list');
   document.getElementById('vbtnList').classList.toggle('on', mode==='list');
@@ -4476,6 +4712,7 @@ function setViewMode(mode, persist=true){
 function switchTab(tab){
   ST.tab=tab;
   ST.selId=null; // clear stale selection so a previously-viewed listing can't leak into another tab's detail view
+  _detailFromMap = false;
   document.getElementById('tab-browse').classList.toggle('on',tab==='browse');
   document.getElementById('tab-fav').classList.toggle('on',tab==='fav');
   document.getElementById('tab-mine').classList.toggle('on',tab==='mine');
@@ -4500,9 +4737,17 @@ function toast(msg){
 }
 
 // Escape user-typed text before putting it into innerHTML.
+// Rule (pre-launch security audit, 2026-10-16): every value that came from a
+// user, the API or another site (titles, details, names, chat, addresses,
+// search text, error messages, URLs) goes through escHtml() inside an HTML
+// template. Our own constants (labels, emoji, icons) don't need it.
 function escHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+// A value passed as a JS argument inside an inline handler, e.g.
+//   onclick="markAsSold('${id}', ${jsArg(title)})"   ← no quotes around ${…}
+// JSON.stringify makes a valid JS string; escHtml keeps it inside the attribute.
+function jsArg(s){ return escHtml(JSON.stringify(String(s ?? ''))); }
 
 // ── In-app dialog ─────────────────────────────────────────────────
 // Replaces the browser's prompt()/confirm(): those can't be styled, show the
@@ -4700,13 +4945,72 @@ async function init(){
     _refreshStaleSessionNames(sessions);
     return;
   }
-  document.getElementById('authModal').classList.remove('hide');
-  if(!localStorage.getItem('mapit_seen_landing')) goToStep('step-landing');
+  showAuthOrWelcome();
 }
 
-function startOnboarding(){
-  localStorage.setItem('mapit_seen_landing', '1');
+// ── Welcome page (2026-10-17) — shown to visitors with no saved account until
+// they tick "Don't show this again". A shared #listing- link skips it. The
+// choice lives in localStorage only; if storage is blocked the page just shows.
+const WELCOME_HIDE_KEY = 'mapit_welcome_hide';
+function setWelcomeHidden(on){
+  try { on ? localStorage.setItem(WELCOME_HIDE_KEY, '1') : localStorage.removeItem(WELCOME_HIDE_KEY); } catch(_){}
+}
+function showAuthOrWelcome(){
+  let skip = false;
+  try {
+    skip = localStorage.getItem(WELCOME_HIDE_KEY) === '1'
+        || /^#listing-/.test(location.hash) || !!sessionStorage.getItem(SHARE_HASH_KEY);
+  } catch(_){}
+  if(skip){ openAuthSignIn(); return; }
+  renderWelcomePins();
+  document.getElementById('authModal').classList.add('hide');
+  document.getElementById('welcomeScreen').classList.remove('hide');
+}
+function openAuthSignIn(){
+  document.getElementById('authModal').classList.remove('hide');
   goToStep('step-auth');
+}
+function closeWelcome(){
+  setWelcomeHidden(document.getElementById('wlNoShow').checked);
+  document.getElementById('welcomeScreen').classList.add('hide');
+  openAuthSignIn();
+}
+// Pins drop in around the card (left/top in % of the screen), staggered
+// (kept clear of the centred card so no chip pokes out from under it)
+const WL_PINS = [[8,18],[20,7],[12,44],[6,78],[18,95],[34,5],[66,5],[80,9],[92,24],[88,52],[94,80],[80,95],[60,99],[16,64],[84,68],[86,38],[5,31],[38,99]];
+// Every pin is the MapIt logo with a category chip (same icons/labels as the
+// browse chips; edge colour = the category's map colour). Chips live in their
+// own layer so they sit above every pin.
+const WL_PIN_CATS = [
+  { ico:'🔑', lbl:'Rent Property', col:'#F06030' },
+  { ico:'🚗', lbl:'Vehicles',      col:'#3B82F6' },
+  { ico:'🏠', lbl:'Buy Property',  col:'#F06030' },
+  { ico:'🏡', lbl:'Household',     col:'#22C55E' },
+];
+function renderWelcomePins(){
+  const pins = document.getElementById('wlPins'), tags = document.getElementById('wlTags');
+  if(!pins || !tags || pins.childElementCount) return;
+  pins.innerHTML = WL_PINS.map(([x,y],i) =>
+    `<img class="wl-pin" style="left:${x}%;top:${y}%;animation-delay:${(0.15+i*0.12).toFixed(2)}s" src="/mapit-logo.png" alt="">`).join('');
+  tags.innerHTML = WL_PINS.map(([x,y],i) => {
+    const c = WL_PIN_CATS[i%WL_PIN_CATS.length];
+    // Chip goes on the side away from the centred card, unless that runs off the screen edge
+    const side = x < 50 ? (x < 15 ? 'r' : 'l') : (x > 85 ? 'l' : 'r');
+    return `<span class="wl-tagchip ${side}" style="left:${x}%;top:${y}%;border-left-color:${c.col};animation-delay:${(0.55+i*0.12).toFixed(2)}s">${c.ico} ${c.lbl}</span>`;
+  }).join('');
+  hideChipsUnderCard();
+  window.addEventListener('resize', hideChipsUnderCard);
+  document.getElementById('welcomeScreen').addEventListener('scroll', hideChipsUnderCard, { passive:true });
+}
+// Pin positions are % of the screen, the card is a fixed width — on narrower
+// screens some chips would poke out from under the card, so hide those.
+function hideChipsUnderCard(){
+  const card = document.querySelector('#welcomeScreen .wl-card'); if(!card) return;
+  const r = card.getBoundingClientRect();
+  document.querySelectorAll('#wlTags .wl-tagchip').forEach(c => {
+    const b = c.getBoundingClientRect();
+    c.style.visibility = (b.right > r.left && b.left < r.right && b.bottom > r.top && b.top < r.bottom) ? 'hidden' : '';
+  });
 }
 
 // Fetches /api/auth/me for every stored session that lacks a proper display name,
@@ -4846,6 +5150,8 @@ function openHelpModal(){
   document.getElementById('helpModal').classList.remove('hide');
 }
 function closeHelpModal(){ document.getElementById('helpModal').classList.add('hide'); }
+function openSafetyModal(){ document.getElementById('safetyModal').classList.remove('hide'); }
+function closeSafetyModal(){ document.getElementById('safetyModal').classList.add('hide'); }
 
 // ── View Profile (Session 9C) ──
 // Read-only. Every value goes in via textContent, never innerHTML — name,
@@ -5023,7 +5329,7 @@ async function openInboxModal(){
         <div class="inbox-av" style="background:var(--orange)">📢</div>
         <div class="inbox-meta">
           <div class="inbox-name">MapIt Team</div>
-          <div class="inbox-preview">${m.content}</div>
+          <div class="inbox-preview">${escHtml(m.content)}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
         </div>
         ${m.is_read?'':'<div class="inbox-unread-dot"></div>'}
@@ -5036,21 +5342,21 @@ async function openInboxModal(){
     } else {
       const convHtml = convs.map(c=>{
         const other = c.other_user || {};
-        const col = other.avatar_color || 'var(--orange)';
-        const initials = getInitials(other.nickname || other.full_name || '?');
+        const col = escHtml(other.avatar_color || 'var(--orange)');
+        const initials = escHtml(getInitials(other.nickname || other.full_name || '?'));
         const listing = c.listing || {};
         const unread = (c.unread_count||0) > 0;
         const timeStr = c.last_message?.sent_at
           ? new Date(c.last_message.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
           : '';
         const context = listing.title
-          ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${listing.title}</span>`
+          ? `<span style="font-size:10px;color:var(--muted);font-weight:400;"> · re: ${escHtml(listing.title)}</span>`
           : '';
         return `<div class="inbox-item ${unread?'unread':''}" style="cursor:pointer" onclick="openConversationFromInbox('${c.id}','${c.listing_id}')">
           <div class="inbox-av" style="background:${col}">${initials}</div>
           <div class="inbox-meta">
-            <div class="inbox-name">${other.nickname||other.full_name||'User'}${context}</div>
-            <div class="inbox-preview">${c.last_message?.content||''}</div>
+            <div class="inbox-name">${escHtml(other.nickname||other.full_name||'User')}${context}</div>
+            <div class="inbox-preview">${escHtml(c.last_message?.content)}</div>
             <div style="font-size:10px;color:var(--muted);margin-top:3px;">${timeStr}</div>
           </div>
           ${unread?'<div class="inbox-unread-dot"></div>':''}
@@ -5063,7 +5369,7 @@ async function openInboxModal(){
     // existing pattern in openConversationFromInbox — reading = marking read).
     if(teamMsgs.some(m=>!m.is_read)) apiPut('/api/messages/mark-all-read', {}).catch(()=>{});
   } catch(e){
-    document.getElementById('inboxList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${e.message}</div>`;
+    document.getElementById('inboxList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${escHtml(e.message)}</div>`;
   }
 }
 function closeInboxModal(){ document.getElementById('inboxModal').classList.add('hide'); }

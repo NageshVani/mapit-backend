@@ -12,6 +12,7 @@
 // Cross-cutting metrics (users + listings + chat), so it lives in its own
 // file rather than being bolted onto users.js or listings.js.
 const express          = require('express');
+const Sentry           = require('@sentry/node');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { createError }  = require('../middleware/errorHandler');
@@ -145,6 +146,25 @@ router.post('/map-load-ping', requireAuth, async (req, res, next) => {
     logAuditEvent('map_load', req, req.user.id, { surface: surface || 'unknown' })
       .catch(err => console.error('map_load audit insert failed:', err.message));
     res.status(204).end();
+  } catch (err) { next(err); }
+});
+
+// ── Sentry test (Session 9 config, alerts) ────────────────────
+// POST /api/admin/sentry-test
+// Sends ONE fixed test message to Sentry, so an admin can prove that a
+// deployment really reports (DSN valid, environment label right) without
+// breaking anything. No user data in the message (Rule 8). The response
+// shows whether a DSN is present — never its value.
+router.post('/sentry-test', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const environment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development';
+    const eventId = Sentry.captureMessage('MapIt Sentry test (admin-triggered)', 'info');
+    // Serverless: the function can freeze right after the response, dropping
+    // queued events — wait (max 3 s) until Sentry has actually sent it.
+    // flush() is trivially true with no DSN (nothing queued), so report false then.
+    const sentryConfigured = !!process.env.SENTRY_DSN;
+    const delivered = sentryConfigured ? await Sentry.flush(3000) : false;
+    res.json({ ok: true, environment, sentryConfigured, eventId, delivered });
   } catch (err) { next(err); }
 });
 

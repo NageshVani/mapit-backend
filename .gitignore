@@ -29,3 +29,6 @@ uploads/
 # Google OAuth client secret files — NEVER commit
 client_secret_*.json
 OAuth Google cloud.rtf
+
+# Marketing video drafts (large, first cuts) — keep out of git (2026-10-17)
+docs/Videos/
