@@ -435,12 +435,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .modal-link span:hover{text-decoration:underline;}
 .modal-step{display:none;}
 .modal-step.active{display:block;}
-.landing-hero{font-size:17px;font-weight:700;color:var(--text);line-height:1.45;text-align:center;margin-bottom:20px;}
-.landing-bullets{display:flex;flex-direction:column;gap:14px;margin-bottom:24px;}
-.landing-bullet{display:flex;align-items:flex-start;gap:12px;}
-.landing-ico{font-size:24px;flex-shrink:0;line-height:1.2;}
-.landing-bttl{font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px;}
-.landing-bsub{font-size:13.5px;color:var(--muted);line-height:1.45;}
 .modal-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:14px;}
 .modal-success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:14px;}
 .otp-hint{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:16px;}
@@ -674,6 +668,93 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .inbox-preview{font-size:11.5px;color:var(--muted);line-height:1.5;}
 .inbox-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:6px;}
 
+/* ── WELCOME PAGE (pre-login, 2026-10-17) — content from the launch video; map drawn in SVG, no tiles ── */
+.wl.hide{display:none;}
+.wl{position:fixed;inset:0;overflow-y:auto;background:#EEF1F5;z-index:1300;}
+/* Drawn map background — inline SVG, no tiles, no network */
+.wl-map{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;}
+.wl-pins,.wl-tags{position:fixed;inset:0;pointer-events:none;}
+.wl-pin{position:absolute;width:30px;height:40px;transform:translate(-50%,-100%);animation:wlDrop .7s cubic-bezier(.3,1.6,.5,1) both;}
+/* Category chip beside each pin — fades in after its pin lands */
+.wl-tagchip{position:absolute;white-space:nowrap;font-size:11.5px;font-weight:600;color:var(--text);background:#fff;border:1px solid var(--border2);border-left:3px solid var(--orange);border-radius:6px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,.10);animation:wlTag .5s ease-out both;}
+.wl-tagchip.r{transform:translate(18px,-32px);}
+.wl-tagchip.l{transform:translate(calc(-100% - 18px),-32px);}
+@keyframes wlTag{0%{opacity:0;}100%{opacity:1;}}
+@keyframes wlDrop{0%{opacity:0;transform:translate(-50%,-160%);}100%{opacity:1;transform:translate(-50%,-100%);}}
+.wl-ring{position:fixed;left:50%;top:50%;width:min(92vw,880px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:2px dashed rgba(240,96,48,.35);background:radial-gradient(circle,rgba(240,96,48,.07) 0%,rgba(240,96,48,.03) 55%,transparent 70%);pointer-events:none;}
+.wl-ring::before{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid rgba(240,96,48,.45);animation:wlPulse 3.2s ease-out infinite;}
+@keyframes wlPulse{0%{transform:scale(.35);opacity:.9;}100%{transform:scale(1);opacity:0;}}
+
+.wl-wrap{position:relative;min-height:100%;display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+.wl-card{width:100%;max-width:760px;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border:1px solid var(--border2);border-radius:22px;box-shadow:0 18px 60px rgba(17,24,39,.14);padding:34px 40px 26px;}
+.wl-brand{display:flex;align-items:center;justify-content:center;gap:14px;}
+.wl-logo{width:auto;height:76px;}
+.wl-name{font-family:'Playfair Display',serif;font-size:46px;line-height:1;}
+.wl-name em{font-style:normal;color:var(--orange);}
+.wl-tag{text-align:center;font-size:14px;font-weight:600;letter-spacing:.5px;color:var(--muted);margin-top:6px;text-transform:uppercase;}
+.wl-h1{text-align:center;font-size:30px;line-height:1.25;font-weight:700;margin:22px auto 8px;max-width:560px;}
+.wl-h1 span{color:var(--orange);}
+.wl-sub{text-align:center;font-size:17px;color:var(--muted2);}
+
+/* USP tile — the map — full width and highlighted; the other three sit in one even row */
+.wl-usp{display:flex;align-items:center;gap:18px;margin:24px 0 12px;padding:16px 22px;border-radius:14px;background:linear-gradient(135deg,rgba(240,96,48,.12),rgba(240,96,48,.04));border:1.5px solid rgba(240,96,48,.45);}
+.wl-usp-ico{font-size:38px;line-height:1;flex-shrink:0;}
+.wl-usp-t{font-size:17px;font-weight:700;margin-bottom:2px;}
+.wl-usp-d{font-size:14px;color:var(--muted2);}
+.wl-usp-n{font-size:12px;color:var(--muted);margin-top:4px;}
+.wl-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 22px;}
+.wl-feat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;}
+.wl-ico{font-size:26px;line-height:1;margin-bottom:8px;}
+.wl-ft{font-size:14px;font-weight:700;margin-bottom:3px;}
+.wl-fnote{font-size:11px;color:var(--muted);line-height:1.4;margin-top:6px;padding-top:6px;border-top:1px dashed var(--border2);}
+.wl-fd{font-size:12.5px;color:var(--muted);line-height:1.45;}
+
+.wl-how{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.wl-how-col{border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
+.wl-how-h{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--orange);margin-bottom:8px;}
+.wl-steps{display:flex;align-items:flex-start;gap:6px;}
+.wl-step{flex:1;text-align:center;font-size:12.5px;color:var(--muted2);line-height:1.35;}
+.wl-num{width:26px;height:26px;border-radius:50%;background:var(--orange);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 5px;}
+.wl-arrow{color:var(--orange);font-weight:700;padding-top:4px;}
+
+.wl-cta{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:24px;}
+.wl-btn{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;border-radius:10px;padding:13px 30px;cursor:pointer;border:none;}
+.wl-btn.pri{background:var(--orange);color:#fff;box-shadow:0 6px 18px rgba(240,96,48,.35);}
+.wl-btn.pri:hover{background:var(--orange2);}
+.wl-btn.sec{background:#fff;color:var(--text);border:1.5px solid var(--border2);}
+.wl-btn.sec:hover{border-color:var(--orange);color:var(--orange);}
+.wl-cta-note{font-size:12.5px;color:var(--muted);line-height:1.4;text-align:left;}
+.wl-free{display:inline-block;margin-left:6px;padding:2px 11px;border-radius:12px;background:var(--orange);color:#fff;font-size:13px;font-weight:700;letter-spacing:.3px;vertical-align:1px;white-space:nowrap;}
+.wl-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;}
+.wl-foot label{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.wl-foot input{accent-color:var(--orange);width:16px;height:16px;}
+.wl-safe{display:flex;align-items:center;gap:5px;}
+
+@media(max-width:768px){
+  .wl-wrap{align-items:flex-start;padding:18px 16px 28px;}
+  .wl-tagchip{font-size:10px;padding:2px 6px;}
+  .wl-card{padding:24px 18px 20px;border-radius:18px;}
+  .wl-logo{height:58px;}
+  .wl-name{font-size:36px;}
+  .wl-tag{font-size:12px;}
+  .wl-h1{font-size:23px;margin-top:16px;}
+  .wl-sub{font-size:15px;}
+  .wl-usp{margin:18px 0 10px;padding:14px;gap:12px;align-items:flex-start;}
+  .wl-usp-ico{font-size:30px;}
+  .wl-usp-t{font-size:16px;}
+  /* Phones: the three tiles become compact rows (icon left) */
+  .wl-feats{grid-template-columns:1fr;gap:8px;margin:0 0 16px;}
+  .wl-feat{display:grid;grid-template-columns:64px 1fr;column-gap:8px;align-items:center;text-align:left;padding:10px 12px;}
+  .wl-feat .wl-ico{grid-row:1/3;margin:0;font-size:20px;text-align:center;white-space:nowrap;letter-spacing:-2px;}
+  .wl-feat .wl-ft{margin:0;}
+  .wl-how{grid-template-columns:1fr;gap:10px;}
+  /* Phones: the button bar stays on screen while the card scrolls behind it */
+  .wl-cta{position:sticky;bottom:0;margin:16px -18px 0;padding:12px 18px;background:linear-gradient(to top,rgba(255,255,255,.98) 70%,rgba(255,255,255,0));z-index:2;}
+  .wl-btn{width:100%;}
+  .wl-cta-note{display:none;}  /* phones: keep the sticky bar slim — the sign-in screen comes next anyway */
+  .wl-foot{justify-content:center;flex-direction:column;}
+}
+@media(prefers-reduced-motion:reduce){.wl-pin,.wl-tagchip{animation:none;}.wl-ring::before{animation:none;opacity:0;}}
 </style>
 </head>
 <body>
@@ -694,41 +775,96 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <div class="splash-msg" id="splashMsg">Loading your map…</div>
 </div>
 
+<!-- ── WELCOME PAGE (pre-login) ── -->
+<div class="wl hide" id="welcomeScreen">
+  <!-- Drawn map: blocks, roads, a lake and parks (pure SVG pattern + shapes) -->
+  <svg class="wl-map" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1600 1000" aria-hidden="true">
+    <defs>
+      <pattern id="wlBlocks" width="80" height="80" patternUnits="userSpaceOnUse">
+        <rect width="80" height="80" fill="#EEF1F5"/>
+        <rect x="6" y="6" width="30" height="30" rx="3" fill="#E2E7EE"/>
+        <rect x="42" y="6" width="32" height="18" rx="3" fill="#E2E7EE"/>
+        <rect x="42" y="28" width="32" height="8" rx="2" fill="#E5E9F0"/>
+        <rect x="6" y="42" width="18" height="32" rx="3" fill="#E5E9F0"/>
+        <rect x="28" y="42" width="46" height="32" rx="3" fill="#E2E7EE"/>
+        <path d="M0 0H80M0 0V80" stroke="#FFFFFF" stroke-width="3"/>
+      </pattern>
+    </defs>
+    <rect width="1600" height="1000" fill="url(#wlBlocks)"/>
+    <!-- parks + lake -->
+    <path d="M90 620 q90 -60 180 0 t150 70 v140 h-330z" fill="#D6EBD3"/>
+    <ellipse cx="1340" cy="230" rx="150" ry="85" fill="#CFE3F3"/>
+    <rect x="1110" y="690" width="210" height="150" rx="14" fill="#D6EBD3"/>
+    <path d="M-20 360 C 300 300, 520 470, 820 400 S 1300 280, 1640 380" stroke="#CFE3F3" stroke-width="34" fill="none"/>
+    <!-- main roads -->
+    <path d="M0 160 H1600 M0 520 H1600 M0 860 H1600 M260 0 V1000 M760 0 V1000 M1240 0 V1000" stroke="#FFFFFF" stroke-width="12"/>
+    <path d="M-40 980 L1640 40" stroke="#FFF4DD" stroke-width="16"/>
+    <path d="M0 520 H1600 M760 0 V1000" stroke="#FCE7C8" stroke-width="5"/>
+  </svg>
+  <div class="wl-ring" aria-hidden="true"></div>
+  <div class="wl-pins" id="wlPins" aria-hidden="true"></div>
+  <div class="wl-tags" id="wlTags" aria-hidden="true"></div>
+
+  <div class="wl-wrap">
+    <div class="wl-card" role="dialog" aria-labelledby="wlTitle">
+      <div class="wl-brand">
+        <img class="wl-logo" src="/mapit-logo.png" width="57" height="76" alt="MapIt logo">
+        <div class="wl-name">Map<em>It</em></div>
+      </div>
+      <div class="wl-tag">The geo-based marketplace</div>
+      <h1 class="wl-h1" id="wlTitle">What if everything around you was <span>just one search away?</span></h1>
+      <p class="wl-sub">Everything around you. All in one place. <span class="wl-free">Free to use</span></p>
+
+      <div class="wl-usp">
+        <div class="wl-usp-ico">📍</div>
+        <div>
+          <div class="wl-usp-t">See it on the map</div>
+          <div class="wl-usp-d">Every listing is a pin, with its distance from you.</div>
+          <div class="wl-usp-n">Sellers choose whether to show their exact location. By default the pin is placed 150–400 m away.</div>
+        </div>
+      </div>
+      <div class="wl-feats">
+        <div class="wl-feat"><div class="wl-ico">🔍</div><div class="wl-ft">Search nearby</div><div class="wl-fd">Your neighbourhood, or explore anywhere you choose</div></div>
+        <div class="wl-feat"><div class="wl-ico">🏠🚗🛋</div><div class="wl-ft">Buy, sell, rent</div><div class="wl-fd">Homes, vehicles, furniture and household items</div></div>
+        <div class="wl-feat"><div class="wl-ico">💬</div><div class="wl-ft">Connect safely</div><div class="wl-fd">Chat with nearby buyers and sellers — your number stays private</div></div>
+      </div>
+
+      <div class="wl-how">
+        <div class="wl-how-col">
+          <div class="wl-how-h">Buying</div>
+          <div class="wl-steps">
+            <div class="wl-step"><div class="wl-num">1</div>Browse the map</div><div class="wl-arrow">→</div>
+            <div class="wl-step"><div class="wl-num">2</div>Tap “I’m Interested”</div><div class="wl-arrow">→</div>
+            <div class="wl-step"><div class="wl-num">3</div>Chat &amp; meet safely</div>
+          </div>
+        </div>
+        <div class="wl-how-col">
+          <div class="wl-how-h">Selling</div>
+          <div class="wl-steps">
+            <div class="wl-step"><div class="wl-num">1</div>Post with photos</div><div class="wl-arrow">→</div>
+            <div class="wl-step"><div class="wl-num">2</div>Live within 4 hours</div><div class="wl-arrow">→</div>
+            <div class="wl-step"><div class="wl-num">3</div>Nearby buyers find you</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wl-cta">
+        <button class="wl-btn pri" onclick="closeWelcome()">Start exploring →</button>
+        <span class="wl-cta-note">Sign up or sign in<br>on the next step</span>
+      </div>
+      <div class="wl-foot">
+        <label><input type="checkbox" id="wlNoShow" onchange="setWelcomeHidden(this.checked)"> Don’t show this again</label>
+        <span class="wl-safe">🛡 Every listing is reviewed by the MapIt team</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── AUTH MODAL ── -->
 <div class="modal-overlay hide" id="authModal">
   <div class="modal-box">
     <div class="modal-logo" id="modalLogo">Map<em>It</em></div>
     <div class="modal-sub" id="modalSub">Geo-based Marketplace</div>
-
-    <!-- Step 0: Landing — value proposition for first-time visitors -->
-    <div class="modal-step" id="step-landing">
-      <div class="landing-hero">Find what's for sale <span style="color:var(--orange)">right near you</span> — on a live map.</div>
-      <div class="landing-bullets">
-        <div class="landing-bullet">
-          <span class="landing-ico">📍</span>
-          <div>
-            <div class="landing-bttl">See exactly how far away it is</div>
-            <div class="landing-bsub">Every listing shows real distance from you — not just a vague neighbourhood name.</div>
-          </div>
-        </div>
-        <div class="landing-bullet">
-          <span class="landing-ico">🗺</span>
-          <div>
-            <div class="landing-bttl">Browse on a live map</div>
-            <div class="landing-bsub">Tap any pin to explore homes, vehicles, and furniture all around you.</div>
-          </div>
-        </div>
-        <div class="landing-bullet">
-          <span class="landing-ico">🤝</span>
-          <div>
-            <div class="landing-bttl">Free to post, free to browse</div>
-            <div class="landing-bsub">No listing fees. No subscriptions. Post in minutes, connect locally.</div>
-          </div>
-        </div>
-      </div>
-      <button class="modal-btn" onclick="startOnboarding()">Get Started →</button>
-      <div class="modal-link" style="margin-top:10px;" onclick="startOnboarding()">Already have an account? <span>Sign in →</span></div>
-    </div>
 
     <!-- Step 1: Email + Password (primary auth) -->
     <div class="modal-step active" id="step-auth">
@@ -1626,8 +1762,7 @@ function removeMultiSession(userId, ev){
   localStorage.setItem('mapit_sessions', JSON.stringify(all));
   if(Object.keys(all).length === 0){
     document.getElementById('whoamiScreen').classList.add('hide');
-    document.getElementById('authModal').classList.remove('hide');
-    if(!localStorage.getItem('mapit_seen_landing')) goToStep('step-landing');
+    showAuthOrWelcome();
     return;
   }
   renderWhoamiScreen();
@@ -4805,13 +4940,72 @@ async function init(){
     _refreshStaleSessionNames(sessions);
     return;
   }
-  document.getElementById('authModal').classList.remove('hide');
-  if(!localStorage.getItem('mapit_seen_landing')) goToStep('step-landing');
+  showAuthOrWelcome();
 }
 
-function startOnboarding(){
-  localStorage.setItem('mapit_seen_landing', '1');
+// ── Welcome page (2026-10-17) — shown to visitors with no saved account until
+// they tick "Don't show this again". A shared #listing- link skips it. The
+// choice lives in localStorage only; if storage is blocked the page just shows.
+const WELCOME_HIDE_KEY = 'mapit_welcome_hide';
+function setWelcomeHidden(on){
+  try { on ? localStorage.setItem(WELCOME_HIDE_KEY, '1') : localStorage.removeItem(WELCOME_HIDE_KEY); } catch(_){}
+}
+function showAuthOrWelcome(){
+  let skip = false;
+  try {
+    skip = localStorage.getItem(WELCOME_HIDE_KEY) === '1'
+        || /^#listing-/.test(location.hash) || !!sessionStorage.getItem(SHARE_HASH_KEY);
+  } catch(_){}
+  if(skip){ openAuthSignIn(); return; }
+  renderWelcomePins();
+  document.getElementById('authModal').classList.add('hide');
+  document.getElementById('welcomeScreen').classList.remove('hide');
+}
+function openAuthSignIn(){
+  document.getElementById('authModal').classList.remove('hide');
   goToStep('step-auth');
+}
+function closeWelcome(){
+  setWelcomeHidden(document.getElementById('wlNoShow').checked);
+  document.getElementById('welcomeScreen').classList.add('hide');
+  openAuthSignIn();
+}
+// Pins drop in around the card (left/top in % of the screen), staggered
+// (kept clear of the centred card so no chip pokes out from under it)
+const WL_PINS = [[8,18],[20,7],[12,44],[6,78],[18,95],[34,5],[66,5],[80,9],[92,24],[88,52],[94,80],[80,95],[60,99],[16,64],[84,68],[86,38],[5,31],[38,99]];
+// Every pin is the MapIt logo with a category chip (same icons/labels as the
+// browse chips; edge colour = the category's map colour). Chips live in their
+// own layer so they sit above every pin.
+const WL_PIN_CATS = [
+  { ico:'🔑', lbl:'Rent Property', col:'#F06030' },
+  { ico:'🚗', lbl:'Vehicles',      col:'#3B82F6' },
+  { ico:'🏠', lbl:'Buy Property',  col:'#F06030' },
+  { ico:'🏡', lbl:'Household',     col:'#22C55E' },
+];
+function renderWelcomePins(){
+  const pins = document.getElementById('wlPins'), tags = document.getElementById('wlTags');
+  if(!pins || !tags || pins.childElementCount) return;
+  pins.innerHTML = WL_PINS.map(([x,y],i) =>
+    `<img class="wl-pin" style="left:${x}%;top:${y}%;animation-delay:${(0.15+i*0.12).toFixed(2)}s" src="/mapit-logo.png" alt="">`).join('');
+  tags.innerHTML = WL_PINS.map(([x,y],i) => {
+    const c = WL_PIN_CATS[i%WL_PIN_CATS.length];
+    // Chip goes on the side away from the centred card, unless that runs off the screen edge
+    const side = x < 50 ? (x < 15 ? 'r' : 'l') : (x > 85 ? 'l' : 'r');
+    return `<span class="wl-tagchip ${side}" style="left:${x}%;top:${y}%;border-left-color:${c.col};animation-delay:${(0.55+i*0.12).toFixed(2)}s">${c.ico} ${c.lbl}</span>`;
+  }).join('');
+  hideChipsUnderCard();
+  window.addEventListener('resize', hideChipsUnderCard);
+  document.getElementById('welcomeScreen').addEventListener('scroll', hideChipsUnderCard, { passive:true });
+}
+// Pin positions are % of the screen, the card is a fixed width — on narrower
+// screens some chips would poke out from under the card, so hide those.
+function hideChipsUnderCard(){
+  const card = document.querySelector('#welcomeScreen .wl-card'); if(!card) return;
+  const r = card.getBoundingClientRect();
+  document.querySelectorAll('#wlTags .wl-tagchip').forEach(c => {
+    const b = c.getBoundingClientRect();
+    c.style.visibility = (b.right > r.left && b.left < r.right && b.bottom > r.top && b.top < r.bottom) ? 'hidden' : '';
+  });
 }
 
 // Fetches /api/auth/me for every stored session that lacks a proper display name,
