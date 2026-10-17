@@ -3361,7 +3361,7 @@ function renderSidebar(){
     <!-- Block A: distance bar + category icon + title/price + actions + photo strip -->
     <div class="ld-info-bar">
       <div class="ld-dist-bar">
-        <div class="ld-dist-row"><span class="ld-dist-txt">📍 ${fmtD(d)} from your location</span><button class="ld-map-btn" type="button" onclick="showListingOnMap('${l.id}')">🗺 Show on map</button></div>
+        <div class="ld-dist-row"><span class="ld-dist-txt">📍 ${fmtD(d)} from ${ST.exploreMode ? 'the search point' : 'your location'}</span><button class="ld-map-btn" type="button" onclick="showListingOnMap('${l.id}')">🗺 Show on map</button></div>
         <span class="ld-dist-sub">${l.address ? escHtml(l.address)+' · ' : ''}🕒 ${timeAgo(l.created_at)}${l.reference_code ? ` · <span style="font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">Ref: ${escHtml(l.reference_code)}</span>` : ''}${l.views_count!=null ? ` · 👁 ${l.views_count} view${l.views_count!==1?'s':''}` : ''}</span>
       </div>
       <div class="ld-info-top">
@@ -4615,13 +4615,18 @@ function _placeExploreMarker(){
   });
   _exploreMarker = L.marker([c.lat,c.lng],{icon,interactive:false,zIndexOffset:-100}).addTo(map);
 }
+// While a listing is open, the map flies to it — that move must not shift the
+// Explore search point, or the list re-searches from the listing's own pin and
+// its distance becomes the 150–400 m display offset (Arun, 2026-10-17).
+// Back (closeDetail) restores the previous view, which re-syncs everything.
 function _onExploreMove(){
-  if(!_exploreMarker) return;
+  if(!_exploreMarker || ST.selId) return;
   const c = map.getCenter();
   _exploreMarker.setLatLng(c);
   if(radCircle) radCircle.setLatLng(c);
 }
 function _onExploreMoveEnd(){
+  if(ST.selId) return;
   clearTimeout(_exploreMoveTO);
   _exploreMoveTO = setTimeout(loadListings, 800);
 }
