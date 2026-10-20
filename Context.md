@@ -1787,6 +1787,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **🟡 (2026-10-20) `GET /api/listings/:id` returns any status (pending/rejected/expired) to any logged-in user who has the ID** — UUIDs are unguessable, so low risk; fix with 9H (hide non-live listings from non-owners/non-admins).
+- **ℹ️ (2026-10-20) Saved tab still shows expired listings** — acceptable until 9H.
+- **✅ (2026-10-20) Listing expiry not enforced — RESOLVED on uat (lazy expiry `4f781d0`); entry below kept for history.**
 - **ℹ️ (2026-10-17) ToS page `<title>` + footer still say "v1.0"** (body shows Version 1.2) — cosmetic, small `docs/` fix after launch.
 - **ℹ️ (2026-10-17) UAT seed listings have no `display_lat/lng`** (inserted by SQL) — fine: `visiblePoint()` falls back to `fuzzLocation()`; keep in mind when writing data checks.
 - **⏳ (2026-10-17) Arun uat access** → invite as free Vercel **Viewer** (Pro: unlimited free Viewer seats; confirm $0 at invite, Rule 11). Old access request can be ignored.
@@ -2343,6 +2346,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-20) — Arun starts real listings Thu 22 Oct; meanwhile A4 → A1 → A3 (Nagesh):**
+1. ✅ **A4 ToS title/footer v1.2** — `725515e`, merged uat `490aa4a`. Nagesh localhost PASS.
+2. ✅ **A1 lazy listing expiry** — `4f781d0`, merged uat `5397343`. Browse hides active listings past `expires_at` (`isLive`, before pagination); approval resets `expires_at` = now + 30 d; new owner-only `PUT /api/listings/:id/renew` (active only, 400 otherwise); My Listings: "Expired · Hidden from the map", 🔄 Renew when ≤ 5 days, pending = "Live for 30 days once approved". UAT script check (throwaway user, 4 listings, deleted by ID): expired hidden before→after, renew → 30 d + back in browse, renew pending → 400. Screenshots `docs/screenshots/session-9-polish/before-myads-expiry.png`, `after-myads-expiry.png`, `after-myads-expiry-renewed.png`. Nagesh localhost PASS (pending text + Expires in 30d after approval). Gotcha: status stays `active` — any new buyer-facing query must apply `isLive` until 9H's cron flips status.
+3. ⏳ **A3 favicon + og-image** with the new logo.
+4. ⏳ `.env.example` uncommitted change (2+/1−, SENTRY_DSN) — Nagesh to verify no real value, then separate `docs(env)` commit.
+5. Then: migration 019 (Tue 21 Oct, UAT → prod with explicit OK) → PR `uat → main` before Thursday.
 
 **⬅ NOW (2026-10-17 16:38) — to Sunday 18 Oct:**
 1. **Nagesh + Arun:** 3–5 real listings on production ("Show exact location" off unless wanted) → James on standby for issues.
