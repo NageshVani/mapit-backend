@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-17 16:38 (UAE), checkpoint (**RELEASED: PR #25 `uat → main` merged (`afcc236`) — migration 018 scripts, escape helper, server distance from the display point (anti-trilateration), welcome page, chat safety, Explore + phone fixes, admin report photos, ToS v1.2 (Arun OK). Prod smoke 14/14, Sentry prod test PASS (info event, no email = by design; alert emails confirmed). Bypass secret rotated. Next: real listings on prod → Sunday 18 Oct announcement.**)
+- **Last updated:** 2026-10-20 19:32 (UAE), checkpoint (**Pre-Thursday polish day, all on uat (pushed, not on prod): A4 ToS label v1.2, A1 lazy listing expiry + Renew, A3 favicon/apple-touch-icon/og-image (new logo, drops "exact GPS pin" claim), `.env.example` cleanup, Post form numbered sections + step bar + map-controls overlap fix (Nagesh localhost + iPhone PASS). Arun starts real listings Thu 22 Oct. Decided: 5-screen posting wizard (+ auto title) after Arun's first listings; Remove-with-reason after launch with 9H. Next: migration 019 + PR Wed 21 Oct.**)
+- **Last updated (previous):** 2026-10-17 16:38 (UAE), checkpoint (**RELEASED: PR #25 `uat → main` merged (`afcc236`) — migration 018 scripts, escape helper, server distance from the display point (anti-trilateration), welcome page, chat safety, Explore + phone fixes, admin report photos, ToS v1.2 (Arun OK). Prod smoke 14/14, Sentry prod test PASS (info event, no email = by design; alert emails confirmed). Bypass secret rotated. Next: real listings on prod → Sunday 18 Oct announcement.**)
 - **Last updated (previous):** 2026-10-17 11:42 (UAE), checkpoint (**Saturday pre-launch polish, all on uat `45131cc` (smoke 14/14): Share Feedback on phones fixed (dvh + cascade), chat safety (banner, risky-message notes, Safety tips), pre-login welcome page (launch-video wording, logo pins + category chips, transparent logo), Explore distance fix (Arun). ToS v1.2 drafted on `docs/tos-v1.2` (`36ceebc`) — awaiting Arun. Found: server distance uses exact location (trilateration leak). Nothing new on main yet.**)
 - **Last updated (previous):** 2026-10-16 20:39 (UAE), checkpoint (**Sunday 18 Oct friends & family start agreed. Security must-fixes DONE: migration 018 (deny client access by default) live on UAT + prod (smoke 14/14, inventories match); frontend escape helper on uat. Also on uat: admin Reported listings details + photos, Share Feedback background, phone List-view search fix. Phone check mostly PASS; Share Feedback still hidden on the phone (investigating). uat = `8b1e0d3`; nothing new on main yet.**)
 - **Last updated (previous):** 2026-10-15 22:05 (UAE), checkpoint (**Development time-spent doc added (≈171 h over 69 days, 30 May–15 Oct; by month, weekday/weekend, laptop). Otherwise unchanged from the 21:51 end-of-day checkpoint — security audit first on 16 Oct.**)
@@ -118,6 +119,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-20 19:32, Tuesday) — Goal: production-ready build for Arun's first real listings on Thu 22 Oct.** Today's polish is all on uat (`9e169ce`): ToS v1.2 label, lazy listing expiry + Renew, new favicon/og-image, Post form sections + step bar. Wed 21 Oct: migration 019 (radius membership from the display point) UAT → prod. Wed 21 Oct (same day, after 019): PR `uat → main` → `smoke:prod` → WhatsApp preview check. 5-screen posting wizard (+ auto-suggested title) after Arun's first listings (only Wed if 019 + PR finish early).
 
 **NOW (2026-10-17 16:38, Saturday) — Goal: friends & family start Sunday 18 Oct. Production is release-ready: PR #25 live (`afcc236`), smoke 14/14, Sentry prod PASS. Remaining before the announcement: Nagesh + Arun post 3–5 real listings on prod. In parallel: Arun's free Vercel Viewer seat for uat. After launch: ToS page title/footer v1.0 → v1.2 (cosmetic), migration 019, favicon/og-image, "approximate location is safer" video, rest of audit, 9H, ToS v2.0, 9C.1.**
 
@@ -570,6 +573,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-20) A4 ToS label** — `<title>` + footer now v1.2 (`725515e`, uat `490aa4a`); Nagesh localhost PASS.
+- ✅ **(2026-10-20) A1 lazy listing expiry** — browse hides active listings past `expires_at`; approval resets the 30 days; owner `PUT /api/listings/:id/renew`; My Listings Expired + 🔄 Renew (`4f781d0`, uat `5397343`). UAT script check + Nagesh localhost PASS.
+- ✅ **(2026-10-20) `.env.example`** — SENTRY_DSN blank, `VERCEL_AUTOMATION_BYPASS_SECRET=` placeholder (`8383f4e`); history per CONTEXT: no real values ever committed.
+- ✅ **(2026-10-20) A3 brand assets** — split-pin `favicon.svg` + `favicon-32.png`, `apple-touch-icon.png`, new `og-image.png` (welcome-page wording), `og:image?v=2` (`bb95f56`, uat `ca5e230`); Nagesh localhost PASS (app + admin).
+- ✅ **(2026-10-20) Post form organize** — P1 map controls no longer over modals (`#map` isolation); P2 six numbered sections; step bar (✓ / in-view ring / tap-to-jump / "N of 6 done") per Nagesh's mid-build request (`826234d`, uat `20a9028`). UAT matrix 136/136 PASS (13 subcategories + Edit per category); Nagesh localhost + iPhone PASS.
+- ✅ **(2026-10-20) Plans recorded** — migration 019 build list; 5-screen wizard order finalized; auto-title; Remove-with-reason reasons list.
 - ✅ **Server distance from the display point (2026-10-17, `780f370`, uat `d543e28`):** `visiblePoint()` in `listings.js` = one rule for pin + distance; list route recomputes `distance_m` with `haversineM()` from the fuzzed point before sorting (owner / exact-location keep RPC value). UAT check: 19/19 fuzzed listings now measured from the pin (3 that said "0 m" now 282–352 m). Nagesh localhost PASS. CLAUDE.md Rule 9 updated.
 - ✅ **Arun re-checked Explore distance (2026-10-17) — OK;** Nagesh iPhone check of welcome page + chat safety on uat — OK; chat checks E 13–15 on uat (phone + laptop, live both ways) — PASS.
 - ✅ **ToS & Privacy v1.2 approved by Arun (2026-10-17)** → `docs/tos-v1.2` merged to uat (`9a4d3b5`).
@@ -1256,6 +1265,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **Lazy listing expiry + Renew (A1)** | ✅ uat `5397343` (2026-10-20); prod with next PR | `src/routes/listings.js`, `MapIt_MVP_v1.html` / `public/index.html` | Status stays `active`; 9H cron will flip to `expired` |
+| **Favicon / og-image (A3)** | ✅ uat `ca5e230`; prod with next PR | `public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `og-image.png`, HTML head | WhatsApp preview check on prod after PR |
+| **Post form sections + step bar** | ✅ uat `20a9028`; localhost + iPhone PASS | `MapIt_MVP_v1.html` / `public/index.html` | Foundation for the wizard |
+| **Migration 019 (radius on display point)** | ⬜ Wed 21 Oct | `database/migrations/019-*.sql`, `src/routes/listings.js` | Explicit OK before prod; deploy SQL + backend together |
+| **5-screen posting wizard + auto title** | 💡 Planned — after Arun's first listings (Thu 22 Oct) | `MapIt_MVP_v1.html` | Order: What → Details → Price & photos → Location → Review |
+| **Remove-with-reason (replaces Sold + Del)** | 💡 After launch, with 9H | migration + routes + UI | Reasons list in Next Steps |
 | **Share Feedback hidden on phone (D.9)** | ✅ Fixed 2026-10-17, on uat `0e9df8a`; Nagesh iPhone Chrome + Safari PASS (4/4) | `MapIt_MVP_v1.html` / `public/index.html` | Two causes: `100vh` under the iPhone toolbar → `100dvh` (`6d0b999`); phone padding rule lost to the later base rule → `#sb .feedback-strip` (`18d90c5`). Screenshots `docs/screenshots/session-9-polish/before-/after-phone-sharefeedback` |
 | **Real listings on prod → Sunday announcement** | ⏳ Nagesh + Arun | production | After PR #25 (live) |
 | **Arun uat access (Vercel Viewer)** | ⏳ Nagesh invites | Vercel team settings | Free Viewer seat; check $0 |
@@ -1441,6 +1456,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+src/routes/listings.js — 2026-10-20: `LISTING_TTL_MS` / `newExpiry()` / `isLive()`; browse filters expired; approve resets `expires_at`; new `PUT /:id/renew` (`4f781d0`).
+MapIt_MVP_v1.html / public/index.html — 2026-10-20: My Listings Expired/Renew + `renewListing()`; favicon/apple-touch/og tags (`?v=2`); Post form `.post-sec` sections, `#postSteps` step bar (`POST_STEP_DONE`, `updatePostSteps()`, `jumpPostStep()`), `#map{isolation:isolate}`.
+public/favicon.svg, favicon-32.png, apple-touch-icon.png, og-image.png — 2026-10-20: new logo assets (`bb95f56`).
+docs/legal/terms-privacy-draft2.html — 2026-10-20: title + footer v1.2 (`725515e`).
+.env.example — 2026-10-20: SENTRY_DSN blank, VERCEL_AUTOMATION_BYPASS_SECRET placeholder (`8383f4e`).
+docs/screenshots/session-9-polish/ — 2026-10-20: before/after-myads-expiry*, before/after-og-image, after-favicon-preview, before/after-post-* (phone, desktop, vehicle, jump-location, edit, edit-re).
 src/routes/listings.js — 2026-10-17: `visiblePoint()` helper; radius list recomputes `distance_m` from the display point for fuzzed listings (`780f370`).
 CLAUDE.md — 2026-10-17: Rule 9 — `haversineM()` used again for fuzzed-listing distance; radius membership still exact (migration 019).
 docs/legal/terms-privacy-draft2.html — 2026-10-17: v1.2 merged to uat + live on prod (title + footer still say v1.0).
@@ -1974,6 +1995,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Lazy expiry now, cron later (2026-10-20)** | Read-time `isLive()` filter = no schema/cron/cost; 9H adds status flip + emails without undoing it |
+| **Expiry clock starts at approval; owner can Renew (2026-10-20)** | Pending time shouldn't eat the 30 days; without Renew the only way back is delete + repost |
+| **Favicon = simplified split pin; full logo only ≥180 px (2026-10-20)** | Handshake unreadable at 16 px; iOS needs a white background |
+| **og-image wording from the welcome page; `?v=N` cache-bust (2026-10-20)** | Old card claimed "exact GPS pin" (false since fuzzing); WhatsApp caches by image URL |
+| **Post form: sections + derived step bar before a wizard (2026-10-20)** | Low risk two days before real sellers; step bar re-reads the form, no separate state to drift |
+| **5-screen wizard order What → Details → Price & photos → Location → Review (Nagesh, 2026-10-20)** | Category drives the fields; heaviest screen (map) late; privacy toggle right before submit; Contact on Review |
+| **Auto title inside the wizard, "suggest, don't overwrite" (2026-10-20)** | Belongs next to its source fields; never clobber a seller-edited title |
+| **Remove-with-reason after launch, with 9H (2026-10-20)** | Needs migration + soft delete; same lifecycle as 9H |
 | **Distance for fuzzed listings computed on the server from the display point, before sorting (2026-10-17)** | Closes trilateration from Explore; server-side keeps the API itself safe (frontend fallback alone would rely on the client); sort order also leaked. Radius membership deferred to migration 019 |
 | **Arun's uat access = free Vercel Viewer seat, not a bypass link (2026-10-17)** | Own Google login, read-only; bypass links grant anyone access (that's why the secret was rotated) |
 | **Nagesh keeps uat in one browser (Vercel cookie), no bypass bookmark (2026-10-17)** | Nothing to configure; no secret stored in a URL |
@@ -2347,14 +2376,22 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-20) — Arun starts real listings Thu 22 Oct; meanwhile A4 → A1 → A3 (Nagesh):**
+**⬅ NOW (2026-10-20 19:32) — ordered:**
+1. **Wed 21 Oct (morning) — migration 019:** Nagesh runs two read-only counts (active listings with `display_lat IS NULL`) on UAT + prod → James writes `019-radius-on-display-point.sql` (RPC with `viewer_id`, bbox prefilter radius + 400 m on the existing GiST index, drop old 3-arg function, service-role-only grant + verify), backfill script, rollback, backend change → UAT test (EXPLAIN ANALYZE Index Scan, data check, localhost) → inventory compare → prod with explicit OK.
+2. **Wed 21 Oct (after 019) — PR `uat → main`** (A4, A1, A3, post form, 019) → `smoke:prod` → WhatsApp preview check (`https://www.mapit.co.in`).
+3. **Thu 22 Oct — Arun posts real listings** on prod; ask him what felt slow/confusing in posting.
+4. **5-screen posting wizard + auto-suggested title** — after Arun's first listings (Wed only if 019 + PR finish early; use his feedback).
+5. Dashboard items (Nagesh, any gap): prod Supabase redirect URLs, remove `SUPABASE_DB_PASSWORD` from Vercel, Gmail forward of Sentry mails, Sentry uptime monitor; Arun Vercel Viewer seat.
+6. After launch: 9H (+ Remove-with-reason), rest of audit, ToS v2.0, 9C.1, "approximate location is safer" video.
+
+**Earlier today (2026-10-20) — Arun starts real listings Thu 22 Oct; meanwhile A4 → A1 → A3 (Nagesh):**
 1. ✅ **A4 ToS title/footer v1.2** — `725515e`, merged uat `490aa4a`. Nagesh localhost PASS.
 2. ✅ **A1 lazy listing expiry** — `4f781d0`, merged uat `5397343`. Browse hides active listings past `expires_at` (`isLive`, before pagination); approval resets `expires_at` = now + 30 d; new owner-only `PUT /api/listings/:id/renew` (active only, 400 otherwise); My Listings: "Expired · Hidden from the map", 🔄 Renew when ≤ 5 days, pending = "Live for 30 days once approved". UAT script check (throwaway user, 4 listings, deleted by ID): expired hidden before→after, renew → 30 d + back in browse, renew pending → 400. Screenshots `docs/screenshots/session-9-polish/before-myads-expiry.png`, `after-myads-expiry.png`, `after-myads-expiry-renewed.png`. Nagesh localhost PASS (pending text + Expires in 30d after approval). Gotcha: status stays `active` — any new buyer-facing query must apply `isLive` until 9H's cron flips status.
 3. ✅ **A3 favicon + og-image** — `bb95f56`, merged uat `ca5e230`. Favicon = simplified split orange/black pin (no handshake) + `favicon-32.png` fallback; `apple-touch-icon.png` (full logo on white); og-image redrawn with logo + welcome-page wording (old one claimed "exact GPS pin" — wrong since fuzzing); `og:image?v=2` (bump on every image change). Screenshots `before-og-image.png`, `after-og-image.png`, `after-favicon-preview.png` (session-9-polish). Nagesh localhost PASS (app + admin). WhatsApp preview check on prod after the PR.
 4. ✅ `.env.example` — `8383f4e`: SENTRY_DSN blank, `VERCEL_AUTOMATION_BYPASS_SECRET=` placeholder added (Nagesh confirmed no real values).
 5. ✅ **Post form organize (P1 + P2 + step bar)** — Nagesh localhost PASS (2 Wheelers + RE; "everything looks good"), merged uat `20a9028`. iPhone check on uat PASS (step bar one row, My area/zoom not over the form, tap-to-jump works). Original notes: branch `feat/post-form-organize` `826234d`. P1: `#map{isolation:isolate}` → My area/zoom no longer over modals (covered Submit on phones). P2: 6 numbered sections (What · Details & price · Title & description · Photos · Location · Contact; CSS counter), step bar in sticky header (✓ = same rules as `submitListing()`, orange ring = section in view, tap to jump, "N of 6 done"); IDs unchanged. UAT matrix script 136/136 PASS (13 subcategories, Edit RE/veh/hh, no JS errors). Screenshots `before-post-*`, `after-post-*` (session-9-polish). Waiting: Nagesh localhost click-test (real photos + submit per category) → merge uat → iPhone check.
-6. Then: migration 019 (Tue 21 Oct, UAT → prod with explicit OK) → PR `uat → main` before Thursday.
-7. **5-screen posting wizard (decided 2026-10-20, Nagesh)** — Wed 22 Oct if 019 goes smoothly, else after Arun's first listings (use his feedback). **FINAL order (Nagesh, revised 2026-10-20 — agreed with James's flow; earlier "Location & contact first" idea dropped):** ① What (category, subcategory, Sell/Rent; Next = subcategory chosen) → ② Details (subcategory fields, title, description; Next = title filled) → ③ Price & photos (price with ₹ words, photos; Next = price > 0 and a photo, except Plots) → ④ Location (map pin, search/GPS, "Show exact pin"; Next = pin placed) → ⑤ Review & contact (phone choice + summary card: photo, title, price, approximate area) → Submit for review. Why location late: heaviest screen, sellers have invested effort by then; privacy toggle sits right before submit. Step bar on every screen. Build notes: Back keeps data; price field moves to ③ with the same `pf_total_price` ID; `invalidateSize()` on the picker map when its screen opens (Leaflet blank-map gotcha); Edit = all steps clickable; phone back button → previous screen, not close.
+6. Then: migration 019 (Wed 21 Oct, UAT → prod with explicit OK) → PR `uat → main` before Thursday.
+7. **5-screen posting wizard (decided 2026-10-20, Nagesh)** — after Arun's first listings (Wed 21 Oct only if 019 + PR finish early) (use his feedback). **FINAL order (Nagesh, revised 2026-10-20 — agreed with James's flow; earlier "Location & contact first" idea dropped):** ① What (category, subcategory, Sell/Rent; Next = subcategory chosen) → ② Details (subcategory fields, title, description; Next = title filled) → ③ Price & photos (price with ₹ words, photos; Next = price > 0 and a photo, except Plots) → ④ Location (map pin, search/GPS, "Show exact pin"; Next = pin placed) → ⑤ Review & contact (phone choice + summary card: photo, title, price, approximate area) → Submit for review. Why location late: heaviest screen, sellers have invested effort by then; privacy toggle sits right before submit. Step bar on every screen. Build notes: Back keeps data; price field moves to ③ with the same `pf_total_price` ID; `invalidateSize()` on the picker map when its screen opens (Leaflet blank-map gotcha); Edit = all steps clickable; phone back button → previous screen, not close.
    **+ Auto-suggested title (Nagesh, 2026-10-20)** — build inside the wizard's Details screen (~1–1.5 h): per-subcategory templates (e.g. veh `{brand} {model} {year} – {kms} km, {owners} owner`; RE `{bhk} {subcat} for rent/sale`; plots `{area} sq ft plot for sale`); "suggest, don't overwrite" — stop auto-filling once the seller edits the title.
 8. **After launch, with 9H — one "Remove" button with a reason (Nagesh 2026-10-20, same as Arun's 2026-10-12 ask):** replaces Sold + Del. Needs migration (`removed_reason`, `removed_at`, status `removed`), soft remove (row kept, deleted on the 9H schedule), dialog, admin report. Reasons (Rent listings say "Rented out"): a Sold/Rented through MapIt (main KPI) · b Sold/Rented elsewhere · c No longer want to sell/rent · d Posted by mistake / duplicate · e Will post again with changes · f Too many spam/unsafe messages (safety signal → admin) · g Other (optional note). Optional: agreed price for (a) into the unused `transactions` table. ~3–4 h + migration.
 
