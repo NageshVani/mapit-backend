@@ -2350,8 +2350,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 **⬅ NOW (2026-10-20) — Arun starts real listings Thu 22 Oct; meanwhile A4 → A1 → A3 (Nagesh):**
 1. ✅ **A4 ToS title/footer v1.2** — `725515e`, merged uat `490aa4a`. Nagesh localhost PASS.
 2. ✅ **A1 lazy listing expiry** — `4f781d0`, merged uat `5397343`. Browse hides active listings past `expires_at` (`isLive`, before pagination); approval resets `expires_at` = now + 30 d; new owner-only `PUT /api/listings/:id/renew` (active only, 400 otherwise); My Listings: "Expired · Hidden from the map", 🔄 Renew when ≤ 5 days, pending = "Live for 30 days once approved". UAT script check (throwaway user, 4 listings, deleted by ID): expired hidden before→after, renew → 30 d + back in browse, renew pending → 400. Screenshots `docs/screenshots/session-9-polish/before-myads-expiry.png`, `after-myads-expiry.png`, `after-myads-expiry-renewed.png`. Nagesh localhost PASS (pending text + Expires in 30d after approval). Gotcha: status stays `active` — any new buyer-facing query must apply `isLive` until 9H's cron flips status.
-3. ⏳ **A3 favicon + og-image** with the new logo.
-4. ⏳ `.env.example` uncommitted change (2+/1−, SENTRY_DSN) — Nagesh to verify no real value, then separate `docs(env)` commit.
+3. ✅ **A3 favicon + og-image** — `bb95f56`, merged uat `ca5e230`. Favicon = simplified split orange/black pin (no handshake) + `favicon-32.png` fallback; `apple-touch-icon.png` (full logo on white); og-image redrawn with logo + welcome-page wording (old one claimed "exact GPS pin" — wrong since fuzzing); `og:image?v=2` (bump on every image change). Screenshots `before-og-image.png`, `after-og-image.png`, `after-favicon-preview.png` (session-9-polish). Nagesh localhost PASS (app + admin). WhatsApp preview check on prod after the PR.
+4. ✅ `.env.example` — `8383f4e`: SENTRY_DSN blank, `VERCEL_AUTOMATION_BYPASS_SECRET=` placeholder added (Nagesh confirmed no real values).
 5. Then: migration 019 (Tue 21 Oct, UAT → prod with explicit OK) → PR `uat → main` before Thursday.
 
 **⬅ NOW (2026-10-17 16:38) — to Sunday 18 Oct:**
