@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-<path d="M16 2C10 2 5 7 5 13c0 8 11 17 11 17s11-9 11-17c0-6-5-11-11-11z" fill="#F06030"/>
-<circle cx="16" cy="13" r="4.5" fill="#fff"/>
+<!-- MapIt logo simplified for 16-32 px: split orange/black pin, white centre (handshake omitted, unreadable at this size) -->
+<clipPath id="l"><rect width="16" height="32"/></clipPath>
+<clipPath id="r"><rect x="16" width="16" height="32"/></clipPath>
+<path d="M16 1C9.4 1 4 6.3 4 12.8 4 21.6 16 31 16 31s12-9.4 12-18.2C28 6.3 22.6 1 16 1z" fill="#F37021" clip-path="url(#l)"/>
+<path d="M16 1C9.4 1 4 6.3 4 12.8 4 21.6 16 31 16 31s12-9.4 12-18.2C28 6.3 22.6 1 16 1z" fill="#1F1F1F" clip-path="url(#r)"/>
+<rect x="15.4" y="0" width="1.2" height="32" fill="#fff"/>
+<circle cx="16" cy="12.8" r="6" fill="#fff"/>
 </svg>
