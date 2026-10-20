@@ -609,6 +609,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 /* ── MY ADS — SOLD BUTTON ── */
 .sold-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:11.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
 .sold-btn:hover{border-color:var(--green);color:var(--green);}
+.renew-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(34,197,94,.45);background:rgba(34,197,94,.1);color:var(--green);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
+.renew-btn:hover{background:rgba(34,197,94,.2);}
 .del-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(239,68,68,.35);background:transparent;color:rgba(239,68,68,.7);font-size:11.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
 .del-btn:hover{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.08);}
 .edit-btn{padding:4px 10px;border-radius:6px;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.08);color:#60a5fa;font-size:11.5px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
@@ -3251,10 +3253,16 @@ async function renderMyAds(el){
     el.innerHTML =
       `<div class="myads-hd">📋 Displaying only your ads &nbsp;·&nbsp; ${listings.length} listing${listings.length!==1?'s':''}</div>` +
       listings.map(l=>{
+        // Expiry is lazy (server hides active listings past expires_at from
+        // browse), so an "active" listing past its date shows as Expired here.
+        const days = l.expires_at ? Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000) : null;
+        const expired = l.status==='active' && days!==null && days <= 0;
+        const canRenew = l.status==='active' && days!==null && days <= 5;
+        const shownStatus = expired ? 'expired' : l.status;
         const expiryHtml = (()=>{
-          if(!l.expires_at) return '';
-          const days = Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000);
-          if(days <= 0) return `<div class="fav-dist" style="color:var(--red);">⚠️ Expired</div>`;
+          if(l.status==='pending') return `<div class="fav-dist" style="color:var(--muted);">Live for 30 days once approved</div>`;
+          if(l.status!=='active' || days===null) return '';
+          if(expired) return `<div class="fav-dist" style="color:var(--red);">⚠️ Hidden from the map · Renew to show it again</div>`;
           if(days <= 5) return `<div class="fav-dist" style="color:var(--orange);">⚠️ Expires in ${days}d</div>`;
           return `<div class="fav-dist" style="color:var(--muted);">Expires in ${days}d</div>`;
         })();
@@ -3267,10 +3275,11 @@ async function renderMyAds(el){
           <div class="fav-info">
             <div class="fav-ttl">${escHtml(l.title)}</div>
             <div class="fav-price">${priceText(l)}</div>
-            <div class="fav-dist" style="color:${STATUS_COLOR[l.status]||'var(--muted)'};">● ${l.status.charAt(0).toUpperCase()+l.status.slice(1)}</div>
+            <div class="fav-dist" style="color:${STATUS_COLOR[shownStatus]||'var(--muted)'};">● ${shownStatus.charAt(0).toUpperCase()+shownStatus.slice(1)}</div>
             ${expiryHtml}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;">
+            ${canRenew?`<button class="renew-btn" onclick="event.stopPropagation();renewListing('${l.id}')">🔄 Renew</button>`:''}
             <button class="edit-btn" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit</button>
             ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}',${ttlArg})">✅ Sold</button>`:''}
             <button class="del-btn" onclick="event.stopPropagation();deleteListing('${l.id}',${ttlArg})">🗑️ Del</button>
@@ -5110,6 +5119,19 @@ async function markAsSold(id, title){
   try {
     await apiPut(`/api/listings/${id}/sold`, {});
     toast('✅ Listing marked as sold and removed from the map.');
+    renderMyAds(document.getElementById('sb-content'));
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function renewListing(id){
+  if(!(await mapitDialog({
+    title: 'Renew listing?',
+    message: 'Your listing will stay on the map for 30 more days from today.',
+    okText: 'Renew',
+  }))) return;
+  try {
+    await apiPut(`/api/listings/${id}/renew`, {});
+    toast('🔄 Listing renewed for 30 days.');
     renderMyAds(document.getElementById('sb-content'));
   } catch(e){ toast('Error: '+e.message); }
 }
