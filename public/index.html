@@ -277,7 +277,9 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 }
 @media(max-width:768px){.sb-handle{display:none;}}
 @media(prefers-reduced-motion:reduce){#sb{transition:none;}}
-#map{width:100%;height:100%;}
+/* isolation: keeps Leaflet's internal z-indexes (controls use 1000) inside the
+   map, so "My area" / zoom can't float above the modals (z-index 1000) */
+#map{width:100%;height:100%;isolation:isolate;}
 .leaflet-control-zoom{border:none !important;box-shadow:0 2px 10px rgba(0,0,0,.12) !important;}
 .leaflet-control-zoom a{background:var(--card) !important;color:var(--text) !important;border:1px solid var(--border2) !important;font-size:16px !important;}
 .leaflet-control-zoom a:hover{background:var(--card2) !important;}
@@ -479,6 +481,22 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .post-body{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:0 24px;align-items:start;}
 .post-col-l,.post-col-r{min-width:0;}
 .post-col-full{grid-column:1/-1;}
+.post-body{counter-reset:postsec;}
+.post-header{flex-wrap:wrap;}
+.ps-count{margin-left:auto;margin-right:12px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;}
+.post-steps{flex-basis:100%;display:flex;gap:4px;margin-top:12px;}
+.post-steps:empty{display:none;}
+.ps-chip{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 2px;border:none;background:transparent;cursor:pointer;font-family:'Outfit',sans-serif;border-radius:8px;}
+.ps-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--card2);color:var(--muted2);}
+.ps-lbl{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.ps-chip.done .ps-num{background:var(--green);color:#fff;}
+.ps-chip.cur .ps-num{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--orange);}
+.ps-chip.cur .ps-lbl{color:var(--orange);}
+.ps-chip:not(.done).cur .ps-num{background:var(--orange);color:#fff;}
+.post-sec{counter-increment:postsec;margin-bottom:16px;border-bottom:1px solid var(--border);}
+.post-sec-hd{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;color:var(--text);margin:2px 0 12px;}
+.post-sec-hd::before{content:counter(postsec);width:22px;height:22px;border-radius:50%;background:var(--orange);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.post-sec-empty{font-size:12px;color:var(--muted);background:var(--card);border:1px dashed var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:16px;}
 #dynamicFields{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
 @media(max-width:640px){.post-box{max-width:98vw;}.post-body{grid-template-columns:1fr;}#dynamicFields{grid-template-columns:1fr;}}
 .form-group{margin-bottom:16px;}
@@ -488,7 +506,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .tx-radio-row{display:flex;gap:20px;padding:10px 13px;background:var(--card);border:1px solid var(--border2);border-radius:8px;}
 .tx-radio-lbl{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;}
 .tx-radio-lbl input[type=radio]{accent-color:var(--orange);width:16px;height:16px;cursor:pointer;}
-.dyn-section-hd{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:8px 0 4px;border-top:1px solid var(--border);margin:4px 0 12px;grid-column:1/-1;}
 .dist-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(240,96,48,.1);color:var(--orange);border:1.5px solid rgba(240,96,48,.3);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:700;margin:10px 13px 0;}
 .form-input:focus{border-color:var(--orange);}
 .form-input::placeholder{color:var(--muted);}
@@ -1046,12 +1063,20 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   <div class="post-box">
     <div class="post-header">
       <div class="post-title">📍 Post a Listing</div>
+      <div class="ps-count" id="postStepsCount"></div>
       <div class="post-close" onclick="closePostModal()">✕</div>
+      <!-- Step bar (sticky with the header) — built by updatePostSteps() -->
+      <div class="post-steps" id="postSteps"></div>
     </div>
     <div class="post-body">
-      <!-- LEFT column: category, type, dynamic fields, title -->
+      <!-- Numbered sections in the order a seller thinks (numbers come from a
+           CSS counter, so a hidden section never leaves a gap). Element IDs are
+           unchanged — the Edit form and submitListing() find fields by ID. -->
+      <!-- LEFT column: ① what ② details ③ title + description ④ photos -->
       <div class="post-col-l">
-        <!-- Category + Subcategory -->
+        <!-- ① Category + Subcategory (+ Sell/Rent) -->
+        <section class="post-sec" data-step="What">
+        <div class="post-sec-hd">What are you listing?</div>
         <div class="form-row">
           <div class="form-group" style="margin-bottom:0">
             <label class="form-label">Category</label>
@@ -1074,32 +1099,41 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
             <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell"> Sell</label>
           </div>
         </div>
-        <!-- Dynamic category-specific fields (rendered as 2-col subgrid via CSS) -->
-        <div id="dynamicFields" style="margin-top:14px;"></div>
-        <!-- Title -->
+        </section>
+        <!-- ② Dynamic category-specific fields (rendered as 2-col subgrid via CSS) -->
+        <section class="post-sec" id="postSecDetails" data-step="Details">
+        <div class="post-sec-hd">Details &amp; price</div>
+        <div class="post-sec-empty" id="postDetailsEmpty">Choose a subcategory above to see the fields for it.</div>
+        <div id="dynamicFields"></div>
+        </section>
+        <!-- ③ Title + Description -->
+        <section class="post-sec" data-step="Title">
+        <div class="post-sec-hd">Title &amp; description</div>
         <div class="form-group">
           <label class="form-label">Title <span style="color:var(--muted);font-weight:400;">(max 80 chars)</span></label>
           <input class="form-input" id="postTitle" placeholder="e.g. Honda City ZX 2021 – Single Owner" maxlength="80"/>
         </div>
-        <!-- Photos -->
+        <div class="form-group">
+          <label class="form-label">Description <span style="color:var(--muted);font-weight:400;">(max 1000 chars)</span></label>
+          <textarea class="form-input form-textarea" id="postDesc" placeholder="Any additional details about your listing…" maxlength="1000"></textarea>
+        </div>
+        </section>
+        <!-- ④ Photos -->
+        <section class="post-sec" data-step="Photos">
+        <div class="post-sec-hd">Photos</div>
         <div class="form-group">
           <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5 · optional for Plots)</span></label>
           <div id="postCurPhotos" class="post-cur-photos" style="display:none;"></div>
           <input type="file" id="postPhotos" accept="image/*" multiple style="display:none;" onchange="onPostPhotosPicked(this)"/>
           <button type="button" class="pcp-add" id="postPhotosAdd" onclick="document.getElementById('postPhotos').click()">📷 Add photos</button>
         </div>
-        <!-- Phone visibility -->
-        <div class="form-group">
-          <label class="form-label">📞 Show Phone Number to Buyers</label>
-          <div class="tx-radio-row" style="flex-direction:column;gap:8px;">
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement" checked> On Agreement</label>
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
-          </div>
-        </div>
+        </section>
       </div>
-      <!-- RIGHT column: location -->
+      <!-- RIGHT column: ⑤ location ⑥ contact -->
       <div class="post-col-r">
-        <!-- Location -->
+        <!-- ⑤ Location + precision -->
+        <section class="post-sec" data-step="Location">
+        <div class="post-sec-hd">Location</div>
         <div class="form-group">
           <label class="form-label">📍 Listing Location</label>
           <select class="form-input form-select" id="postLocation" onchange="toggleManualListingLoc()"></select>
@@ -1129,13 +1163,21 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
             </span>
           </label>
         </div>
-      </div>
-      <!-- FULL WIDTH: description + submit -->
-      <div class="post-col-full">
+        </section>
+        <!-- ⑥ Phone visibility -->
+        <section class="post-sec" data-step="Contact">
+        <div class="post-sec-hd">Contact</div>
         <div class="form-group">
-          <label class="form-label">Description <span style="color:var(--muted);font-weight:400;">(max 1000 chars)</span></label>
-          <textarea class="form-input form-textarea" id="postDesc" placeholder="Any additional details about your listing…" maxlength="1000"></textarea>
+          <label class="form-label">📞 Show Phone Number to Buyers</label>
+          <div class="tx-radio-row" style="flex-direction:column;gap:8px;">
+            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement" checked> On Agreement</label>
+            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
+          </div>
         </div>
+        </section>
+      </div>
+      <!-- FULL WIDTH: submit -->
+      <div class="post-col-full">
         <button class="post-submit" id="postSubmitBtn" onclick="submitListing()">Submit for Review 🚀</button>
         <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px;">Your listing will be reviewed and go live within 4 hours.</div>
       </div>
@@ -3992,7 +4034,77 @@ function toggleEditPhoto(id){
   _editPhotosRemove.has(id) ? _editPhotosRemove.delete(id) : _editPhotosRemove.add(id);
   renderPostPhotos();
 }
+// ── Post form step bar ─────────────────────────────────────────
+// One chip per visible .post-sec: green ✓ when its required input is filled
+// (same rules as submitListing()), orange ring = the section in view.
+// Recomputed on any input/change/click/scroll inside the modal, so no field
+// handler has to remember to call it.
+const POST_STEP_DONE = {
+  What:     () => !!document.getElementById('postSubcat').value,
+  Details:  () => {
+    const cat = document.getElementById('postCat').value, sub = document.getElementById('postSubcat').value;
+    const fields = (LISTING_FIELDS[cat]||{})[sub] || [];
+    return !!sub && (!fields.length || parseFloat(document.getElementById('pf_total_price')?.value) > 0);
+  },
+  Title:    () => !!document.getElementById('postTitle').value.trim(),
+  Photos:   () => {
+    // Same rule as submitListing(): Plots and older photo-less listings
+    // being edited may go without a photo
+    const needsPhoto = document.getElementById('postSubcat').value !== 'Plots' && (!ST.editingId || _editPhotos.length > 0);
+    return !needsPhoto || (ST.editingId ? keptPhotoTotal() : 0) + _newPhotos.length > 0;
+  },
+  Location: () => {
+    const v = document.getElementById('postLocation').value;
+    return v === '__manual__' ? !!_postPickerCoords : !!v;
+  },
+  Contact:  () => !!document.querySelector('input[name="showPhone"]:checked'),
+};
+var _postStepsRaf = 0; // var: renderDynamicFields() may call in before this line runs
+function schedulePostSteps(){
+  if(_postStepsRaf) return;
+  _postStepsRaf = requestAnimationFrame(()=>{ _postStepsRaf = 0; updatePostSteps(); });
+}
+function updatePostSteps(){
+  const modal = document.getElementById('postModal');
+  if(modal.classList.contains('hide')) return;
+  const box = modal.querySelector('.post-box');
+  const secs = [...modal.querySelectorAll('.post-sec')].filter(s => s.offsetParent !== null);
+  // "In view" = last section whose top has passed the sticky header
+  const line = box.getBoundingClientRect().top + modal.querySelector('.post-header').offsetHeight + 40;
+  let cur = 0;
+  secs.forEach((s,i)=>{ if(s.getBoundingClientRect().top <= line) cur = i; });
+  // Two-column desktop: both columns are on screen, so no "current" ring
+  const twoCol = getComputedStyle(modal.querySelector('.post-body')).gridTemplateColumns.split(' ').length > 1;
+  let done = 0;
+  document.getElementById('postSteps').innerHTML = secs.map((s,i)=>{
+    const ok = (POST_STEP_DONE[s.dataset.step] || (()=>false))();
+    if(ok) done++;
+    return `<button type="button" class="ps-chip${ok?' done':''}${!twoCol&&i===cur?' cur':''}" onclick="jumpPostStep('${s.dataset.step}')">`
+      + `<span class="ps-num">${ok?'✓':i+1}</span><span class="ps-lbl">${s.dataset.step}</span></button>`;
+  }).join('');
+  document.getElementById('postStepsCount').textContent = `${done} of ${secs.length} done`;
+}
+function jumpPostStep(step){
+  const modal = document.getElementById('postModal');
+  const box = modal.querySelector('.post-box');
+  const sec = modal.querySelector(`.post-sec[data-step="${step}"]`);
+  if(!sec) return;
+  const top = sec.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop
+            - modal.querySelector('.post-header').offsetHeight - 8;
+  box.scrollTo({ top, behavior:'smooth' });
+}
+(()=>{
+  const modal = document.getElementById('postModal');
+  ['input','change','click'].forEach(t => modal.addEventListener(t, schedulePostSteps));
+  modal.querySelector('.post-box').addEventListener('scroll', schedulePostSteps, { passive:true });
+  // Opening the form (Post or Edit) only flips the .hide class — catch that,
+  // plus a late pass for Edit, whose listing data and photos load async.
+  new MutationObserver(()=>{ schedulePostSteps(); setTimeout(schedulePostSteps, 1500); })
+    .observe(modal, { attributes:true, attributeFilter:['class'] });
+})();
+
 function renderPostPhotos(){
+  schedulePostSteps();
   const box = document.getElementById('postCurPhotos');
   const cur = ST.editingId ? _editPhotos : [];
   const total = keptPhotoTotal() + _newPhotos.length;
@@ -4110,9 +4222,13 @@ function renderDynamicFields(){
   // Show/hide Sell/Rent for Real Estate only
   document.getElementById('txTypeGroup').style.display = cat === 're' ? '' : 'none';
   const fields = (LISTING_FIELDS[cat]||{})[sub] || [];
+  // Section ② "Details & price": hint until a subcategory is picked; hidden
+  // for a subcategory without fields (the CSS counter then renumbers).
+  document.getElementById('postDetailsEmpty').style.display = sub ? 'none' : '';
+  document.getElementById('postSecDetails').style.display = (sub && !fields.length) ? 'none' : '';
+  schedulePostSteps();
   if(!fields.length){ container.innerHTML = ''; return; }
   container.innerHTML =
-    `<div class="dyn-section-hd">${sub} Details</div>` +
     fields.map(f => {
       const inp = f.type === 'select'
         ? `<select class="form-input form-select" id="pf_${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
