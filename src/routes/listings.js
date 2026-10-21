@@ -40,6 +40,10 @@ const LISTING_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const newExpiry = () => new Date(Date.now() + LISTING_TTL_MS).toISOString();
 const isLive = l => !l.expires_at || new Date(l.expires_at).getTime() > Date.now();
 
+// Radius search over-fetches by this much, then filters on the visible
+// point. MUST stay above fuzzLocation()'s max offset (400 m, utils/geo.js).
+const FUZZ_MARGIN_M = 500;
+
 // Reference code: MP-BLR-XXXXXX (6 alphanumeric, no 0/O/1/I to avoid confusion)
 function generateRefCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -385,11 +389,14 @@ router.get('/', requireAuth, async (req, res, next) => {
       // — returns only (id, distance_m), so the follow-up `select('*')` below
       // always carries every listings column (subcategory included) without
       // the RPC needing its own hardcoded column list to stay in sync.
+      // The RPC measures from the EXACT point, so it is asked for radius +
+      // FUZZ_MARGIN_M (candidates), and membership is decided below from the
+      // point the viewer can see (2026-10-21, replaces planned migration 019).
       const rM = Math.min(parseInt(radius), 999000);
       const uLat = parseFloat(lat), uLng = parseFloat(lng);
 
       const { data: nearby, error: rpcError } = await supabaseAdmin
-        .rpc('listings_within_radius', { user_lat: uLat, user_lng: uLng, radius_m: rM });
+        .rpc('listings_within_radius', { user_lat: uLat, user_lng: uLng, radius_m: rM + FUZZ_MARGIN_M });
 
       if (rpcError) return next(createError(rpcError.message));
 
@@ -406,8 +413,10 @@ router.get('/', requireAuth, async (req, res, next) => {
 
         if (error) return next(createError(error.message));
         // The RPC measures from the exact lat/lng. For a fuzzed listing that
-        // number (and the sort order) would let a buyer trilaterate the real
-        // spot from three searches, so measure from the point they can see.
+        // number (and the sort order, and whether it is inside the radius at
+        // all) would let a buyer trilaterate the real spot from a few
+        // searches, so measure from the point they can see and keep only
+        // listings whose VISIBLE point is within the requested radius.
         listings = (data || [])
           .map(l => {
             const p = visiblePoint(l, req.user.id);
@@ -416,6 +425,7 @@ router.get('/', requireAuth, async (req, res, next) => {
               : Math.round(haversineM(uLat, uLng, p.lat, p.lng));
             return { ...l, distance_m };
           })
+          .filter(l => l.distance_m <= rM)
           .sort((a, b) => a.distance_m - b.distance_m);
       }
     } else {

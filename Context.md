@@ -1270,7 +1270,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | **Favicon / og-image (A3)** | ✅ uat `ca5e230`; prod with next PR | `public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `og-image.png`, HTML head | WhatsApp preview check on prod after PR |
 | **Post form sections + step bar** | ✅ uat `20a9028`; localhost + iPhone PASS | `MapIt_MVP_v1.html` / `public/index.html` | Foundation for the wizard |
 | **Listing alert emails → listings@ (🆕 NEW / ✏️ UPDATED / "(was live)" / ⚠️ FLAGGED)** | ✅ uat `b26f7b2` (2026-10-21); prod with next PR. Nagesh localhost PASS: NEW + UPDATED + "(was live)" + FLAGGED all received in Zoho Streams (Swift flag correct: "Hyundai doesn't make Swift"; reused stored verdict, no re-score). Fix `f27c543`: short price label ("₹1.2L") not repeated | `src/utils/notifyListings.js` (new), `src/routes/listings.js`, `package.json` (`@vercel/functions` waitUntil — also fixes T-015), `.env.example` | Env `LISTINGS_NOTIFY_EMAIL`: Vercel **Production only** (Config type) = listings@; Preview unset. Edits re-run AI check only if title/description changed. First test missed: server restarted before `.env` was saved (nodemon doesn't reload `.env`) → now logs "LISTINGS_NOTIFY_EMAIL not set" |
-| **Migration 019 (radius on display point)** | ⬜ Wed 21 Oct | `database/migrations/019-*.sql`, `src/routes/listings.js` | Explicit OK before prod; deploy SQL + backend together |
+| **Radius membership on the visible point (was "migration 019")** | ✅ uat (2026-10-21) — backend only, NO migration; UAT data check 25/25 PASS; Nagesh localhost 1–3 PASS (own listings are hidden from browse by the frontend, `MapIt_MVP_v1.html` ~3165, so no owner check needed) | `src/routes/listings.js` (`FUZZ_MARGIN_M` = 500, RPC radius + margin, filter on visible point), `src/utils/geo.js` (comment), CLAUDE.md Rule 9 | Pre-check counts: UAT 15 listings without display point (fallback `fuzzLocation()` covers them, no backfill), prod 0 listings. 5 km check: 8 → 9 (edge listing whose pin is inside) |
 | **5-screen posting wizard + auto title** | 💡 Planned — after Arun's first listings (Thu 22 Oct) | `MapIt_MVP_v1.html` | Order: What → Details → Price & photos → Location → Review |
 | **Remove-with-reason (replaces Sold + Del)** | 💡 After launch, with 9H | migration + routes + UI | Reasons list in Next Steps |
 | **Share Feedback hidden on phone (D.9)** | ✅ Fixed 2026-10-17, on uat `0e9df8a`; Nagesh iPhone Chrome + Safari PASS (4/4) | `MapIt_MVP_v1.html` / `public/index.html` | Two causes: `100vh` under the iPhone toolbar → `100dvh` (`6d0b999`); phone padding rule lost to the later base rule → `#sb .feedback-strip` (`18d90c5`). Screenshots `docs/screenshots/session-9-polish/before-/after-phone-sharefeedback` |
@@ -1810,6 +1810,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **💡 (2026-10-21, Nagesh) Search box doesn't filter My Listings** — `renderMyAds()` ignores `ST.q` (never supported, not a regression). ~20 min; optional, with the wizard.
 - **🟡 (2026-10-20) `GET /api/listings/:id` returns any status (pending/rejected/expired) to any logged-in user who has the ID** — UUIDs are unguessable, so low risk; fix with 9H (hide non-live listings from non-owners/non-admins).
 - **ℹ️ (2026-10-20) Saved tab still shows expired listings** — acceptable until 9H.
 - **✅ (2026-10-20) Listing expiry not enforced — RESOLVED on uat (lazy expiry `4f781d0`); entry below kept for history.**
@@ -1997,6 +1998,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Radius membership fixed in the backend, migration 019 dropped (2026-10-21, James; Nagesh to confirm)** | Route already has `visiblePoint()` + haversine distance; over-fetching radius + 500 m from the same RPC/GiST index and filtering on the visible point gives the same privacy result with no prod DB change, no backfill (fallback fuzz), one place for owner/exact rules, rollback = git revert. Cost: a ~500 m ring of extra candidate rows. Gotcha: margin must exceed max fuzz (400 m) |
 | **Listing alerts → shared Zoho group `listings@`, sent by the backend via Resend (2026-10-21, Nagesh)** | New + edited listings both go to `pending` and the app promises "live within 4 hours" — nothing told admins. Group (not alias on contact-us@) keeps alerts out of the grievance inbox; Streams lets whoever is free take it. Backend fire-and-forget (like `notifySeller.js`), sent after AI moderation so the mail shows clean/flagged; no seller PII in the mail (Rule 8); env `LISTINGS_NOTIFY_EMAIL` (prod = listings@, UAT/local = empty or Nagesh). DB webhook rejected (extra Edge Function + secrets) |
 | **Lazy expiry now, cron later (2026-10-20)** | Read-time `isLive()` filter = no schema/cron/cost; 9H adds status flip + emails without undoing it |
 | **Expiry clock starts at approval; owner can Renew (2026-10-20)** | Pending time shouldn't eat the 30 days; without Renew the only way back is delete + repost |
@@ -2380,6 +2382,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ## 🔜 Next Steps (Queued)
 
 **⬅ NOW (2026-10-21) — added before 019:** ✅ Zoho `listings@` group live → **build listing alert email** (`feat/listing-alerts`: `src/utils/notifyListings.js`, hooks in `POST /` + `PUT /:id`, env `LISTINGS_NOTIFY_EMAIL` + `.env.example` + Vercel Production env; ~1 h; localhost test vs UAT) — Nagesh to choose: alert first or migration 019 first. Ship both in one PR `uat → main`. Known gotcha: every edit re-alerts (accept for launch).
+✅ Alerts done (uat `b26f7b2`). **Decision (Nagesh, 2026-10-21): auto-title is built together WITH the 5-screen wizard** (not on today's form) — Nagesh noticed the title doesn't auto-fill while posting; it's expected until then. Now: 019 → PR today.
 
 **⬅ NOW (2026-10-20 19:32) — ordered:**
 1. **Wed 21 Oct (morning) — migration 019:** Nagesh runs two read-only counts (active listings with `display_lat IS NULL`) on UAT + prod → James writes `019-radius-on-display-point.sql` (RPC with `viewer_id`, bbox prefilter radius + 400 m on the existing GiST index, drop old 3-arg function, service-role-only grant + verify), backfill script, rollback, backend change → UAT test (EXPLAIN ANALYZE Index Scan, data check, localhost) → inventory compare → prod with explicit OK.

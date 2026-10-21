@@ -116,8 +116,11 @@ If DB changes were made (in Supabase SQL Editor), note them in CONTEXT.md.
     The RPC's `distance_m` is measured from the EXACT lat/lng, so for fuzzed
     listings (not owner, `show_exact_location` false) the route recomputes
     `distance_m` with `haversineM()` from the display point before sorting
-    (2026-10-17, anti-trilateration). Radius membership still uses the exact
-    point — planned fix: migration 019, after launch.
+    (2026-10-17, anti-trilateration). Radius membership also uses the
+    visible point (2026-10-21): the RPC is asked for radius + FUZZ_MARGIN_M
+    (500 m) and the route keeps only listings whose visible point is within
+    the radius — no migration (planned 019 dropped). FUZZ_MARGIN_M must stay
+    above fuzzLocation()'s max offset (400 m).
   - Helmet CSP disabled globally (contentSecurityPolicy: false)
     → Required for inline scripts + CDN resources (Leaflet, Google Fonts; icons are emoji / inline SVG)
   - Admin detection: nagesh.aadi@gmail.com / arun.bn1@gmail.com — no invite codes in MVP
