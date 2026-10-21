@@ -6,6 +6,7 @@
 // PUT    /api/listings/:id       — update listing
 // DELETE /api/listings/:id       — delete listing
 // PUT    /api/listings/:id/sold  — mark as sold
+// PUT    /api/listings/:id/renew — owner extends an active listing by 30 days
 // GET    /api/listings/mine      — get current user's own listings
 // POST   /api/listings/:id/save  — save/unsave a listing (toggle)
 // GET    /api/listings/saved     — get user's saved listings
@@ -20,8 +21,9 @@ const { createError } = require('../middleware/errorHandler');
 const { fuzzLocation, haversineM } = require('../utils/geo');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
-const { scoreListing } = require('../utils/contentModeration');
+const { moderateAndAlert } = require('../utils/notifyListings');
 const { needsPhoneVerification } = require('../utils/phoneGate');
+const { waitUntil } = require('@vercel/functions');
 
 const router = express.Router();
 
@@ -30,6 +32,17 @@ const VALID_CATEGORIES = ['re', 'veh', 'hh', 'furn', 'electronics']; // furn kep
 const VALID_STATUSES   = ['active', 'sold', 'expired'];
 // Session 9G (Arun): 'always' removed — sellers choose On Agreement (default) or Never.
 const SHOW_PHONE_OPTIONS = ['on_agreement', 'never'];
+
+// Listing life: 30 days from approval, renewable by the owner.
+// Lazy expiry: reads hide listings past expires_at; nothing flips status to
+// 'expired' yet (that cron + seller emails come with Session 9H).
+const LISTING_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const newExpiry = () => new Date(Date.now() + LISTING_TTL_MS).toISOString();
+const isLive = l => !l.expires_at || new Date(l.expires_at).getTime() > Date.now();
+
+// Radius search over-fetches by this much, then filters on the visible
+// point. MUST stay above fuzzLocation()'s max offset (400 m, utils/geo.js).
+const FUZZ_MARGIN_M = 500;
 
 // Reference code: MP-BLR-XXXXXX (6 alphanumeric, no 0/O/1/I to avoid confusion)
 function generateRefCode() {
@@ -95,7 +108,8 @@ router.put('/:id/approve', requireAuth, requireAdmin, async (req, res, next) => 
     const { id } = req.params;
     const { data: listing, error } = await supabaseAdmin
       .from('listings')
-      .update({ status: 'active' })
+      // The 30 days start when the listing goes live, not when it was posted
+      .update({ status: 'active', expires_at: newExpiry() })
       .eq('id', id)
       .select()
       .single();
@@ -375,11 +389,14 @@ router.get('/', requireAuth, async (req, res, next) => {
       // — returns only (id, distance_m), so the follow-up `select('*')` below
       // always carries every listings column (subcategory included) without
       // the RPC needing its own hardcoded column list to stay in sync.
+      // The RPC measures from the EXACT point, so it is asked for radius +
+      // FUZZ_MARGIN_M (candidates), and membership is decided below from the
+      // point the viewer can see (2026-10-21, replaces planned migration 019).
       const rM = Math.min(parseInt(radius), 999000);
       const uLat = parseFloat(lat), uLng = parseFloat(lng);
 
       const { data: nearby, error: rpcError } = await supabaseAdmin
-        .rpc('listings_within_radius', { user_lat: uLat, user_lng: uLng, radius_m: rM });
+        .rpc('listings_within_radius', { user_lat: uLat, user_lng: uLng, radius_m: rM + FUZZ_MARGIN_M });
 
       if (rpcError) return next(createError(rpcError.message));
 
@@ -396,8 +413,10 @@ router.get('/', requireAuth, async (req, res, next) => {
 
         if (error) return next(createError(error.message));
         // The RPC measures from the exact lat/lng. For a fuzzed listing that
-        // number (and the sort order) would let a buyer trilaterate the real
-        // spot from three searches, so measure from the point they can see.
+        // number (and the sort order, and whether it is inside the radius at
+        // all) would let a buyer trilaterate the real spot from a few
+        // searches, so measure from the point they can see and keep only
+        // listings whose VISIBLE point is within the requested radius.
         listings = (data || [])
           .map(l => {
             const p = visiblePoint(l, req.user.id);
@@ -406,6 +425,7 @@ router.get('/', requireAuth, async (req, res, next) => {
               : Math.round(haversineM(uLat, uLng, p.lat, p.lng));
             return { ...l, distance_m };
           })
+          .filter(l => l.distance_m <= rM)
           .sort((a, b) => a.distance_m - b.distance_m);
       }
     } else {
@@ -419,6 +439,9 @@ router.get('/', requireAuth, async (req, res, next) => {
       if (error) return next(createError(error.message));
       listings = data || [];
     }
+
+    // Hide listings past expires_at (before pagination, so `total` matches)
+    listings = listings.filter(isLive);
 
     // Apply filters in-memory after PostGIS query
     if (category && category !== 'all') {
@@ -606,7 +629,6 @@ router.post('/', requireAuth, async (req, res, next) => {
     }
 
     const phoneVisibility = SHOW_PHONE_OPTIONS.includes(show_phone) ? show_phone : 'on_agreement';
-    const now = new Date();
 
     // Generated up front (rather than left to the DB default) so the fuzz
     // offset below can be seeded by it in the same insert — avoids a
@@ -637,7 +659,7 @@ router.post('/', requireAuth, async (req, res, next) => {
         details:              details || {},
         status:               'pending',
         reference_code:       generateRefCode(),
-        expires_at:           new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at:           newExpiry(),
         show_phone:           phoneVisibility,
       })
       .select()
@@ -653,12 +675,10 @@ router.post('/', requireAuth, async (req, res, next) => {
     // errors (migration 015, Session 9E). Flagged/clean is a sort signal
     // for the human admin reviewer, not an auto-approve/auto-reject gate —
     // the listing goes to the normal 'pending' review queue either way.
-    scoreListing(listing.title, listing.description)
-      .then(({ verdict, reason }) => supabaseAdmin
-        .from('listings')
-        .update({ moderation_verdict: verdict, moderation_reason: reason, moderation_scored_at: new Date().toISOString() })
-        .eq('id', listing.id))
-      .catch(err => console.error('Content moderation pipeline failed:', err.message));
+    // Then emails the listings@ admin mailbox (🆕 NEW). waitUntil() keeps
+    // the Vercel function alive until this finishes after the response is
+    // sent (fixes T-015: the function could freeze first); no-op locally.
+    waitUntil(moderateAndAlert(listing, 'new'));
 
     // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
     logAuditEvent('listing_created', req, req.user.id, { listing_id: listing.id });
@@ -673,10 +693,11 @@ router.put('/:id', requireAuth, async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Ensure listing belongs to current user
+    // Ensure listing belongs to current user. Full row: the listings@
+    // alert compares before/after ("What changed", "was live").
     const { data: existing } = await supabaseAdmin
       .from('listings')
-      .select('seller_id, lat, lng')
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -728,6 +749,10 @@ router.put('/:id', requireAuth, async (req, res, next) => {
       .single();
 
     if (error) return next(createError(error.message));
+
+    // Fire-and-forget: re-run moderation if title/description changed, then
+    // email the listings@ admin mailbox (✏️ UPDATED). Same as POST above.
+    waitUntil(moderateAndAlert(listing, 'updated', existing));
 
     res.json({ listing, message: 'Listing updated and re-submitted for review.' });
   } catch (err) { next(err); }
@@ -826,6 +851,40 @@ router.put('/:id/sold', requireAuth, async (req, res, next) => {
     }
 
     res.json({ listing, message: 'Listing marked as sold.' });
+  } catch (err) { next(err); }
+});
+
+// ── Renew listing ─────────────────────────────────────────────
+// PUT /api/listings/:id/renew
+// Owner only, active listings only (pending ones get their 30 days on approval).
+// Works before or after expiry; sets expires_at to 30 days from now.
+router.put('/:id/renew', requireAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const { data: existing } = await supabaseAdmin
+      .from('listings')
+      .select('seller_id, status')
+      .eq('id', id)
+      .single();
+
+    if (!existing) return next(createError('Listing not found.', 404));
+    if (existing.seller_id !== req.user.id) {
+      return next(createError('Only the seller can renew this listing.', 403));
+    }
+    if (existing.status !== 'active') {
+      return next(createError('Only active listings can be renewed.', 400));
+    }
+
+    const { data: listing, error } = await supabaseAdmin
+      .from('listings')
+      .update({ expires_at: newExpiry() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) return next(createError(error.message));
+    res.json({ listing, message: 'Listing renewed for 30 days.' });
   } catch (err) { next(err); }
 });
 
