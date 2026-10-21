@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-20 19:32 (UAE), checkpoint (**Pre-Thursday polish day, all on uat (pushed, not on prod): A4 ToS label v1.2, A1 lazy listing expiry + Renew, A3 favicon/apple-touch-icon/og-image (new logo, drops "exact GPS pin" claim), `.env.example` cleanup, Post form numbered sections + step bar + map-controls overlap fix (Nagesh localhost + iPhone PASS). Arun starts real listings Thu 22 Oct. Decided: 5-screen posting wizard (+ auto title) after Arun's first listings; Remove-with-reason after launch with 9H. Next: migration 019 + PR Wed 21 Oct.**)
+- **Last updated:** 2026-10-21 19:13 (UAE), checkpoint (**RELEASED: PR #26 `uat → main` merged (`982a73c`) — listing alert emails to new Zoho group `listings@mapit.co.in` (NEW / UPDATED / was live / FLAGGED), radius membership from the visible point (backend only — migration 019 DROPPED, no DB change), A1 lazy expiry + Renew, post form sections + step bar, A3 favicon/og-image, A4 ToS label. `smoke:prod` 14/14; WhatsApp preview shows new image (thumbnail crop logged). Vercel missed the push events → manual Create Deployment. Next: Arun's real listings Thu 22 Oct → 5-screen wizard + auto-title.**)
+- **Last updated (previous):** 2026-10-20 19:32 (UAE), checkpoint (**Pre-Thursday polish day, all on uat (pushed, not on prod): A4 ToS label v1.2, A1 lazy listing expiry + Renew, A3 favicon/apple-touch-icon/og-image (new logo, drops "exact GPS pin" claim), `.env.example` cleanup, Post form numbered sections + step bar + map-controls overlap fix (Nagesh localhost + iPhone PASS). Arun starts real listings Thu 22 Oct. Decided: 5-screen posting wizard (+ auto title) after Arun's first listings; Remove-with-reason after launch with 9H. Next: migration 019 + PR Wed 21 Oct.**)
 - **Last updated (previous):** 2026-10-17 16:38 (UAE), checkpoint (**RELEASED: PR #25 `uat → main` merged (`afcc236`) — migration 018 scripts, escape helper, server distance from the display point (anti-trilateration), welcome page, chat safety, Explore + phone fixes, admin report photos, ToS v1.2 (Arun OK). Prod smoke 14/14, Sentry prod test PASS (info event, no email = by design; alert emails confirmed). Bypass secret rotated. Next: real listings on prod → Sunday 18 Oct announcement.**)
 - **Last updated (previous):** 2026-10-17 11:42 (UAE), checkpoint (**Saturday pre-launch polish, all on uat `45131cc` (smoke 14/14): Share Feedback on phones fixed (dvh + cascade), chat safety (banner, risky-message notes, Safety tips), pre-login welcome page (launch-video wording, logo pins + category chips, transparent logo), Explore distance fix (Arun). ToS v1.2 drafted on `docs/tos-v1.2` (`36ceebc`) — awaiting Arun. Found: server distance uses exact location (trilateration leak). Nothing new on main yet.**)
 - **Last updated (previous):** 2026-10-16 20:39 (UAE), checkpoint (**Sunday 18 Oct friends & family start agreed. Security must-fixes DONE: migration 018 (deny client access by default) live on UAT + prod (smoke 14/14, inventories match); frontend escape helper on uat. Also on uat: admin Reported listings details + photos, Share Feedback background, phone List-view search fix. Phone check mostly PASS; Share Feedback still hidden on the phone (investigating). uat = `8b1e0d3`; nothing new on main yet.**)
@@ -119,6 +120,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-21 19:13, Wednesday) — Goal: Arun posts the first real listings on production Thu 22 Oct; each one must arrive in `listings@` (Zoho Streams) as 🆕 NEW and be approved within the 4-hour promise.** Today's release (PR #26, `982a73c`) is live, smoke 14/14. Then: 5-screen posting wizard + auto-title, shaped by Arun's posting feedback.
 
 **NOW (2026-10-20 19:32, Tuesday) — Goal: production-ready build for Arun's first real listings on Thu 22 Oct.** Today's polish is all on uat (`9e169ce`): ToS v1.2 label, lazy listing expiry + Renew, new favicon/og-image, Post form sections + step bar. Wed 21 Oct: migration 019 (radius membership from the display point) UAT → prod. Wed 21 Oct (same day, after 019): PR `uat → main` → `smoke:prod` → WhatsApp preview check. 5-screen posting wizard (+ auto-suggested title) after Arun's first listings (only Wed if 019 + PR finish early).
 
@@ -1272,7 +1275,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | **Post form sections + step bar** | ✅ uat `20a9028`; localhost + iPhone PASS | `MapIt_MVP_v1.html` / `public/index.html` | Foundation for the wizard |
 | **Listing alert emails → listings@ (🆕 NEW / ✏️ UPDATED / "(was live)" / ⚠️ FLAGGED)** | ✅ uat `b26f7b2` (2026-10-21); prod with next PR. Nagesh localhost PASS: NEW + UPDATED + "(was live)" + FLAGGED all received in Zoho Streams (Swift flag correct: "Hyundai doesn't make Swift"; reused stored verdict, no re-score). Fix `f27c543`: short price label ("₹1.2L") not repeated | `src/utils/notifyListings.js` (new), `src/routes/listings.js`, `package.json` (`@vercel/functions` waitUntil — also fixes T-015), `.env.example` | Env `LISTINGS_NOTIFY_EMAIL`: Vercel **Production only** (Config type) = listings@; Preview unset. Edits re-run AI check only if title/description changed. First test missed: server restarted before `.env` was saved (nodemon doesn't reload `.env`) → now logs "LISTINGS_NOTIFY_EMAIL not set" |
 | **Radius membership on the visible point (was "migration 019")** | ✅ uat (2026-10-21) — backend only, NO migration; UAT data check 25/25 PASS; Nagesh localhost 1–3 PASS (own listings are hidden from browse by the frontend, `MapIt_MVP_v1.html` ~3165, so no owner check needed) | `src/routes/listings.js` (`FUZZ_MARGIN_M` = 500, RPC radius + margin, filter on visible point), `src/utils/geo.js` (comment), CLAUDE.md Rule 9 | Pre-check counts: UAT 15 listings without display point (fallback `fuzzLocation()` covers them, no backfill), prod 0 listings. 5 km check: 8 → 9 (edge listing whose pin is inside) |
-| **5-screen posting wizard + auto title** | 💡 Planned — after Arun's first listings (Thu 22 Oct) | `MapIt_MVP_v1.html` | Order: What → Details → Price & photos → Location → Review |
+| **5-screen posting wizard + auto title** | 💡 Next — after Arun's first listings (Thu 22 Oct); auto-title confirmed to ship WITH the wizard (Nagesh 2026-10-21) | `MapIt_MVP_v1.html` | Order: What → Details → Price & photos → Location → Review |
 | **Remove-with-reason (replaces Sold + Del)** | 💡 After launch, with 9H | migration + routes + UI | Reasons list in Next Steps |
 | **Share Feedback hidden on phone (D.9)** | ✅ Fixed 2026-10-17, on uat `0e9df8a`; Nagesh iPhone Chrome + Safari PASS (4/4) | `MapIt_MVP_v1.html` / `public/index.html` | Two causes: `100vh` under the iPhone toolbar → `100dvh` (`6d0b999`); phone padding rule lost to the later base rule → `#sb .feedback-strip` (`18d90c5`). Screenshots `docs/screenshots/session-9-polish/before-/after-phone-sharefeedback` |
 | **Real listings on prod → Sunday announcement** | ⏳ Nagesh + Arun | production | After PR #25 (live) |
@@ -1459,6 +1462,12 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+src/utils/notifyListings.js — 2026-10-21 (NEW): `moderateAndAlert()` (AI check → persist verdict → alert), `sendListingAlert()` (NEW/UPDATED/was live/FLAGGED subjects, no seller PII, per-env admin link), `changedFields()`.
+src/routes/listings.js — 2026-10-21: POST/PUT call `waitUntil(moderateAndAlert(...))`; PUT selects full row (before/after); `FUZZ_MARGIN_M` = 500, RPC radius + margin, filter on visible point.
+src/utils/geo.js — 2026-10-21: comment tying max fuzz (400 m) to `FUZZ_MARGIN_M`.
+package.json / package-lock.json — 2026-10-21: `@vercel/functions` 3.10.2 (`waitUntil`).
+.env.example — 2026-10-21: `LISTINGS_NOTIFY_EMAIL=` (Nagesh, `0d669c8`).
+CLAUDE.md — 2026-10-21: Rule 9 radius membership now from the visible point; 019 dropped.
 src/routes/listings.js — 2026-10-20: `LISTING_TTL_MS` / `newExpiry()` / `isLive()`; browse filters expired; approve resets `expires_at`; new `PUT /:id/renew` (`4f781d0`).
 MapIt_MVP_v1.html / public/index.html — 2026-10-20: My Listings Expired/Renew + `renewListing()`; favicon/apple-touch/og tags (`?v=2`); Post form `.post-sec` sections, `#postSteps` step bar (`POST_STEP_DONE`, `updatePostSteps()`, `jumpPostStep()`), `#map{isolation:isolate}`.
 public/favicon.svg, favicon-32.png, apple-touch-icon.png, og-image.png — 2026-10-20: new logo assets (`bb95f56`).
@@ -2382,6 +2391,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-21 19:13) — ordered:**
+1. **Thu 22 Oct — Arun posts real listings on prod** → confirm 🆕 NEW alert in `listings@` within seconds (if not: Vercel function logs); approve within 4 h; ask Arun what felt slow/confusing.
+2. **5-screen posting wizard + auto-suggested title** (one feature, own branch) — order What → Details → Price & photos → Location → Review; templates per subcategory, suggest-don't-overwrite.
+3. Optional with the wizard: search box filters My Listings (~20 min).
+4. Dashboard items (Nagesh, any gap): prod Supabase redirect URLs, remove `SUPABASE_DB_PASSWORD` from Vercel, Gmail forward of Sentry mails, Sentry uptime monitor; Arun Vercel Viewer seat.
+5. After launch: og-image centre safe zone (`?v=3`), 9H (+ Remove-with-reason, hide non-live `GET /:id`), rest of audit, ToS v2.0, 9C.1, "approximate location is safer" video; delete prod backup CSV ~10 Nov.
+6. If a push doesn't show in Vercel within ~10 min: Deployments → … → Create Deployment (branch), never Redeploy.
 
 **⬅ NOW (2026-10-21) — added before 019:** ✅ Zoho `listings@` group live → **build listing alert email** (`feat/listing-alerts`: `src/utils/notifyListings.js`, hooks in `POST /` + `PUT /:id`, env `LISTINGS_NOTIFY_EMAIL` + `.env.example` + Vercel Production env; ~1 h; localhost test vs UAT) — Nagesh to choose: alert first or migration 019 first. Ship both in one PR `uat → main`. Known gotcha: every edit re-alerts (accept for launch).
 ✅ Alerts done (uat `b26f7b2`). **Decision (Nagesh, 2026-10-21): auto-title is built together WITH the 5-screen wizard** (not on today's form) — Nagesh noticed the title doesn't auto-fill while posting; it's expected until then. Now: 019 → PR today.
