@@ -30,6 +30,8 @@ function _hashToUnitFloat(str) {
 // store the result — do NOT call this per-request/per-page-load, since a
 // point that re-randomizes on every view can be triangulated back to the
 // real location by comparing multiple views.
+// Max offset 400 m: raising it requires raising FUZZ_MARGIN_M in
+// routes/listings.js, or edge listings drop out of radius searches.
 function fuzzLocation(lat, lng, seed) {
   const angle = _hashToUnitFloat(`${seed}:angle`) * 2 * Math.PI;
   const distanceM = 150 + _hashToUnitFloat(`${seed}:dist`) * 250;
