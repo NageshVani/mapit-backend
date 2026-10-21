@@ -32,10 +32,12 @@ function adminUrl() {
   return `http://localhost:${process.env.PORT || 3001}/admin.html`;
 }
 
+// The post form stores the short price ("₹1.2L") in price_label — only
+// append labels that add something (legacy "/month", "Negotiable").
 const fmtPrice = (price, label) => {
   const n = Number(price) || 0;
   const amount = n > 0 ? `₹${n.toLocaleString('en-IN')}` : 'No price';
-  return label ? `${amount} ${label}` : amount;
+  return label && !label.trim().startsWith('₹') ? `${amount} ${label}` : amount;
 };
 
 // Subjects are plain text (not HTML) — strip line breaks so seller text
