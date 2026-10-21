@@ -1811,6 +1811,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-10-21) WhatsApp link preview: new og-image + text live, but WhatsApp's small square thumbnail crops the centre of the 1200×630 image → "MapIt" title cut off.** Meta tags correct (1200×630, 108 KB). After launch: redesign with logo + name inside the central 630×630 safe zone, bump `og:image?v=3`.
 - **💡 (2026-10-21, Nagesh) Search box doesn't filter My Listings** — `renderMyAds()` ignores `ST.q` (never supported, not a regression). ~20 min; optional, with the wizard.
 - **🟡 (2026-10-20) `GET /api/listings/:id` returns any status (pending/rejected/expired) to any logged-in user who has the ID** — UUIDs are unguessable, so low risk; fix with 9H (hide non-live listings from non-owners/non-admins).
 - **ℹ️ (2026-10-20) Saved tab still shows expired listings** — acceptable until 9H.
