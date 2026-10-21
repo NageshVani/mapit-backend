@@ -573,6 +573,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-21) Zoho group `listings@mapit.co.in` ("Listings Notification")** — members nagesh@ (moderator) + arun@; "Who can send" = Everyone (needed: Resend's `noreply@` is not a Zoho user); Include emails on; Streams on (shared view to comment/assign who handles a listing). Nagesh test mail from personal Gmail → received. No code yet.
 - ✅ **(2026-10-20) A4 ToS label** — `<title>` + footer now v1.2 (`725515e`, uat `490aa4a`); Nagesh localhost PASS.
 - ✅ **(2026-10-20) A1 lazy listing expiry** — browse hides active listings past `expires_at`; approval resets the 30 days; owner `PUT /api/listings/:id/renew`; My Listings Expired + 🔄 Renew (`4f781d0`, uat `5397343`). UAT script check + Nagesh localhost PASS.
 - ✅ **(2026-10-20) `.env.example`** — SENTRY_DSN blank, `VERCEL_AUTOMATION_BYPASS_SECRET=` placeholder (`8383f4e`); history per CONTEXT: no real values ever committed.
@@ -1268,6 +1269,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | **Lazy listing expiry + Renew (A1)** | ✅ uat `5397343` (2026-10-20); prod with next PR | `src/routes/listings.js`, `MapIt_MVP_v1.html` / `public/index.html` | Status stays `active`; 9H cron will flip to `expired` |
 | **Favicon / og-image (A3)** | ✅ uat `ca5e230`; prod with next PR | `public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `og-image.png`, HTML head | WhatsApp preview check on prod after PR |
 | **Post form sections + step bar** | ✅ uat `20a9028`; localhost + iPhone PASS | `MapIt_MVP_v1.html` / `public/index.html` | Foundation for the wizard |
+| **Listing alert emails → listings@ (🆕 NEW / ✏️ UPDATED / "(was live)" / ⚠️ FLAGGED)** | 🟡 `feat/listing-alerts` (2026-10-21); localhost: UPDATED + "(was live)" + FLAGGED received in Zoho Streams; NEW pending | `src/utils/notifyListings.js` (new), `src/routes/listings.js`, `package.json` (`@vercel/functions` waitUntil — also fixes T-015), `.env.example` | Env `LISTINGS_NOTIFY_EMAIL`: Vercel **Production only** (Config type) = listings@; Preview unset. Edits re-run AI check only if title/description changed. First test missed: server restarted before `.env` was saved (nodemon doesn't reload `.env`) → now logs "LISTINGS_NOTIFY_EMAIL not set" |
 | **Migration 019 (radius on display point)** | ⬜ Wed 21 Oct | `database/migrations/019-*.sql`, `src/routes/listings.js` | Explicit OK before prod; deploy SQL + backend together |
 | **5-screen posting wizard + auto title** | 💡 Planned — after Arun's first listings (Thu 22 Oct) | `MapIt_MVP_v1.html` | Order: What → Details → Price & photos → Location → Review |
 | **Remove-with-reason (replaces Sold + Del)** | 💡 After launch, with 9H | migration + routes + UI | Reasons list in Next Steps |
@@ -1995,6 +1997,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 | Decision | Rationale |
 |----------|-----------|
+| **Listing alerts → shared Zoho group `listings@`, sent by the backend via Resend (2026-10-21, Nagesh)** | New + edited listings both go to `pending` and the app promises "live within 4 hours" — nothing told admins. Group (not alias on contact-us@) keeps alerts out of the grievance inbox; Streams lets whoever is free take it. Backend fire-and-forget (like `notifySeller.js`), sent after AI moderation so the mail shows clean/flagged; no seller PII in the mail (Rule 8); env `LISTINGS_NOTIFY_EMAIL` (prod = listings@, UAT/local = empty or Nagesh). DB webhook rejected (extra Edge Function + secrets) |
 | **Lazy expiry now, cron later (2026-10-20)** | Read-time `isLive()` filter = no schema/cron/cost; 9H adds status flip + emails without undoing it |
 | **Expiry clock starts at approval; owner can Renew (2026-10-20)** | Pending time shouldn't eat the 30 days; without Renew the only way back is delete + repost |
 | **Favicon = simplified split pin; full logo only ≥180 px (2026-10-20)** | Handshake unreadable at 16 px; iOS needs a white background |
@@ -2375,6 +2378,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-21) — added before 019:** ✅ Zoho `listings@` group live → **build listing alert email** (`feat/listing-alerts`: `src/utils/notifyListings.js`, hooks in `POST /` + `PUT /:id`, env `LISTINGS_NOTIFY_EMAIL` + `.env.example` + Vercel Production env; ~1 h; localhost test vs UAT) — Nagesh to choose: alert first or migration 019 first. Ship both in one PR `uat → main`. Known gotcha: every edit re-alerts (accept for launch).
 
 **⬅ NOW (2026-10-20 19:32) — ordered:**
 1. **Wed 21 Oct (morning) — migration 019:** Nagesh runs two read-only counts (active listings with `display_lat IS NULL`) on UAT + prod → James writes `019-radius-on-display-point.sql` (RPC with `viewer_id`, bbox prefilter radius + 400 m on the existing GiST index, drop old 3-arg function, service-role-only grant + verify), backfill script, rollback, backend change → UAT test (EXPLAIN ANALYZE Index Scan, data check, localhost) → inventory compare → prod with explicit OK.

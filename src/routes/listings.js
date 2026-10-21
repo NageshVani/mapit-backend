@@ -21,8 +21,9 @@ const { createError } = require('../middleware/errorHandler');
 const { fuzzLocation, haversineM } = require('../utils/geo');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
-const { scoreListing } = require('../utils/contentModeration');
+const { moderateAndAlert } = require('../utils/notifyListings');
 const { needsPhoneVerification } = require('../utils/phoneGate');
+const { waitUntil } = require('@vercel/functions');
 
 const router = express.Router();
 
@@ -664,12 +665,10 @@ router.post('/', requireAuth, async (req, res, next) => {
     // errors (migration 015, Session 9E). Flagged/clean is a sort signal
     // for the human admin reviewer, not an auto-approve/auto-reject gate —
     // the listing goes to the normal 'pending' review queue either way.
-    scoreListing(listing.title, listing.description)
-      .then(({ verdict, reason }) => supabaseAdmin
-        .from('listings')
-        .update({ moderation_verdict: verdict, moderation_reason: reason, moderation_scored_at: new Date().toISOString() })
-        .eq('id', listing.id))
-      .catch(err => console.error('Content moderation pipeline failed:', err.message));
+    // Then emails the listings@ admin mailbox (🆕 NEW). waitUntil() keeps
+    // the Vercel function alive until this finishes after the response is
+    // sent (fixes T-015: the function could freeze first); no-op locally.
+    waitUntil(moderateAndAlert(listing, 'new'));
 
     // Fire-and-forget: IT Rules 2021 compliance record (migration 014).
     logAuditEvent('listing_created', req, req.user.id, { listing_id: listing.id });
@@ -684,10 +683,11 @@ router.put('/:id', requireAuth, async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Ensure listing belongs to current user
+    // Ensure listing belongs to current user. Full row: the listings@
+    // alert compares before/after ("What changed", "was live").
     const { data: existing } = await supabaseAdmin
       .from('listings')
-      .select('seller_id, lat, lng')
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -739,6 +739,10 @@ router.put('/:id', requireAuth, async (req, res, next) => {
       .single();
 
     if (error) return next(createError(error.message));
+
+    // Fire-and-forget: re-run moderation if title/description changed, then
+    // email the listings@ admin mailbox (✏️ UPDATED). Same as POST above.
+    waitUntil(moderateAndAlert(listing, 'updated', existing));
 
     res.json({ listing, message: 'Listing updated and re-submitted for review.' });
   } catch (err) { next(err); }
