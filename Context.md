@@ -573,6 +573,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-21) RELEASED: PR #26 `uat → main` merged (`982a73c`)** — listing alerts (listings@), radius membership from the visible point (migration 019 dropped, no DB change), A1 lazy expiry + Renew, post form sections + step bar, A3 favicon/og-image (`?v=2` live), A4 ToS label. `smoke:prod` 14/14. Vercel missed the GitHub push events for `b0cd063` + `982a73c` (no deployment ~10 min; Vercel status: no incident) → Nagesh used Deployments → … → **Create Deployment** (`main`, `uat`); the delayed uat event then arrived too (duplicate b0cd063). Lesson: no deployment after ~10 min → Create Deployment with the branch (NOT Redeploy = old commit). Pending: WhatsApp preview check; first real listing → 🆕 alert on prod (Thu 22 Oct).
 - ✅ **(2026-10-21) Zoho group `listings@mapit.co.in` ("Listings Notification")** — members nagesh@ (moderator) + arun@; "Who can send" = Everyone (needed: Resend's `noreply@` is not a Zoho user); Include emails on; Streams on (shared view to comment/assign who handles a listing). Nagesh test mail from personal Gmail → received. No code yet.
 - ✅ **(2026-10-20) A4 ToS label** — `<title>` + footer now v1.2 (`725515e`, uat `490aa4a`); Nagesh localhost PASS.
 - ✅ **(2026-10-20) A1 lazy listing expiry** — browse hides active listings past `expires_at`; approval resets the 30 days; owner `PUT /api/listings/:id/renew`; My Listings Expired + 🔄 Renew (`4f781d0`, uat `5397343`). UAT script check + Nagesh localhost PASS.
