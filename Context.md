@@ -2410,6 +2410,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
+**⬅ AGREED ORDER (Nagesh, 2026-10-24, end of session):** (1) wait for Arun's real listings on prod (watch 🆕 alerts in listings@, approve within 4 h, check area-name addresses, ask what felt slow) → (2) Batch 3 chat pop-up (centred design below) → (3) 5-screen posting wizard + auto-title. Batch 2 (ask-for-number warning) folds into the chat window work.
+
 **⬅ NOW (2026-10-24) — ordered:**
 1. ✅ Nagesh localhost click-test PASS (header, welcome, posting, Profile, quick taps, Terms) → branch pushed → merged to uat (`c412505`, + `1102234` name removed from a Terms CSS comment) → uat.mapit.co.in live within ~30 s; `smoke:prod` 14/14; uat checks: /api limit 1000, static unlimited, og v3, Terms source has no names. **Next: Arun checks uat on his laptop → PR `uat → main`.** (old: localhost click-test of Batch 1 (`npm run dev`; note: posting sends a real 🆕 alert to listings@) → OK → push branch → merge to uat → uat.mapit.co.in check (Arun: welcome on his laptop, Terms, Profile) → PR `uat → main` → `smoke:prod` → WhatsApp preview (og v3).
 2. ✅ Prod address query: no rows → no prod repair. ✅ UAT 14 addresses repaired.
