@@ -580,7 +580,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ## ✅ Completed This Session
 - ✅ **(2026-10-24) Pre-listing audit** — headless script (scratchpad, not committed) walked buyer + seller journeys at phone 390×844, laptop 1366×625, desktop 1920×950 (+ 1280×560 @150% welcome) on UAT via localhost (email/AI keys blanked for the audit server); throwaway accounts deleted by ID. Found: address privacy leak, dropped listing loads, rate limit too tight, chat off-screen on laptops, Arun's items confirmed. Before screenshots `docs/screenshots/session-9-pre-listing/before-*`.
 - ✅ **(2026-10-24) Batch 1 on `fix/pre-listing-audit` (from uat `3c5ad01`, not pushed), each item tested on UAT by script:**
-  1. `6d579fc` **Public address = area name** (`src/utils/areaName.js`, Nominatim, from the fuzzed display point; "Koramangala 4th Block, Bengaluru 560034") — was "<seller's saved-location label> · Bangalore" ("Home · Bangalore") + another " · Bangalore" per edit. Client `address` ignored; PUT refreshes on pin/exact change and heals "·" rows. 5/5 API PASS. Repair script `scripts/maintenance/fix-listing-addresses.js` (UAT-only, dry run default) — 14 UAT rows listed, **not applied (awaiting Nagesh OK)**.
+  1. `6d579fc` **Public address = area name** (`src/utils/areaName.js`, Nominatim, from the fuzzed display point; "Koramangala 4th Block, Bengaluru 560034") — was "<seller's saved-location label> · Bangalore" ("Home · Bangalore") + another " · Bangalore" per edit. Client `address` ignored; PUT refreshes on pin/exact change and heals "·" rows. 5/5 API PASS. Repair script `scripts/maintenance/fix-listing-addresses.js` (UAT-only, dry run default) — 14 UAT rows listed; **applied 2026-10-24 with Nagesh's OK** (old → new values in the run output; re-check = 0 rows left).
   2. `ec2cd90` **Latest listings load wins** — `loadListings()` returned early while a load ran (category tap / Explore → My location dropped → stale list + distances). Test failed on old code, 7/7 on new.
   3. `60d65f4` **Rate limit /api/ only, 1000/15 min/IP** (was 200 on every path incl. pages/images; one session ≈ 90 requests). Login/OTP limiters unchanged.
   4. `c0bd5f7` **Profile "My location"** = active My Location + "N saved" + Change/Add → (was profiles.home_* only → "Not set" for Arun). 7/7.
@@ -1834,7 +1834,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **⏳ (2026-10-24) Production address check (Nagesh, read-only, PROD SQL Editor):** `SELECT id, title, address FROM listings WHERE address LIKE '%·%';` — real listings may already show "Home · Bangalore". Fix plan after the result (prod repair needs explicit OK, Rule 10). UAT repair (14 rows) awaits Nagesh's OK: `node -r dotenv/config scripts/maintenance/fix-listing-addresses.js --apply`.
+- **✅ (2026-10-24) Production address check — "No rows returned"** (Nagesh, read-only, PROD SQL Editor): no live listing carries a label-style address, so no production data repair is needed; the server fix prevents new ones. UAT: 14 rows repaired (`fix-listing-addresses.js --apply`), 0 left.
 - **🟠 (2026-10-24 audit) Chat is off-screen on laptops** (opens below the listing in the left panel; ~2 lines on phones) → Batch 3 pop-up chat (Arun's request a). **Chat warning gap:** "send me your mobile number" gets no note (typed numbers do) → Batch 2.
 - **ℹ️ (2026-10-24 audit, retest by hand):** grey map tiles after 10 km on phone (likely slow tiles); My Listings once stuck on "Loading…" after submit (overlapping refresh from the script). UAT seed "…House for Sale" listed as Rent ₹1.25Cr/mo (test data; a "rent looks high" hint could help later).
 - **ℹ️ (2026-10-21) WhatsApp link preview: new og-image + text live, but WhatsApp's small square thumbnail crops the centre of the 1200×630 image → "MapIt" title cut off.** Meta tags correct (1200×630, 108 KB). After launch: redesign with logo + name inside the central 630×630 safe zone, bump `og:image?v=3`.
@@ -2411,7 +2411,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 **⬅ NOW (2026-10-24) — ordered:**
 1. **Nagesh:** localhost click-test of Batch 1 (`npm run dev`; note: posting sends a real 🆕 alert to listings@) → OK → push branch → merge to uat → uat.mapit.co.in check (Arun: welcome on his laptop, Terms, Profile) → PR `uat → main` → `smoke:prod` → WhatsApp preview (og v3).
-2. **Nagesh:** prod read-only address query (Open Issues) → decide prod repair; OK for UAT repair `--apply`.
+2. ✅ Prod address query: no rows → no prod repair. ✅ UAT 14 addresses repaired.
 3. **Batch 2:** chat ask-for-number phrases + pre-send "looks like a phone number" check (~1 h).
 4. **Arun posts real listings** once Batch 1 is on prod.
 5. **Batch 3:** chat pop-up window — mockup first (~½ day), before the friends & family announcement.
