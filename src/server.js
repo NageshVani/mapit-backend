@@ -139,16 +139,21 @@ app.use(express.urlencoded({ extended: true }));
 // not the shared Vercel edge IP (which would bucket all users together).
 app.set('trust proxy', 1);
 
-// ── Global rate limiter ──────────────────────────────────────
-// Max 200 requests per 15 minutes per real client IP
+// ── API rate limiter ─────────────────────────────────────────
+// Max 1000 API requests per 15 minutes per real client IP. Was 200 on every
+// path (pages and images too — on Vercel all of it goes through this app):
+// one normal session uses ~90, so 2–3 people sharing one IP (home Wi-Fi,
+// office, Jio/Airtel CGNAT) got "Too many requests" (pre-listing audit,
+// 2026-10-24). Login/OTP keep their own strict limiters (routes/auth.js).
+// The store is per serverless instance — a rough flood guard, not exact.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests. Please try again in 15 minutes.' },
 });
-app.use(limiter);
+app.use('/api/', limiter);
 
 // ── Health check ─────────────────────────────────────────────
 app.get('/health', (req, res) => {
