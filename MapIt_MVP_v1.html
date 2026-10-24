@@ -1445,7 +1445,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="prof-row"><span class="prof-lbl">Phone</span><span class="prof-val" id="profPhone">—</span></div>
       <div class="prof-row"><span class="prof-lbl">Sign-in method</span><span class="prof-val" id="profMethod">—</span></div>
       <div class="prof-row"><span class="prof-lbl">Member since</span><span class="prof-val" id="profSince">—</span></div>
-      <div class="prof-row"><span class="prof-lbl">Home location</span><span class="prof-val" id="profHome">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">My location</span><span class="prof-val" id="profHome">—</span></div>
     </div>
     <p class="prof-note">To change your email or phone, contact us at <a href="mailto:contact-us@mapit.co.in">contact-us@mapit.co.in</a>.</p>
     <button class="modal-btn" onclick="closeProfileModal()">Close</button>
@@ -5364,9 +5364,23 @@ function _renderProfile(){
   set('profMethod', provider === 'google' ? 'Google' : 'Email');
   const since = p.created_at || u.created_at;
   set('profSince', since ? new Date(since).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : '—');
-  const home = p.home_address
+  // The active My Location is what the app searches from (user_pins); the
+  // one-time sign-up home (profiles.home_*) is only a fallback. Showing just
+  // the latter said "Not set" for anyone who used My Locations (Arun, 2026-10-24).
+  const home = document.getElementById('profHome');
+  home.textContent = '';
+  const pins = ST.userPins || [];
+  const signupHome = p.home_address
     || (p.home_lat != null && p.home_lng != null ? `${Number(p.home_lat).toFixed(4)}, ${Number(p.home_lng).toFixed(4)}` : '');
-  set('profHome', home || 'Not set');
+  const locName = ST.activePin?.label || signupHome;
+  const txt = locName
+    ? locName + (pins.length > 1 ? ` · ${pins.length} saved ` : ' ')
+    : 'Not set · ';
+  home.appendChild(document.createTextNode(txt));
+  const link = document.createElement('span');
+  link.className = 'prof-link'; link.textContent = locName ? 'Change →' : 'Add →';
+  link.onclick = () => { closeProfileModal(); openPinsModal(); };
+  home.appendChild(link);
 }
 
 function setFbType(el){
