@@ -2415,7 +2415,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 2. ✅ Prod address query: no rows → no prod repair. ✅ UAT 14 addresses repaired.
 3. **Batch 2:** chat ask-for-number phrases + pre-send "looks like a phone number" check (~1 h).
 4. **Arun posts real listings** once Batch 1 is on prod.
-5. **Batch 3:** chat pop-up window — mockup first (~½ day), before the friends & family announcement.
+5. **⏸ Batch 3 ON HOLD (Nagesh, 2026-10-24):** chat pop-up window. Mockups done: `docs/screenshots/session-9-chat-popup/mockup-*.jpg` (drawn into the real app; nothing saved). **Agreed design:** window opens **CENTRED** (Nagesh) with a light dimmed backdrop (backdrop click does NOT close — protects a half-typed message; close = ✕ / Esc / phone back); header = other person's name + "Seller"/"Buyer" (NO "usually replies…" — not measured), — minimise → bottom-right pill "💬 Chat with <name> ①" (unread count; sits left of the zoom buttons), ✕ close; listing strip (photo, title, price, View listing ›); safety line + 🛡 Safety tips; 14 px messages; quick replies; phone = full screen with ‹ Back. Opens from Chat with seller, Inbox (straight into chat) and after I'm interested. Stays open while browsing; one chat at a time. Build notes: today `#chatBox` is rendered inside the listing detail (`renderSidebar`), and `selListing()`/`closeDetail()` unsubscribe the chat — move it to a global window, open/close Realtime exactly once. Test on UAT with two accounts (prod has no listings yet). Branch `feat/chat-popup` exists locally (= uat, no code yet). ~½ day.
 6. Then: 5-screen wizard + auto-title; dashboard items; after-launch list below.
 
 **⬅ NOW (2026-10-21 19:13) — ordered:**
