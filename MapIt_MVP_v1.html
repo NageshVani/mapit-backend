@@ -510,7 +510,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .form-input:focus{border-color:var(--orange);}
 .form-input::placeholder{color:var(--muted);}
 .form-textarea{resize:vertical;min-height:80px;max-height:160px;}
-.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B8899' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B8899' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;text-overflow:ellipsis;}  /* room for the arrow — text ran under it on phones */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .pin-picker{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:4px;}
 .pin-picker-map{height:180px;border-radius:6px;overflow:hidden;margin-bottom:8px;}
@@ -1097,7 +1097,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
             <select class="form-input form-select" id="postCat" onchange="updatePostSubcats()">
               <option value="re">🏠 Real Estate</option>
               <option value="veh">🚗 Vehicles</option>
-              <option value="hh">🏡 Household Items</option>
+              <option value="hh">🏡 Household</option>
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0">
