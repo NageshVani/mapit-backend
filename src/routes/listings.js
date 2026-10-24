@@ -31,8 +31,10 @@ const router = express.Router();
 // Valid categories and statuses
 const VALID_CATEGORIES = ['re', 'veh', 'hh', 'furn', 'electronics']; // furn kept for legacy data
 const VALID_STATUSES   = ['active', 'sold', 'expired'];
-// Session 9G (Arun): 'always' removed — sellers choose On Agreement (default) or Never.
-const SHOW_PHONE_OPTIONS = ['on_agreement', 'never'];
+// Seller phone numbers are never shown (Nagesh + Arun, 2026-10-24): the post
+// form no longer offers a choice and the server always stores 'never'. The
+// show_phone column is kept (no migration) in case the decision changes.
+const SHOW_PHONE = 'never';
 
 // Listing life: 30 days from approval, renewable by the owner.
 // Lazy expiry: reads hide listings past expires_at; nothing flips status to
@@ -599,14 +601,14 @@ router.get('/:id', requireAuth, async (req, res, next) => {
 // ── POST create listing ───────────────────────────────────────
 // POST /api/listings
 // Body: { category, subcategory, title, description, price, price_label,
-//         lat, lng, specs, details, show_phone, show_exact_location }
+//         lat, lng, specs, details, show_exact_location }
 // (any `address` sent is ignored — the server derives the area name)
 router.post('/', requireAuth, async (req, res, next) => {
   try {
     const {
       category, subcategory, title, description,
       price, price_label,
-      lat, lng, specs, details, show_phone, show_exact_location,
+      lat, lng, specs, details, show_exact_location,
     } = req.body;
 
     // Validation
@@ -629,8 +631,6 @@ router.post('/', requireAuth, async (req, res, next) => {
         phone_verification_required: true,
       });
     }
-
-    const phoneVisibility = SHOW_PHONE_OPTIONS.includes(show_phone) ? show_phone : 'on_agreement';
 
     // Generated up front (rather than left to the DB default) so the fuzz
     // offset below can be seeded by it in the same insert — avoids a
@@ -667,7 +667,7 @@ router.post('/', requireAuth, async (req, res, next) => {
         status:               'pending',
         reference_code:       generateRefCode(),
         expires_at:           newExpiry(),
-        show_phone:           phoneVisibility,
+        show_phone:           SHOW_PHONE,
       })
       .select()
       .single();
@@ -716,7 +716,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     const allowedFields = [
       'title', 'description', 'price', 'price_label',
       'specs', 'details', 'category', 'subcategory', 'lat', 'lng',
-      'show_phone', 'show_exact_location',
+      'show_exact_location',
     ];
     const updates = {};
     allowedFields.forEach(f => {
@@ -727,9 +727,6 @@ router.put('/:id', requireAuth, async (req, res, next) => {
       return next(createError('No valid fields to update.'));
     }
 
-    if (updates.show_phone !== undefined && !SHOW_PHONE_OPTIONS.includes(updates.show_phone)) {
-      return next(createError(`show_phone must be one of: ${SHOW_PHONE_OPTIONS.join(', ')}`));
-    }
     if (updates.show_exact_location !== undefined) {
       updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';
     }
@@ -761,6 +758,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
 
     // Re-submit for review whenever the owner edits
     updates.status = 'pending';
+    updates.show_phone = SHOW_PHONE;   // older listings saved 'on_agreement'
 
     const { data: listing, error } = await supabaseAdmin
       .from('listings')

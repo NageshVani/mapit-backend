@@ -1143,7 +1143,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         </div>
         </section>
       </div>
-      <!-- RIGHT column: ⑤ location ⑥ contact -->
+      <!-- RIGHT column: ⑤ location -->
       <div class="post-col-r">
         <!-- ⑤ Location + precision -->
         <section class="post-sec" data-step="Location">
@@ -1178,17 +1178,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
           </label>
         </div>
         </section>
-        <!-- ⑥ Phone visibility -->
-        <section class="post-sec" data-step="Contact">
-        <div class="post-sec-hd">Contact</div>
-        <div class="form-group">
-          <label class="form-label">📞 Show Phone Number to Buyers</label>
-          <div class="tx-radio-row" style="flex-direction:column;gap:8px;">
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement" checked> On Agreement</label>
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
-          </div>
-        </div>
-        </section>
+        <!-- No phone-visibility choice: seller numbers are never shown —
+             buyers and sellers talk in MapIt chat (Nagesh + Arun, 2026-10-24). -->
       </div>
       <!-- FULL WIDTH: submit -->
       <div class="post-col-full">
@@ -3855,10 +3846,6 @@ async function openPostModal(){
   // Session 9G — Real Estate defaults to Rent for every new listing
   const rentEl = document.querySelector('input[name="txType"][value="Rent"]');
   if(rentEl) rentEl.checked = true;
-  // Session 9G (Arun) — phone visibility defaults to On Agreement for every new
-  // listing, even if the last listing edited was set to Never.
-  const phoneDefault = document.querySelector('input[name="showPhone"][value="on_agreement"]');
-  if(phoneDefault) phoneDefault.checked = true;
   // Populate location dropdown from saved pins + manual option
   const sel = document.getElementById('postLocation');
   sel.innerHTML = '';
@@ -4081,7 +4068,6 @@ const POST_STEP_DONE = {
     const v = document.getElementById('postLocation').value;
     return v === '__manual__' ? !!_postPickerCoords : !!v;
   },
-  Contact:  () => !!document.querySelector('input[name="showPhone"]:checked'),
 };
 var _postStepsRaf = 0; // var: renderDynamicFields() may call in before this line runs
 function schedulePostSteps(){
@@ -4195,12 +4181,8 @@ async function editListing(id){
     if(txEl) txEl.checked = true;
   }
 
-  // Pre-fill show_phone / show_exact_location from the listing's actual saved
-  // values — previously these silently reset to the form's hardcoded HTML
-  // defaults ('always' / unchecked) on every edit, regardless of what the
-  // seller had actually chosen.
-  const phoneEl = document.querySelector(`input[name="showPhone"][value="${l.show_phone==='never'?'never':'on_agreement'}"]`);
-  if(phoneEl) phoneEl.checked = true;
+  // Pre-fill show_exact_location from the listing's actual saved value —
+  // previously it silently reset to the form's HTML default on every edit.
   document.getElementById('postShowExactLocation').checked = !!l.show_exact_location;
 
   // Pre-populate location dropdown with listing's current location
@@ -4497,7 +4479,6 @@ async function submitListing(){
     toast('Please select or enter a location.'); return;
   }
 
-  const show_phone = document.querySelector('input[name="showPhone"]:checked')?.value || 'on_agreement';
   const show_exact_location = document.getElementById('postShowExactLocation').checked;
   btn.disabled=true; btn.textContent = ST.editingId ? 'Updating…' : 'Submitting…';
   try {
@@ -4510,7 +4491,6 @@ async function submitListing(){
       // (the label is the seller's private name for a saved location)
       details,
       specs: [],
-      show_phone,
       show_exact_location,
     };
 
