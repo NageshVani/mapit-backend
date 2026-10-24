@@ -1,0 +1,43 @@
+<!doctype html>
+<!-- Source of public/og-image.png (link-preview image, 1200×630). Render:
+       chrome --headless=new --hide-scrollbars --window-size=1200,630 --screenshot=public/og-image.png docs/other/og-image.html
+     then bump og:image ?v= in MapIt_MVP_v1.html (WhatsApp caches by URL).
+     Logo, name and tagline stay inside the central 630×630 square —
+     WhatsApp's small thumbnail crops the centre (2026-10-24: v3). -->
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Playfair+Display:wght@700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;width:1200px;height:630px;overflow:hidden;}
+  body{font-family:'Outfit',sans-serif;background:#FFF6F2;position:relative;color:#1F2937;
+    background-image:linear-gradient(rgba(240,96,48,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(240,96,48,.07) 1px,transparent 1px);background-size:60px 60px;}
+  .road{position:absolute;background:rgba(240,96,48,.10);border-radius:12px;}
+  .pin{position:absolute;opacity:.9;}
+  .centre{position:absolute;left:285px;top:0;width:630px;height:630px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .brand{display:flex;align-items:center;gap:18px;}
+  .brand img{height:120px;}
+  .name{font-family:'Playfair Display',serif;font-size:104px;line-height:1;color:#111827;}
+  .name em{font-style:normal;color:#F06030;}
+  .tag{margin-top:18px;font-size:40px;font-weight:700;color:#C2410C;}
+  .sub{margin-top:12px;font-size:25px;color:#374151;line-height:1.35;}
+  .chips{display:flex;gap:12px;margin-top:22px;}
+  .chip{background:#fff;border:1.5px solid #F8C9B5;border-radius:24px;padding:8px 18px;font-size:22px;font-weight:600;}
+  .foot{position:absolute;bottom:34px;left:60px;right:60px;display:flex;justify-content:space-between;align-items:center;}
+  .url{font-size:26px;font-weight:700;color:#F06030;}
+  .free{background:#F06030;color:#fff;font-size:24px;font-weight:700;border-radius:12px;padding:10px 22px;}
+  .bar{position:absolute;left:0;right:0;bottom:0;height:14px;background:#F06030;}
+</style></head><body>
+  <div class="road" style="left:-40px;top:300px;width:1300px;height:22px;transform:rotate(-8deg);"></div>
+  <div class="road" style="left:760px;top:-60px;width:22px;height:760px;transform:rotate(14deg);"></div>
+  <img class="pin" src="../../public/mapit-logo.png" style="left:70px;top:70px;height:92px;">
+  <img class="pin" src="../../public/mapit-logo.png" style="left:150px;top:330px;height:64px;opacity:.7;">
+  <img class="pin" src="../../public/mapit-logo.png" style="left:1010px;top:90px;height:88px;">
+  <img class="pin" src="../../public/mapit-logo.png" style="left:1080px;top:330px;height:62px;opacity:.7;">
+  <div class="centre">
+    <div class="brand"><img src="../../public/mapit-logo.png" alt=""><div class="name">Map<em>It</em></div></div>
+    <div class="tag">Geo-based marketplace</div>
+    <div class="sub">Buy, sell and rent near you.<br>Every listing is a pin on the map.</div>
+    <div class="chips"><span class="chip">🏠 Homes</span><span class="chip">🚗 Vehicles</span><span class="chip">🛋 Household</span></div>
+  </div>
+  <div class="foot"><span class="url">www.mapit.co.in</span><span class="free">Free to use</span></div>
+  <div class="bar"></div>
+</body></html>

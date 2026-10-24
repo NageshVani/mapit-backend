@@ -14,15 +14,15 @@
 <meta property="og:title" content="MapIt — Geo-based Marketplace">
 <meta property="og:description" content="Geo-based Marketplace: browse real estate, vehicles and household items near you on an interactive map. Free to post.">
 <!-- ?v= busts WhatsApp/Facebook preview caches; bump it whenever og-image.png changes -->
-<meta property="og:image" content="https://www.mapit.co.in/og-image.png?v=2">
+<meta property="og:image" content="https://www.mapit.co.in/og-image.png?v=3">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="MapIt — the geo-based marketplace. Buy, sell and rent near you.">
+<meta property="og:image:alt" content="MapIt — geo-based marketplace. Buy, sell and rent near you.">
 <!-- Twitter / X card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MapIt — Geo-based Marketplace">
 <meta name="twitter:description" content="Geo-based Marketplace for Bangalore. Browse by map, post for free.">
-<meta name="twitter:image" content="https://www.mapit.co.in/og-image.png?v=2">
+<meta name="twitter:image" content="https://www.mapit.co.in/og-image.png?v=3">
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
@@ -779,6 +779,20 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   .wl-cta-note{display:none;}  /* phones: keep the sticky bar slim — the sign-in screen comes next anyway */
   .wl-foot{justify-content:center;flex-direction:column;}
 }
+/* Short laptop screens (1366×768, or 150% Windows scaling): the card is
+   ~800 px tall, so "Start exploring" sat below the fold and Arun couldn't
+   reach it (2026-10-24). Pin the button bar like on phones, and tighten. */
+@media(min-width:769px) and (max-height:860px){
+  .wl-wrap{align-items:flex-start;padding:16px 16px 0;}
+  .wl-card{padding:22px 36px 14px;}
+  .wl-logo{height:60px;}
+  .wl-name{font-size:38px;}
+  .wl-h1{font-size:26px;margin:14px auto 6px;}
+  .wl-usp{margin:16px 0 10px;padding:12px 18px;}
+  .wl-feats{margin:0 0 14px;}
+  .wl-cta{position:sticky;bottom:0;margin:14px -36px 0;padding:12px 36px;background:linear-gradient(to top,rgba(255,255,255,.98) 70%,rgba(255,255,255,0));z-index:2;}
+  .wl-foot{margin-top:8px;}
+}
 @media(prefers-reduced-motion:reduce){.wl-pin,.wl-tagchip{animation:none;}.wl-ring::before{animation:none;opacity:0;}}
 </style>
 </head>
@@ -836,7 +850,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <img class="wl-logo" src="/mapit-logo.png" width="57" height="76" alt="MapIt logo">
         <div class="wl-name">Map<em>It</em></div>
       </div>
-      <div class="wl-tag">The geo-based marketplace</div>
+      <div class="wl-tag">Geo-based marketplace</div>
       <h1 class="wl-h1" id="wlTitle">What if everything around you was <span>just one search away?</span></h1>
       <p class="wl-sub">Everything around you. All in one place. <span class="wl-free">Free to use</span></p>
 
