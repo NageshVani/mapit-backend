@@ -52,7 +52,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #hdr{min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
-.beta-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
 /* Session 9J — keyword search lives in the sidebar, under the category chips */
 .srch{position:relative;margin:0 10px 8px;flex-shrink:0;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14.5px;opacity:.5;}
@@ -306,7 +305,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #viewToggle{display:flex;}
   /* Phone header: row 1 = logo · avatar; row 2 = mode · radius · Post (search is in the list, 9J) */
   #hdr{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:8px 12px;}
-  .beta-tag,.hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
+  .hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
   #activePinLabel{max-width:110px;}
   .uav-wrap{order:2;margin-left:auto;}
   .hdr-break{display:block;order:3;flex-basis:100%;height:0;}
@@ -1247,7 +1246,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <!-- ── HEADER ── -->
 <header id="hdr">
   <div class="logo">Map<em>It</em></div>
-  <div class="beta-tag">Beta</div>
   <div class="hsp"></div>
   <div class="hdr-break"></div>
   <div class="hdr-filters">
