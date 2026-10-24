@@ -304,7 +304,7 @@ window.GUIDE_SHOTS = {
  "legal": {
   "w": 390,
   "h": 844,
-  "v": "muzviwmx",
+  "v": "mvm3q6ev",
   "marks": [
    {
     "n": 1,

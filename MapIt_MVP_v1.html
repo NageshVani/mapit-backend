@@ -14,15 +14,15 @@
 <meta property="og:title" content="MapIt — Geo-based Marketplace">
 <meta property="og:description" content="Geo-based Marketplace: browse real estate, vehicles and household items near you on an interactive map. Free to post.">
 <!-- ?v= busts WhatsApp/Facebook preview caches; bump it whenever og-image.png changes -->
-<meta property="og:image" content="https://www.mapit.co.in/og-image.png?v=2">
+<meta property="og:image" content="https://www.mapit.co.in/og-image.png?v=3">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="MapIt — the geo-based marketplace. Buy, sell and rent near you.">
+<meta property="og:image:alt" content="MapIt — geo-based marketplace. Buy, sell and rent near you.">
 <!-- Twitter / X card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MapIt — Geo-based Marketplace">
 <meta name="twitter:description" content="Geo-based Marketplace for Bangalore. Browse by map, post for free.">
-<meta name="twitter:image" content="https://www.mapit.co.in/og-image.png?v=2">
+<meta name="twitter:image" content="https://www.mapit.co.in/og-image.png?v=3">
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
@@ -52,7 +52,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #hdr{min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
-.beta-tag{font-size:8px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:1px solid var(--orange);color:var(--orange);padding:2px 7px;border-radius:3px;flex-shrink:0;}
 /* Session 9J — keyword search lives in the sidebar, under the category chips */
 .srch{position:relative;margin:0 10px 8px;flex-shrink:0;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14.5px;opacity:.5;}
@@ -306,7 +305,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   #viewToggle{display:flex;}
   /* Phone header: row 1 = logo · avatar; row 2 = mode · radius · Post (search is in the list, 9J) */
   #hdr{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:8px 12px;}
-  .beta-tag,.hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
+  .hsp,.uav-chip,#radMode,.hide-sm,.smb-k{display:none;}
   #activePinLabel{max-width:110px;}
   .uav-wrap{order:2;margin-left:auto;}
   .hdr-break{display:block;order:3;flex-basis:100%;height:0;}
@@ -510,7 +509,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .form-input:focus{border-color:var(--orange);}
 .form-input::placeholder{color:var(--muted);}
 .form-textarea{resize:vertical;min-height:80px;max-height:160px;}
-.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B8899' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B8899' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;text-overflow:ellipsis;}  /* room for the arrow — text ran under it on phones */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .pin-picker{background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:4px;}
 .pin-picker-map{height:180px;border-radius:6px;overflow:hidden;margin-bottom:8px;}
@@ -779,6 +778,20 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
   .wl-cta-note{display:none;}  /* phones: keep the sticky bar slim — the sign-in screen comes next anyway */
   .wl-foot{justify-content:center;flex-direction:column;}
 }
+/* Short laptop screens (1366×768, or 150% Windows scaling): the card is
+   ~800 px tall, so "Start exploring" sat below the fold and Arun couldn't
+   reach it (2026-10-24). Pin the button bar like on phones, and tighten. */
+@media(min-width:769px) and (max-height:860px){
+  .wl-wrap{align-items:flex-start;padding:16px 16px 0;}
+  .wl-card{padding:22px 36px 14px;}
+  .wl-logo{height:60px;}
+  .wl-name{font-size:38px;}
+  .wl-h1{font-size:26px;margin:14px auto 6px;}
+  .wl-usp{margin:16px 0 10px;padding:12px 18px;}
+  .wl-feats{margin:0 0 14px;}
+  .wl-cta{position:sticky;bottom:0;margin:14px -36px 0;padding:12px 36px;background:linear-gradient(to top,rgba(255,255,255,.98) 70%,rgba(255,255,255,0));z-index:2;}
+  .wl-foot{margin-top:8px;}
+}
 @media(prefers-reduced-motion:reduce){.wl-pin,.wl-tagchip{animation:none;}.wl-ring::before{animation:none;opacity:0;}}
 </style>
 </head>
@@ -836,7 +849,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <img class="wl-logo" src="/mapit-logo.png" width="57" height="76" alt="MapIt logo">
         <div class="wl-name">Map<em>It</em></div>
       </div>
-      <div class="wl-tag">The geo-based marketplace</div>
+      <div class="wl-tag">Geo-based marketplace</div>
       <h1 class="wl-h1" id="wlTitle">What if everything around you was <span>just one search away?</span></h1>
       <p class="wl-sub">Everything around you. All in one place. <span class="wl-free">Free to use</span></p>
 
@@ -965,7 +978,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       </div>
       <div class="tos-row">
         <input type="checkbox" id="tosCheck" onchange="updateProfileContinueState()" style="margin-top:2px;accent-color:var(--orange);width:16px;height:16px;flex-shrink:0;cursor:pointer;"/>
-        <label for="tosCheck" style="font-size:12px;color:var(--muted);line-height:1.5;cursor:pointer;">I agree to the <a href="/terms" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Privacy Policy</a></label>
+        <label for="tosCheck" style="font-size:12px;color:var(--muted);line-height:1.5;cursor:pointer;">I agree to the <a href="/terms" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--orange);font-weight:600;">Terms of Service</a>, including the Privacy Policy</label>
       </div>
       <button class="modal-btn" id="profileContinueBtn" onclick="saveProfile()" disabled style="margin-top:14px;">
         <span>Continue →</span>
@@ -1083,7 +1096,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
             <select class="form-input form-select" id="postCat" onchange="updatePostSubcats()">
               <option value="re">🏠 Real Estate</option>
               <option value="veh">🚗 Vehicles</option>
-              <option value="hh">🏡 Household Items</option>
+              <option value="hh">🏡 Household</option>
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0">
@@ -1129,7 +1142,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         </div>
         </section>
       </div>
-      <!-- RIGHT column: ⑤ location ⑥ contact -->
+      <!-- RIGHT column: ⑤ location -->
       <div class="post-col-r">
         <!-- ⑤ Location + precision -->
         <section class="post-sec" data-step="Location">
@@ -1164,17 +1177,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
           </label>
         </div>
         </section>
-        <!-- ⑥ Phone visibility -->
-        <section class="post-sec" data-step="Contact">
-        <div class="post-sec-hd">Contact</div>
-        <div class="form-group">
-          <label class="form-label">📞 Show Phone Number to Buyers</label>
-          <div class="tx-radio-row" style="flex-direction:column;gap:8px;">
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="on_agreement" checked> On Agreement</label>
-            <label class="tx-radio-lbl"><input type="radio" name="showPhone" value="never"> Never</label>
-          </div>
-        </div>
-        </section>
+        <!-- No phone-visibility choice: seller numbers are never shown —
+             buyers and sellers talk in MapIt chat (Nagesh + Arun, 2026-10-24). -->
       </div>
       <!-- FULL WIDTH: submit -->
       <div class="post-col-full">
@@ -1242,7 +1246,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <!-- ── HEADER ── -->
 <header id="hdr">
   <div class="logo">Map<em>It</em></div>
-  <div class="beta-tag">Beta</div>
   <div class="hsp"></div>
   <div class="hdr-break"></div>
   <div class="hdr-filters">
@@ -1289,7 +1292,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       </div>
       <a class="uav-item hide" id="adminMenuItem" href="/admin" style="text-decoration:none;">🔐 Admin</a>
       <a class="uav-item" href="/terms" target="_blank" rel="noopener" style="text-decoration:none;">📄 Terms of Service</a>
-      <a class="uav-item" href="/privacy" target="_blank" rel="noopener" style="text-decoration:none;">🔒 Privacy Policy</a>
       <button class="uav-signout" onclick="logout()">⎋ Sign Out &amp; Switch User</button>
     </div>
   </div>
@@ -1445,7 +1447,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
       <div class="prof-row"><span class="prof-lbl">Phone</span><span class="prof-val" id="profPhone">—</span></div>
       <div class="prof-row"><span class="prof-lbl">Sign-in method</span><span class="prof-val" id="profMethod">—</span></div>
       <div class="prof-row"><span class="prof-lbl">Member since</span><span class="prof-val" id="profSince">—</span></div>
-      <div class="prof-row"><span class="prof-lbl">Home location</span><span class="prof-val" id="profHome">—</span></div>
+      <div class="prof-row"><span class="prof-lbl">My location</span><span class="prof-val" id="profHome">—</span></div>
     </div>
     <p class="prof-note">To change your email or phone, contact us at <a href="mailto:contact-us@mapit.co.in">contact-us@mapit.co.in</a>.</p>
     <button class="modal-btn" onclick="closeProfileModal()">Close</button>
@@ -3148,8 +3150,13 @@ function hideHoverCard(){
 // ═══════════════════════════════════════════════
 // LISTINGS — fetch from API
 // ═══════════════════════════════════════════════
+// Latest request wins (pre-listing audit, 2026-10-24): this used to return
+// early while a load was in flight, silently dropping e.g. Explore → My
+// location or a category tap, so the list kept stale results/distances.
+// Now every call loads; a response that a newer call has overtaken is ignored.
+let _listingsSeq = 0;
 async function loadListings(){
-  if(ST.loadingListings) return;
+  const seq = ++_listingsSeq;
   ST.loadingListings = true;
   showSidebarLoading();
   const loc = activeLoc();
@@ -3160,6 +3167,7 @@ async function loadListings(){
     if(ST.txn) url += `&txn=${ST.txn}`;
     if(ST.sub && ST.sub !== 'All Types') url += `&subcategory=${encodeURIComponent(ST.sub)}`;
     const data = await apiGet(url);
+    if(seq !== _listingsSeq) return;   // overtaken by a newer load — drop this stale result
     // Enrich with distance
     ST.listings = (data.listings||[])
       .filter(l => l.seller_id !== ST.user?.id)   // hide own listings from browse
@@ -3169,12 +3177,16 @@ async function loadListings(){
       }));
     _keepSharedListing();
   } catch(e){
+    if(seq !== _listingsSeq) return;
     toast('Could not load listings: ' + e.message);
     ST.listings = [];
   } finally {
-    ST.loadingListings = false;
-    drawMarkers();
-    renderSidebar();
+    // only the newest load may clear the spinner and redraw
+    if(seq === _listingsSeq){
+      ST.loadingListings = false;
+      drawMarkers();
+      renderSidebar();
+    }
   }
 }
 
@@ -3831,10 +3843,6 @@ async function openPostModal(){
   // Session 9G — Real Estate defaults to Rent for every new listing
   const rentEl = document.querySelector('input[name="txType"][value="Rent"]');
   if(rentEl) rentEl.checked = true;
-  // Session 9G (Arun) — phone visibility defaults to On Agreement for every new
-  // listing, even if the last listing edited was set to Never.
-  const phoneDefault = document.querySelector('input[name="showPhone"][value="on_agreement"]');
-  if(phoneDefault) phoneDefault.checked = true;
   // Populate location dropdown from saved pins + manual option
   const sel = document.getElementById('postLocation');
   sel.innerHTML = '';
@@ -4057,7 +4065,6 @@ const POST_STEP_DONE = {
     const v = document.getElementById('postLocation').value;
     return v === '__manual__' ? !!_postPickerCoords : !!v;
   },
-  Contact:  () => !!document.querySelector('input[name="showPhone"]:checked'),
 };
 var _postStepsRaf = 0; // var: renderDynamicFields() may call in before this line runs
 function schedulePostSteps(){
@@ -4171,12 +4178,8 @@ async function editListing(id){
     if(txEl) txEl.checked = true;
   }
 
-  // Pre-fill show_phone / show_exact_location from the listing's actual saved
-  // values — previously these silently reset to the form's hardcoded HTML
-  // defaults ('always' / unchecked) on every edit, regardless of what the
-  // seller had actually chosen.
-  const phoneEl = document.querySelector(`input[name="showPhone"][value="${l.show_phone==='never'?'never':'on_agreement'}"]`);
-  if(phoneEl) phoneEl.checked = true;
+  // Pre-fill show_exact_location from the listing's actual saved value —
+  // previously it silently reset to the form's HTML default on every edit.
   document.getElementById('postShowExactLocation').checked = !!l.show_exact_location;
 
   // Pre-populate location dropdown with listing's current location
@@ -4473,7 +4476,6 @@ async function submitListing(){
     toast('Please select or enter a location.'); return;
   }
 
-  const show_phone = document.querySelector('input[name="showPhone"]:checked')?.value || 'on_agreement';
   const show_exact_location = document.getElementById('postShowExactLocation').checked;
   btn.disabled=true; btn.textContent = ST.editingId ? 'Updating…' : 'Submitting…';
   try {
@@ -4482,10 +4484,10 @@ async function submitListing(){
       price: price || 0,
       price_label: price ? fmtPrice(price) : '',
       lat: locObj.lat, lng: locObj.lng,
-      address: `${locObj.label} · Bangalore`,
+      // no `address`: the server derives the public area name from the pin
+      // (the label is the seller's private name for a saved location)
       details,
       specs: [],
-      show_phone,
       show_exact_location,
     };
 
@@ -5353,9 +5355,23 @@ function _renderProfile(){
   set('profMethod', provider === 'google' ? 'Google' : 'Email');
   const since = p.created_at || u.created_at;
   set('profSince', since ? new Date(since).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : '—');
-  const home = p.home_address
+  // The active My Location is what the app searches from (user_pins); the
+  // one-time sign-up home (profiles.home_*) is only a fallback. Showing just
+  // the latter said "Not set" for anyone who used My Locations (Arun, 2026-10-24).
+  const home = document.getElementById('profHome');
+  home.textContent = '';
+  const pins = ST.userPins || [];
+  const signupHome = p.home_address
     || (p.home_lat != null && p.home_lng != null ? `${Number(p.home_lat).toFixed(4)}, ${Number(p.home_lng).toFixed(4)}` : '');
-  set('profHome', home || 'Not set');
+  const locName = ST.activePin?.label || signupHome;
+  const txt = locName
+    ? locName + (pins.length > 1 ? ` · ${pins.length} saved ` : ' ')
+    : 'Not set · ';
+  home.appendChild(document.createTextNode(txt));
+  const link = document.createElement('span');
+  link.className = 'prof-link'; link.textContent = locName ? 'Change →' : 'Add →';
+  link.onclick = () => { closeProfileModal(); openPinsModal(); };
+  home.appendChild(link);
 }
 
 function setFbType(el){

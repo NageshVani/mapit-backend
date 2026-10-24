@@ -21,7 +21,7 @@ const FIELD_LABELS = {
   title: 'Title', description: 'Description', price: 'Price', price_label: 'Price label',
   address: 'Address', specs: 'Specs', details: 'Details', category: 'Category',
   subcategory: 'Subcategory', lat: 'Map pin', lng: 'Map pin',
-  show_phone: 'Phone visibility', show_exact_location: 'Exact pin setting',
+  show_exact_location: 'Exact pin setting',
 };
 
 // The admin page of the environment that sent the alert — a UAT alert
