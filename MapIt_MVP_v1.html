@@ -4482,7 +4482,8 @@ async function submitListing(){
       price: price || 0,
       price_label: price ? fmtPrice(price) : '',
       lat: locObj.lat, lng: locObj.lng,
-      address: `${locObj.label} · Bangalore`,
+      // no `address`: the server derives the public area name from the pin
+      // (the label is the seller's private name for a saved location)
       details,
       specs: [],
       show_phone,

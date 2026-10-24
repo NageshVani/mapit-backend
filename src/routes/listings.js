@@ -19,6 +19,7 @@ const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 const { fuzzLocation, haversineM } = require('../utils/geo');
+const { areaName } = require('../utils/areaName');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 const { moderateAndAlert } = require('../utils/notifyListings');
@@ -598,13 +599,14 @@ router.get('/:id', requireAuth, async (req, res, next) => {
 // ── POST create listing ───────────────────────────────────────
 // POST /api/listings
 // Body: { category, subcategory, title, description, price, price_label,
-//         lat, lng, address, specs, details, show_phone, show_exact_location }
+//         lat, lng, specs, details, show_phone, show_exact_location }
+// (any `address` sent is ignored — the server derives the area name)
 router.post('/', requireAuth, async (req, res, next) => {
   try {
     const {
       category, subcategory, title, description,
       price, price_label,
-      lat, lng, address, specs, details, show_phone, show_exact_location,
+      lat, lng, specs, details, show_phone, show_exact_location,
     } = req.body;
 
     // Validation
@@ -637,6 +639,11 @@ router.post('/', requireAuth, async (req, res, next) => {
     const exactLat = parseFloat(lat), exactLng = parseFloat(lng);
     const fuzzed = fuzzLocation(exactLat, exactLng, listingId);
     const showExactLocation = show_exact_location === true || show_exact_location === 'true';
+    // Public address = area name of the pin buyers see; the client's
+    // `address` is ignored (it carried the seller's private location label).
+    const publicAddress = await areaName(
+      showExactLocation ? exactLat : fuzzed.lat,
+      showExactLocation ? exactLng : fuzzed.lng);
 
     const { data: listing, error } = await supabaseAdmin
       .from('listings')
@@ -654,7 +661,7 @@ router.post('/', requireAuth, async (req, res, next) => {
         display_lat:          fuzzed.lat,
         display_lng:          fuzzed.lng,
         show_exact_location:  showExactLocation,
-        address:              address?.trim() || null,
+        address:              publicAddress,
         specs:                specs || [],
         details:              details || {},
         status:               'pending',
@@ -708,7 +715,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
 
     const allowedFields = [
       'title', 'description', 'price', 'price_label',
-      'address', 'specs', 'details', 'category', 'subcategory', 'lat', 'lng',
+      'specs', 'details', 'category', 'subcategory', 'lat', 'lng',
       'show_phone', 'show_exact_location',
     ];
     const updates = {};
@@ -736,6 +743,20 @@ router.put('/:id', requireAuth, async (req, res, next) => {
       const fuzzed = fuzzLocation(newLat, newLng, id);
       updates.display_lat = fuzzed.lat;
       updates.display_lng = fuzzed.lng;
+    }
+    // `address` is server-derived (never taken from the client) — refresh it
+    // when the pin buyers see changes: a moved pin or a flipped exact-pin setting.
+    const pinMoved = updates.display_lat !== undefined
+      && (Number(updates.lat ?? existing.lat) !== Number(existing.lat) || Number(updates.lng ?? existing.lng) !== Number(existing.lng));
+    const exactChanged = updates.show_exact_location !== undefined && updates.show_exact_location !== existing.show_exact_location;
+    if (pinMoved || exactChanged || !existing.address || existing.address.includes('·')) {
+      const exact = updates.show_exact_location ?? existing.show_exact_location;
+      const pt = exact
+        ? { lat: Number(updates.lat ?? existing.lat), lng: Number(updates.lng ?? existing.lng) }
+        : (updates.display_lat ?? existing.display_lat) != null
+          ? { lat: updates.display_lat ?? existing.display_lat, lng: updates.display_lng ?? existing.display_lng }
+          : fuzzLocation(Number(existing.lat), Number(existing.lng), id);   // rows inserted by SQL have no display point
+      updates.address = await areaName(pt.lat, pt.lng);
     }
 
     // Re-submit for review whenever the owner edits
