@@ -3148,8 +3148,13 @@ function hideHoverCard(){
 // ═══════════════════════════════════════════════
 // LISTINGS — fetch from API
 // ═══════════════════════════════════════════════
+// Latest request wins (pre-listing audit, 2026-10-24): this used to return
+// early while a load was in flight, silently dropping e.g. Explore → My
+// location or a category tap, so the list kept stale results/distances.
+// Now every call loads; a response that a newer call has overtaken is ignored.
+let _listingsSeq = 0;
 async function loadListings(){
-  if(ST.loadingListings) return;
+  const seq = ++_listingsSeq;
   ST.loadingListings = true;
   showSidebarLoading();
   const loc = activeLoc();
@@ -3160,6 +3165,7 @@ async function loadListings(){
     if(ST.txn) url += `&txn=${ST.txn}`;
     if(ST.sub && ST.sub !== 'All Types') url += `&subcategory=${encodeURIComponent(ST.sub)}`;
     const data = await apiGet(url);
+    if(seq !== _listingsSeq) return;   // overtaken by a newer load — drop this stale result
     // Enrich with distance
     ST.listings = (data.listings||[])
       .filter(l => l.seller_id !== ST.user?.id)   // hide own listings from browse
@@ -3169,12 +3175,16 @@ async function loadListings(){
       }));
     _keepSharedListing();
   } catch(e){
+    if(seq !== _listingsSeq) return;
     toast('Could not load listings: ' + e.message);
     ST.listings = [];
   } finally {
-    ST.loadingListings = false;
-    drawMarkers();
-    renderSidebar();
+    // only the newest load may clear the spinner and redraw
+    if(seq === _listingsSeq){
+      ST.loadingListings = false;
+      drawMarkers();
+      renderSidebar();
+    }
   }
 }
 
