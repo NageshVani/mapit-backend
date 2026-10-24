@@ -207,6 +207,8 @@ app.get('/admin', (req, res) => {
 // finalized v1.0, approved by Arun 2026-07-21) — Part I is Terms, Part II is
 // Privacy. /privacy redirects to the same file's Privacy anchor (#p1) rather
 // than duplicating the document, so there's only one file to keep in sync.
+// The app links only to /terms (one page, Arun 2026-10-24); keep /privacy —
+// the Google OAuth consent screen and WhatsApp/MSG91 profiles may point to it.
 app.get('/terms', (req, res) => {
   res.sendFile(path.join(__dirname, '../docs/legal/terms-privacy-draft2.html'));
 });
