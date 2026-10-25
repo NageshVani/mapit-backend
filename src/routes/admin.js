@@ -8,13 +8,18 @@
 // POST /api/admin/map-load-ping — Session 9F: requireAuth only (NOT
 //   requireAdmin) — every logged-in user's browser calls this once per
 //   map init, it's the Mapbox-tile-volume proxy the cost-report reads
+// GET  /api/admin/handover/listings — listings owned by the admin accounts
+//   (posted on a seller's behalf), for the 🔁 Transfer tab
+// POST /api/admin/handover/lookup   — exact verified phone/email → masked account
+// POST /api/admin/handover/transfer — move admin-owned listings to that account
 // ============================================================
 // Cross-cutting metrics (users + listings + chat), so it lives in its own
 // file rather than being bolted onto users.js or listings.js.
 const express          = require('express');
 const Sentry           = require('@sentry/node');
 const { supabaseAdmin } = require('../config/supabase');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requireAdmin, isAdminEmail } = require('../middleware/auth');
+const { normalizeIndianMobile, maskPhone } = require('../utils/whatsappOtp');
 const { createError }  = require('../middleware/errorHandler');
 const { bucketAddress } = require('../utils/bangaloreAreas');
 const { logAuditEvent } = require('../utils/auditLog');
@@ -301,6 +306,210 @@ router.get('/cost-report', requireAuth, requireAdmin, async (req, res, next) => 
         { label: 'Anthropic Console — Cost', url: 'https://console.anthropic.com/settings/cost' },
         { label: 'Mapbox — Statistics', url: 'https://account.mapbox.com/statistics/' },
       ],
+    });
+  } catch (err) { next(err); }
+});
+
+// ── Listing handover (🔁 Transfer tab, 2026-10-25) ────────────
+// Nagesh/Arun post the first listings from their own accounts for sellers
+// who aren't on MapIt yet. When a seller joins, an admin moves those
+// listings to the seller's account (decision 2026-10-25: manual transfer,
+// no seller contact stored in the DB).
+// Rules enforced HERE, not just in admin.html:
+//  - match on VERIFIED details only (phone_verified / email_confirmed_at) —
+//    anyone can sign up with someone else's unconfirmed email
+//  - exact match only, no partial search (no user directory on screen, Rule 8)
+//  - only listings currently owned by an admin account can move
+//  - conversations are NOT moved: their messages were written by the admin
+// Email lookup pages through auth.users with listUsers (profiles has no
+// email column). Fine for a few thousand users; beyond that replace it with
+// a service-role-only SQL function (needs a migration).
+const UUID_RE  = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const HANDOVER_MAX_LISTINGS = 50;
+const AUTH_USERS_PER_PAGE   = 1000;
+const AUTH_USERS_MAX_PAGES  = 20;
+
+async function listAllAuthUsers() {
+  const users = [];
+  for (let page = 1; page <= AUTH_USERS_MAX_PAGES; page++) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: AUTH_USERS_PER_PAGE });
+    if (error) throw createError(error.message);
+    users.push(...(data?.users || []));
+    if ((data?.users || []).length < AUTH_USERS_PER_PAGE) break;
+  }
+  return users;
+}
+
+async function getAdminUserIds() {
+  return (await listAllAuthUsers()).filter(u => isAdminEmail(u.email)).map(u => u.id);
+}
+
+// "ravi.k@gmail.com" → "ra••@gmail.com" — enough to recognise, not to copy.
+function maskEmail(email) {
+  const [local, domain] = String(email || '').split('@');
+  if (!domain) return null;
+  return `${local.slice(0, 2)}••@${domain}`;
+}
+
+// Resolves { phone, email } (either or both) to exactly one verified,
+// non-admin account. Returns { account } or { status, error }.
+async function findVerifiedAccount(body) {
+  const rawPhone = typeof body?.phone === 'string' ? body.phone.trim() : '';
+  const rawEmail = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
+  if (!rawPhone && !rawEmail) return { status: 400, error: 'Enter the seller\'s phone number or email.' };
+
+  let phone = null;
+  if (rawPhone) {
+    phone = normalizeIndianMobile(rawPhone);
+    if (!phone) return { status: 400, error: 'Enter a valid 10-digit Indian mobile number.' };
+  }
+  if (rawEmail && (rawEmail.length > 254 || !EMAIL_RE.test(rawEmail))) {
+    return { status: 400, error: 'Enter a valid email address.' };
+  }
+
+  const matches = new Map(); // account id → ['phone'|'email']
+  const users = await listAllAuthUsers();
+
+  if (phone) {
+    const { data, error } = await supabaseAdmin
+      .from('profiles').select('id').eq('phone', phone).eq('phone_verified', true);
+    if (error) throw createError(error.message);
+    (data || []).forEach(p => matches.set(p.id, ['phone']));
+  }
+  if (rawEmail) {
+    users
+      .filter(u => u.email_confirmed_at && (u.email || '').toLowerCase() === rawEmail)
+      .forEach(u => matches.set(u.id, [...(matches.get(u.id) || []), 'email']));
+  }
+
+  if (matches.size === 0) {
+    return { status: 404, error: 'No verified MapIt account has this phone/email yet. The seller must sign up and verify first.' };
+  }
+  if (matches.size > 1) {
+    return { status: 409, error: 'The phone and email belong to two different accounts. Ask the seller which account is theirs and search with that one only.' };
+  }
+
+  const [[id, matchedBy]] = [...matches];
+  const authUser = users.find(u => u.id === id);
+  if (isAdminEmail(authUser?.email)) return { status: 400, error: 'That is an admin account — listings are already there.' };
+
+  const [{ data: profile, error: pErr }, { count: listingCount, error: cErr }] = await Promise.all([
+    supabaseAdmin.from('profiles').select('full_name, nickname, phone, phone_verified, suspended, created_at').eq('id', id).single(),
+    supabaseAdmin.from('listings').select('*', { count: 'exact', head: true }).eq('seller_id', id),
+  ]);
+  if (pErr) return { status: 404, error: 'This account has not finished signing up (no profile yet).' };
+  if (cErr) throw createError(cErr.message);
+
+  return {
+    account: {
+      id,
+      full_name:     profile.full_name || profile.nickname || 'Unnamed',
+      phone_masked:  profile.phone_verified && profile.phone ? maskPhone(profile.phone) : null,
+      email_masked:  authUser?.email_confirmed_at ? maskEmail(authUser.email) : null,
+      matched_by:    matchedBy,
+      suspended:     !!profile.suspended,
+      created_at:    profile.created_at,
+      listing_count: listingCount || 0,
+    },
+  };
+}
+
+// GET /api/admin/handover/listings
+router.get('/handover/listings', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const adminIds = await getAdminUserIds();
+    if (!adminIds.length) return res.json({ listings: [] });
+
+    const { data: listings, error } = await supabaseAdmin
+      .from('listings')
+      .select('id, title, category, subcategory, price, price_label, status, address, created_at, seller_id, profiles(full_name), listing_photos(public_url, sort_order)')
+      .in('seller_id', adminIds)
+      .order('created_at', { ascending: false });
+    if (error) return next(createError(error.message));
+
+    // Chat count per listing, so the page can warn that chats stay behind
+    const ids = (listings || []).map(l => l.id);
+    const chatCounts = {};
+    if (ids.length) {
+      const { data: convs, error: cErr } = await supabaseAdmin
+        .from('conversations').select('listing_id').in('listing_id', ids);
+      if (cErr) return next(createError(cErr.message));
+      (convs || []).forEach(c => { chatCounts[c.listing_id] = (chatCounts[c.listing_id] || 0) + 1; });
+    }
+
+    res.json({
+      listings: (listings || []).map(l => ({
+        ...l,
+        posted_by:  l.profiles?.full_name || 'Admin',
+        chat_count: chatCounts[l.id] || 0,
+      })),
+    });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/handover/lookup   Body: { phone?, email? }
+router.post('/handover/lookup', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const result = await findVerifiedAccount(req.body);
+    if (result.error) return res.status(result.status).json({ error: result.error });
+    res.json({ account: result.account });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/handover/transfer
+// Body: { listing_ids: [uuid], account_id, phone?, email? }
+// The phone/email are matched AGAIN here (not trusted from the lookup), and
+// must still resolve to account_id — so a crafted request can't move
+// listings to an unverified or different account.
+router.post('/handover/transfer', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const { listing_ids: listingIds, account_id: accountId } = req.body || {};
+    if (!Array.isArray(listingIds) || !listingIds.length || listingIds.length > HANDOVER_MAX_LISTINGS
+        || !listingIds.every(id => typeof id === 'string' && UUID_RE.test(id))) {
+      return res.status(400).json({ error: `Select between 1 and ${HANDOVER_MAX_LISTINGS} listings.` });
+    }
+    if (typeof accountId !== 'string' || !UUID_RE.test(accountId)) {
+      return res.status(400).json({ error: 'Find the seller\'s account first.' });
+    }
+
+    const result = await findVerifiedAccount(req.body);
+    if (result.error) return res.status(result.status).json({ error: result.error });
+    if (result.account.id !== accountId) {
+      return res.status(409).json({ error: 'The account for this phone/email changed. Search again.' });
+    }
+    if (result.account.suspended) {
+      return res.status(400).json({ error: 'This account is suspended. Listings cannot be moved to it.' });
+    }
+
+    const adminIds = await getAdminUserIds();
+    const uniqueIds = [...new Set(listingIds)];
+    const { data: owned, error: oErr } = await supabaseAdmin
+      .from('listings').select('id, seller_id').in('id', uniqueIds).in('seller_id', adminIds);
+    if (oErr) return next(createError(oErr.message));
+    if (!owned?.length) {
+      return res.status(400).json({ error: 'None of the selected listings is owned by an admin account any more.' });
+    }
+
+    const { data: moved, error: uErr } = await supabaseAdmin
+      .from('listings')
+      .update({ seller_id: accountId })
+      .in('id', owned.map(l => l.id))
+      .in('seller_id', adminIds)          // re-checked in the UPDATE itself
+      .select('id');
+    if (uErr) return next(createError(uErr.message));
+
+    const movedIds = (moved || []).map(l => l.id);
+    // IDs only — no phone/email in the audit row (Rule 8)
+    await logAuditEvent('listing_transfer', req, req.user.id, {
+      to_seller_id: accountId,
+      listings: owned.filter(l => movedIds.includes(l.id)).map(l => ({ id: l.id, from_seller_id: l.seller_id })),
+    });
+
+    res.json({
+      moved: movedIds.length,
+      skipped: uniqueIds.length - movedIds.length,
+      message: `Moved ${movedIds.length} listing(s) to ${result.account.full_name}.`,
     });
   } catch (err) { next(err); }
 });

@@ -9,6 +9,7 @@
     "test": "echo \"No tests yet\" && exit 0",
     "guide:shots": "node -r dotenv/config scripts/guide-shots.js",
     "uat:9c": "node -r dotenv/config scripts/uat/9c-phone-otp.suite.js",
+    "uat:transfer": "node -r dotenv/config scripts/uat/admin-transfer.suite.js",
     "smoke:prod": "node -r dotenv/config scripts/smoke/prod-readonly.js",
     "security:client-check": "node -r dotenv/config scripts/security/client-access-check.js"
   },

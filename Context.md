@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-24 12:59 (UAE), checkpoint (**RELEASED: PR #27 `uat → main` (`dc47fb5`) — Arun's pre-listing review + full audit → address = area name (privacy), latest-load-wins, /api rate limit 1000, Profile My location, welcome pinned button + no "The", og-image v3 (WhatsApp phone + Web OK), phone option removed, one-page Terms, no Beta. smoke 14/14. Prod had no label-style addresses; 14 UAT rows repaired. Chat pop-up designed (centred) + ON HOLD. Next: Arun's real listings → chat pop-up → wizard.**)
+- **Last updated:** 2026-10-25 08:46 (UAE), checkpoint (**Admin 🔁 Transfer tab built on `feat/admin-listing-transfer` (NOT pushed): move listings Nagesh/Arun post for sellers to the seller's own account once they join — exact VERIFIED phone/email match, server re-checks, audit row, chats stay with the admin. UAT suite `npm run uat:transfer` 20/20. Awaiting Nagesh localhost click-test.**)
+- **Last updated (previous):** 2026-10-24 12:59 (UAE), checkpoint (**RELEASED: PR #27 `uat → main` (`dc47fb5`) — Arun's pre-listing review + full audit → address = area name (privacy), latest-load-wins, /api rate limit 1000, Profile My location, welcome pinned button + no "The", og-image v3 (WhatsApp phone + Web OK), phone option removed, one-page Terms, no Beta. smoke 14/14. Prod had no label-style addresses; 14 UAT rows repaired. Chat pop-up designed (centred) + ON HOLD. Next: Arun's real listings → chat pop-up → wizard.**)
 - **Last updated (previous):** 2026-10-21 19:13- **Last updated:** 2026-10-21 19:13 (UAE), checkpoint (**RELEASED: PR #26 `uat → main` merged (`982a73c`) — listing alert emails to new Zoho group `listings@mapit.co.in` (NEW / UPDATED / was live / FLAGGED), radius membership from the visible point (backend only — migration 019 DROPPED, no DB change), A1 lazy expiry + Renew, post form sections + step bar, A3 favicon/og-image, A4 ToS label. `smoke:prod` 14/14; WhatsApp preview shows new image (thumbnail crop logged). Vercel missed the push events → manual Create Deployment. Next: Arun's real listings Thu 22 Oct → 5-screen wizard + auto-title.**)
 - **Last updated (previous):** 2026-10-20 19:32 (UAE), checkpoint (**Pre-Thursday polish day, all on uat (pushed, not on prod): A4 ToS label v1.2, A1 lazy listing expiry + Renew, A3 favicon/apple-touch-icon/og-image (new logo, drops "exact GPS pin" claim), `.env.example` cleanup, Post form numbered sections + step bar + map-controls overlap fix (Nagesh localhost + iPhone PASS). Arun starts real listings Thu 22 Oct. Decided: 5-screen posting wizard (+ auto title) after Arun's first listings; Remove-with-reason after launch with 9H. Next: migration 019 + PR Wed 21 Oct.**)
 - **Last updated (previous):** 2026-10-17 16:38 (UAE), checkpoint (**RELEASED: PR #25 `uat → main` merged (`afcc236`) — migration 018 scripts, escape helper, server distance from the display point (anti-trilateration), welcome page, chat safety, Explore + phone fixes, admin report photos, ToS v1.2 (Arun OK). Prod smoke 14/14, Sentry prod test PASS (info event, no email = by design; alert emails confirmed). Bypass secret rotated. Next: real listings on prod → Sunday 18 Oct announcement.**)
@@ -121,6 +122,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-25, Sunday) — Goal: admin 🔁 Transfer tab (assisted listings → seller's account), then back to the agreed order.** Nagesh + Arun post the first listings from their own accounts with sellers' details/photos. Decided: option A = manual transfer by an admin, no seller phone/email stored in the DB (a private sheet holds them, with consent date). Built as an 8th admin tile on `feat/admin-listing-transfer`; next = Nagesh localhost click-test → push → uat → PR.
 
 **NOW (2026-10-24 12:59, Saturday) — Goal: Arun posts the first real listings on production (all pre-listing fixes are live, PR #27).** Watch 🆕 alerts in listings@, approve within 4 h, check the public address is an area name, collect Arun's posting feedback. Then the centred chat pop-up (design agreed, on hold), then the 5-screen wizard + auto-title.
 
@@ -1850,6 +1853,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-10-25) Admin Pending + Cleanup tabs show the price as "₹ ₹1.85Cr"** (`₹ ${price_label||fmtPrice(price)}` — fmtPrice already adds ₹, and a price_label like "per month" replaces the price). Fixed in the new Transfer tab only; small out-of-scope fix later.
+- **ℹ️ (2026-10-25) Transfer email lookup uses `auth.admin.listUsers` (pages of 1000, max 20 pages)** — fine to a few thousand users; then replace with a service-role-only SQL function (migration). Comment in `src/routes/admin.js`.
 - **✅ (2026-10-24) Production address check — "No rows returned"** (Nagesh, read-only, PROD SQL Editor): no live listing carries a label-style address, so no production data repair is needed; the server fix prevents new ones. UAT: 14 rows repaired (`fix-listing-addresses.js --apply`), 0 left.
 - **🟠 (2026-10-24 audit) Chat is off-screen on laptops** (opens below the listing in the left panel; ~2 lines on phones) → Batch 3 pop-up chat (Arun's request a). **Chat warning gap:** "send me your mobile number" gets no note (typed numbers do) → Batch 2.
 - **ℹ️ (2026-10-24 audit, retest by hand):** grey map tiles after 10 km on phone (likely slow tiles); My Listings once stuck on "Loading…" after submit (overlapping refresh from the script). UAT seed "…House for Sale" listed as Rent ₹1.25Cr/mo (test data; a "rent looks high" hint could help later).
@@ -2039,6 +2044,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-10-25, Nagesh) Assisted listings → seller handover = option A, manual admin transfer.** Rejected: `seller_email`/`seller_phone` columns on `listings` (the listings route serves `select('*')` to every browser → would leak), automatic claim at signup (option B, later if assisted posting becomes regular), claim links (C). Built as admin 🔁 Transfer: match on VERIFIED phone (`phone_verified`) or confirmed email only (anyone can sign up with someone else's unconfirmed email); exact match, no search (no user directory, Rule 8); only admin-owned listings move; conversations are NOT moved (the admin wrote those messages); `audit_log` event `listing_transfer` with IDs only. No undo button — undo by SQL from the audit row. Seller contact + consent kept in a private sheet, not in MapIt.
 
 | Decision | Rationale |
 |----------|-----------|
@@ -2432,6 +2438,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-25):** admin 🔁 Transfer (`feat/admin-listing-transfer`) → Nagesh localhost click-test (`http://localhost:3001/admin`) → push → merge to uat → uat check → PR `uat → main` → `smoke:prod`. Screenshots: `docs/screenshots/session-9-admin-transfer/` (before-admin-tiles-*, after-admin-tiles-*, after-transfer-*; drawn with demo data, nothing in the DB). Then the agreed order below.
 
 **⬅ AGREED ORDER (Nagesh, 2026-10-24, end of session):** (1) wait for Arun's real listings on prod (watch 🆕 alerts in listings@, approve within 4 h, check area-name addresses, ask what felt slow) → (2) Batch 3 chat pop-up (centred design below) → (3) 5-screen posting wizard + auto-title. Batch 2 (ask-for-number warning) folds into the chat window work.
 

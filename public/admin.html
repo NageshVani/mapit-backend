@@ -35,7 +35,7 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .adm-box{background:var(--panel);border:1px solid var(--border2);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
 
 /* ── SECTION-PICKER BLOCKS ── */
-.adm-block-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;}
+.adm-block-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
 .adm-block{background:var(--panel);border:2px solid var(--border2);border-radius:16px;padding:22px 10px;text-align:center;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;box-shadow:var(--shadow);}
 .adm-block:hover{border-color:var(--orange);transform:translateY(-1px);}
 .adm-block-ico{font-size:26px;margin-bottom:8px;display:block;}
@@ -166,6 +166,25 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
 .cln-delete-btn:disabled{opacity:.4;cursor:default;}
 .cln-scroll{max-height:52vh;overflow-y:auto;}
 
+/* ── TRANSFER (listing handover) ── */
+.trf-step{padding:12px 22px;font-size:12px;font-weight:700;color:var(--muted2);background:var(--deep);border-bottom:1px solid var(--border);border-top:1px solid var(--border);}
+.trf-step:first-child{border-top:none;}
+.trf-scroll{max-height:40vh;overflow-y:auto;}
+.trf-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--deep);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.trf-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:1px 7px;border-radius:4px;background:var(--card2);color:var(--muted2);}
+.trf-status.active{background:rgba(34,197,94,.12);color:var(--green);}
+.trf-status.pending{background:rgba(245,158,11,.14);color:var(--gold);}
+.trf-chats{color:var(--orange);font-weight:600;}
+.trf-find{padding:14px 22px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.trf-find .grv-input{flex:1 1 200px;width:auto;}
+.trf-card{margin:0 22px 14px;padding:12px 14px;border:1px solid var(--border2);border-radius:10px;background:var(--card);font-size:12.5px;line-height:1.7;}
+.trf-card.err{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);color:var(--red);}
+.trf-card b{font-size:14px;}
+.trf-go{padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--border);}
+.trf-go-note{font-size:11px;color:var(--muted);line-height:1.5;flex:1 1 240px;}
+.trf-go-btn{padding:8px 18px;background:var(--orange);color:#fff;border:none;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.trf-go-btn:disabled{opacity:.4;cursor:default;}
+
 /* ── OVERVIEW ── */
 .ov-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px;}
 .ov-tile{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;}
@@ -262,6 +281,11 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
         <div class="adm-block-label">Cost & Usage</div>
         <div class="adm-block-count">&nbsp;</div>
       </div>
+      <div class="adm-block" id="admTabTransfer" onclick="switchAdmSection('transfer')">
+        <span class="adm-block-ico">🔁</span>
+        <div class="adm-block-label">Transfer</div>
+        <div class="adm-block-count" id="admCountTransfer">&nbsp;</div>
+      </div>
     </div>
 
     <div class="adm-box">
@@ -341,6 +365,23 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
         </div>
         <div id="costReportTable"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
         <div class="cost-links-wrap" id="costQuickLinks"></div>
+      </div>
+
+      <div id="admSectionTransfer" class="adm-section hide">
+        <div style="padding:10px 22px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);line-height:1.5;">Move listings you posted for a seller to the seller's own account. The seller must sign up and verify their phone or email first. Chats stay with you.</div>
+        <div class="trf-step">① Tick the seller's listings <span id="trfSelCount" style="font-weight:600;color:var(--muted);">(0 selected)</span></div>
+        <div class="trf-scroll" id="trfList"><div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div></div>
+        <div class="trf-step">② Find the seller's account (exact phone or email)</div>
+        <div class="trf-find">
+          <input class="grv-input" id="trfPhone" type="tel" inputmode="tel" maxlength="16" placeholder="Mobile, e.g. 98765 43210" oninput="clearTrfAccount()" onkeydown="if(event.key==='Enter')lookupTrfAccount()">
+          <input class="grv-input" id="trfEmail" type="email" maxlength="254" placeholder="or email" oninput="clearTrfAccount()" onkeydown="if(event.key==='Enter')lookupTrfAccount()">
+          <button class="admin-approve-btn" id="trfFindBtn" onclick="lookupTrfAccount()">Find account</button>
+        </div>
+        <div id="trfAccount"></div>
+        <div class="trf-go">
+          <div class="trf-go-note">③ Only verified details match. Old chats stay with you; buyers' new messages go to the seller.</div>
+          <button class="trf-go-btn" id="trfGoBtn" disabled onclick="transferListings()">🔁 Transfer</button>
+        </div>
       </div>
     </div>
   </div>
@@ -457,6 +498,7 @@ function showDashboard(){
   loadFeedbackView();
   loadGrievances();
   loadCleanupCandidates();
+  loadTransferListings();
 }
 
 // ═══════════════════════════════════════════════
@@ -470,6 +512,7 @@ function switchAdmSection(section){
   document.getElementById('admTabGrievances').classList.toggle('on', section==='grievances');
   document.getElementById('admTabCleanup').classList.toggle('on', section==='cleanup');
   document.getElementById('admTabCost').classList.toggle('on', section==='cost');
+  document.getElementById('admTabTransfer').classList.toggle('on', section==='transfer');
   document.getElementById('admSectionOverview').classList.toggle('hide', section!=='overview');
   document.getElementById('admSectionPending').classList.toggle('hide', section!=='pending');
   document.getElementById('admSectionReports').classList.toggle('hide', section!=='reports');
@@ -477,12 +520,14 @@ function switchAdmSection(section){
   document.getElementById('admSectionGrievances').classList.toggle('hide', section!=='grievances');
   document.getElementById('admSectionCleanup').classList.toggle('hide', section!=='cleanup');
   document.getElementById('admSectionCost').classList.toggle('hide', section!=='cost');
+  document.getElementById('admSectionTransfer').classList.toggle('hide', section!=='transfer');
   if(section==='overview') loadOverview();
   if(section==='reports') loadReportsQueue();
   if(section==='feedback') loadFeedbackView();
   if(section==='grievances') loadGrievances();
   if(section==='cleanup') loadCleanupCandidates();
   if(section==='cost') loadCostReport();
+  if(section==='transfer') loadTransferListings();
 }
 
 // ═══════════════════════════════════════════════
@@ -1174,6 +1219,137 @@ async function bulkDeleteCleanup(){
   } catch(e){
     toast('Error: '+e.message);
     btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// TRANSFER — move listings an admin posted on a seller's behalf to the
+// seller's own account once they've joined. The account is found by exact
+// VERIFIED phone/email only; the server re-checks everything on transfer.
+// _trfQuery keeps the phone/email the account was found with, so the
+// transfer sends what was looked up, not whatever is typed afterwards.
+// ═══════════════════════════════════════════════
+let _trfLoaded = false;
+let _trfListings = [];
+const _trfSelected = new Set();
+let _trfAccount = null;
+let _trfQuery = null;
+
+async function loadTransferListings(){
+  if(_trfLoaded) return;
+  document.getElementById('trfList').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">Loading…</div>';
+  try {
+    const data = await apiGet('/api/admin/handover/listings');
+    _trfListings = data.listings || [];
+    _trfLoaded = true;
+    _trfSelected.clear();
+    setBlockCount('admCountTransfer', _trfListings.length);
+    document.getElementById('trfList').innerHTML = _trfListings.length
+      ? _trfListings.map(trfItemHtml).join('')
+      : '<div style="padding:30px;text-align:center;color:var(--muted);">No listings left on admin accounts — nothing to transfer. ✅</div>';
+    updateTrfButton();
+  } catch(e){
+    document.getElementById('trfList').innerHTML = `<div style="padding:30px;color:var(--red);">Error: ${escapeHtmlAdm(e.message)}</div>`;
+  }
+}
+
+function trfItemHtml(l){
+  const photo = (l.listing_photos||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0))
+    .map(p=>p.public_url).find(u=>/^https:\/\//.test(u||''));
+  const thumb = photo
+    ? `<img class="trf-thumb" src="${escapeHtmlAdm(photo)}" alt="" loading="lazy" decoding="async">`
+    : `<div class="trf-thumb">${SUBCAT_EMOJI[l.subcategory]||CAT_EMOJI[l.category]||'📦'}</div>`;
+  return `
+    <label class="cln-item" style="cursor:pointer;">
+      <input type="checkbox" onchange="toggleTrfSelect('${escapeHtmlAdm(l.id)}', this.checked)">
+      ${thumb}
+      <div class="cln-item-body">
+        <div class="admin-item-title">${escapeHtmlAdm(l.title)}</div>
+        <div class="admin-item-meta" style="margin-bottom:0;">
+          <span class="trf-status ${escapeHtmlAdm(l.status)}">${escapeHtmlAdm(l.status)}</span>
+          <span>${escapeHtmlAdm(l.subcategory||l.category)}</span>
+          <span>${escapeHtmlAdm(fmtPrice(l.price))}${l.price_label ? ' '+escapeHtmlAdm(l.price_label) : ''}</span>
+          <span>👤 ${escapeHtmlAdm(l.posted_by)}</span>
+          <span>Posted ${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
+          ${l.chat_count ? `<span class="trf-chats">💬 ${l.chat_count} chat${l.chat_count>1?'s':''} (stay with you)</span>` : ''}
+        </div>
+      </div>
+    </label>`;
+}
+
+function toggleTrfSelect(id, checked){
+  if(checked) _trfSelected.add(id); else _trfSelected.delete(id);
+  document.getElementById('trfSelCount').textContent = `(${_trfSelected.size} selected)`;
+  updateTrfButton();
+}
+
+function clearTrfAccount(){
+  if(!_trfAccount && !document.getElementById('trfAccount').innerHTML) return;
+  _trfAccount = null;
+  _trfQuery = null;
+  document.getElementById('trfAccount').innerHTML = '';
+  updateTrfButton();
+}
+
+function updateTrfButton(){
+  const btn = document.getElementById('trfGoBtn');
+  const n = _trfSelected.size;
+  btn.disabled = !(n && _trfAccount && !_trfAccount.suspended);
+  btn.textContent = _trfAccount
+    ? `🔁 Transfer ${n||''} listing${n===1?'':'s'} to ${_trfAccount.full_name}`.replace('  ',' ')
+    : '🔁 Transfer';
+}
+
+async function lookupTrfAccount(){
+  const phone = document.getElementById('trfPhone').value.trim();
+  const email = document.getElementById('trfEmail').value.trim();
+  const box = document.getElementById('trfAccount');
+  _trfAccount = null; _trfQuery = null; updateTrfButton();
+  if(!phone && !email){
+    box.innerHTML = '<div class="trf-card err">Enter the seller\'s phone number or email.</div>';
+    return;
+  }
+  const btn = document.getElementById('trfFindBtn');
+  btn.disabled = true;
+  box.innerHTML = '<div class="trf-card" style="color:var(--muted);">Searching…</div>';
+  try {
+    const data = await apiPost('/api/admin/handover/lookup', { phone, email });
+    _trfAccount = data.account;
+    _trfQuery = { phone, email };
+    const a = data.account;
+    box.innerHTML = `
+      <div class="trf-card">
+        <b>✅ ${escapeHtmlAdm(a.full_name)}</b>${a.suspended ? ' <span style="color:var(--red);font-weight:700;">· SUSPENDED — cannot receive listings</span>' : ''}<br>
+        ${a.phone_masked ? `📱 ${escapeHtmlAdm(a.phone_masked)} ` : ''}${a.email_masked ? `✉️ ${escapeHtmlAdm(a.email_masked)}` : ''}<br>
+        <span style="color:var(--muted);font-size:11.5px;">Matched by verified ${a.matched_by.map(escapeHtmlAdm).join(' + ')} · joined ${new Date(a.created_at).toLocaleDateString('en-IN')} · ${a.listing_count} listing(s) of their own</span>
+      </div>`;
+  } catch(e){
+    box.innerHTML = `<div class="trf-card err">${escapeHtmlAdm(e.message)}</div>`;
+  }
+  btn.disabled = false;
+  updateTrfButton();
+}
+
+async function transferListings(){
+  const ids = [..._trfSelected];
+  if(!ids.length || !_trfAccount) return;
+  const chats = _trfListings.filter(l => _trfSelected.has(l.id)).reduce((s,l)=>s+(l.chat_count||0), 0);
+  const chatNote = chats ? `\n\n${chats} existing chat(s) stay with you — tell those buyers the seller now owns the listing.` : '';
+  if(!confirm(`Move ${ids.length} listing(s) to ${_trfAccount.full_name}?\n\nThey will appear in the seller's My Listings and leave yours.${chatNote}`)) return;
+  const btn = document.getElementById('trfGoBtn');
+  btn.disabled = true;
+  try {
+    const data = await apiPost('/api/admin/handover/transfer', { listing_ids: ids, account_id: _trfAccount.id, ..._trfQuery });
+    toast(data.skipped ? `${data.message} ${data.skipped} skipped (no longer on an admin account).` : data.message);
+    document.getElementById('trfPhone').value = '';
+    document.getElementById('trfEmail').value = '';
+    document.getElementById('trfSelCount').textContent = '(0 selected)';
+    clearTrfAccount();
+    _trfLoaded = false;
+    loadTransferListings();
+  } catch(e){
+    toast('Error: '+e.message);
+    updateTrfButton();
   }
 }
 
