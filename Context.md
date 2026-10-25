@@ -10,7 +10,9 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-21 19:13 (UAE), checkpoint (**RELEASED: PR #26 `uat → main` merged (`982a73c`) — listing alert emails to new Zoho group `listings@mapit.co.in` (NEW / UPDATED / was live / FLAGGED), radius membership from the visible point (backend only — migration 019 DROPPED, no DB change), A1 lazy expiry + Renew, post form sections + step bar, A3 favicon/og-image, A4 ToS label. `smoke:prod` 14/14; WhatsApp preview shows new image (thumbnail crop logged). Vercel missed the push events → manual Create Deployment. Next: Arun's real listings Thu 22 Oct → 5-screen wizard + auto-title.**)
+- **Last updated:** 2026-10-25 08:46 (UAE), checkpoint (**Admin 🔁 Transfer tab built on `feat/admin-listing-transfer` (NOT pushed): move listings Nagesh/Arun post for sellers to the seller's own account once they join — exact VERIFIED phone/email match, server re-checks, audit row, chats stay with the admin. UAT suite `npm run uat:transfer` 20/20. Nagesh localhost click-test PASS → pushed, merged to uat (`58b15ab`), uat.mapit.co.in serves the tab, route 401 without login, `smoke:prod` 14/14. Next: PR `uat → main` (Nagesh/Arun sign-off).**)
+- **Last updated (previous):** 2026-10-24 12:59 (UAE), checkpoint (**RELEASED: PR #27 `uat → main` (`dc47fb5`) — Arun's pre-listing review + full audit → address = area name (privacy), latest-load-wins, /api rate limit 1000, Profile My location, welcome pinned button + no "The", og-image v3 (WhatsApp phone + Web OK), phone option removed, one-page Terms, no Beta. smoke 14/14. Prod had no label-style addresses; 14 UAT rows repaired. Chat pop-up designed (centred) + ON HOLD. Next: Arun's real listings → chat pop-up → wizard.**)
+- **Last updated (previous):** 2026-10-21 19:13- **Last updated:** 2026-10-21 19:13 (UAE), checkpoint (**RELEASED: PR #26 `uat → main` merged (`982a73c`) — listing alert emails to new Zoho group `listings@mapit.co.in` (NEW / UPDATED / was live / FLAGGED), radius membership from the visible point (backend only — migration 019 DROPPED, no DB change), A1 lazy expiry + Renew, post form sections + step bar, A3 favicon/og-image, A4 ToS label. `smoke:prod` 14/14; WhatsApp preview shows new image (thumbnail crop logged). Vercel missed the push events → manual Create Deployment. Next: Arun's real listings Thu 22 Oct → 5-screen wizard + auto-title.**)
 - **Last updated (previous):** 2026-10-20 19:32 (UAE), checkpoint (**Pre-Thursday polish day, all on uat (pushed, not on prod): A4 ToS label v1.2, A1 lazy listing expiry + Renew, A3 favicon/apple-touch-icon/og-image (new logo, drops "exact GPS pin" claim), `.env.example` cleanup, Post form numbered sections + step bar + map-controls overlap fix (Nagesh localhost + iPhone PASS). Arun starts real listings Thu 22 Oct. Decided: 5-screen posting wizard (+ auto title) after Arun's first listings; Remove-with-reason after launch with 9H. Next: migration 019 + PR Wed 21 Oct.**)
 - **Last updated (previous):** 2026-10-17 16:38 (UAE), checkpoint (**RELEASED: PR #25 `uat → main` merged (`afcc236`) — migration 018 scripts, escape helper, server distance from the display point (anti-trilateration), welcome page, chat safety, Explore + phone fixes, admin report photos, ToS v1.2 (Arun OK). Prod smoke 14/14, Sentry prod test PASS (info event, no email = by design; alert emails confirmed). Bypass secret rotated. Next: real listings on prod → Sunday 18 Oct announcement.**)
 - **Last updated (previous):** 2026-10-17 11:42 (UAE), checkpoint (**Saturday pre-launch polish, all on uat `45131cc` (smoke 14/14): Share Feedback on phones fixed (dvh + cascade), chat safety (banner, risky-message notes, Safety tips), pre-login welcome page (launch-video wording, logo pins + category chips, transparent logo), Explore distance fix (Arun). ToS v1.2 drafted on `docs/tos-v1.2` (`36ceebc`) — awaiting Arun. Found: server distance uses exact location (trilateration leak). Nothing new on main yet.**)
@@ -120,6 +122,10 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-25, Sunday) — Goal: admin 🔁 Transfer tab (assisted listings → seller's account), then back to the agreed order.** Nagesh + Arun post the first listings from their own accounts with sellers' details/photos. Decided: option A = manual transfer by an admin, no seller phone/email stored in the DB (a private sheet holds them, with consent date). Built as an 8th admin tile on `feat/admin-listing-transfer`; next = Nagesh localhost click-test → push → uat → PR.
+
+**NOW (2026-10-24 12:59, Saturday) — Goal: Arun posts the first real listings on production (all pre-listing fixes are live, PR #27).** Watch 🆕 alerts in listings@, approve within 4 h, check the public address is an area name, collect Arun's posting feedback. Then the centred chat pop-up (design agreed, on hold), then the 5-screen wizard + auto-title.
 
 **NOW (2026-10-24, Saturday) — Goal: Arun's pre-listing review (2 PDFs in C:devmapit) → full audit → Batch 1 fixes on `fix/pre-listing-audit` (9 commits, NOT pushed), then Nagesh localhost click-test → uat → PR → prod → Arun posts real listings.** Batch 2 = chat ask-for-number warning; Batch 3 = chat pop-up window (mockup first) before the friends & family announcement. Arun did NOT post on Thu 22 Oct — his review came first.
 
@@ -578,6 +584,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-24) RELEASED: PR #27 `uat → main` merged by Nagesh (`dc47fb5`)** — pre-listing fixes (address area names, latest-load-wins, /api rate limit 1000, Profile My location, welcome pinned button + no "The", og-image v3, phone option removed, one-page Terms, no Beta). Prod served the new page within seconds; `smoke:prod` 14/14; prod checks: /terms no names/nav + Last updated, /api limit 1000, og v3 200, /privacy → /terms#p1, no Beta, no phone option. ✅ WhatsApp preview (Nagesh's phone, 12:53): new og-image v3 with logo + "Geo-based marketplace" + title/description shows in full. First try showed only the bare-address fallback card (sent before the preview loaded / WhatsApp cache) — server checked fine as WhatsApp + facebookexternalhit UA. Tip: wait for the preview card before tapping Send. WhatsApp **Web** still showed the plain card (server identical for browser UA: 200, brotli, same tags) — WhatsApp Web builds previews in the sender's client and is less reliable; recipients see whatever card the sender's client made. Re-test: ✅ WhatsApp Web works too — just wait ~1 s for the logo card before sending. Arun can now post real listings.
 - ✅ **(2026-10-24) Pre-listing audit** — headless script (scratchpad, not committed) walked buyer + seller journeys at phone 390×844, laptop 1366×625, desktop 1920×950 (+ 1280×560 @150% welcome) on UAT via localhost (email/AI keys blanked for the audit server); throwaway accounts deleted by ID. Found: address privacy leak, dropped listing loads, rate limit too tight, chat off-screen on laptops, Arun's items confirmed. Before screenshots `docs/screenshots/session-9-pre-listing/before-*`.
 - ✅ **(2026-10-24) Batch 1 on `fix/pre-listing-audit` (from uat `3c5ad01`, not pushed), each item tested on UAT by script:**
   1. `6d579fc` **Public address = area name** (`src/utils/areaName.js`, Nominatim, from the fuzzed display point; "Koramangala 4th Block, Bengaluru 560034") — was "<seller's saved-location label> · Bangalore" ("Home · Bangalore") + another " · Bangalore" per edit. Client `address` ignored; PUT refreshes on pin/exact change and heals "·" rows. 5/5 API PASS. Repair script `scripts/maintenance/fix-listing-addresses.js` (UAT-only, dry run default) — 14 UAT rows listed; **applied 2026-10-24 with Nagesh's OK** (old → new values in the run output; re-check = 0 rows left).
@@ -1284,6 +1291,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **Pre-listing fixes (Batch 1)** | ✅ RELEASED PR #27 `dc47fb5` (2026-10-24), smoke 14/14 | `src/utils/areaName.js`, `src/routes/listings.js`, `src/server.js`, `src/utils/notifyListings.js`, `MapIt_MVP_v1.html`/`public/index.html`, `docs/legal/terms-privacy-draft2.html`, `public/og-image.png`, `public/user-guide.html` | 9 items + Beta; per-item UAT scripts PASS |
+| **Chat pop-up window (Batch 3)** | ⏸ ON HOLD (Nagesh) — design agreed (centred), mockups in `docs/screenshots/session-9-chat-popup/` | — (branch `feat/chat-popup` local, no code) | Starts after Arun's listings; Batch 2 warning folds in |
 | **Lazy listing expiry + Renew (A1)** | ✅ uat `5397343` (2026-10-20); prod with next PR | `src/routes/listings.js`, `MapIt_MVP_v1.html` / `public/index.html` | Status stays `active`; 9H cron will flip to `expired` |
 | **Favicon / og-image (A3)** | ✅ uat `ca5e230`; prod with next PR | `public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `og-image.png`, HTML head | WhatsApp preview check on prod after PR |
 | **Post form sections + step bar** | ✅ uat `20a9028`; localhost + iPhone PASS | `MapIt_MVP_v1.html` / `public/index.html` | Foundation for the wizard |
@@ -1476,6 +1485,16 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+src/utils/areaName.js — 2026-10-24 (NEW): Nominatim reverse geocode → "<neighbourhood>, <city> <PIN>"; never throws, falls back to "Bengaluru".
+src/routes/listings.js — 2026-10-24: address server-derived from the display point (client address ignored; PUT refreshes on pin/exact change, heals "·"); `SHOW_PHONE = 'never'` on create/edit.
+src/server.js — 2026-10-24: rate limiter `/api/` only, 1000/15 min; /privacy comment (kept for external refs).
+src/utils/notifyListings.js — 2026-10-24: dropped "Phone visibility" from changed-field labels.
+scripts/maintenance/fix-listing-addresses.js — 2026-10-24 (NEW): UAT-only address repair, dry run default (applied: 14 rows).
+MapIt_MVP_v1.html / public/index.html — 2026-10-24: latest-load-wins `loadListings()`, Profile "My location", welcome short-screen sticky CTA + tagline, og `?v=3`, Contact section removed, Terms-only links, select padding + "Household", Beta tag removed, no client `address`.
+docs/legal/terms-privacy-draft2.html — 2026-10-24: no names/version/nav, plain operator name, "Last updated 17 October 2026", favicon.
+docs/other/og-image.html + public/og-image.png — 2026-10-24 (NEW source): og-image v3, centre 630×630 safe zone.
+public/user-guide.html, public/guide/legal.webp, shots.js — 2026-10-24: Terms-only wording, retaken legal shot, favicon.
+docs/screenshots/session-9-pre-listing/, session-9-chat-popup/ — 2026-10-24: before/after shots + chat mockups.
 src/utils/notifyListings.js — 2026-10-21 (NEW): `moderateAndAlert()` (AI check → persist verdict → alert), `sendListingAlert()` (NEW/UPDATED/was live/FLAGGED subjects, no seller PII, per-env admin link), `changedFields()`.
 src/routes/listings.js — 2026-10-21: POST/PUT call `waitUntil(moderateAndAlert(...))`; PUT selects full row (before/after); `FUZZ_MARGIN_M` = 500, RPC radius + margin, filter on visible point.
 src/utils/geo.js — 2026-10-21: comment tying max fuzz (400 m) to `FUZZ_MARGIN_M`.
@@ -1834,10 +1853,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-10-25) Admin Pending + Cleanup tabs show the price as "₹ ₹1.85Cr"** (`₹ ${price_label||fmtPrice(price)}` — fmtPrice already adds ₹, and a price_label like "per month" replaces the price). Fixed in the new Transfer tab only; small out-of-scope fix later.
+- **ℹ️ (2026-10-25) Transfer email lookup uses `auth.admin.listUsers` (pages of 1000, max 20 pages)** — fine to a few thousand users; then replace with a service-role-only SQL function (migration). Comment in `src/routes/admin.js`.
 - **✅ (2026-10-24) Production address check — "No rows returned"** (Nagesh, read-only, PROD SQL Editor): no live listing carries a label-style address, so no production data repair is needed; the server fix prevents new ones. UAT: 14 rows repaired (`fix-listing-addresses.js --apply`), 0 left.
 - **🟠 (2026-10-24 audit) Chat is off-screen on laptops** (opens below the listing in the left panel; ~2 lines on phones) → Batch 3 pop-up chat (Arun's request a). **Chat warning gap:** "send me your mobile number" gets no note (typed numbers do) → Batch 2.
 - **ℹ️ (2026-10-24 audit, retest by hand):** grey map tiles after 10 km on phone (likely slow tiles); My Listings once stuck on "Loading…" after submit (overlapping refresh from the script). UAT seed "…House for Sale" listed as Rent ₹1.25Cr/mo (test data; a "rent looks high" hint could help later).
-- **ℹ️ (2026-10-21) WhatsApp link preview: new og-image + text live, but WhatsApp's small square thumbnail crops the centre of the 1200×630 image → "MapIt" title cut off.** Meta tags correct (1200×630, 108 KB). After launch: redesign with logo + name inside the central 630×630 safe zone, bump `og:image?v=3`.
+- **✅ RESOLVED 2026-10-24 (og-image v3, centre safe zone, PR #27) — ℹ️ (2026-10-21) WhatsApp link preview: new og-image + text live, but WhatsApp's small square thumbnail crops the centre of the 1200×630 image → "MapIt" title cut off.** Meta tags correct (1200×630, 108 KB). After launch: redesign with logo + name inside the central 630×630 safe zone, bump `og:image?v=3`.
 - **💡 (2026-10-21, Nagesh) Search box doesn't filter My Listings** — `renderMyAds()` ignores `ST.q` (never supported, not a regression). ~20 min; optional, with the wizard.
 - **🟡 (2026-10-20) `GET /api/listings/:id` returns any status (pending/rejected/expired) to any logged-in user who has the ID** — UUIDs are unguessable, so low risk; fix with 9H (hide non-live listings from non-owners/non-admins).
 - **ℹ️ (2026-10-20) Saved tab still shows expired listings** — acceptable until 9H.
@@ -2023,9 +2044,18 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-10-25, Nagesh) Assisted listings → seller handover = option A, manual admin transfer.** Rejected: `seller_email`/`seller_phone` columns on `listings` (the listings route serves `select('*')` to every browser → would leak), automatic claim at signup (option B, later if assisted posting becomes regular), claim links (C). Built as admin 🔁 Transfer: match on VERIFIED phone (`phone_verified`) or confirmed email only (anyone can sign up with someone else's unconfirmed email); exact match, no search (no user directory, Rule 8); only admin-owned listings move; conversations are NOT moved (the admin wrote those messages); `audit_log` event `listing_transfer` with IDs only. No undo button — undo by SQL from the audit row. Seller contact + consent kept in a private sheet, not in MapIt.
 
 | Decision | Rationale |
 |----------|-----------|
+| **Public listing address = server-derived area name from the display point (2026-10-24, James; Nagesh OK)** | Client sent the seller's private location label ("Home · Bangalore"); Rule 8 → server decides; display point (not exact) so the area can't hint at the fuzz side; PIN code disambiguates repeated names |
+| **Latest listings request wins (2026-10-24)** | Early-return dropped newer loads → stale list; sequence counter beats queueing (slower) or AbortController (more plumbing) |
+| **Rate limit /api/ only at 1000/15 min/IP (2026-10-24)** | ~90 requests per session; shared IPs (CGNAT) were blocked; login/OTP keep strict limiters; Vercel Firewall later if abused (cost check first) |
+| **Seller phone numbers never shown (2026-10-24, Nagesh + Arun)** | Chat-only contact; server forces `never`; column kept, no migration (reversible) |
+| **One-page Terms, no names/version, "Last updated" kept (2026-10-24, Arun; James default)** | Privacy §14 promises notice of changes; `/privacy` redirect kept for Google consent / WhatsApp profile links |
+| **No "Beta" (2026-10-24, Nagesh)** | MapIt launches as the real service |
+| **Chat pop-up opens CENTRED with dimmed backdrop; backdrop click doesn't close; minimise → pill; phone full screen (2026-10-24, Nagesh)** | Focus on the conversation; protects half-typed messages; pill keeps map browsing possible |
+| **Order (2026-10-24, Nagesh): Arun's listings → chat pop-up → 5-screen wizard** | Real posting feedback shapes the next builds |
 | **Radius membership fixed in the backend, migration 019 dropped (2026-10-21, James; Nagesh to confirm)** | Route already has `visiblePoint()` + haversine distance; over-fetching radius + 500 m from the same RPC/GiST index and filtering on the visible point gives the same privacy result with no prod DB change, no backfill (fallback fuzz), one place for owner/exact rules, rollback = git revert. Cost: a ~500 m ring of extra candidate rows. Gotcha: margin must exceed max fuzz (400 m) |
 | **Listing alerts → shared Zoho group `listings@`, sent by the backend via Resend (2026-10-21, Nagesh)** | New + edited listings both go to `pending` and the app promises "live within 4 hours" — nothing told admins. Group (not alias on contact-us@) keeps alerts out of the grievance inbox; Streams lets whoever is free take it. Backend fire-and-forget (like `notifySeller.js`), sent after AI moderation so the mail shows clean/flagged; no seller PII in the mail (Rule 8); env `LISTINGS_NOTIFY_EMAIL` (prod = listings@, UAT/local = empty or Nagesh). DB webhook rejected (extra Edge Function + secrets) |
 | **Lazy expiry now, cron later (2026-10-20)** | Read-time `isLive()` filter = no schema/cron/cost; 9H adds status flip + emails without undoing it |
@@ -2409,12 +2439,16 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
+**⬅ NOW (2026-10-25):** admin 🔁 Transfer (`feat/admin-listing-transfer`) → ✅ Nagesh localhost click-test PASS → ✅ pushed + merged to uat (`58b15ab`) → ✅ uat check (tab live, 401 without login) → **next:** PR `uat → main` → `smoke:prod`. Screenshots: `docs/screenshots/session-9-admin-transfer/` (before-admin-tiles-*, after-admin-tiles-*, after-transfer-*; drawn with demo data, nothing in the DB). Then the agreed order below.
+
+**⬅ AGREED ORDER (Nagesh, 2026-10-24, end of session):** (1) wait for Arun's real listings on prod (watch 🆕 alerts in listings@, approve within 4 h, check area-name addresses, ask what felt slow) → (2) Batch 3 chat pop-up (centred design below) → (3) 5-screen posting wizard + auto-title. Batch 2 (ask-for-number warning) folds into the chat window work.
+
 **⬅ NOW (2026-10-24) — ordered:**
 1. ✅ Nagesh localhost click-test PASS (header, welcome, posting, Profile, quick taps, Terms) → branch pushed → merged to uat (`c412505`, + `1102234` name removed from a Terms CSS comment) → uat.mapit.co.in live within ~30 s; `smoke:prod` 14/14; uat checks: /api limit 1000, static unlimited, og v3, Terms source has no names. **Next: Arun checks uat on his laptop → PR `uat → main`.** (old: localhost click-test of Batch 1 (`npm run dev`; note: posting sends a real 🆕 alert to listings@) → OK → push branch → merge to uat → uat.mapit.co.in check (Arun: welcome on his laptop, Terms, Profile) → PR `uat → main` → `smoke:prod` → WhatsApp preview (og v3).
 2. ✅ Prod address query: no rows → no prod repair. ✅ UAT 14 addresses repaired.
 3. **Batch 2:** chat ask-for-number phrases + pre-send "looks like a phone number" check (~1 h).
 4. **Arun posts real listings** once Batch 1 is on prod.
-5. **Batch 3:** chat pop-up window — mockup first (~½ day), before the friends & family announcement.
+5. **⏸ Batch 3 ON HOLD (Nagesh, 2026-10-24):** chat pop-up window. Mockups done: `docs/screenshots/session-9-chat-popup/mockup-*.jpg` (drawn into the real app; nothing saved). **Agreed design:** window opens **CENTRED** (Nagesh) with a light dimmed backdrop (backdrop click does NOT close — protects a half-typed message; close = ✕ / Esc / phone back); header = other person's name + "Seller"/"Buyer" (NO "usually replies…" — not measured), — minimise → bottom-right pill "💬 Chat with <name> ①" (unread count; sits left of the zoom buttons), ✕ close; listing strip (photo, title, price, View listing ›); safety line + 🛡 Safety tips; 14 px messages; quick replies; phone = full screen with ‹ Back. Opens from Chat with seller, Inbox (straight into chat) and after I'm interested. Stays open while browsing; one chat at a time. Build notes: today `#chatBox` is rendered inside the listing detail (`renderSidebar`), and `selListing()`/`closeDetail()` unsubscribe the chat — move it to a global window, open/close Realtime exactly once. Test on UAT with two accounts (prod has no listings yet). Branch `feat/chat-popup` exists locally (= uat, no code yet). ~½ day.
 6. Then: 5-screen wizard + auto-title; dashboard items; after-launch list below.
 
 **⬅ NOW (2026-10-21 19:13) — ordered:**

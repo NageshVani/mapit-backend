@@ -7,7 +7,7 @@
 // failure must never fail the request it's attached to.
 const { supabaseAdmin } = require('../config/supabase');
 
-// eventType: 'signup' | 'login' | 'listing_created' | 'message_sent' | 'phone_verified'
+// eventType: 'signup' | 'login' | 'listing_created' | 'message_sent' | 'phone_verified' | 'listing_transfer'
 async function logAuditEvent(eventType, req, userId, metadata = null) {
   try {
     await supabaseAdmin.from('audit_log').insert({
