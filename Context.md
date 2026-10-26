@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-25 10:44 (UAE), checkpoint (**RELEASED: PR #28 `uat → main` (`9a2af82`) — admin 🔁 Transfer tab (assisted listings → seller's account, verified phone/email only). www.mapit.co.in/admin serves the tab, route 401 without login, `smoke:prod` 14/14 (one transient "fetch failed" run, re-run clean). Next: Arun's real listings → chat pop-up → wizard.**)
+- **Last updated:** 2026-10-25 13:06 (UAE), checkpoint (**Planning only, no code: unbranded WhatsApp seller checklist drafted; NEW rule = no "MapIt" name in pre-launch outreach until prod has enough listings; self-fill intake form (Google Sheet via Apps Script, owner mapit.backend@gmail.com) ⏸ pending Nagesh + Arun on hosting; invite-link option C rejected; chat pop-up moved after enough listings; seller tips + "Write it for me" description + quick-add chips added to the wizard scope. Next: Arun's real listings on prod.**)
+- **Last updated (previous):** 2026-10-25 10:44 (UAE), checkpoint (**RELEASED: PR #28 `uat → main` (`9a2af82`) — admin 🔁 Transfer tab (assisted listings → seller's account, verified phone/email only). www.mapit.co.in/admin serves the tab, route 401 without login, `smoke:prod` 14/14 (one transient "fetch failed" run, re-run clean). Next: Arun's real listings → chat pop-up → wizard.**)
 - **Last updated (previous):** 2026-10-25 08:46 (UAE), checkpoint (**Admin 🔁 Transfer tab built on `feat/admin-listing-transfer` (NOT pushed): move listings Nagesh/Arun post for sellers to the seller's own account once they join — exact VERIFIED phone/email match, server re-checks, audit row, chats stay with the admin. UAT suite `npm run uat:transfer` 20/20. Nagesh localhost click-test PASS → pushed, merged to uat (`58b15ab`), uat.mapit.co.in serves the tab, route 401 without login, `smoke:prod` 14/14. Next: PR `uat → main` (Nagesh/Arun sign-off).**)
 - **Last updated (previous):** 2026-10-24 12:59 (UAE), checkpoint (**RELEASED: PR #27 `uat → main` (`dc47fb5`) — Arun's pre-listing review + full audit → address = area name (privacy), latest-load-wins, /api rate limit 1000, Profile My location, welcome pinned button + no "The", og-image v3 (WhatsApp phone + Web OK), phone option removed, one-page Terms, no Beta. smoke 14/14. Prod had no label-style addresses; 14 UAT rows repaired. Chat pop-up designed (centred) + ON HOLD. Next: Arun's real listings → chat pop-up → wizard.**)
 - **Last updated (previous):** 2026-10-21 19:13- **Last updated:** 2026-10-21 19:13 (UAE), checkpoint (**RELEASED: PR #26 `uat → main` merged (`982a73c`) — listing alert emails to new Zoho group `listings@mapit.co.in` (NEW / UPDATED / was live / FLAGGED), radius membership from the visible point (backend only — migration 019 DROPPED, no DB change), A1 lazy expiry + Renew, post form sections + step bar, A3 favicon/og-image, A4 ToS label. `smoke:prod` 14/14; WhatsApp preview shows new image (thumbnail crop logged). Vercel missed the push events → manual Create Deployment. Next: Arun's real listings Thu 22 Oct → 5-screen wizard + auto-title.**)
@@ -123,6 +124,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-25 13:06, Sunday) — Goal: fill production with real listings before any public mention; Arun and Nagesh proxy-post for friends & family using the unbranded WhatsApp checklist** (no "MapIt" name until there are enough listings), then Transfer listings when sellers join. ⏸ Self-fill intake form waits on the Nagesh + Arun hosting decision. After enough listings: 5-screen wizard (+ auto-title, tips, auto-description, chips), then chat pop-up.
 
 **NOW (2026-10-25 10:44, Sunday) — Goal: Arun posts the first real listings on production; the admin 🔁 Transfer tab is LIVE (PR #28 `9a2af82`) for handing assisted listings to sellers once they join.** Watch 🆕 alerts in listings@, approve within 4 h, check area-name addresses, keep seller phone/email/consent in the private sheet; transfer when a seller signs up and verifies. Then the centred chat pop-up, then the 5-screen wizard + auto-title.
 
@@ -585,6 +588,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-25 13:06) Unbranded WhatsApp seller checklist drafted** (in chat, not a repo file): category/subcategory, price, key details per subcategory (from `LISTING_FIELDS`), up to 5 photos (Plots optional), WhatsApp "current location" pin, short description, "I agree" consent that promises the platform name + link before go-live.
+- ✅ **(2026-10-25 13:06) Seller intake options compared:** A WhatsApp checklist (in use now), B Google Form (rejected: no map pin, Google sign-in for photos), C invite-link page on mapit.co.in (rejected by Nagesh), self-fill page → Google Sheet via Apps Script (⏸ pending decision).
+- ✅ **(2026-10-25 13:06) Wizard scope extended** (logged in Next Steps): seller tips per subcategory, template-based "✨ Write it for me" description, quick-add chips.
+- ✅ **(2026-10-25 13:06) Memory saved:** `project_stealth_brand_prelaunch.md` (no MapIt name in pre-launch outreach).
 - ✅ **(2026-10-25) RELEASED: PR #28 `uat → main` (`9a2af82`) — admin 🔁 Transfer tab.** www.mapit.co.in/admin serves it, route 401 without login, `smoke:prod` 14/14.
 - ✅ **(2026-10-25) Transfer tab built** on `feat/admin-listing-transfer` (`58b15ab`): 3 admin routes (list admin-owned listings, exact verified phone/email lookup → masked card, transfer with server re-match), 8th tile, 4-column tile grid, audit `listing_transfer` (IDs only).
 - ✅ **(2026-10-25) UAT suite `npm run uat:transfer` 20/20** (unverified email blocked, 2-account conflict 409, non-admin 403, non-admin-owned listing skipped, DB + audit + My Listings checked; all test data deleted by ID). Nagesh localhost click-test PASS; Nagesh checked uat admin.
@@ -1296,6 +1303,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **Self-fill seller intake form (Google Sheet)** | ⏸ Awaiting Nagesh + Arun hosting decision (2026-10-25) | none yet | Apps Script `/exec` page (test GPS first) or neutral static host; owner mapit.backend@gmail.com; no MapIt name; no Supabase change; ~½ day |
+| **Real listings on prod (proxy posting)** | 🔄 Ongoing (2026-10-25) | none | Unbranded WhatsApp checklist → Arun/Nagesh post → approve within 4 h → Transfer when the seller joins |
 | **Admin 🔁 Transfer tab** | ✅ RELEASED PR #28 `9a2af82` (2026-10-25), smoke 14/14 | `src/routes/admin.js`, `public/admin.html`, `src/utils/auditLog.js`, `scripts/uat/admin-transfer.suite.js`, `package.json` | Option A manual handover; chats stay with admin; no migration |
 | **Pre-listing fixes (Batch 1)** | ✅ RELEASED PR #27 `dc47fb5` (2026-10-24), smoke 14/14 | `src/utils/areaName.js`, `src/routes/listings.js`, `src/server.js`, `src/utils/notifyListings.js`, `MapIt_MVP_v1.html`/`public/index.html`, `docs/legal/terms-privacy-draft2.html`, `public/og-image.png`, `public/user-guide.html` | 9 items + Beta; per-item UAT scripts PASS |
 | **Chat pop-up window (Batch 3)** | ⏸ ON HOLD (Nagesh) — design agreed (centred), mockups in `docs/screenshots/session-9-chat-popup/` | — (branch `feat/chat-popup` local, no code) | Starts after Arun's listings; Batch 2 warning folds in |
@@ -1491,6 +1500,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+CONTEXT.md — 2026-10-25 13:06: intake-form pending decision, wizard scope additions (tips, auto-description, chips), no-brand pre-launch rule, chat pop-up moved after enough listings. (No code files changed.)
 src/routes/admin.js — 2026-10-25: `/handover/listings`, `/handover/lookup`, `/handover/transfer` (verified-only match via profiles + auth.admin.listUsers, masked output, re-match on transfer, admin-owned guard, audit row).
 public/admin.html — 2026-10-25: 🔁 Transfer tile + section (tick listings → find account → transfer), tile grid 6 → 4 columns, `trf-*` CSS.
 src/utils/auditLog.js — 2026-10-25: event list comment + `listing_transfer`.
@@ -1864,6 +1874,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **⏸ (2026-10-25) Self-fill intake form hosting undecided** (Nagesh discussing with Arun): A = Apps Script `/exec` (risk: GPS "Use my location" may be blocked inside Google's iframe; test first), B = neutral static host. Either way the form copies `LISTING_FIELDS` → drift risk; comment in both places.
+- **ℹ️ (2026-10-25) Consent wording pre-launch:** sellers agree without knowing the platform name → at the announcement send each seller the link and re-confirm (DPDP "informed consent").
 - **ℹ️ (2026-10-25) Admin Pending + Cleanup tabs show the price as "₹ ₹1.85Cr"** (`₹ ${price_label||fmtPrice(price)}` — fmtPrice already adds ₹, and a price_label like "per month" replaces the price). Fixed in the new Transfer tab only; small out-of-scope fix later.
 - **ℹ️ (2026-10-25) Transfer email lookup uses `auth.admin.listUsers` (pages of 1000, max 20 pages)** — fine to a few thousand users; then replace with a service-role-only SQL function (migration). Comment in `src/routes/admin.js`.
 - **✅ (2026-10-24) Production address check — "No rows returned"** (Nagesh, read-only, PROD SQL Editor): no live listing carries a label-style address, so no production data repair is needed; the server fix prevents new ones. UAT: 14 rows repaired (`fix-listing-addresses.js --apply`), 0 left.
@@ -2055,6 +2067,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-10-25, Nagesh) No "MapIt" name/domain in pre-launch outreach** (WhatsApp texts, intake form, Sheet) until prod has enough listings, because the first visitor must already see listings. Consent wording promises the name + link before go-live; sellers re-confirm at the announcement. Chat pop-up waits until enough listings are posted.
+- **(2026-10-25, Nagesh) Seller tips + auto-description + quick-add chips ship WITH the 5-screen wizard** (not as a quick win on today's form). Auto-description is template-based, not AI: AI could invent claims (e.g. "invoice available") in the seller's name and costs per listing.
 - **(2026-10-25, Nagesh) Assisted listings → seller handover = option A, manual admin transfer.** Rejected: `seller_email`/`seller_phone` columns on `listings` (the listings route serves `select('*')` to every browser → would leak), automatic claim at signup (option B, later if assisted posting becomes regular), claim links (C). Built as admin 🔁 Transfer: match on VERIFIED phone (`phone_verified`) or confirmed email only (anyone can sign up with someone else's unconfirmed email); exact match, no search (no user directory, Rule 8); only admin-owned listings move; conversations are NOT moved (the admin wrote those messages); `audit_log` event `listing_transfer` with IDs only. No undo button — undo by SQL from the audit row. Seller contact + consent kept in a private sheet, not in MapIt.
 
 | Decision | Rationale |
@@ -2449,6 +2463,21 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-25 13:06) — ordered:**
+1. **Real listings on prod:** proxy-post with the unbranded WhatsApp checklist → 🆕 alert in listings@ → approve within 4 h → check the area-name address → seller contact + consent in the private sheet → Transfer when the seller signs up and verifies.
+2. **Intake form decision** (Nagesh + Arun): if go → build on its own branch (Apps Script, GPS test first), no MapIt name.
+3. **5-screen wizard + auto-title + seller tips + "✨ Write it for me" description + quick-add chips** (one branch), after enough listings.
+4. **Chat pop-up** (centred design, + Batch 2 ask-for-number warning) after enough listings.
+5. Small fixes any time: admin "₹ ₹" price in Pending/Cleanup; dashboard items (remove `SUPABASE_DB_PASSWORD` from Vercel, Sentry Gmail forward + uptime monitor, Arun Vercel Viewer seat).
+
+**⬅ PENDING DECISION (2026-10-25, Nagesh):** (a) **Self-fill seller intake form**: friends fill category/fields/photos/location themselves → row in a Google Sheet + photos in Drive (Google Apps Script), owner `mapit.backend@gmail.com`, NO Supabase change. **No "MapIt" name anywhere** (page, URL, Sheet, Drive, script) until prod has enough listings. Hosting: A = Apps Script `/exec` page (test GPS first) or B = neutral static host. ⏸ Nagesh discusses the static page with Arun, then reverts. Meanwhile proxy posting uses the unbranded WhatsApp checklist (James, 2026-10-25). Option C (invite-link intake on mapit.co.in) REJECTED. (b) **Chat pop-up moved AFTER enough listings are posted** (Nagesh).
+
+**⬅ ADDED TO THE 5-SCREEN WIZARD SCOPE (2026-10-25, Nagesh): build all together with the wizard + auto-title, one branch:**
+1. **Seller tips per subcategory**: collapsible "💡 Tips for more responses" near the description; config map `LISTING_TIPS` beside `LISTING_FIELDS`; 4–5 points max each (e.g. Cars: invoice, service records, insurance, odometer photo; Apartment: society, amenities, metro/school; Electronics: box + bill, warranty). Every category: "don't put your phone number in the description".
+2. **"✨ Write it for me" auto-description**: rule-based templates from the entered details (NOT AI: cost + invented facts); suggest-don't-overwrite (fill only when empty, otherwise confirm); never include the address/pin, only the area name.
+3. **Quick-add chips per subcategory** (`Original invoice`, `Under warranty`, `Service records`, `Single owner`…): a tap appends that line to the description, so the seller confirms facts only they know.
+Frontend config only: no DB, backend or cost change. Reuse the tips text in the self-fill intake form if it is built.
 
 **⬅ ✅ RELEASED (2026-10-25, PR #28 `9a2af82`, smoke 14/14):** admin 🔁 Transfer (`feat/admin-listing-transfer`) → ✅ Nagesh localhost click-test PASS → ✅ pushed + merged to uat (`58b15ab`) → ✅ uat check (tab live, 401 without login) → **next:** PR `uat → main` → `smoke:prod`. Screenshots: `docs/screenshots/session-9-admin-transfer/` (before-admin-tiles-*, after-admin-tiles-*, after-transfer-*; drawn with demo data, nothing in the DB). Then the agreed order below.
 
