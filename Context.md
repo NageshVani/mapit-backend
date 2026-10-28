@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-25 13:06 (UAE), checkpoint (**Planning only, no code: unbranded WhatsApp seller checklist drafted; NEW rule = no "MapIt" name in pre-launch outreach until prod has enough listings; self-fill intake form (Google Sheet via Apps Script, owner mapit.backend@gmail.com) ⏸ pending Nagesh + Arun on hosting; invite-link option C rejected; chat pop-up moved after enough listings; seller tips + "Write it for me" description + quick-add chips added to the wizard scope. Next: Arun's real listings on prod.**)
+- **Last updated:** 2026-10-26 19:50 (UAE), checkpoint (**STRATEGY CHANGE: mapit.co.in goes PUBLIC now (stealth seeding + "no MapIt name" rule ended). Session 9L started: dedicated mobile-first review page `/review` for approvers (Nagesh, Arun + both wives; hires later). Plan + draft migration 019 committed on `feat/session-9l-review-queue` (`e67326d`, NOT pushed, NOT run). Decisions D1–D5 taken; PROD UNTOUCHED until UAT test + sign-off. Next: Nagesh runs 019 on UAT → backend.**)
+- **Last updated (previous):** 2026-10-25 13:06 (UAE), checkpoint (**Planning only, no code: unbranded WhatsApp seller checklist drafted; NEW rule = no "MapIt" name in pre-launch outreach until prod has enough listings; self-fill intake form (Google Sheet via Apps Script, owner mapit.backend@gmail.com) ⏸ pending Nagesh + Arun on hosting; invite-link option C rejected; chat pop-up moved after enough listings; seller tips + "Write it for me" description + quick-add chips added to the wizard scope. Next: Arun's real listings on prod.**)
 - **Last updated (previous):** 2026-10-25 10:44 (UAE), checkpoint (**RELEASED: PR #28 `uat → main` (`9a2af82`) — admin 🔁 Transfer tab (assisted listings → seller's account, verified phone/email only). www.mapit.co.in/admin serves the tab, route 401 without login, `smoke:prod` 14/14 (one transient "fetch failed" run, re-run clean). Next: Arun's real listings → chat pop-up → wizard.**)
 - **Last updated (previous):** 2026-10-25 08:46 (UAE), checkpoint (**Admin 🔁 Transfer tab built on `feat/admin-listing-transfer` (NOT pushed): move listings Nagesh/Arun post for sellers to the seller's own account once they join — exact VERIFIED phone/email match, server re-checks, audit row, chats stay with the admin. UAT suite `npm run uat:transfer` 20/20. Nagesh localhost click-test PASS → pushed, merged to uat (`58b15ab`), uat.mapit.co.in serves the tab, route 401 without login, `smoke:prod` 14/14. Next: PR `uat → main` (Nagesh/Arun sign-off).**)
 - **Last updated (previous):** 2026-10-24 12:59 (UAE), checkpoint (**RELEASED: PR #27 `uat → main` (`dc47fb5`) — Arun's pre-listing review + full audit → address = area name (privacy), latest-load-wins, /api rate limit 1000, Profile My location, welcome pinned button + no "The", og-image v3 (WhatsApp phone + Web OK), phone option removed, one-page Terms, no Beta. smoke 14/14. Prod had no label-style addresses; 14 UAT rows repaired. Chat pop-up designed (centred) + ON HOLD. Next: Arun's real listings → chat pop-up → wizard.**)
@@ -124,6 +125,10 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-28, Wednesday) — Goal: Feedback Release 1** (first real listing + Arun's feedback, `fix/feedback-01`): FB-01 Bangalore tag, FB-02 line breaks, FB-03 half-BHK, FB-04 PG (rent only), FB-05 "listing is live" email, FB-06 expiry off, + Terms wording. All built + tested; FB-01/02/03/05/06 Nagesh localhost PASS; FB-04 click-test pending → push to uat → Arun check → PR `uat → main`. Session 9L continues in parallel (Nagesh runs 019 on UAT).
+
+**(2026-10-26 19:50, Monday) — Goal: Session 9L — Listing Review Queue.** MapIt is released to the public, so listing approval moves from the admin page to its own mobile-first page `/review` with its own approver sign-up/sign-in (email + strong password + email OTP; access only after an admin activates), one-listing-at-a-time queue with 5-min claims (multi-approver safe), big Approve / Reject (+ reason) buttons, auto-next until empty. Plan: `docs/technical/review-queue-plan.md`. **Production untouched** (no 019, no code) until UAT test + Nagesh/Arun sign-off; prod keeps today's admin Pending tab.
 
 **NOW (2026-10-25 13:06, Sunday) — Goal: fill production with real listings before any public mention; Arun and Nagesh proxy-post for friends & family using the unbranded WhatsApp checklist** (no "MapIt" name until there are enough listings), then Transfer listings when sellers join. ⏸ Self-fill intake form waits on the Nagesh + Arun hosting decision. After enough listings: 5-screen wizard (+ auto-title, tips, auto-description, chips), then chat pop-up.
 
@@ -588,6 +593,22 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-28) First real listing on production 🎉** + first feedback (seller + Arun, `First Feedback 28Oct2026.txt`) triaged into FB-01…FB-06: all small, no migration, no conflict with 9L → shipped first as Feedback Release 1 (Nagesh).
+- ✅ **(2026-10-28) Feedback Release 1 on `fix/feedback-01`** (from uat `e2dd9bb`, not pushed), one commit per item:
+  1. `a5f91b7` **FB-02 line breaks**: `.ld-desc` + admin cards `white-space:pre-wrap`; alert email `\n→<br>` after escaping; `cleanDescription()` on POST + PUT (CRLF→LF, 3+ newlines→1 blank line, trim). 7/7 unit + API round-trip PASS.
+  2. `50d9e71` **FB-03 BHK**: shared `BHK_OPTIONS` (1, 1.5 … 4.5, 4+); `4+ BHK` kept so old listings prefill on edit.
+  3. `db071a7` **FB-01 city tag**: "📍 Bangalore" pill beside the logo (`#cityTag` = the one place a future city picker updates).
+  4. `e768b13` **FB-06 expiry off**: `LISTING_EXPIRY_ENABLED=false` in new `src/config/listingRules.js`, exposed in `/api/config.listingExpiry`; browse ignores `expires_at`; admin Cleanup "stale" empty; My Listings hides "Expires in"/Renew; User Guide wording. `expires_at` still written. Test: past-date active listing visible PASS. UAT: 4 seed listings past expiry reappeared (expected). **Prod read-only check (Nagesh): 0 active listings past expiry.**
+  5. `76ad1f2` **FB-05 "✅ Your listing is live" email**: `notifySellerListingLive()` in `notifySeller.js`, `waitUntil` from `PUT /:id/approve` (also re-approval after edit); per-env link `#listing-<id>`; phone-only sellers skipped; never throws; logs listing ID only. 8/8 (stubbed sender).
+  6. `11c6803` **FB-04 PG** (rent only): fields agreed by Nagesh (rent per bed = `total_price` id, sharing Single/Double/Triple/Dormitory, PG for, meals, food type, furnishing, deposit, beds available, amenities, notice period, available from); form ticks Rent + greys Sell + hint; Meals=No locks Food Type; server `enforceRentOnly()` on POST + PUT. 6/6 unit + 8/8 API PASS (quiet test server :3002, no emails/AI).
+  7. `3d91c24` **Terms** (Nagesh-approved wording): "a listing … stays active until you mark it sold or delete it. We may introduce an expiry period later, with notice."; Last updated 28 October 2026.
+- ✅ **(2026-10-28) Screenshots** `docs/screenshots/session-9-feedback-01/`: before-{header,description,mylistings}-{phone,laptop}, before-post-{subcategories,bhk}-phone; after-* same + after-post-pg-phone, after-post-pg-meals-no-phone. Script in scratchpad (not committed), modelled on `scripts/guide-shots.js`.
+- ✅ **(2026-10-28) Nagesh localhost click-test PASS** for FB-01/02/03/05/06 (real "is live" email received).
+- ✅ **(2026-10-26 19:50) Strategy change (Nagesh):** mapit.co.in released to the public now; stealth seeding, unbranded checklist and self-fill intake-form plans superseded. Memory `project_stealth_brand_prelaunch.md` marked SUPERSEDED.
+- ✅ **(2026-10-26 19:50) Session 9L plan written:** `docs/technical/review-queue-plan.md` — architecture (work queue with leases + conditional update), access model, migration 019, API `/api/review/*`, phone layout, 6-step build order (~10–11 h, 2 sittings), risks.
+- ✅ **(2026-10-26 19:50) Code check findings:** admin "Remove" hard-deletes pending listings; `/pending/all` gives everyone the full list (duplicate work); approve has no "still pending" check; `listings.status 'rejected'` + `rejection_reason` already exist, unused; token never refreshed (1 h sign-out).
+- ✅ **(2026-10-26 19:50) Draft migration 019 + rollback written** (NOT run): `staff_members`, `listings.review_claimed_by/_until`, `listing_reviews`, pending-queue partial index, `claim_next_pending_listing()` (FOR UPDATE SKIP LOCKED, service-role only), verify block.
+- ✅ **(2026-10-26 19:50) Commits (NOT pushed):** `e2dd9bb` on uat (13:06 checkpoint + 2 pre-listing screenshots); branch `feat/session-9l-review-queue` → `e67326d` (plan + 019 + rollback).
 - ✅ **(2026-10-25 13:06) Unbranded WhatsApp seller checklist drafted** (in chat, not a repo file): category/subcategory, price, key details per subcategory (from `LISTING_FIELDS`), up to 5 photos (Plots optional), WhatsApp "current location" pin, short description, "I agree" consent that promises the platform name + link before go-live.
 - ✅ **(2026-10-25 13:06) Seller intake options compared:** A WhatsApp checklist (in use now), B Google Form (rejected: no map pin, Google sign-in for photos), C invite-link page on mapit.co.in (rejected by Nagesh), self-fill page → Google Sheet via Apps Script (⏸ pending decision).
 - ✅ **(2026-10-25 13:06) Wizard scope extended** (logged in Next Steps): seller tips per subcategory, template-based "✨ Write it for me" description, quick-add chips.
@@ -1303,8 +1324,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Self-fill seller intake form (Google Sheet)** | ⏸ Awaiting Nagesh + Arun hosting decision (2026-10-25) | none yet | Apps Script `/exec` page (test GPS first) or neutral static host; owner mapit.backend@gmail.com; no MapIt name; no Supabase change; ~½ day |
-| **Real listings on prod (proxy posting)** | 🔄 Ongoing (2026-10-25) | none | Unbranded WhatsApp checklist → Arun/Nagesh post → approve within 4 h → Transfer when the seller joins |
+| **Feedback Release 1 (FB-01…06 + Terms)** | 🔄 Built + tested; FB-04 click-test pending → push uat (2026-10-28) | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js`, `src/config/listingRules.js` (new), `src/server.js`, `src/utils/notifySeller.js`, `src/utils/notifyListings.js`, `public/admin.html`, `public/user-guide.html`, `docs/legal/terms-privacy-draft2.html` | Branch `fix/feedback-01`, 7 commits, no migration |
+| **Session 9L — Listing Review Queue (`/review`)** | 🔄 Plan done, 019 drafted; waiting for Nagesh to run 019 on UAT (2026-10-26 19:50) | `docs/technical/review-queue-plan.md`, `database/migrations/019-listing-review-queue.sql`, `database/scripts/019-rollback.sql` | Branch `feat/session-9l-review-queue` (`e67326d`, not pushed). Prod untouched until sign-off |
+| **Self-fill seller intake form (Google Sheet)** | ❌ Superseded 2026-10-26 (public release) | none yet | Apps Script `/exec` page (test GPS first) or neutral static host; owner mapit.backend@gmail.com; no MapIt name; no Supabase change; ~½ day |
+| **Real listings on prod (proxy posting)** | ❌ Superseded 2026-10-26 (public release; sellers post themselves) | none | Unbranded WhatsApp checklist → Arun/Nagesh post → approve within 4 h → Transfer when the seller joins |
 | **Admin 🔁 Transfer tab** | ✅ RELEASED PR #28 `9a2af82` (2026-10-25), smoke 14/14 | `src/routes/admin.js`, `public/admin.html`, `src/utils/auditLog.js`, `scripts/uat/admin-transfer.suite.js`, `package.json` | Option A manual handover; chats stay with admin; no migration |
 | **Pre-listing fixes (Batch 1)** | ✅ RELEASED PR #27 `dc47fb5` (2026-10-24), smoke 14/14 | `src/utils/areaName.js`, `src/routes/listings.js`, `src/server.js`, `src/utils/notifyListings.js`, `MapIt_MVP_v1.html`/`public/index.html`, `docs/legal/terms-privacy-draft2.html`, `public/og-image.png`, `public/user-guide.html` | 9 items + Beta; per-item UAT scripts PASS |
 | **Chat pop-up window (Batch 3)** | ⏸ ON HOLD (Nagesh) — design agreed (centred), mockups in `docs/screenshots/session-9-chat-popup/` | — (branch `feat/chat-popup` local, no code) | Starts after Arun's listings; Batch 2 warning folds in |
@@ -1500,6 +1523,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+docs/technical/review-queue-plan.md — 2026-10-26 19:50 (NEW): Session 9L plan + decisions log (D1–D5).
+database/migrations/019-listing-review-queue.sql — 2026-10-26 19:50 (NEW, DRAFT, NOT RUN): approver roster, claim columns, review history, queue index, claim function, verify block.
+database/scripts/019-rollback.sql — 2026-10-26 19:50 (NEW): drops everything 019 adds.
+CONTEXT.md — 2026-10-26 19:50: Session 9L checkpoint; intake form + proxy posting marked superseded.
 CONTEXT.md — 2026-10-25 13:06: intake-form pending decision, wizard scope additions (tips, auto-description, chips), no-brand pre-launch rule, chat pop-up moved after enough listings. (No code files changed.)
 src/routes/admin.js — 2026-10-25: `/handover/listings`, `/handover/lookup`, `/handover/transfer` (verified-only match via profiles + auth.admin.listUsers, masked output, re-match on transfer, admin-owned guard, audit row).
 public/admin.html — 2026-10-25: 🔁 Transfer tile + section (tick listings → find account → transfer), tile grid 6 → 4 columns, `trf-*` CSS.
@@ -1874,6 +1901,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-10-28) Turning expiry back on needs a plan** — `expires_at` is still written, so flipping `LISTING_EXPIRY_ENABLED` to true would hide every listing older than 30 days at once; push dates forward first (with 9H).
+- **ℹ️ (2026-10-28) `RENT_ONLY_SUBCATS` (page) and `RENT_ONLY_SUBCATEGORIES` (server) are two lists** — comments in both; server is the real rule.
+- **ℹ️ (2026-10-28) Context.md branch drift:** `fix/feedback-01` took the 9L branch's Context.md (file only, not 019); when 9L merges, resolve the Context.md conflict by keeping the newer (superset) version.
+- **ℹ️ (2026-10-28) Windows: stopping `npm start` leaves `node src/server.js` running on :3001** — start the server with `node src/server.js` directly when it must be restarted from a tool.
+- **⏸ (2026-10-26 19:50) Migration 019 not run yet** — Nagesh runs it on UAT (`xesekrkxbtybbxpsvxuz`) tomorrow; expect `019 verify: OK`. Then James: EXPLAIN on the claim query + optional read-only schema diff vs prod (difference = exactly 019's objects, by design).
+- **ℹ️ (2026-10-26 19:50) Admin Pending "Remove" = hard delete** (`DELETE /api/listings/:id`) — seller never learns why. Stays on prod until 9L is released (Nagesh: prod untouched).
+- **ℹ️ (2026-10-26 19:50) No session refresh anywhere** — Supabase token lasts 1 h; 9L adds `POST /api/auth/refresh` for the review page.
+- **ℹ️ (2026-10-26 19:50) `MapIt_Admin_v1.html` is stale** (last `82378f4`, no Transfer tab); `public/admin.html` is the real source. Decide its fate during 9L.
+- **ℹ️ (2026-10-26 19:50) UAT approver accounts don't carry over** — wives sign up again on prod `/review` at release. Signing up with an existing buyer email sets a new password on that account (OTP-verified; same as the main app).
 - **⏸ (2026-10-25) Self-fill intake form hosting undecided** (Nagesh discussing with Arun): A = Apps Script `/exec` (risk: GPS "Use my location" may be blocked inside Google's iframe; test first), B = neutral static host. Either way the form copies `LISTING_FIELDS` → drift risk; comment in both places.
 - **ℹ️ (2026-10-25) Consent wording pre-launch:** sellers agree without knowing the platform name → at the announcement send each seller the link and re-confirm (DPDP "informed consent").
 - **ℹ️ (2026-10-25) Admin Pending + Cleanup tabs show the price as "₹ ₹1.85Cr"** (`₹ ${price_label||fmtPrice(price)}` — fmtPrice already adds ₹, and a price_label like "per month" replaces the price). Fixed in the new Transfer tab only; small out-of-scope fix later.
@@ -2067,6 +2103,19 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-10-28, Nagesh) Feedback Release 1 before the 9L build** (real seller affected; all small, no migration); 019 on UAT runs in parallel.
+- **(2026-10-28) Expiry off via a feature flag, not code removal or a prod `UPDATE expires_at = NULL`** — reversible in one line, no prod data change.
+- **(2026-10-28, Nagesh) PG fields** = merged list (Nagesh's + James's, Single kept in Sharing). PG is rent-only, enforced server-side.
+- **(2026-10-28) Post-launch feedback process proposed:** log (FB-NN, date, source, exact words) → triage (type, S/M/L, migration?, MVP scope) → P1/P2/P3 by Nagesh + Arun → S/M items batched into `fix/feedback-NN` releases, L items become sessions → close the loop with the person who asked. Log file + `/feedback` skill: awaiting Nagesh's OK.
+- **(2026-10-26 19:50, Nagesh) MapIt released to the public now;** stealth seeding + "no MapIt name" rule ended. Approving at scale is the bottleneck → dedicated `/review` page (Session 9L).
+- **(2026-10-26 19:50, Nagesh) 9L D1: reject keeps the listing** (`status='rejected'` + reason), seller edits + resubmits (existing PUT sets pending) — replaces hard delete.
+- **(2026-10-26 19:50, Nagesh) 9L D2: admin Pending tab → link to `/review`, only at release.** Approvers (Nagesh's + Arun's wives) self-register on `/review`; access only after an admin activates (signing up grants nothing).
+- **(2026-10-26 19:50, Nagesh) 9L: PRODUCTION UNTOUCHED** (no 019, no code on main) until the new page is tested on UAT and approved; prod keeps the current admin method.
+- **(2026-10-26 19:50, Nagesh) 9L D3: sellers get a rejection email** with the reason + edit/resubmit link (1 Resend email per rejection; watch 80/day).
+- **(2026-10-26 19:50, Nagesh) 9L D4: reject reasons accepted for now** — contact info in text, photos, wrong category, price, location, duplicate, incomplete/misleading, not allowed, other (note required). Changeable later (code setting, no migration).
+- **(2026-10-26 19:50, Nagesh) 9L D5: session name "Session 9L"** (Sessions 10–17 were used in June 2026; 9H reserved), branch `feat/session-9l-review-queue`.
+- **(2026-10-26 19:50, James) 9L architecture:** work queue with 5-min leases (`FOR UPDATE SKIP LOCKED`) + conditional update (`WHERE status='pending'`, 409 otherwise); `staff_members` roster instead of more hardcoded emails or JWT custom claims (instant revoke); approvers see seller first name only, no phone/email/exact pin; no self-review except admins (they proxy-post); FIFO order (4-h promise), 🚩 flag shown as badge; separate `review.html` + own localStorage key; no map library. Rule 9 flag: second privileged user type besides admin emails.
+- **(2026-10-26 19:50, Nagesh) Admin page source = `public/admin.html`** (Transfer tab, live since PR #28). Admin page otherwise fine as is; decide other admin changes as we build.
 - **(2026-10-25, Nagesh) No "MapIt" name/domain in pre-launch outreach** (WhatsApp texts, intake form, Sheet) until prod has enough listings, because the first visitor must already see listings. Consent wording promises the name + link before go-live; sellers re-confirm at the announcement. Chat pop-up waits until enough listings are posted.
 - **(2026-10-25, Nagesh) Seller tips + auto-description + quick-add chips ship WITH the 5-screen wizard** (not as a quick win on today's form). Auto-description is template-based, not AI: AI could invent claims (e.g. "invoice available") in the seller's name and costs per listing.
 - **(2026-10-25, Nagesh) Assisted listings → seller handover = option A, manual admin transfer.** Rejected: `seller_email`/`seller_phone` columns on `listings` (the listings route serves `select('*')` to every browser → would leak), automatic claim at signup (option B, later if assisted posting becomes regular), claim links (C). Built as admin 🔁 Transfer: match on VERIFIED phone (`phone_verified`) or confirmed email only (anyone can sign up with someone else's unconfirmed email); exact match, no search (no user directory, Rule 8); only admin-owned listings move; conversations are NOT moved (the admin wrote those messages); `audit_log` event `listing_transfer` with IDs only. No undo button — undo by SQL from the audit row. Seller contact + consent kept in a private sheet, not in MapIt.
@@ -2463,6 +2512,25 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-28) — Feedback Release 1, ordered:**
+1. **Nagesh: localhost click-test FB-04 PG** (Real Estate → PG: Sell greyed + hint; Meals=No → Food Type "Not applicable"; post → detail shows PG fields + "/mo"; appears under 🔑 Rent Property, not Buy Property).
+2. Push `fix/feedback-01` → merge to uat → uat.mapit.co.in check (approve a UAT listing → "is live" email links to uat) → Arun checks.
+3. PR `uat → main` → `smoke:prod` → prod checks (Bangalore tag, /terms wording, `/api/config.listingExpiry=false`).
+4. Tell the seller their feedback is live (close the loop).
+5. Then Session 9L list below (019 on UAT can run any time).
+
+**⬅ (2026-10-26 19:50) — Session 9L, ordered (resume tomorrow 2026-10-27):**
+1. **Nagesh: run migration 019 on UAT** (SQL Editor picker = `mapit-uat` / `xesekrkxbtybbxpsvxuz`) → expect `019 verify: OK` → James: EXPLAIN on claim query (Index Scan on `listings_pending_queue_idx`) + optional read-only schema diff vs prod.
+2. **Backend:** `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve`, `/:id/reject`, `/:id/release`, `/team`), `requireReviewer` in `auth.js`, `POST /api/auth/refresh`, seller rejection email, `npm run uat:review` suite incl. two approvers claiming at once.
+3. **Phone mockup** of `review.html` → Nagesh OK (before screenshots per Rule 12).
+4. **Build `public/review.html`** (sign-up / sign-in / waiting / queue card / reject sheet / Team panel) → localhost click-test at phone width.
+5. **Seller side:** My Listings "Not approved: reason" + Edit & resubmit (MapIt_MVP_v1.html + sync public/index.html).
+6. **UAT:** push → uat.mapit.co.in → both wives sign up, Arun activates, test with UAT dummy listings → Nagesh + Arun sign-off.
+7. **Release (only after sign-off):** 019 on prod → PR `uat → main` → admin Pending tile → link → `smoke:prod` → wives sign up on prod.
+8. Later (unchanged): 5-screen wizard + auto-title + tips + "Write it for me" + chips; chat pop-up; small fixes (admin "₹ ₹"); dashboard items; 9H.
+
+**⬅ SUPERSEDED (2026-10-26 19:50):** the 2026-10-25 list below (proxy posting, intake form) — MapIt went public instead.
 
 **⬅ NOW (2026-10-25 13:06) — ordered:**
 1. **Real listings on prod:** proxy-post with the unbranded WhatsApp checklist → 🆕 alert in listings@ → approve within 4 h → check the area-name address → seller contact + consent in the private sheet → Transfer when the seller signs up and verifies.
