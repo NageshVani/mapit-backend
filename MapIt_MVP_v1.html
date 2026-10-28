@@ -1636,6 +1636,10 @@ const TITLE_PLACEHOLDER = {
   },
 };
 
+// Half-room sizes are common in Bangalore (feedback FB-03, 2026-10-28).
+// Keep '4+ BHK' as-is: edit-form prefill matches stored text exactly.
+const BHK_OPTIONS = ['1 BHK','1.5 BHK','2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK','4+ BHK'];
+
 // ── CATEGORY-SPECIFIC LISTING FIELDS ──
 // starred:true fields appear in map hover card
 const LISTING_FIELDS = {
@@ -1654,7 +1658,7 @@ const LISTING_FIELDS = {
       { id:'plot_type',   label:'Intermediate or Corner',    type:'select', options:['Intermediate','Corner'] },
       { id:'road_width',  label:'Road Width (ft)',            type:'number' },
       { id:'floors',      label:'No. of Floors',              type:'number' },
-      { id:'bhk',         label:'BHK',                       type:'select', options:['1 BHK','2 BHK','3 BHK','4 BHK','4+ BHK'], starred:true },
+      { id:'bhk',         label:'BHK',                       type:'select', options:BHK_OPTIONS, starred:true },
       { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
       { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
     ],
@@ -1663,7 +1667,7 @@ const LISTING_FIELDS = {
       { id:'facing',      label:'Facing',                    type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'], starred:true },
       { id:'floor_no',    label:'Floor Number',               type:'number' },
       { id:'total_floors',label:'Total No. of Floors',        type:'number' },
-      { id:'bhk',         label:'BHK',                       type:'select', options:['1 BHK','2 BHK','3 BHK','4 BHK','4+ BHK'], starred:true },
+      { id:'bhk',         label:'BHK',                       type:'select', options:BHK_OPTIONS, starred:true },
       { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
       { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
     ],
@@ -1672,7 +1676,7 @@ const LISTING_FIELDS = {
       { id:'facing',      label:'Facing',                    type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'], starred:true },
       { id:'floor_no',    label:'Floor Number',               type:'number' },
       { id:'total_floors',label:'Total No. of Floors',        type:'number' },
-      { id:'bhk',         label:'BHK',                       type:'select', options:['1 BHK','2 BHK','3 BHK','4 BHK','4+ BHK'], starred:true },
+      { id:'bhk',         label:'BHK',                       type:'select', options:BHK_OPTIONS, starred:true },
       { id:'age',         label:'Age of Building (years)',    type:'number', starred:true  },
       { id:'total_price', label:'Total Price (₹)',            type:'number', starred:true  },
     ],
