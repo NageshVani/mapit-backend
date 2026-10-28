@@ -126,7 +126,9 @@
 
 ## 🎯 Current Goal
 
-**NOW (2026-10-28, Wednesday) — Goal: Feedback Release 1** (first real listing + Arun's feedback, `fix/feedback-01`): FB-01 Bangalore tag, FB-02 line breaks, FB-03 half-BHK, FB-04 PG (rent only), FB-05 "listing is live" email, FB-06 expiry off, + Terms wording. All built + tested; FB-01/02/03/05/06 Nagesh localhost PASS; FB-04 click-test pending → push to uat → Arun check → PR `uat → main`. Session 9L continues in parallel (Nagesh runs 019 on UAT).
+**NOW (2026-10-28, Wednesday, later) — Goal: Feedback Release 2 (auto-title + "✨ Write it for me") on uat → sign-off → PR `uat → main`; then Session 9L** (first: clean UAT's half-run 019 — tables exist, claim columns missing → rollback + full re-run). Release 1 is LIVE on prod (PR #29 `404c3ca`, smoke 14/14).
+
+**(2026-10-28, Wednesday) — Goal: Feedback Release 1** (first real listing + Arun's feedback, `fix/feedback-01`): FB-01 Bangalore tag, FB-02 line breaks, FB-03 half-BHK, FB-04 PG (rent only), FB-05 "listing is live" email, FB-06 expiry off, + Terms wording. All built + tested; FB-01/02/03/05/06 Nagesh localhost PASS; FB-04 click-test pending → push to uat → Arun check → PR `uat → main`. Session 9L continues in parallel (Nagesh runs 019 on UAT).
 
 **(2026-10-26 19:50, Monday) — Goal: Session 9L — Listing Review Queue.** MapIt is released to the public, so listing approval moves from the admin page to its own mobile-first page `/review` with its own approver sign-up/sign-in (email + strong password + email OTP; access only after an admin activates), one-listing-at-a-time queue with 5-min claims (multi-approver safe), big Approve / Reject (+ reason) buttons, auto-next until empty. Plan: `docs/technical/review-queue-plan.md`. **Production untouched** (no 019, no code) until UAT test + Nagesh/Arun sign-off; prod keeps today's admin Pending tab.
 
@@ -593,6 +595,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-28) RELEASED: Feedback Release 1 — PR #29 `uat → main` merged (`404c3ca`, merged by James at Nagesh's request).** Nagesh uat checklist 1–7 PASS first; `smoke:prod` 14/14; prod checks: Bangalore tag, PG, 1.5–4.5 BHK, /terms wording + date, `/api/config.listingExpiry=false` (first call answered by a warm old instance; fresh call false). PG click-test round 2 (`7d72cc9`): Beds Available removed; rent, PG For, Meals, Food Type mandatory (`required:true` + "— Select —", red *, server `REQUIRED_DETAILS`); PG needs no photo (`PHOTO_OPTIONAL_SUBCATS`). API 13/13.
+- ✅ **(2026-10-28) Feedback Release 2 built on `feat/feedback-02-auto-title` (`57c7b08`, from uat `7d72cc9`)**: `TITLE_BUILDERS` for all 17 subcategories (title follows details while empty/still auto; stops once the seller types; ✨ Suggest; edit never auto-changes a saved title) + "✨ Write it for me" (opening + one line per filled detail + closing per category; asks before replacing; box grows to 320px). No AI, no price/address/phone. Unit-driven number format (Year stays 2019). Behaviour test 44/44 (scratchpad `fb02-behaviour.js`). Screenshots `docs/screenshots/session-9-feedback-02/` before/after-title-desc-{apartment,pg,car}-phone. **Nagesh localhost click-test PASS.** Tips + quick-add chips stay with the 5-screen wizard.
+- ✅ **(2026-10-28) UAT 019 state found half-run** (read-only check): `staff_members` + `listing_reviews` exist, `listings.review_claimed_by/_until` missing. Fix at 9L start: `019-rollback.sql` (all IF EXISTS) → full 019 → `019 verify: OK`.
 - ✅ **(2026-10-28) First real listing on production 🎉** + first feedback (seller + Arun, `First Feedback 28Oct2026.txt`) triaged into FB-01…FB-06: all small, no migration, no conflict with 9L → shipped first as Feedback Release 1 (Nagesh).
 - ✅ **(2026-10-28) Feedback Release 1 on `fix/feedback-01`** (from uat `e2dd9bb`, not pushed), one commit per item:
   1. `a5f91b7` **FB-02 line breaks**: `.ld-desc` + admin cards `white-space:pre-wrap`; alert email `\n→<br>` after escaping; `cleanDescription()` on POST + PUT (CRLF→LF, 3+ newlines→1 blank line, trim). 7/7 unit + API round-trip PASS.
@@ -1324,7 +1329,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Feedback Release 1 (FB-01…06 + Terms)** | 🔄 Built + tested; FB-04 click-test pending → push uat (2026-10-28) | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js`, `src/config/listingRules.js` (new), `src/server.js`, `src/utils/notifySeller.js`, `src/utils/notifyListings.js`, `public/admin.html`, `public/user-guide.html`, `docs/legal/terms-privacy-draft2.html` | Branch `fix/feedback-01`, 7 commits, no migration |
+| **Feedback Release 2 (auto-title + Write it for me)** | 🔄 Click-test PASS → pushed to uat (2026-10-28); next: sign-off → PR | `MapIt_MVP_v1.html` / `public/index.html` | Branch `feat/feedback-02-auto-title`; frontend only, no migration |
+| **Feedback Release 1 (FB-01…06 + Terms)** | ✅ RELEASED PR #29 `404c3ca` (2026-10-28), smoke 14/14 | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js`, `src/config/listingRules.js` (new), `src/server.js`, `src/utils/notifySeller.js`, `src/utils/notifyListings.js`, `public/admin.html`, `public/user-guide.html`, `docs/legal/terms-privacy-draft2.html` | Branch `fix/feedback-01`, 7 commits, no migration |
 | **Session 9L — Listing Review Queue (`/review`)** | 🔄 Plan done, 019 drafted; waiting for Nagesh to run 019 on UAT (2026-10-26 19:50) | `docs/technical/review-queue-plan.md`, `database/migrations/019-listing-review-queue.sql`, `database/scripts/019-rollback.sql` | Branch `feat/session-9l-review-queue` (`e67326d`, not pushed). Prod untouched until sign-off |
 | **Self-fill seller intake form (Google Sheet)** | ❌ Superseded 2026-10-26 (public release) | none yet | Apps Script `/exec` page (test GPS first) or neutral static host; owner mapit.backend@gmail.com; no MapIt name; no Supabase change; ~½ day |
 | **Real listings on prod (proxy posting)** | ❌ Superseded 2026-10-26 (public release; sellers post themselves) | none | Unbranded WhatsApp checklist → Arun/Nagesh post → approve within 4 h → Transfer when the seller joins |
@@ -2513,7 +2519,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-28) — Feedback Release 1, ordered:**
+**⬅ NOW (2026-10-28, later) — ordered:**
+1. **Release 2 on uat:** Nagesh/Arun check uat.mapit.co.in (title follows details, ✨ Suggest, ✨ Write it for me, PG/Cars wording) → PR `uat → main` → `smoke:prod`.
+2. Nagesh tells the seller Release 1 is live (close the loop).
+3. **Session 9L:** clean UAT 019 (rollback → full run → `019 verify: OK`) → EXPLAIN + schema diff → backend → mockup → `review.html` → seller side → UAT → release (list below).
+
+**⬅ ✅ DONE (2026-10-28) — Feedback Release 1, ordered:**
 1. **Nagesh: localhost click-test FB-04 PG** (Real Estate → PG: Sell greyed + hint; Meals=No → Food Type "Not applicable"; post → detail shows PG fields + "/mo"; appears under 🔑 Rent Property, not Buy Property).
 2. Push `fix/feedback-01` → merge to uat → uat.mapit.co.in check (approve a UAT listing → "is live" email links to uat) → Arun checks.
 3. PR `uat → main` → `smoke:prod` → prod checks (Bangalore tag, /terms wording, `/api/config.listingExpiry=false`).

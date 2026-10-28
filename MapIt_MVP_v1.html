@@ -503,6 +503,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:12px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
 .price-words{font-size:12.5px;font-weight:700;color:var(--orange);margin-top:5px;min-height:16px;}
+/* Feedback Release 2 — label + ✨ button on one row (title / description) */
+.form-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;}
+.form-label-row .form-label{margin-bottom:0;}
+.suggest-btn{flex-shrink:0;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;color:var(--orange);background:rgba(240,96,48,.08);border:1px solid rgba(240,96,48,.35);border-radius:20px;padding:4px 10px;cursor:pointer;white-space:nowrap;}
+.suggest-btn:hover{background:rgba(240,96,48,.16);}
 .form-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .18s;}
 .tx-radio-row{display:flex;gap:20px;padding:10px 13px;background:var(--card);border:1px solid var(--border2);border-radius:8px;}
 .tx-radio-lbl{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;}
@@ -1126,11 +1131,17 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <section class="post-sec" data-step="Title">
         <div class="post-sec-hd">Title &amp; description</div>
         <div class="form-group">
-          <label class="form-label">Title <span style="color:var(--muted);font-weight:400;">(max 80 chars)</span></label>
+          <div class="form-label-row">
+            <label class="form-label" for="postTitle">Title <span style="color:var(--muted);font-weight:400;">(max 80 chars)</span></label>
+            <button type="button" class="suggest-btn" onclick="suggestTitle(true)" title="Make a title from the details above">✨ Suggest</button>
+          </div>
           <input class="form-input" id="postTitle" placeholder="e.g. Honda City ZX 2021 – Single Owner" maxlength="80"/>
         </div>
         <div class="form-group">
-          <label class="form-label">Description <span style="color:var(--muted);font-weight:400;">(max 1000 chars)</span></label>
+          <div class="form-label-row">
+            <label class="form-label" for="postDesc">Description <span style="color:var(--muted);font-weight:400;">(max 1000 chars)</span></label>
+            <button type="button" class="suggest-btn" onclick="writeDescriptionForMe()" title="Write a description from the details above">✨ Write it for me</button>
+          </div>
           <textarea class="form-input form-textarea" id="postDesc" placeholder="Any additional details about your listing…" maxlength="1000"></textarea>
         </div>
         </section>
@@ -1796,6 +1807,116 @@ const LISTING_FIELDS = {
     ],
   },
 };
+
+// ── AUTO-TITLE + "WRITE IT FOR ME" (Feedback Release 2, 2026-10-28) ──
+// Rule-based templates built ONLY from the details the seller entered — no AI
+// (no cost, no invented facts). Never uses the address, pin or phone, and
+// leaves the price out of the description (it is shown anyway and goes stale).
+// One builder per subcategory returns title parts; parts[0] is the core
+// phrase, reused as the description's opening line. The 5-screen wizard
+// will call the same buildAutoTitle()/buildAutoDescription().
+const _inr = n => Number(n).toLocaleString('en-IN');
+// Format by the field's unit (from its label), never every number: a Year
+// must stay "2019", not "2,019".
+function fmtDetailValue(f, v){
+  const n = Number(v), isNum = f.type === 'number' && v !== '' && isFinite(n);
+  if(!isNum) return v;
+  if(/\(sq ft\)/.test(f.label)) return `${_inr(n)} sq ft`;
+  if(/\(₹\)/.test(f.label))     return `₹${_inr(n)}`;
+  if(/\(ft\)/.test(f.label))    return `${n} ft`;
+  if(/\(years\)/.test(f.label)) return n < 1 ? 'less than a year' : `${n} year${n === 1 ? '' : 's'}`;
+  if(f.id === 'kms')            return `${_inr(n)} km`;
+  return v;
+}
+const _sqft = v => v ? `${_inr(v)} sq ft` : '';
+const _facing = v => v ? `${v}-facing` : '';
+const _flatTitle = kind => (d, tx) => [`${d.bhk || ''} ${kind} ${tx}`, _sqft(d.carpet_area), d.floor_no !== '' && d.floor_no != null ? `Floor ${d.floor_no}` : ''];
+const _vehTitle = (d) => [[d.brand, d.model, d.year].filter(Boolean).join(' ') || 'Vehicle', d.kms ? `${_inr(d.kms)} km` : '', d.fuel];
+const _itemTitle = (d) => [d.item || '', d.age === '' || d.age == null ? '' : (Number(d.age) < 1 ? 'less than a year old' : `${d.age} year${Number(d.age) === 1 ? '' : 's'} old`)];
+const TITLE_BUILDERS = {
+  'Plots':               (d, tx) => [`${_sqft(d.area)} ${d.plot_type === 'Corner' ? 'Corner ' : ''}Plot ${tx}`, _facing(d.facing)],
+  'Individual House':    (d, tx) => [`${d.bhk || ''} Independent House ${tx}`, _facing(d.facing), d.plot_area ? `${_inr(d.plot_area)} sq ft plot` : ''],
+  'Builder Flat':        _flatTitle('Builder Flat'),
+  'Apartment':           _flatTitle('Apartment'),
+  'Commercial Building': (d, tx) => [`${d.floors ? d.floors + '-Floor ' : ''}Commercial Building ${tx}`, _sqft(d.built_area)],
+  'Office Space':        (d, tx) => [`${d.furnishing || ''} Office Space ${tx}`, _sqft(d.carpet_area)],
+  'PG':                  (d) => [`${(d.pg_for || '').replace(' (any)', '')} PG`, d.sharing ? (d.sharing === 'Dormitory' ? 'Dormitory' : `${d.sharing} Sharing`) : '',
+                                 d.meals === 'Yes' ? `with ${d.food_type === 'Veg + Non-Veg' ? 'Veg & Non-Veg' : d.food_type === 'Veg only' ? 'Veg' : ''} Meals`.replace('  ', ' ') : ''],
+  'Cars':                _vehTitle,
+  '2 Wheelers':          _vehTitle,
+  'Trucks & Commercial': _vehTitle,
+  'Cycles':              (d) => [`${[d.brand, d.model, d.year].filter(Boolean).join(' ')} Cycle`],
+  'Electronic Appliances': _itemTitle,
+  'Furniture':           _itemTitle,
+  'Home Decor':          _itemTitle,
+};
+const DESC_CLOSING = {
+  re:  'Message me on MapIt chat to know more or to arrange a visit.',
+  veh: 'Message me on MapIt chat to know more or to arrange a test drive.',
+  hh:  'Message me on MapIt chat to know more or to see it.',
+};
+// Reads the post form; returns { cat, sub, fields, d, tx } or null
+function readPostDetails(){
+  const cat = document.getElementById('postCat').value, sub = document.getElementById('postSubcat').value;
+  if(!cat || !sub) return null;
+  const fields = (LISTING_FIELDS[cat]||{})[sub] || [];
+  const d = {};
+  fields.forEach(f => { d[f.id] = String(document.getElementById(`pf_${f.id}`)?.value ?? '').trim(); });
+  const txVal = document.querySelector('input[name="txType"]:checked')?.value;
+  const tx = cat === 're' ? (txVal === 'Rent' ? 'for Rent' : 'for Sale') : '';
+  return { cat, sub, fields, d, tx };
+}
+const _tidy = s => s.replace(/\s+/g, ' ').replace(/\s+,/g, ',').trim();
+function autoTitleParts(p){
+  const b = TITLE_BUILDERS[p.sub];
+  return b ? b(p.d, p.tx).map(x => _tidy(x || '')).filter(Boolean) : [];
+}
+// Parts joined with ", ", dropping trailing parts until it fits the 80-char title limit
+function buildAutoTitle(){
+  const p = readPostDetails(); if(!p) return '';
+  const parts = autoTitleParts(p);
+  while(parts.length > 1 && parts.join(', ').length > 80) parts.pop();
+  return parts.join(', ').slice(0, 80);
+}
+function buildAutoDescription(){
+  const p = readPostDetails(); if(!p) return '';
+  const lines = p.fields
+    .filter(f => f.id !== 'total_price' && p.d[f.id] !== '' && !(f.id === 'food_type' && p.d[f.id] === 'Not applicable'))
+    // Label without its unit "(sq ft)" or a question tail "/ Electric?"
+    .map(f => `- ${f.label.replace(/\s*\([^)]*\)\s*$/, '').replace(/\s*\/\s*[^/]*\?$/, '')}: ${fmtDetailValue(f, p.d[f.id])}`);
+  if(!lines.length) return '';
+  const parts = autoTitleParts(p);
+  const core = p.sub === 'PG' ? parts.slice(0, 2).join(', ') : (parts[0] || p.sub);
+  const opening = core + (p.cat === 're' ? '' : ' for sale') + '.';
+  return [opening, '', 'Details:', ...lines, '', DESC_CLOSING[p.cat] || DESC_CLOSING.hh].join('\n').slice(0, 1000);
+}
+// Title follows the details while it is empty or still the last suggestion;
+// once the seller types their own, it is left alone (force = ✨ Suggest button).
+let _autoTitle = '';
+function suggestTitle(force){
+  const t = buildAutoTitle(), el = document.getElementById('postTitle');
+  if(!t){ if(force) toast('Pick a type and fill in a few details first.'); return; }
+  if(force || !el.value.trim() || el.value === _autoTitle){
+    el.value = t; _autoTitle = t;
+    if(typeof schedulePostSteps === 'function') schedulePostSteps();
+  }
+}
+async function writeDescriptionForMe(){
+  const text = buildAutoDescription(), el = document.getElementById('postDesc');
+  if(!text){ toast('Pick a type and fill in a few details first.'); return; }
+  if(el.value.trim() && el.value.trim() !== text){
+    if(!(await mapitDialog({
+      title: 'Replace your description?',
+      message: 'Your text will be replaced with a description built from the details you entered. You can edit it afterwards.',
+      okText: 'Replace',
+    }))) return;
+  }
+  el.value = text;
+  // Grow the box so the seller sees what was written (CSS caps it at 160px)
+  el.style.maxHeight = '320px';
+  el.style.height = Math.min(el.scrollHeight + 2, 320) + 'px';
+  toast('✨ Description added. Check it and add anything a buyer should know.');
+}
 function listingEmoji(l){ return SUBCAT_EMOJI[l.subcategory||l.sub] || CAT_EMOJI[l.category||l.cat] || '📦'; }
 
 function getInitials(name){
@@ -4209,6 +4330,7 @@ async function editListing(id){
 
   // Populate title and description
   document.getElementById('postTitle').value = l.title || '';
+  _autoTitle = ''; // editing: the saved title is the seller's — only ✨ Suggest replaces it
   document.getElementById('postDesc').value = l.description || '';
 
   // Transaction type (Real Estate only)
@@ -4290,6 +4412,10 @@ function renderDynamicFields(){
   if(tp) tp.addEventListener('input', updatePriceWords);
   const meals = document.getElementById('pf_meals');
   if(meals){ meals.addEventListener('change', syncPgFood); syncPgFood(); }
+  // Release 2: title follows the details (property handlers, so re-renders don't stack listeners)
+  container.oninput = container.onchange = () => suggestTitle(false);
+  document.querySelectorAll('input[name="txType"]').forEach(r => r.onchange = () => suggestTitle(false));
+  suggestTitle(false);
 }
 // PG (FB-04): no meals → Food Type is 'Not applicable' and locked
 function syncPgFood(){
