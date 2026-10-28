@@ -52,6 +52,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 #hdr{min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--border);z-index:900;position:relative;}
 .logo{font-family:'Playfair Display',serif;font-size:24px;color:var(--text);}
 .logo em{font-style:normal;color:var(--orange);}
+/* City shown beside the logo (feedback FB-01, 2026-10-28). A future city picker sets #cityTag's text. */
+.city-tag{font-size:12px;font-weight:600;color:var(--orange);background:rgba(240,96,48,.08);border:1px solid rgba(240,96,48,.35);border-radius:20px;padding:2px 9px;white-space:nowrap;margin-left:-4px;}
 /* Session 9J — keyword search lives in the sidebar, under the category chips */
 .srch{position:relative;margin:0 10px 8px;flex-shrink:0;}
 .srch-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14.5px;opacity:.5;}
@@ -1246,6 +1248,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 <!-- ── HEADER ── -->
 <header id="hdr">
   <div class="logo">Map<em>It</em></div>
+  <span class="city-tag" id="cityTag" title="You are browsing listings in Bangalore">📍 Bangalore</span>
   <div class="hsp"></div>
   <div class="hdr-break"></div>
   <div class="hdr-filters">
