@@ -26,7 +26,7 @@ const { moderateAndAlert } = require('../utils/notifyListings');
 const { notifySellerListingLive } = require('../utils/notifySeller');
 const { needsPhoneVerification } = require('../utils/phoneGate');
 const { waitUntil } = require('@vercel/functions');
-const { LISTING_EXPIRY_ENABLED, enforceRentOnly } = require('../config/listingRules');
+const { LISTING_EXPIRY_ENABLED, enforceRentOnly, missingRequiredDetail } = require('../config/listingRules');
 
 const router = express.Router();
 
@@ -634,6 +634,8 @@ router.post('/', requireAuth, async (req, res, next) => {
     }
     if (title.length > 80) return next(createError('Title must be 80 characters or less.'));
     if (price && parseFloat(price) < 0) return next(createError('Price cannot be negative.'));
+    const missingDetail = missingRequiredDetail(category, subcategory, details);
+    if (missingDetail) return next(createError(`Please fill in "${missingDetail}".`));
 
     // Session 9C: new accounts must verify their phone before posting. The
     // frontend pre-checks via /api/auth/otp/phone/status; this is the real gate.
@@ -750,6 +752,9 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     const finalDetails = updates.details ?? existing.details;
     const rentOnly = enforceRentOnly(finalCat, finalSub, finalDetails);
     if (rentOnly?.transaction_type !== finalDetails?.transaction_type) updates.details = rentOnly;
+    // Required details (PG): checked on the listing as it will be saved
+    const missingDetail = missingRequiredDetail(finalCat, finalSub, updates.details ?? existing.details);
+    if (missingDetail) return next(createError(`Please fill in "${missingDetail}".`));
 
     if (updates.show_exact_location !== undefined) {
       updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';

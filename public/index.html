@@ -1138,7 +1138,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <section class="post-sec" data-step="Photos">
         <div class="post-sec-hd">Photos</div>
         <div class="form-group">
-          <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5 · optional for Plots)</span></label>
+          <label class="form-label">Photos <span style="color:var(--muted);font-weight:400;">(up to 5 · optional for Plots and PG)</span></label>
           <div id="postCurPhotos" class="post-cur-photos" style="display:none;"></div>
           <input type="file" id="postPhotos" accept="image/*" multiple style="display:none;" onchange="onPostPhotosPicked(this)"/>
           <button type="button" class="pcp-add" id="postPhotosAdd" onclick="document.getElementById('postPhotos').click()">📷 Add photos</button>
@@ -1647,6 +1647,14 @@ const BHK_OPTIONS = ['1 BHK','1.5 BHK','2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BH
 // Real Estate types that can only be rented (FB-04). Keep in sync with
 // RENT_ONLY_SUBCATEGORIES in src/config/listingRules.js (server enforces it).
 const RENT_ONLY_SUBCATS = ['PG'];
+// Types that may be posted without a photo (Plots: Session 9G; PG: Nagesh 2026-10-28)
+const PHOTO_OPTIONAL_SUBCATS = ['Plots','PG'];
+// Fields marked required:true must be filled/chosen (a required select starts
+// at "— Select —"). Same rule in submitListing() and the step bar; the server
+// re-checks via REQUIRED_DETAILS in src/config/listingRules.js.
+function missingRequiredField(cat, sub){
+  return ((LISTING_FIELDS[cat]||{})[sub] || []).find(f => f.required && !String(document.getElementById(`pf_${f.id}`)?.value || '').trim());
+}
 
 // ── CATEGORY-SPECIFIC LISTING FIELDS ──
 // starred:true fields appear in map hover card
@@ -1723,14 +1731,13 @@ const LISTING_FIELDS = {
     // words and the "price required" check work unchanged; "/mo" comes from
     // transaction_type='Rent'. Meals = No locks Food Type to 'Not applicable'.
     'PG':                  [
-      { id:'total_price',   label:'Monthly Rent per Bed (₹)',  type:'number', starred:true },
+      { id:'total_price',   label:'Monthly Rent per Bed (₹)',  type:'number', starred:true, required:true },
       { id:'sharing',       label:'Sharing',                   type:'select', options:['Single','Double','Triple','Dormitory'], starred:true },
-      { id:'pg_for',        label:'PG For',                    type:'select', options:['Boys','Girls','Co-living (any)'], starred:true },
-      { id:'meals',         label:'Meals Included',            type:'select', options:['Yes','No'], starred:true },
-      { id:'food_type',     label:'Food Type',                 type:'select', options:['Veg only','Veg + Non-Veg','Not applicable'] },
+      { id:'pg_for',        label:'PG For',                    type:'select', options:['Boys','Girls','Co-living (any)'], starred:true, required:true },
+      { id:'meals',         label:'Meals Included',            type:'select', options:['Yes','No'], starred:true, required:true },
+      { id:'food_type',     label:'Food Type',                 type:'select', options:['Veg only','Veg + Non-Veg','Not applicable'], required:true },
       { id:'furnishing',    label:'Furnishing Status',         type:'select', options:['Fully Furnished','Semi-Furnished','Unfurnished'] },
       { id:'deposit',       label:'Security Deposit (₹)',      type:'number' },
-      { id:'beds_available',label:'Beds Available Now',        type:'number' },
       { id:'amenities',     label:'Amenities',                 type:'text', placeholder:'e.g. WiFi, AC, Laundry, Housekeeping, Power Backup' },
       { id:'notice_period', label:'Notice Period',             type:'select', options:['15 days','1 month','2 months'] },
       { id:'available_from',label:'Available From',            type:'text', placeholder:'e.g. Immediately, 1 Nov' },
@@ -4083,13 +4090,13 @@ const POST_STEP_DONE = {
   Details:  () => {
     const cat = document.getElementById('postCat').value, sub = document.getElementById('postSubcat').value;
     const fields = (LISTING_FIELDS[cat]||{})[sub] || [];
-    return !!sub && (!fields.length || parseFloat(document.getElementById('pf_total_price')?.value) > 0);
+    return !!sub && (!fields.length || parseFloat(document.getElementById('pf_total_price')?.value) > 0) && !missingRequiredField(cat, sub);
   },
   Title:    () => !!document.getElementById('postTitle').value.trim(),
   Photos:   () => {
-    // Same rule as submitListing(): Plots and older photo-less listings
+    // Same rule as submitListing(): Plots/PG and older photo-less listings
     // being edited may go without a photo
-    const needsPhoto = document.getElementById('postSubcat').value !== 'Plots' && (!ST.editingId || _editPhotos.length > 0);
+    const needsPhoto = !PHOTO_OPTIONAL_SUBCATS.includes(document.getElementById('postSubcat').value) && (!ST.editingId || _editPhotos.length > 0);
     return !needsPhoto || (ST.editingId ? keptPhotoTotal() : 0) + _newPhotos.length > 0;
   },
   Location: () => {
@@ -4274,10 +4281,10 @@ function renderDynamicFields(){
   container.innerHTML =
     fields.map(f => {
       const inp = f.type === 'select'
-        ? `<select class="form-input form-select" id="pf_${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
+        ? `<select class="form-input form-select" id="pf_${f.id}">${f.required?`<option value="" disabled selected>— Select —</option>`:''}${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
         : `<input class="form-input" id="pf_${f.id}" type="${f.type === 'number' ? 'number' : 'text'}" min="${f.type==='number'?'0':''}"${f.placeholder?` placeholder="${f.placeholder}"`:''}${f.default!=null?` value="${f.default}"`:''}/>`;
       const words = f.id === 'total_price' ? `<div class="price-words" id="pfw_total_price"></div>` : '';
-      return `<div class="form-group"><label class="form-label">${f.label}</label>${inp}${words}</div>`;
+      return `<div class="form-group"><label class="form-label">${f.label}${f.required?' <span style="color:var(--red);">*</span>':''}</label>${inp}${words}</div>`;
     }).join('');
   const tp = document.getElementById('pf_total_price');
   if(tp) tp.addEventListener('input', updatePriceWords);
@@ -4290,7 +4297,7 @@ function syncPgFood(){
   if(!meals || !food) return;
   const none = meals.value === 'No';
   if(none) food.value = 'Not applicable';
-  else if(food.value === 'Not applicable') food.value = 'Veg only';
+  else if(food.value === 'Not applicable') food.value = ''; // Meals = Yes → seller must pick the food type
   food.disabled = none;
 }
 // Session 9J — '2800000' → '₹28 Lakh' under the box, so a missing or extra zero is obvious
@@ -4500,13 +4507,15 @@ async function submitListing(){
   if(!title){ toast('Please enter a title.'); return; }
   if(!subcategory){ toast('Please select a listing type (e.g. Cars, 2 Wheelers).'); return; }
   if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
+  const missing = missingRequiredField(category, subcategory);
+  if(missing){ toast(`Please fill in "${missing.label}".`); document.getElementById(`pf_${missing.id}`)?.focus(); return; }
   // Session 9G (Arun): an empty plot often has nothing worth photographing,
-  // so Plots may be posted without a photo. Every other type still needs one.
+  // so Plots (and PG, 2026-10-28) may be posted without a photo. Every other type still needs one.
   const newPhotoCount  = _newPhotos.length;
   const keptPhotoCount = ST.editingId ? keptPhotoTotal() : 0;
   // New listing: needs a photo. Edit: may not remove every photo (older
   // photo-less listings can still be edited without adding one).
-  const needsPhoto = subcategory !== 'Plots' && (!ST.editingId || _editPhotos.length > 0);
+  const needsPhoto = !PHOTO_OPTIONAL_SUBCATS.includes(subcategory) && (!ST.editingId || _editPhotos.length > 0);
   if(needsPhoto && keptPhotoCount + newPhotoCount === 0){
     toast('Please add at least 1 photo.'); return;
   }

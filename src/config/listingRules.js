@@ -23,4 +23,19 @@ function enforceRentOnly(category, subcategory, details) {
   return { ...d, transaction_type: 'Rent' };
 }
 
-module.exports = { LISTING_EXPIRY_ENABLED, RENT_ONLY_SUBCATEGORIES, enforceRentOnly };
+// Detail fields a subcategory must have (Nagesh 2026-10-28). The page marks
+// them required:true in LISTING_FIELDS; keep the two in sync.
+const REQUIRED_DETAILS = {
+  're/PG': { total_price: 'Monthly Rent per Bed', pg_for: 'PG For', meals: 'Meals Included', food_type: 'Food Type' },
+};
+
+// Returns the label of the first missing required field, or null.
+function missingRequiredDetail(category, subcategory, details) {
+  const req = REQUIRED_DETAILS[`${category}/${subcategory}`];
+  if (!req) return null;
+  const d = details && typeof details === 'object' ? details : {};
+  const id = Object.keys(req).find(k => !String(d[k] ?? '').trim());
+  return id ? req[id] : null;
+}
+
+module.exports = { LISTING_EXPIRY_ENABLED, RENT_ONLY_SUBCATEGORIES, enforceRentOnly, missingRequiredDetail };
