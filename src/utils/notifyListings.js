@@ -98,7 +98,7 @@ async function sendListingAlert(listing, kind, { verdict, reason, before } = {})
     : `<p style="margin:0 0 12px;padding:8px 12px;background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;color:#1e40af;"><strong>✏️ Updated listing</strong> waiting for review.${wasLive ? ' It was <strong>live</strong> and is now hidden from buyers until re-approved.' : ''}</p>`;
 
   const description = listing.description
-    ? escapeHtml(listing.description.length > 300 ? listing.description.slice(0, 300) + '…' : listing.description)
+    ? escapeHtml(listing.description.length > 300 ? listing.description.slice(0, 300) + '…' : listing.description).replace(/\n/g, '<br>')
     : '';
 
   await sendEmail({

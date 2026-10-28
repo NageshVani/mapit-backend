@@ -43,6 +43,11 @@ const LISTING_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const newExpiry = () => new Date(Date.now() + LISTING_TTL_MS).toISOString();
 const isLive = l => !l.expires_at || new Date(l.expires_at).getTime() > Date.now();
 
+// Description keeps the seller's line breaks (feedback FB-02, 2026-10-28):
+// CRLF → LF, 3+ newlines → one blank line, trimmed ends. Empty → null.
+const cleanDescription = d =>
+  typeof d === 'string' ? (d.replace(/\r\n?/g, '\n').replace(/\n{3,}/g, '\n\n').trim() || null) : null;
+
 // Radius search over-fetches by this much, then filters on the visible
 // point. MUST stay above fuzzLocation()'s max offset (400 m, utils/geo.js).
 const FUZZ_MARGIN_M = 500;
@@ -653,7 +658,7 @@ router.post('/', requireAuth, async (req, res, next) => {
         category,
         subcategory,
         title:                title.trim(),
-        description:          description?.trim() || null,
+        description:          cleanDescription(description),
         price:                parseFloat(price) || 0,
         price_label:          price_label?.trim() || null,
         lat:                  exactLat,
@@ -726,6 +731,8 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     if (Object.keys(updates).length === 0) {
       return next(createError('No valid fields to update.'));
     }
+
+    if (updates.description !== undefined) updates.description = cleanDescription(updates.description);
 
     if (updates.show_exact_location !== undefined) {
       updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';
