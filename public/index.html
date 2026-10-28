@@ -3322,12 +3322,14 @@ async function renderMyAds(el){
       listings.map(l=>{
         // Expiry is lazy (server hides active listings past expires_at from
         // browse), so an "active" listing past its date shows as Expired here.
-        const days = l.expires_at ? Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000) : null;
+        // Expiry switched off server-side (FB-06): no date, no label, no Renew.
+        const expiryOn = !!RUNTIME_CFG?.listingExpiry;
+        const days = expiryOn && l.expires_at ? Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000) : null;
         const expired = l.status==='active' && days!==null && days <= 0;
         const canRenew = l.status==='active' && days!==null && days <= 5;
         const shownStatus = expired ? 'expired' : l.status;
         const expiryHtml = (()=>{
-          if(l.status==='pending') return `<div class="fav-dist" style="color:var(--muted);">Live for 30 days once approved</div>`;
+          if(l.status==='pending') return `<div class="fav-dist" style="color:var(--muted);">${expiryOn ? 'Live for 30 days once approved' : 'Goes live once approved'}</div>`;
           if(l.status!=='active' || days===null) return '';
           if(expired) return `<div class="fav-dist" style="color:var(--red);">⚠️ Hidden from the map · Renew to show it again</div>`;
           if(days <= 5) return `<div class="fav-dist" style="color:var(--orange);">⚠️ Expires in ${days}d</div>`;

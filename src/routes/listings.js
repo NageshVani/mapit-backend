@@ -25,6 +25,7 @@ const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 const { moderateAndAlert } = require('../utils/notifyListings');
 const { needsPhoneVerification } = require('../utils/phoneGate');
 const { waitUntil } = require('@vercel/functions');
+const { LISTING_EXPIRY_ENABLED } = require('../config/listingRules');
 
 const router = express.Router();
 
@@ -39,9 +40,10 @@ const SHOW_PHONE = 'never';
 // Listing life: 30 days from approval, renewable by the owner.
 // Lazy expiry: reads hide listings past expires_at; nothing flips status to
 // 'expired' yet (that cron + seller emails come with Session 9H).
+// Switched off by LISTING_EXPIRY_ENABLED (FB-06) — see src/config/listingRules.js.
 const LISTING_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const newExpiry = () => new Date(Date.now() + LISTING_TTL_MS).toISOString();
-const isLive = l => !l.expires_at || new Date(l.expires_at).getTime() > Date.now();
+const isLive = l => !LISTING_EXPIRY_ENABLED || !l.expires_at || new Date(l.expires_at).getTime() > Date.now();
 
 // Description keeps the seller's line breaks (feedback FB-02, 2026-10-28):
 // CRLF → LF, 3+ newlines → one blank line, trimmed ends. Empty → null.
@@ -291,12 +293,16 @@ router.get('/cleanup/candidates', requireAuth, requireAdmin, async (req, res, ne
   try {
     const nowIso = new Date().toISOString();
 
-    const { data: staleRaw, error: staleErr } = await supabaseAdmin
-      .from('listings')
-      .select('*, profiles(full_name, avatar_color)')
-      .eq('status', 'active')
-      .lt('expires_at', nowIso)
-      .order('expires_at', { ascending: true });
+    // Expiry off (FB-06): nothing is stale, so admins can't bulk-delete
+    // listings that are still live for buyers.
+    const { data: staleRaw, error: staleErr } = LISTING_EXPIRY_ENABLED
+      ? await supabaseAdmin
+          .from('listings')
+          .select('*, profiles(full_name, avatar_color)')
+          .eq('status', 'active')
+          .lt('expires_at', nowIso)
+          .order('expires_at', { ascending: true })
+      : { data: [], error: null };
     if (staleErr) return next(createError(staleErr.message));
 
     const { data: liveRaw, error: liveErr } = await supabaseAdmin
