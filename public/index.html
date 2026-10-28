@@ -1113,6 +1113,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
             <label class="tx-radio-lbl"><input type="radio" name="txType" value="Rent" checked> Rent</label>
             <label class="tx-radio-lbl"><input type="radio" name="txType" value="Sell"> Sell</label>
           </div>
+          <div id="txRentOnlyHint" style="display:none;font-size:12px;color:var(--muted);margin-top:6px;">PG listings are for rent only.</div>
         </div>
         </section>
         <!-- ② Dynamic category-specific fields (rendered as 2-col subgrid via CSS) -->
@@ -1590,7 +1591,7 @@ function getSbClient(){
 // ═══════════════════════════════════════════════
 const CATS = [
   { id:'all', lbl:'All',             ico:'🗺️', col:'#F06030', subs:[] },
-  { id:'re',  lbl:'Real Estate',     ico:'🏠',  col:'#F06030', subs:['All Types','Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space'] },
+  { id:'re',  lbl:'Real Estate',     ico:'🏠',  col:'#F06030', subs:['All Types','Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space','PG'] },
   { id:'veh', lbl:'Vehicles',        ico:'🚗',  col:'#3B82F6', subs:['All Types','Cars','2 Wheelers','Cycles','Trucks & Commercial'] },
   { id:'hh',  lbl:'Household Items', ico:'🏡',  col:'#22C55E', subs:['All Types','Electronic Appliances','Furniture','Home Decor'] },
 ];
@@ -1605,13 +1606,13 @@ const BROWSE_CHIPS = [
   { id:'hh',   cat:'hh',  txn:null,   lbl:'Household',       ico:'🏡' },
 ];
 const SUBCAT_MAP = {
-  re:  ['Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space'],
+  re:  ['Plots','Individual House','Builder Flat','Apartment','Commercial Building','Office Space','PG'],
   veh: ['Cars','2 Wheelers','Cycles','Trucks & Commercial'],
   hh:  ['Electronic Appliances','Furniture','Home Decor'],
 };
 const CAT_EMOJI = { re:'🏠', veh:'🚗', hh:'🏡' };
 const SUBCAT_EMOJI = {
-  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬','Office Space':'💼',
+  'Plots':'🏗','Individual House':'🏠','Builder Flat':'🏢','Apartment':'🏢','Commercial Building':'🏬','Office Space':'💼','PG':'🛏️',
   'Cars':'🚗','2 Wheelers':'🛵','Cycles':'🚲','Trucks & Commercial':'🚛',
   'Electronic Appliances':'📺','Furniture':'🛋️','Home Decor':'🎨',
 };
@@ -1625,6 +1626,7 @@ const TITLE_PLACEHOLDER = {
     'Apartment':           '2BHK Apartment in Prestige Society, Koramangala',
     'Commercial Building': '3-Storey Commercial Building on Main Road',
     'Office Space':        'Plug-and-Play Office Space, 20 Seats, Indiranagar',
+    'PG':                  'Ladies PG, Double Sharing with Food, HSR Layout',
   },
   veh: {
     'Cars':               'Maruti Swift 2019 – Single Owner, 28k Kms',
@@ -1642,6 +1644,9 @@ const TITLE_PLACEHOLDER = {
 // Half-room sizes are common in Bangalore (feedback FB-03, 2026-10-28).
 // Keep '4+ BHK' as-is: edit-form prefill matches stored text exactly.
 const BHK_OPTIONS = ['1 BHK','1.5 BHK','2 BHK','2.5 BHK','3 BHK','3.5 BHK','4 BHK','4.5 BHK','4+ BHK'];
+// Real Estate types that can only be rented (FB-04). Keep in sync with
+// RENT_ONLY_SUBCATEGORIES in src/config/listingRules.js (server enforces it).
+const RENT_ONLY_SUBCATS = ['PG'];
 
 // ── CATEGORY-SPECIFIC LISTING FIELDS ──
 // starred:true fields appear in map hover card
@@ -1712,6 +1717,23 @@ const LISTING_FIELDS = {
       { id:'facing',             label:'Facing',                         type:'select', options:['North','South','East','West','North-East','North-West','South-East','South-West'] },
       { id:'age',                label:'Age of Building (years)',        type:'number' },
       { id:'total_price',        label:'Total Price (₹)',                type:'number', starred:true },
+    ],
+    // Added 2026-10-28 (feedback FB-04) — fields agreed by Nagesh. Rent only
+    // (RENT_ONLY_SUBCATS). The rent keeps the id total_price so price, price
+    // words and the "price required" check work unchanged; "/mo" comes from
+    // transaction_type='Rent'. Meals = No locks Food Type to 'Not applicable'.
+    'PG':                  [
+      { id:'total_price',   label:'Monthly Rent per Bed (₹)',  type:'number', starred:true },
+      { id:'sharing',       label:'Sharing',                   type:'select', options:['Single','Double','Triple','Dormitory'], starred:true },
+      { id:'pg_for',        label:'PG For',                    type:'select', options:['Boys','Girls','Co-living (any)'], starred:true },
+      { id:'meals',         label:'Meals Included',            type:'select', options:['Yes','No'], starred:true },
+      { id:'food_type',     label:'Food Type',                 type:'select', options:['Veg only','Veg + Non-Veg','Not applicable'] },
+      { id:'furnishing',    label:'Furnishing Status',         type:'select', options:['Fully Furnished','Semi-Furnished','Unfurnished'] },
+      { id:'deposit',       label:'Security Deposit (₹)',      type:'number' },
+      { id:'beds_available',label:'Beds Available Now',        type:'number' },
+      { id:'amenities',     label:'Amenities',                 type:'text', placeholder:'e.g. WiFi, AC, Laundry, Housekeeping, Power Backup' },
+      { id:'notice_period', label:'Notice Period',             type:'select', options:['15 days','1 month','2 months'] },
+      { id:'available_from',label:'Available From',            type:'text', placeholder:'e.g. Immediately, 1 Nov' },
     ],
   },
   veh: {
@@ -4176,6 +4198,7 @@ async function editListing(id){
     if(el && det[f.id] != null) el.value = det[f.id];
   });
   updatePriceWords();
+  syncPgFood();
 
   // Populate title and description
   document.getElementById('postTitle').value = l.title || '';
@@ -4233,6 +4256,14 @@ function renderDynamicFields(){
   document.getElementById('postTitle').placeholder = ph;
   // Show/hide Sell/Rent for Real Estate only
   document.getElementById('txTypeGroup').style.display = cat === 're' ? '' : 'none';
+  // Rent-only types (PG, FB-04): tick Rent and grey out Sell. The server
+  // forces Rent as well, so this is convenience, not the rule.
+  const rentOnly = cat === 're' && RENT_ONLY_SUBCATS.includes(sub);
+  const sellEl = document.querySelector('input[name="txType"][value="Sell"]');
+  if(rentOnly) document.querySelector('input[name="txType"][value="Rent"]').checked = true;
+  sellEl.disabled = rentOnly;
+  sellEl.closest('label').style.opacity = rentOnly ? '.45' : '';
+  document.getElementById('txRentOnlyHint').style.display = rentOnly ? '' : 'none';
   const fields = (LISTING_FIELDS[cat]||{})[sub] || [];
   // Section ② "Details & price": hint until a subcategory is picked; hidden
   // for a subcategory without fields (the CSS counter then renumbers).
@@ -4250,6 +4281,17 @@ function renderDynamicFields(){
     }).join('');
   const tp = document.getElementById('pf_total_price');
   if(tp) tp.addEventListener('input', updatePriceWords);
+  const meals = document.getElementById('pf_meals');
+  if(meals){ meals.addEventListener('change', syncPgFood); syncPgFood(); }
+}
+// PG (FB-04): no meals → Food Type is 'Not applicable' and locked
+function syncPgFood(){
+  const meals = document.getElementById('pf_meals'), food = document.getElementById('pf_food_type');
+  if(!meals || !food) return;
+  const none = meals.value === 'No';
+  if(none) food.value = 'Not applicable';
+  else if(food.value === 'Not applicable') food.value = 'Veg only';
+  food.disabled = none;
 }
 // Session 9J — '2800000' → '₹28 Lakh' under the box, so a missing or extra zero is obvious
 function updatePriceWords(){

@@ -26,7 +26,7 @@ const { moderateAndAlert } = require('../utils/notifyListings');
 const { notifySellerListingLive } = require('../utils/notifySeller');
 const { needsPhoneVerification } = require('../utils/phoneGate');
 const { waitUntil } = require('@vercel/functions');
-const { LISTING_EXPIRY_ENABLED } = require('../config/listingRules');
+const { LISTING_EXPIRY_ENABLED, enforceRentOnly } = require('../config/listingRules');
 
 const router = express.Router();
 
@@ -677,7 +677,7 @@ router.post('/', requireAuth, async (req, res, next) => {
         show_exact_location:  showExactLocation,
         address:              publicAddress,
         specs:                specs || [],
-        details:              details || {},
+        details:              enforceRentOnly(category, subcategory, details || {}),
         status:               'pending',
         reference_code:       generateRefCode(),
         expires_at:           newExpiry(),
@@ -742,6 +742,14 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     }
 
     if (updates.description !== undefined) updates.description = cleanDescription(updates.description);
+
+    // Rent-only types (PG, FB-04): an edit can't turn one into a sale, nor
+    // move a sale listing into PG while keeping 'Sell'.
+    const finalCat = updates.category ?? existing.category;
+    const finalSub = updates.subcategory ?? existing.subcategory;
+    const finalDetails = updates.details ?? existing.details;
+    const rentOnly = enforceRentOnly(finalCat, finalSub, finalDetails);
+    if (rentOnly?.transaction_type !== finalDetails?.transaction_type) updates.details = rentOnly;
 
     if (updates.show_exact_location !== undefined) {
       updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';

@@ -11,4 +11,16 @@
 // or every listing older than 30 days disappears at once (plan with 9H).
 const LISTING_EXPIRY_ENABLED = false;
 
-module.exports = { LISTING_EXPIRY_ENABLED };
+// Real Estate types that can only be rented (PG, feedback FB-04, 2026-10-28).
+// The page greys out "Sell" for these; the server is the real rule and stores
+// details.transaction_type = 'Rent' whatever the client sent.
+// Keep in sync with RENT_ONLY_SUBCATS in MapIt_MVP_v1.html.
+const RENT_ONLY_SUBCATEGORIES = ['PG'];
+
+function enforceRentOnly(category, subcategory, details) {
+  if (category !== 're' || !RENT_ONLY_SUBCATEGORIES.includes(subcategory)) return details;
+  const d = details && typeof details === 'object' && !Array.isArray(details) ? details : {};
+  return { ...d, transaction_type: 'Rent' };
+}
+
+module.exports = { LISTING_EXPIRY_ENABLED, RENT_ONLY_SUBCATEGORIES, enforceRentOnly };
