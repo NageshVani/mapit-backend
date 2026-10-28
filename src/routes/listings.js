@@ -23,6 +23,7 @@ const { areaName } = require('../utils/areaName');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 const { moderateAndAlert } = require('../utils/notifyListings');
+const { notifySellerListingLive } = require('../utils/notifySeller');
 const { needsPhoneVerification } = require('../utils/phoneGate');
 const { waitUntil } = require('@vercel/functions');
 const { LISTING_EXPIRY_ENABLED } = require('../config/listingRules');
@@ -124,6 +125,8 @@ router.put('/:id/approve', requireAuth, requireAdmin, async (req, res, next) => 
       .select()
       .single();
     if (error) return next(createError(error.message));
+    // Fire-and-forget seller email (FB-05); waitUntil keeps Vercel alive for it.
+    waitUntil(notifySellerListingLive(listing));
     res.json({ listing, message: 'Listing approved and is now live.' });
   } catch (err) { next(err); }
 });

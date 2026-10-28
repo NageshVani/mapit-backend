@@ -69,4 +69,46 @@ async function scoreAndNotify(listing, buyerId, messageContent, persistVerdict) 
   await notifySellerOfInterest(listing, buyerId, messageContent, verdict);
 }
 
-module.exports = { notifySellerOfInterest, scoreAndNotify };
+// The site of the environment that sent the email — a UAT approval must
+// never link the seller to production (same rule as notifyListings adminUrl).
+function siteUrl() {
+  if (process.env.VERCEL_ENV === 'production') return 'https://www.mapit.co.in';
+  if (process.env.VERCEL_ENV === 'preview')    return 'https://uat.mapit.co.in';
+  return `http://localhost:${process.env.PORT || 3001}`;
+}
+
+// ── Tell the seller their listing is live (feedback FB-05, 2026-10-28) ──
+// Called via waitUntil() from the approve route, also after an edit is
+// re-approved. Never throws: an email problem must not fail the approval.
+// Phone-only accounts have no email → skipped. Logs the listing ID only (Rule 8).
+async function notifySellerListingLive(listing) {
+  try {
+    const [{ data: sellerAuth }, { data: profile }] = await Promise.all([
+      supabaseAdmin.auth.admin.getUserById(listing.seller_id),
+      supabaseAdmin.from('profiles').select('nickname').eq('id', listing.seller_id).single(),
+    ]);
+    const sellerEmail = sellerAuth?.user?.email;
+    if (!sellerEmail) return;
+
+    const name  = escapeHtml(profile?.nickname || 'there');
+    const title = escapeHtml(listing.title);
+    const link  = `${siteUrl()}/#listing-${listing.id}`;
+
+    await sendEmail({
+      to:      sellerEmail,
+      subject: `✅ Your listing "${listing.title}" is live on MapIt`,
+      html: `
+        <p>Hi ${name},</p>
+        <p>Good news: your listing <strong>"${title}"</strong> has been approved and buyers can now see it on the MapIt map.</p>
+        <p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#f06030;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">View your listing</a></p>
+        <p>Tip: share that link with friends and WhatsApp groups to reach more buyers.</p>
+        <p>Buyers contact you through MapIt chat, and we email you when someone is interested.</p>
+        <p style="color:#888;font-size:12px;">You're receiving this because you posted a listing on MapIt.</p>
+      `,
+    });
+  } catch (err) {
+    console.error('Listing-live email failed for listing', listing.id, '-', err.message);
+  }
+}
+
+module.exports = { notifySellerOfInterest, scoreAndNotify, notifySellerListingLive };
