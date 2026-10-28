@@ -23,8 +23,10 @@ const { areaName } = require('../utils/areaName');
 const { logAuditEvent } = require('../utils/auditLog');
 const { lookupAndStoreNearbyPois } = require('../utils/poiLookup');
 const { moderateAndAlert } = require('../utils/notifyListings');
+const { notifySellerListingLive } = require('../utils/notifySeller');
 const { needsPhoneVerification } = require('../utils/phoneGate');
 const { waitUntil } = require('@vercel/functions');
+const { LISTING_EXPIRY_ENABLED, enforceRentOnly, missingRequiredDetail } = require('../config/listingRules');
 
 const router = express.Router();
 
@@ -39,9 +41,15 @@ const SHOW_PHONE = 'never';
 // Listing life: 30 days from approval, renewable by the owner.
 // Lazy expiry: reads hide listings past expires_at; nothing flips status to
 // 'expired' yet (that cron + seller emails come with Session 9H).
+// Switched off by LISTING_EXPIRY_ENABLED (FB-06) — see src/config/listingRules.js.
 const LISTING_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const newExpiry = () => new Date(Date.now() + LISTING_TTL_MS).toISOString();
-const isLive = l => !l.expires_at || new Date(l.expires_at).getTime() > Date.now();
+const isLive = l => !LISTING_EXPIRY_ENABLED || !l.expires_at || new Date(l.expires_at).getTime() > Date.now();
+
+// Description keeps the seller's line breaks (feedback FB-02, 2026-10-28):
+// CRLF → LF, 3+ newlines → one blank line, trimmed ends. Empty → null.
+const cleanDescription = d =>
+  typeof d === 'string' ? (d.replace(/\r\n?/g, '\n').replace(/\n{3,}/g, '\n\n').trim() || null) : null;
 
 // Radius search over-fetches by this much, then filters on the visible
 // point. MUST stay above fuzzLocation()'s max offset (400 m, utils/geo.js).
@@ -117,6 +125,8 @@ router.put('/:id/approve', requireAuth, requireAdmin, async (req, res, next) => 
       .select()
       .single();
     if (error) return next(createError(error.message));
+    // Fire-and-forget seller email (FB-05); waitUntil keeps Vercel alive for it.
+    waitUntil(notifySellerListingLive(listing));
     res.json({ listing, message: 'Listing approved and is now live.' });
   } catch (err) { next(err); }
 });
@@ -286,12 +296,16 @@ router.get('/cleanup/candidates', requireAuth, requireAdmin, async (req, res, ne
   try {
     const nowIso = new Date().toISOString();
 
-    const { data: staleRaw, error: staleErr } = await supabaseAdmin
-      .from('listings')
-      .select('*, profiles(full_name, avatar_color)')
-      .eq('status', 'active')
-      .lt('expires_at', nowIso)
-      .order('expires_at', { ascending: true });
+    // Expiry off (FB-06): nothing is stale, so admins can't bulk-delete
+    // listings that are still live for buyers.
+    const { data: staleRaw, error: staleErr } = LISTING_EXPIRY_ENABLED
+      ? await supabaseAdmin
+          .from('listings')
+          .select('*, profiles(full_name, avatar_color)')
+          .eq('status', 'active')
+          .lt('expires_at', nowIso)
+          .order('expires_at', { ascending: true })
+      : { data: [], error: null };
     if (staleErr) return next(createError(staleErr.message));
 
     const { data: liveRaw, error: liveErr } = await supabaseAdmin
@@ -620,6 +634,8 @@ router.post('/', requireAuth, async (req, res, next) => {
     }
     if (title.length > 80) return next(createError('Title must be 80 characters or less.'));
     if (price && parseFloat(price) < 0) return next(createError('Price cannot be negative.'));
+    const missingDetail = missingRequiredDetail(category, subcategory, details);
+    if (missingDetail) return next(createError(`Please fill in "${missingDetail}".`));
 
     // Session 9C: new accounts must verify their phone before posting. The
     // frontend pre-checks via /api/auth/otp/phone/status; this is the real gate.
@@ -653,7 +669,7 @@ router.post('/', requireAuth, async (req, res, next) => {
         category,
         subcategory,
         title:                title.trim(),
-        description:          description?.trim() || null,
+        description:          cleanDescription(description),
         price:                parseFloat(price) || 0,
         price_label:          price_label?.trim() || null,
         lat:                  exactLat,
@@ -663,7 +679,7 @@ router.post('/', requireAuth, async (req, res, next) => {
         show_exact_location:  showExactLocation,
         address:              publicAddress,
         specs:                specs || [],
-        details:              details || {},
+        details:              enforceRentOnly(category, subcategory, details || {}),
         status:               'pending',
         reference_code:       generateRefCode(),
         expires_at:           newExpiry(),
@@ -726,6 +742,19 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     if (Object.keys(updates).length === 0) {
       return next(createError('No valid fields to update.'));
     }
+
+    if (updates.description !== undefined) updates.description = cleanDescription(updates.description);
+
+    // Rent-only types (PG, FB-04): an edit can't turn one into a sale, nor
+    // move a sale listing into PG while keeping 'Sell'.
+    const finalCat = updates.category ?? existing.category;
+    const finalSub = updates.subcategory ?? existing.subcategory;
+    const finalDetails = updates.details ?? existing.details;
+    const rentOnly = enforceRentOnly(finalCat, finalSub, finalDetails);
+    if (rentOnly?.transaction_type !== finalDetails?.transaction_type) updates.details = rentOnly;
+    // Required details (PG): checked on the listing as it will be saved
+    const missingDetail = missingRequiredDetail(finalCat, finalSub, updates.details ?? existing.details);
+    if (missingDetail) return next(createError(`Please fill in "${missingDetail}".`));
 
     if (updates.show_exact_location !== undefined) {
       updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';

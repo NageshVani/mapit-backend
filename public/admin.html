@@ -705,7 +705,7 @@ async function loadPendingListings(){
           <span>📍 ${escapeHtmlAdm(l.address||'No address')}</span>
           <span style="color:var(--muted);">${new Date(l.created_at).toLocaleDateString('en-IN')}</span>
         </div>
-        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${escapeHtmlAdm(l.description.slice(0,120))}${l.description.length>120?'…':''}</div>`:''}
+        ${l.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;white-space:pre-wrap;">${escapeHtmlAdm(l.description.slice(0,120))}${l.description.length>120?'…':''}</div>`:''}
         ${adminPhotosHtml(l.listing_photos)}
         <div>
           <button class="admin-approve-btn" onclick="approveAdminListing('${l.id}')">✅ Approve & Go Live</button>
@@ -789,7 +789,7 @@ async function loadReportsQueue(){
           <span>● ${escapeHtmlAdm(listing.status)}</span>
           ${listing.reference_code?`<span style="color:var(--muted);">Ref ${escapeHtmlAdm(listing.reference_code)}</span>`:''}
         </div>
-        ${listing.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${escapeHtmlAdm(listing.description.slice(0,300))}${listing.description.length>300?'…':''}</div>`:''}
+        ${listing.description?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;white-space:pre-wrap;">${escapeHtmlAdm(listing.description.slice(0,300))}${listing.description.length>300?'…':''}</div>`:''}
         ${adminPhotosHtml(listing.listing_photos)}` : ''}
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
           <button class="admin-dismiss-btn" onclick="resolveReport('${r.id}','dismiss')">✓ Dismiss</button>

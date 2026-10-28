@@ -51,6 +51,7 @@ const uploadRoutes       = require('./routes/uploads');
 const grievanceRoutes    = require('./routes/grievances');
 const adminRoutes        = require('./routes/admin');
 const { errorHandler } = require('./middleware/errorHandler');
+const { LISTING_EXPIRY_ENABLED } = require('./config/listingRules');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -181,6 +182,7 @@ app.get('/api/config', (req, res) => {
     supabaseAnonKey:  process.env.SUPABASE_ANON_KEY,
     cartoApiKey:      process.env.CARTO_API_KEY || '',
     mapboxToken:      process.env.MAPBOX_ACCESS_TOKEN || '',
+    listingExpiry:    LISTING_EXPIRY_ENABLED,
   });
 });
 
