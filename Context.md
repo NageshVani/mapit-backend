@@ -126,7 +126,9 @@
 
 ## 🎯 Current Goal
 
-**NOW (2026-10-28, Wednesday, later) — Goal: Feedback Release 2 (auto-title + "✨ Write it for me") on uat → sign-off → PR `uat → main`; then Session 9L** (first: clean UAT's half-run 019 — tables exist, claim columns missing → rollback + full re-run). Release 1 is LIVE on prod (PR #29 `404c3ca`, smoke 14/14).
+**NOW (2026-10-28, Wednesday, evening) — Goal: Session 9L — Listing Review Queue, step 2 (backend) next.** Feedback Release 2 LIVE on prod (PR #30 `a8f7d9d`, smoke 14/14). 019 is clean on UAT (rollback + full re-run by Nagesh; James verify 6/6, EXPLAIN Index Scan on `listings_pending_queue_idx`, schema diff = exactly 019's 37 objects). 9L branch rebased onto uat (`6b1eba6`; old branch kept as `backup/session-9l-pre-rebase`). Production untouched (no 019) until 9L sign-off.
+
+**(2026-10-28, Wednesday, later) — Goal: Feedback Release 2 (auto-title + "✨ Write it for me") on uat → sign-off → PR `uat → main`; then Session 9L** (first: clean UAT's half-run 019 — tables exist, claim columns missing → rollback + full re-run). Release 1 is LIVE on prod (PR #29 `404c3ca`, smoke 14/14).
 
 **(2026-10-28, Wednesday) — Goal: Feedback Release 1** (first real listing + Arun's feedback, `fix/feedback-01`): FB-01 Bangalore tag, FB-02 line breaks, FB-03 half-BHK, FB-04 PG (rent only), FB-05 "listing is live" email, FB-06 expiry off, + Terms wording. All built + tested; FB-01/02/03/05/06 Nagesh localhost PASS; FB-04 click-test pending → push to uat → Arun check → PR `uat → main`. Session 9L continues in parallel (Nagesh runs 019 on UAT).
 
@@ -1911,7 +1913,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **ℹ️ (2026-10-28) `RENT_ONLY_SUBCATS` (page) and `RENT_ONLY_SUBCATEGORIES` (server) are two lists** — comments in both; server is the real rule.
 - **ℹ️ (2026-10-28) Context.md branch drift:** `fix/feedback-01` took the 9L branch's Context.md (file only, not 019); when 9L merges, resolve the Context.md conflict by keeping the newer (superset) version.
 - **ℹ️ (2026-10-28) Windows: stopping `npm start` leaves `node src/server.js` running on :3001** — start the server with `node src/server.js` directly when it must be restarted from a tool.
-- **⏸ (2026-10-26 19:50) Migration 019 not run yet** — Nagesh runs it on UAT (`xesekrkxbtybbxpsvxuz`) tomorrow; expect `019 verify: OK`. Then James: EXPLAIN on the claim query + optional read-only schema diff vs prod (difference = exactly 019's objects, by design).
+- **✅ (2026-10-28) 019 on UAT — DONE and verified.** UAT had been half-run (tables, no claim columns); Nagesh ran `019-rollback.sql` + full `019` (SQL Editor shows "No rows returned"; the `019 verify: OK` NOTICE is not displayed — success = no red error). James read-only verify 6/6 (columns, 2 tables, anon 42501 on tables + claim function). EXPLAIN (enable_seqscan off, 0 pending rows): `Index Scan using listings_pending_queue_idx` + LockRows. Schema diff prod vs UAT: 37 EXTRA on UAT = exactly 019 (2 tables, 16 columns, 13 constraints, 5 indexes, 1 function), no MISSING/CHANGED; NOTE server_version 17.6 (prod) vs 17.11 (UAT), informational. Gotcha: the UAT inventory file held the result twice (JSON + Markdown table) — compare used the JSON part only. Production: 019 still NOT run (by design, at 9L release).
+- **⏸ (2026-10-26 19:50, superseded 2026-10-28) Migration 019 not run yet** — Nagesh runs it on UAT (`xesekrkxbtybbxpsvxuz`) tomorrow; expect `019 verify: OK`. Then James: EXPLAIN on the claim query + optional read-only schema diff vs prod (difference = exactly 019's objects, by design).
 - **ℹ️ (2026-10-26 19:50) Admin Pending "Remove" = hard delete** (`DELETE /api/listings/:id`) — seller never learns why. Stays on prod until 9L is released (Nagesh: prod untouched).
 - **ℹ️ (2026-10-26 19:50) No session refresh anywhere** — Supabase token lasts 1 h; 9L adds `POST /api/auth/refresh` for the review page.
 - **ℹ️ (2026-10-26 19:50) `MapIt_Admin_v1.html` is stale** (last `82378f4`, no Transfer tab); `public/admin.html` is the real source. Decide its fate during 9L.
