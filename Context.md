@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-29 18:50 (UAE), checkpoint (**RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`): Whole city 65 km, comma "Write it for me", Explore + optional 🔍. uat checklist 1–6 PASS (Nagesh); prod serves it (radius menu + guide checked), `smoke:prod` 14/14. Next: 9L step 2 backend (bring uat into the 9L branch first).**)
+- **Last updated:** 2026-10-29 18:47 (UAE), end-of-day checkpoint (**Release 3 LIVE (PR #31 `f8910f9`, smoke 14/14). Day closed. Next session: 9L step 2 backend in two parts — merge uat into the 9L branch first.**)
+- **Last updated (previous):** 2026-10-29 18:50 (UAE), checkpoint (**RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`): Whole city 65 km, comma "Write it for me", Explore + optional 🔍. uat checklist 1–6 PASS (Nagesh); prod serves it (radius menu + guide checked), `smoke:prod` 14/14. Next: 9L step 2 backend (bring uat into the 9L branch first).**)
 - **Last updated (previous):** 2026-10-29 18:30 (UAE), checkpoint (**Feedback Release 3 built on `fix/feedback-03` (from uat `0a76f71`, NOT pushed): Whole city = 65 km (Region 50 km removed), comma-style "Write it for me", Explore stays a mode button with search behind an optional 🔍 (no bar on the map). All 3 Nagesh localhost PASS; User Guide text + shots retaken. Next: push → uat → Arun check → PR `uat → main` → smoke; then 9L step 2 backend.**)
 - **Last updated (previous):** 2026-10-28 20:13 (UAE), checkpoint (**FIRST REAL LISTING + first feedback. Feedback Release 1 (PR #29 `404c3ca`: Bangalore tag, line breaks, half-BHK, PG rent-only, "listing is live" email, expiry off, Terms) and Feedback Release 2 (PR #30 `a8f7d9d`: auto-title + "✨ Write it for me") LIVE on prod, smoke 14/14 each. 019 clean + verified on UAT (prod NOT run). Next: 9L step 2 backend on `feat/session-9l-review-queue` (`ea94c32`, not pushed).**)
 - **Last updated (previous):** 2026-10-26 19:50 (UAE), checkpoint (**STRATEGY CHANGE: mapit.co.in goes PUBLIC now (stealth seeding + "no MapIt name" rule ended). Session 9L started: dedicated mobile-first review page `/review` for approvers (Nagesh, Arun + both wives; hires later). Plan + draft migration 019 committed on `feat/session-9l-review-queue` (`e67326d`, NOT pushed, NOT run). Decisions D1–D5 taken; PROD UNTOUCHED until UAT test + sign-off. Next: Nagesh runs 019 on UAT → backend.**)
@@ -128,6 +129,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-29 18:47, end of day) — Goal: Session 9L step 2 (backend) next session.** Feedback Release 3 is LIVE on prod (PR #31 `f8910f9`, smoke 14/14); uat = `56fec11`. First merge uat into `feat/session-9l-review-queue` (local, not pushed; backup branch kept), then backend part 1 (`requireReviewer` + queue routes) and part 2 (`/api/auth/refresh`, rejection email, `uat:review` suite). Production still has no 019.
 
 **NOW (2026-10-29, Thursday) — Goal: Feedback Release 3 (Nagesh's feedback) on uat → Arun check → PR `uat → main`; then Session 9L step 2 (backend).** Built + Nagesh localhost PASS on `fix/feedback-03`: (1) radius menu = 1/3/5/10 km + **Whole city · 65 km** (`WHOLE_CITY_KM`, no circle, city framing); (2) "✨ Write it for me" details as comma lines (`DESC_LINE_MAX` 70); (3) Explore = mode button "Exploring ✕" + optional 🔍 header search field (was a bar over the map). 9L unchanged; production untouched.
 
@@ -1346,9 +1349,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **Feedback Release 3 (Whole city 65 km, comma description, Explore 🔍)** | ✅ RELEASED PR #31 `f8910f9` (2026-10-29), localhost + uat checklist PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html`, `public/user-guide.html`, `public/guide/*`, `scripts/guide-shots.js` | Branch `fix/feedback-03` (from uat `0a76f71`); screenshots `docs/screenshots/feedback-03/` |
 | **Feedback Release 2 (auto-title + Write it for me)** | ✅ RELEASED PR #30 `a8f7d9d` (2026-10-28), uat checklist 1–6 PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html` | Branch `feat/feedback-02-auto-title`; frontend only, no migration |
 | **Feedback Release 1 (FB-01…06 + Terms)** | ✅ RELEASED PR #29 `404c3ca` (2026-10-28), smoke 14/14 | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js`, `src/config/listingRules.js` (new), `src/server.js`, `src/utils/notifySeller.js`, `src/utils/notifyListings.js`, `public/admin.html`, `public/user-guide.html`, `docs/legal/terms-privacy-draft2.html` | Branch `fix/feedback-01`, 7 commits, no migration |
-| **Session 9L — Listing Review Queue (`/review`)** | 🔄 Step 1 DONE (019 clean on UAT, verify 6/6, EXPLAIN index scan, schema diff = 019 only, 2026-10-28); next: step 2 backend | `docs/technical/review-queue-plan.md`, `database/migrations/019-listing-review-queue.sql`, `database/scripts/019-rollback.sql` | Branch `feat/session-9l-review-queue` rebased onto uat (`6b1eba6` + `ea94c32`, not pushed); backup `backup/session-9l-pre-rebase`. Prod untouched until sign-off |
+| **Session 9L — Listing Review Queue (`/review`)** | 🔄 (2026-10-29: paused for Release 3; uat must be merged into the 9L branch before step 2) Step 1 DONE (019 clean on UAT, verify 6/6, EXPLAIN index scan, schema diff = 019 only, 2026-10-28); next: step 2 backend | `docs/technical/review-queue-plan.md`, `database/migrations/019-listing-review-queue.sql`, `database/scripts/019-rollback.sql` | Branch `feat/session-9l-review-queue` rebased onto uat (`6b1eba6` + `ea94c32`, not pushed); backup `backup/session-9l-pre-rebase`. Prod untouched until sign-off |
 | **Self-fill seller intake form (Google Sheet)** | ❌ Superseded 2026-10-26 (public release) | none yet | Apps Script `/exec` page (test GPS first) or neutral static host; owner mapit.backend@gmail.com; no MapIt name; no Supabase change; ~½ day |
 | **Real listings on prod (proxy posting)** | ❌ Superseded 2026-10-26 (public release; sellers post themselves) | none | Unbranded WhatsApp checklist → Arun/Nagesh post → approve within 4 h → Transfer when the seller joins |
 | **Admin 🔁 Transfer tab** | ✅ RELEASED PR #28 `9a2af82` (2026-10-25), smoke 14/14 | `src/routes/admin.js`, `public/admin.html`, `src/utils/auditLog.js`, `scripts/uat/admin-transfer.suite.js`, `package.json` | Option A manual handover; chats stay with admin; no migration |
@@ -1546,6 +1550,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+MapIt_MVP_v1.html + public/index.html — 2026-10-29: `WHOLE_CITY_KM=65` (radius menu, 5 `999` checks); `buildAutoDescription()` comma lines (`DESC_LINE_MAX`); Explore search moved into `#searchModeBox` (`exploring`/`searching` classes, `#exploreSearchBtn`, `openExploreSearch()`/`closeExploreSearch()`, List-view `setView`).
+public/user-guide.html + public/guide/{radius,explore}.webp + shots.js — 2026-10-29: Whole city (65 km) text; Explore steps move-the-map first, 🔍 optional; shots retaken.
+scripts/guide-shots.js — 2026-10-29: explore markers → `#smExplore`, `#exploreSearchBtn`, `#smPin`.
+docs/screenshots/feedback-03/ — 2026-10-29 (NEW): Release 3 before/after shots (phone 390/360 + laptop).
 MapIt_MVP_v1.html + public/index.html — 2026-10-28: Bangalore city tag; `.ld-desc` pre-wrap; `BHK_OPTIONS`; PG fields + `RENT_ONLY_SUBCATS` + `PHOTO_OPTIONAL_SUBCATS` + `required:true` fields (`missingRequiredField`, `syncPgFood`); expiry label/Renew hidden via `RUNTIME_CFG.listingExpiry`; Release 2 `TITLE_BUILDERS`, `buildAutoTitle/Description`, `suggestTitle`, `writeDescriptionForMe`, `.suggest-btn`.
 src/config/listingRules.js — 2026-10-28 (NEW): `LISTING_EXPIRY_ENABLED=false`, `RENT_ONLY_SUBCATEGORIES` + `enforceRentOnly()`, `REQUIRED_DETAILS` + `missingRequiredDetail()`.
 src/routes/listings.js — 2026-10-28: `cleanDescription()` on POST/PUT; `isLive` honours expiry switch; Cleanup stale empty when off; rent-only + required-detail checks on POST/PUT; approve → `waitUntil(notifySellerListingLive)`.
@@ -2553,6 +2561,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-29 18:47, end of day) — ordered (resume with /resume):**
+1. **Merge uat into `feat/session-9l-review-queue`** (local only; resolve Context.md by keeping uat's — it is the superset now).
+2. **9L step 2 part 1:** Rule-1 design brief → `requireReviewer` in `auth.js` + `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve`, `/:id/reject`, `/:id/release`, `/team`).
+3. **9L step 2 part 2:** `POST /api/auth/refresh`, seller rejection email (`notifySeller.js`), `npm run uat:review` incl. two approvers claiming at once.
+4. 9L steps 3–7 (phone mockup → `public/review.html` → seller side → UAT with both wives → release, 019 on prod first).
+5. Nagesh tells the seller Releases 1–3 are live.
+6. Later: 5-screen wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap (when volume grows).
 
 **⬅ ✅ DONE (2026-10-29 18:50): items 1–2 below (Release 3 live, PR #31). NOW: item 3 (9L backend), item 4 (tell the seller).**
 
