@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-28 20:13 (UAE), checkpoint (**FIRST REAL LISTING + first feedback. Feedback Release 1 (PR #29 `404c3ca`: Bangalore tag, line breaks, half-BHK, PG rent-only, "listing is live" email, expiry off, Terms) and Feedback Release 2 (PR #30 `a8f7d9d`: auto-title + "✨ Write it for me") LIVE on prod, smoke 14/14 each. 019 clean + verified on UAT (prod NOT run). Next: 9L step 2 backend on `feat/session-9l-review-queue` (`ea94c32`, not pushed).**)
+- **Last updated:** 2026-10-29 18:30 (UAE), checkpoint (**Feedback Release 3 built on `fix/feedback-03` (from uat `0a76f71`, NOT pushed): Whole city = 65 km (Region 50 km removed), comma-style "Write it for me", Explore stays a mode button with search behind an optional 🔍 (no bar on the map). All 3 Nagesh localhost PASS; User Guide text + shots retaken. Next: push → uat → Arun check → PR `uat → main` → smoke; then 9L step 2 backend.**)
+- **Last updated (previous):** 2026-10-28 20:13 (UAE), checkpoint (**FIRST REAL LISTING + first feedback. Feedback Release 1 (PR #29 `404c3ca`: Bangalore tag, line breaks, half-BHK, PG rent-only, "listing is live" email, expiry off, Terms) and Feedback Release 2 (PR #30 `a8f7d9d`: auto-title + "✨ Write it for me") LIVE on prod, smoke 14/14 each. 019 clean + verified on UAT (prod NOT run). Next: 9L step 2 backend on `feat/session-9l-review-queue` (`ea94c32`, not pushed).**)
 - **Last updated (previous):** 2026-10-26 19:50 (UAE), checkpoint (**STRATEGY CHANGE: mapit.co.in goes PUBLIC now (stealth seeding + "no MapIt name" rule ended). Session 9L started: dedicated mobile-first review page `/review` for approvers (Nagesh, Arun + both wives; hires later). Plan + draft migration 019 committed on `feat/session-9l-review-queue` (`e67326d`, NOT pushed, NOT run). Decisions D1–D5 taken; PROD UNTOUCHED until UAT test + sign-off. Next: Nagesh runs 019 on UAT → backend.**)
 - **Last updated (previous):** 2026-10-25 13:06 (UAE), checkpoint (**Planning only, no code: unbranded WhatsApp seller checklist drafted; NEW rule = no "MapIt" name in pre-launch outreach until prod has enough listings; self-fill intake form (Google Sheet via Apps Script, owner mapit.backend@gmail.com) ⏸ pending Nagesh + Arun on hosting; invite-link option C rejected; chat pop-up moved after enough listings; seller tips + "Write it for me" description + quick-add chips added to the wizard scope. Next: Arun's real listings on prod.**)
 - **Last updated (previous):** 2026-10-25 10:44 (UAE), checkpoint (**RELEASED: PR #28 `uat → main` (`9a2af82`) — admin 🔁 Transfer tab (assisted listings → seller's account, verified phone/email only). www.mapit.co.in/admin serves the tab, route 401 without login, `smoke:prod` 14/14 (one transient "fetch failed" run, re-run clean). Next: Arun's real listings → chat pop-up → wizard.**)
@@ -126,6 +127,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-29, Thursday) — Goal: Feedback Release 3 (Nagesh's feedback) on uat → Arun check → PR `uat → main`; then Session 9L step 2 (backend).** Built + Nagesh localhost PASS on `fix/feedback-03`: (1) radius menu = 1/3/5/10 km + **Whole city · 65 km** (`WHOLE_CITY_KM`, no circle, city framing); (2) "✨ Write it for me" details as comma lines (`DESC_LINE_MAX` 70); (3) Explore = mode button "Exploring ✕" + optional 🔍 header search field (was a bar over the map). 9L unchanged; production untouched.
 
 **NOW (2026-10-28, Wednesday, evening) — Goal: Session 9L — Listing Review Queue, step 2 (backend) next.** Feedback Release 2 LIVE on prod (PR #30 `a8f7d9d`, smoke 14/14). 019 is clean on UAT (rollback + full re-run by Nagesh; James verify 6/6, EXPLAIN Index Scan on `listings_pending_queue_idx`, schema diff = exactly 019's 37 objects). 9L branch rebased onto uat (`6b1eba6`; old branch kept as `backup/session-9l-pre-rebase`). Production untouched (no 019) until 9L sign-off.
 
@@ -598,6 +601,13 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-29) Feedback Release 3 built on `fix/feedback-03`, 3 commits + guide/docs, NOT pushed** (Nagesh localhost PASS each, one at a time):
+  - `c69871e` **Whole city · 65 km** — "Region 50 km" + unlimited "Whole city" (999 km) confused users → one option, real 65 km search, no circle, 25 km city framing kept. Five `999` checks → `WHOLE_CITY_KM` constant (menu `data-r="65"` must match). No server change (route caps at 999 km). Guide text updated. Click-test 1–4 PASS.
+  - `e17cce3` **Comma-style "Write it for me"** — `buildAutoDescription()`: `Label: value` pairs joined with ", ", new line only past 70 chars (`DESC_LINE_MAX`), no "Details:" heading/bullets. Checked Apartment/PG/Cars/Furniture. Click-test 1–5 PASS.
+  - `d62428e` **Explore stays a mode button** — first built as "Explore turns into the search field" (option A); Nagesh: a field says "type here" and users may not pan → **Option 2**: "🗺 Exploring ✕" (blue) + 🔍 button; 🔍 opens the header field (✕ closes, stays in Explore); picking a place closes it + toast "Exploring <place> — move the map to look around"; 📍 or "Exploring ✕" leaves. State classes `exploring`/`searching` on `#searchModeBox`. Field works in phone List view → non-animated `setView` there (9J NaN gotcha). Checked 390 + 360 px phone + laptop. Click-test 1–6 PASS.
+  - Screenshots (Rule 12): `docs/screenshots/feedback-03/` — before-/after- `{phone,laptop}-radius-menu`, `-whole-city`, `-explore`, `-explore-typing`, `laptop-write-for-me`; after-only `{phone,phone360,laptop}-explore-picked`, `phone(360)-explore-listview`, `phone360-explore(-typing)`.
+  - User Guide: radius + explore text updated, `npm run guide:shots -- radius explore` retaken (`#exploreSearchBtn` marker), throwaway user + listing deleted by ID.
+  - Context.md taken from the 9L branch (`b40ce52`, verified superset) so both branches share it — the earlier "branch drift" note no longer applies.
 - ✅ **(2026-10-28) RELEASED: Feedback Release 2 — PR #30 `uat → main` merged by Nagesh (`a8f7d9d`).** uat checklist 1–6 PASS; prod served it in ~5 s (2 ✨ buttons, `TITLE_BUILDERS`); `smoke:prod` 14/14.
 - ✅ **(2026-10-28) 9L step 1 — 019 clean on UAT** (Nagesh rollback + full run; James verify 6/6, EXPLAIN Index Scan, schema diff = 37 objects = exactly 019). 9L branch rebased onto uat by cherry-pick (`6b1eba6`), CONTEXT note `ea94c32`; old branch kept as `backup/session-9l-pre-rebase`.
 - ✅ **(2026-10-28) RELEASED: Feedback Release 1 — PR #29 `uat → main` merged (`404c3ca`, merged by James at Nagesh's request).** Nagesh uat checklist 1–7 PASS first; `smoke:prod` 14/14; prod checks: Bangalore tag, PG, 1.5–4.5 BHK, /terms wording + date, `/api/config.listingExpiry=false` (first call answered by a warm old instance; fresh call false). PG click-test round 2 (`7d72cc9`): Beds Available removed; rent, PG For, Meals, Food Type mandatory (`required:true` + "— Select —", red *, server `REQUIRED_DETAILS`); PG needs no photo (`PHOTO_OPTIONAL_SUBCATS`). API 13/13.
@@ -1922,9 +1932,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-10-29) `GET /api/listings` has no result cap** — fine at today's volume; at thousands of listings a 65 km Whole city search needs a limit / "load more".
 - **ℹ️ (2026-10-28) Turning expiry back on needs a plan** — `expires_at` is still written, so flipping `LISTING_EXPIRY_ENABLED` to true would hide every listing older than 30 days at once; push dates forward first (with 9H).
 - **ℹ️ (2026-10-28) `RENT_ONLY_SUBCATS` (page) and `RENT_ONLY_SUBCATEGORIES` (server) are two lists** — comments in both; server is the real rule.
-- **ℹ️ (2026-10-28) Context.md branch drift:** `fix/feedback-01` took the 9L branch's Context.md (file only, not 019); when 9L merges, resolve the Context.md conflict by keeping the newer (superset) version.
+- **✅ (2026-10-29, resolved: `fix/feedback-03` carries the 9L Context.md) Context.md branch drift:** `fix/feedback-01` took the 9L branch's Context.md (file only, not 019); when 9L merges, resolve the Context.md conflict by keeping the newer (superset) version.
 - **ℹ️ (2026-10-28) Windows: stopping `npm start` leaves `node src/server.js` running on :3001** — start the server with `node src/server.js` directly when it must be restarted from a tool.
 - **✅ (2026-10-28) 019 on UAT — DONE and verified.** UAT had been half-run (tables, no claim columns); Nagesh ran `019-rollback.sql` + full `019` (SQL Editor shows "No rows returned"; the `019 verify: OK` NOTICE is not displayed — success = no red error). James read-only verify 6/6 (columns, 2 tables, anon 42501 on tables + claim function). EXPLAIN (enable_seqscan off, 0 pending rows): `Index Scan using listings_pending_queue_idx` + LockRows. Schema diff prod vs UAT: 37 EXTRA on UAT = exactly 019 (2 tables, 16 columns, 13 constraints, 5 indexes, 1 function), no MISSING/CHANGED; NOTE server_version 17.6 (prod) vs 17.11 (UAT), informational. Gotcha: the UAT inventory file held the result twice (JSON + Markdown table) — compare used the JSON part only. Production: 019 still NOT run (by design, at 9L release).
 - **⏸ (2026-10-26 19:50, superseded 2026-10-28) Migration 019 not run yet** — Nagesh runs it on UAT (`xesekrkxbtybbxpsvxuz`) tomorrow; expect `019 verify: OK`. Then James: EXPLAIN on the claim query + optional read-only schema diff vs prod (difference = exactly 019's objects, by design).
@@ -2125,6 +2136,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-10-29, Nagesh) Whole city radius = 65 km** (James: radius is measured from the user, so edge-to-edge needs more than 50 km — e.g. Electronic City → Airport ~45 km, Anekal → Devanahalli ~60–65 km; 65 km reaches the growth belts where plots come from, inside the 100 km map bounds). Listings beyond 65 km of the user only via Explore — accepted. No circle drawn.
+- **(2026-10-29, Nagesh) Explore = move the map first; search optional behind 🔍** (Option 2 of 4; rejected: always-open field (implies typing), field + map hint, "Search this area" button (changes Explore + sits on the map)). Add a first-time "drag the map" hint only if UAT testers still miss panning.
+- **(2026-10-29) Description lines by length, not field groups** — one rule for all types, no per-type layout to maintain.
 - **(2026-10-28, Nagesh) Order: Release 1 → Release 2 (auto-title + Write it for me) → 9L.** Few listings yet, so the admin Pending tab copes; seller posting quality matters most now. Move 9L ahead if approvals start piling up.
 - **(2026-10-28) Auto-title + description are rule-based templates, not AI** (no cost, no invented facts), built standalone so the wizard reuses them; owner counts kept out of titles (ambiguous wording); price left out of descriptions (stale after edits). Tips + chips stay with the wizard.
 - **(2026-10-28) 9L branch moved onto uat by reset + cherry-pick** (not a rebase with a Context.md conflict): uat's Context.md was verified to be a superset first; backup branch kept.
@@ -2537,6 +2551,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-10-29 18:30) — ordered:**
+1. **Release 3 to uat:** push `fix/feedback-03` → merge to uat → uat.mapit.co.in check by Nagesh + Arun (radius menu, Whole city, Write it for me, Explore + 🔍 on a phone).
+2. PR `uat → main` → `smoke:prod` → prod spot check.
+3. **9L step 2 — backend** (unchanged, list below). Rebase/merge uat into `feat/session-9l-review-queue` first so it carries Release 3.
+4. Nagesh tells the seller Releases 1–3 are live.
 
 **⬅ NOW (2026-10-28 20:13) — ordered (resume next session with /resume):**
 1. **9L step 2 — backend** on `feat/session-9l-review-queue`: `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve`, `/:id/reject`, `/:id/release`, `/team`), `requireReviewer` in `auth.js`, `POST /api/auth/refresh`, seller rejection email (beside `notifySellerListingLive` in `notifySeller.js`), `npm run uat:review` incl. two approvers claiming at once (~3–4 h).
