@@ -128,7 +128,7 @@ const MARKS = list => `(() => { const out = [];
     await ev(`toggleRadMenu({ stopPropagation(){} }); 1`); await sleep(500);
     await capture('radius', [[1, '#radChip'], [2, '#radMenu']]);
     await ev(`document.getElementById('radMenu').classList.remove('open'); setSearchMode('explore'); 1`); await sleep(1200);
-    await capture('explore', [[1, '#smExplore'], [2, '#exploreSearchBox'], [3, '#smPin']]);
+    await capture('explore', [[1, '#smExplore'], [3, '#exploreSearchBtn'], [4, '#smPin']]);
     await ev(`setSearchMode('pin'); setViewMode('list', false); 1`); await sleep(1200);
 
     await ev(`openPinsModal(); 1`); await sleep(1500);
