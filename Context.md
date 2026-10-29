@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-29 18:30 (UAE), checkpoint (**Feedback Release 3 built on `fix/feedback-03` (from uat `0a76f71`, NOT pushed): Whole city = 65 km (Region 50 km removed), comma-style "Write it for me", Explore stays a mode button with search behind an optional 🔍 (no bar on the map). All 3 Nagesh localhost PASS; User Guide text + shots retaken. Next: push → uat → Arun check → PR `uat → main` → smoke; then 9L step 2 backend.**)
+- **Last updated:** 2026-10-29 18:50 (UAE), checkpoint (**RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`): Whole city 65 km, comma "Write it for me", Explore + optional 🔍. uat checklist 1–6 PASS (Nagesh); prod serves it (radius menu + guide checked), `smoke:prod` 14/14. Next: 9L step 2 backend (bring uat into the 9L branch first).**)
+- **Last updated (previous):** 2026-10-29 18:30 (UAE), checkpoint (**Feedback Release 3 built on `fix/feedback-03` (from uat `0a76f71`, NOT pushed): Whole city = 65 km (Region 50 km removed), comma-style "Write it for me", Explore stays a mode button with search behind an optional 🔍 (no bar on the map). All 3 Nagesh localhost PASS; User Guide text + shots retaken. Next: push → uat → Arun check → PR `uat → main` → smoke; then 9L step 2 backend.**)
 - **Last updated (previous):** 2026-10-28 20:13 (UAE), checkpoint (**FIRST REAL LISTING + first feedback. Feedback Release 1 (PR #29 `404c3ca`: Bangalore tag, line breaks, half-BHK, PG rent-only, "listing is live" email, expiry off, Terms) and Feedback Release 2 (PR #30 `a8f7d9d`: auto-title + "✨ Write it for me") LIVE on prod, smoke 14/14 each. 019 clean + verified on UAT (prod NOT run). Next: 9L step 2 backend on `feat/session-9l-review-queue` (`ea94c32`, not pushed).**)
 - **Last updated (previous):** 2026-10-26 19:50 (UAE), checkpoint (**STRATEGY CHANGE: mapit.co.in goes PUBLIC now (stealth seeding + "no MapIt name" rule ended). Session 9L started: dedicated mobile-first review page `/review` for approvers (Nagesh, Arun + both wives; hires later). Plan + draft migration 019 committed on `feat/session-9l-review-queue` (`e67326d`, NOT pushed, NOT run). Decisions D1–D5 taken; PROD UNTOUCHED until UAT test + sign-off. Next: Nagesh runs 019 on UAT → backend.**)
 - **Last updated (previous):** 2026-10-25 13:06 (UAE), checkpoint (**Planning only, no code: unbranded WhatsApp seller checklist drafted; NEW rule = no "MapIt" name in pre-launch outreach until prod has enough listings; self-fill intake form (Google Sheet via Apps Script, owner mapit.backend@gmail.com) ⏸ pending Nagesh + Arun on hosting; invite-link option C rejected; chat pop-up moved after enough listings; seller tips + "Write it for me" description + quick-add chips added to the wizard scope. Next: Arun's real listings on prod.**)
@@ -601,6 +602,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-29) RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`).** uat (`c3fe52f`) checklist 1–6 PASS; prod serves "Whole city 65 km" + new guide step; `smoke:prod` 14/14 before and after.
 - ✅ **(2026-10-29) Feedback Release 3 built on `fix/feedback-03`, 3 commits + guide/docs, NOT pushed** (Nagesh localhost PASS each, one at a time):
   - `c69871e` **Whole city · 65 km** — "Region 50 km" + unlimited "Whole city" (999 km) confused users → one option, real 65 km search, no circle, 25 km city framing kept. Five `999` checks → `WHOLE_CITY_KM` constant (menu `data-r="65"` must match). No server change (route caps at 999 km). Guide text updated. Click-test 1–4 PASS.
   - `e17cce3` **Comma-style "Write it for me"** — `buildAutoDescription()`: `Label: value` pairs joined with ", ", new line only past 70 chars (`DESC_LINE_MAX`), no "Details:" heading/bullets. Checked Apartment/PG/Cars/Furniture. Click-test 1–5 PASS.
@@ -2552,7 +2554,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-29 18:30) — ordered:**
+**⬅ ✅ DONE (2026-10-29 18:50): items 1–2 below (Release 3 live, PR #31). NOW: item 3 (9L backend), item 4 (tell the seller).**
+
+**⬅ (2026-10-29 18:30) — ordered:**
 1. **Release 3 to uat:** push `fix/feedback-03` → merge to uat → uat.mapit.co.in check by Nagesh + Arun (radius menu, Whole city, Write it for me, Explore + 🔍 on a phone).
 2. PR `uat → main` → `smoke:prod` → prod spot check.
 3. **9L step 2 — backend** (unchanged, list below). Rebase/merge uat into `feat/session-9l-review-queue` first so it carries Release 3.
