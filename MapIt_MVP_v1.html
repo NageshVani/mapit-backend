@@ -1877,17 +1877,27 @@ function buildAutoTitle(){
   while(parts.length > 1 && parts.join(', ').length > 80) parts.pop();
   return parts.join(', ').slice(0, 80);
 }
+// Details are "Label: value" pairs joined with ", "; a new line starts only when
+// a line would pass DESC_LINE_MAX chars (Feedback Release 3 — was one line per field).
+const DESC_LINE_MAX = 70;
 function buildAutoDescription(){
   const p = readPostDetails(); if(!p) return '';
-  const lines = p.fields
+  const pairs = p.fields
     .filter(f => f.id !== 'total_price' && p.d[f.id] !== '' && !(f.id === 'food_type' && p.d[f.id] === 'Not applicable'))
     // Label without its unit "(sq ft)" or a question tail "/ Electric?"
-    .map(f => `- ${f.label.replace(/\s*\([^)]*\)\s*$/, '').replace(/\s*\/\s*[^/]*\?$/, '')}: ${fmtDetailValue(f, p.d[f.id])}`);
-  if(!lines.length) return '';
+    .map(f => `${f.label.replace(/\s*\([^)]*\)\s*$/, '').replace(/\s*\/\s*[^/]*\?$/, '')}: ${fmtDetailValue(f, p.d[f.id])}`);
+  if(!pairs.length) return '';
+  const lines = [];
+  let cur = '';
+  for(const pair of pairs){
+    if(cur && cur.length + 2 + pair.length > DESC_LINE_MAX){ lines.push(cur + ','); cur = pair; }
+    else cur = cur ? `${cur}, ${pair}` : pair;
+  }
+  lines.push(cur + '.');
   const parts = autoTitleParts(p);
   const core = p.sub === 'PG' ? parts.slice(0, 2).join(', ') : (parts[0] || p.sub);
   const opening = core + (p.cat === 're' ? '' : ' for sale') + '.';
-  return [opening, '', 'Details:', ...lines, '', DESC_CLOSING[p.cat] || DESC_CLOSING.hh].join('\n').slice(0, 1000);
+  return [opening, '', ...lines, '', DESC_CLOSING[p.cat] || DESC_CLOSING.hh].join('\n').slice(0, 1000);
 }
 // Title follows the details while it is empty or still the last suggestion;
 // once the seller types their own, it is left alone (force = ✨ Suggest button).
