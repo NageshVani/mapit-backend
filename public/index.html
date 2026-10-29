@@ -1282,8 +1282,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <button class="rbt" data-r="3" onclick="setRad(3)">3 km</button>
         <button class="rbt on" data-r="5" onclick="setRad(5)">5 km</button>
         <button class="rbt" data-r="10" onclick="setRad(10)">10 km</button>
-        <button class="rbt" data-r="50" onclick="setRad(50)">Region <small>50 km</small></button>
-        <button class="rbt" data-r="999" onclick="setRad(999)">Whole city</button>
+        <button class="rbt" data-r="65" onclick="setRad(WHOLE_CITY_KM)">Whole city <small>65 km</small></button>
       </div>
     </div>
   </div>
@@ -1995,6 +1994,10 @@ function listingRow(l){
 // STATE
 // ═══════════════════════════════════════════════
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
+// "Whole city" radius (Feedback Release 3, 2026-10-29): replaces "Region 50 km" +
+// an unlimited "Whole city". 65 km from anywhere in the city reaches the growth
+// belts on the far side (Devanahalli, Hoskote, Kanakapura Rd, Hosur). No circle drawn.
+const WHOLE_CITY_KM = 65;
 let ST = {
   cat:'all', chip:'all', txn:null, sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
   selId:null, tab:'browse', editingId:null, sharedListing:null,
@@ -3254,7 +3257,7 @@ function updateCircle(){
   if(radCircle) radCircle.remove();
   const loc = activeLoc();
   const circleColor = ST.exploreMode ? '#3B82F6' : '#F06030';
-  if(ST.rad<999){
+  if(ST.rad<WHOLE_CITY_KM){
     radCircle=L.circle([loc.lat,loc.lng],{
       radius:ST.rad*1000,color:circleColor,fillColor:circleColor,
       fillOpacity:.06,weight:2.5,dashArray:'7 6',
@@ -3317,7 +3320,7 @@ async function loadListings(){
   ST.loadingListings = true;
   showSidebarLoading();
   const loc = activeLoc();
-  const radiusM = ST.rad >= 999 ? 999000 : ST.rad * 1000;
+  const radiusM = ST.rad * 1000;
   try {
     let url = `/api/listings?lat=${loc.lat}&lng=${loc.lng}&radius=${radiusM}`;
     if(ST.cat !== 'all') url += `&category=${ST.cat}`;
@@ -3562,7 +3565,7 @@ function renderSidebar(){
     } else if(ST.q){
       el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">🔍</div><div class="sb-empty-ttl">No results for "${escHtml(ST.q)}"</div><div class="sb-empty-sub">Try a different word or clear the search.</div></div>`;
     } else {
-      el.innerHTML = `<div class="nearby-hd">📍 ${fl.length} listing${fl.length!==1?'s':''} within ${ST.rad>=999?'Bangalore':ST.rad+' km'}</div>`+(fl.length?fl.map(listingRow).join(''):`<div class="sb-empty"><div class="sb-empty-ico">📍</div><div class="sb-empty-ttl">No listings nearby</div><div class="sb-empty-sub">Try increasing the radius or switching category.</div></div>`);
+      el.innerHTML = `<div class="nearby-hd">📍 ${fl.length} listing${fl.length!==1?'s':''} within ${ST.rad>=WHOLE_CITY_KM?'Bangalore':ST.rad+' km'}</div>`+(fl.length?fl.map(listingRow).join(''):`<div class="sb-empty"><div class="sb-empty-ico">📍</div><div class="sb-empty-ttl">No listings nearby</div><div class="sb-empty-sub">Try increasing the radius or switching category.</div></div>`);
     }
     return;
   }
@@ -4856,7 +4859,7 @@ function setSub(s){
 }
 function setRad(r){
   ST.rad=r;
-  document.getElementById('radLbl').textContent = r>=999?'whole city':r+' km';
+  document.getElementById('radLbl').textContent = r>=WHOLE_CITY_KM?'whole city':r+' km';
   // match by each option's own data-r value, not its position in the menu
   document.querySelectorAll('.rbt').forEach(b=>b.classList.toggle('on',Number(b.dataset.r)===r));
   closeRadMenu();
@@ -4881,7 +4884,7 @@ function fitMapToRadius(fly){
     return;
   }
   let bounds, pad;
-  if(ST.rad<999&&radCircle){ bounds=radCircle.getBounds(); pad=[30,30]; }
+  if(ST.rad<WHOLE_CITY_KM&&radCircle){ bounds=radCircle.getBounds(); pad=[30,30]; }
   else{ const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180); bounds=L.latLngBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]]); pad=[20,20]; }
   if(fly) map.flyToBounds(bounds,{padding:pad,duration:.8});
   else map.fitBounds(bounds,{padding:pad,animate:true});
