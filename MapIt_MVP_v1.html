@@ -69,7 +69,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .kw-pill-txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .kw-pill button{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:none;background:var(--card);color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0;}
 .kw-pill button:hover{color:var(--text);}
-.explore-search-box:not(.hide) ~ .kw-pill{top:64px;}
 .hsp{flex:1;}
 .post-btn{padding:8px 16px;border-radius:8px;border:none;background:var(--orange);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap;flex-shrink:0;transition:background .18s;}
 .post-btn:hover{background:var(--orange2);}
@@ -335,11 +334,24 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 }
 
 /* ── EXPLORE AREA SEARCH BAR ── */
-.explore-search-box{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:650;width:min(360px,90%);background:var(--panel);border-radius:24px;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;padding:9px 16px;gap:8px;}
-.explore-search-box.hide{display:none;}
-.explore-search-box input{flex:1;border:none;outline:none;font-size:13px;font-family:'Outfit',sans-serif;background:transparent;color:var(--text);}
-.explore-search-ic{font-size:13px;color:var(--muted);flex-shrink:0;}
-.explore-search-dd{position:absolute;top:100%;left:0;right:0;background:var(--panel);border-radius:10px;margin-top:6px;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.18);}
+/* Lives in the header mode toggle. .exploring: My location shrinks to 📍 (= back),
+   Explore reads "Exploring ✕", a 🔍 button appears. .searching: 🔍 opens this field
+   in place of Explore + 🔍; its ✕ closes the field and stays in Explore. */
+.explore-search-box{position:relative;display:none;align-items:center;gap:6px;flex:1 1 auto;min-width:0;width:260px;background:var(--panel);border:1.5px solid var(--blue);border-radius:6px;padding:3px 4px 3px 9px;}
+.ex-on,.explore-search-btn{display:none;}
+.explore-search-btn{flex:0 0 auto;padding:5px 9px;}
+.smode-tog.exploring .ex-off{display:none;}
+.smode-tog.exploring .ex-on{display:inline;}
+.smode-tog.exploring .explore-search-btn{display:block;}
+.smode-tog.searching #smExplore,.smode-tog.searching .explore-search-btn{display:none;}
+.smode-tog.searching .explore-search-box{display:flex;}
+.explore-search-box input{flex:1;min-width:0;border:none;outline:none;font-size:13px;font-family:'Outfit',sans-serif;background:transparent;color:var(--text);padding:2px 0;}
+.explore-search-ic{font-size:12px;color:var(--muted);flex-shrink:0;}
+.explore-x{flex-shrink:0;width:22px;height:22px;border-radius:50%;border:none;background:var(--card);color:var(--muted);font-size:12px;line-height:1;cursor:pointer;padding:0;}
+.explore-x:hover{color:var(--text);}
+.smode-tog.exploring #smPin .smb-k,.smode-tog.exploring #activePinLabel,.smode-tog.exploring #smPin .rad-caret{display:none;}
+.smode-tog.exploring .pin-box{flex:0 0 auto;}
+.explore-search-dd{position:absolute;top:100%;left:0;right:0;min-width:240px;z-index:1100;background:var(--panel);border-radius:10px;margin-top:6px;max-height:240px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.18);}
 .explore-search-dd.hide{display:none;}
 .explore-search-row{padding:9px 14px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--border);}
 .explore-search-row:last-child{border-bottom:none;}
@@ -1271,7 +1283,15 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         </button>
         <div class="rad-menu pin-menu" id="pinMenu" role="menu"></div>
       </div>
-      <button class="smb explore" id="smExplore" onclick="setSearchMode('explore')" title="Pan the map or search any area">🗺 Explore</button>
+      <button class="smb explore" id="smExplore" onclick="setSearchMode(ST.exploreMode ? 'pin' : 'explore')" title="Pan the map to look around any area"><span class="ex-off">🗺 Explore</span><span class="ex-on">🗺 Exploring ✕</span></button>
+      <!-- Explore = move the map; search is an optional shortcut behind 🔍 (Feedback Release 3; was a bar over the map) -->
+      <button type="button" class="smb explore-search-btn" id="exploreSearchBtn" onclick="openExploreSearch()" title="Search an area to jump there" aria-label="Search an area">🔍</button>
+      <div class="explore-search-box" id="exploreSearchBox">
+        <span class="explore-search-ic">🔍</span>
+        <input type="text" id="exploreSearchIn" placeholder="Search area…" autocomplete="off" enterkeyhint="search" oninput="_onExploreSearchInput()"/>
+        <button type="button" class="explore-x" onclick="closeExploreSearch()" title="Close search" aria-label="Close search">✕</button>
+        <div id="exploreSearchDD" class="explore-search-dd hide"></div>
+      </div>
     </div>
     <div class="rad-box" id="radBox">
       <button class="rad-chip" id="radChip" type="button" onclick="toggleRadMenu(event)" aria-haspopup="true" aria-expanded="false">
@@ -1282,8 +1302,7 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
         <button class="rbt" data-r="3" onclick="setRad(3)">3 km</button>
         <button class="rbt on" data-r="5" onclick="setRad(5)">5 km</button>
         <button class="rbt" data-r="10" onclick="setRad(10)">10 km</button>
-        <button class="rbt" data-r="50" onclick="setRad(50)">Region <small>50 km</small></button>
-        <button class="rbt" data-r="999" onclick="setRad(999)">Whole city</button>
+        <button class="rbt" data-r="65" onclick="setRad(WHOLE_CITY_KM)">Whole city <small>65 km</small></button>
       </div>
     </div>
   </div>
@@ -1339,11 +1358,6 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
     <div id="map"></div>
     <div class="cnt-mini"><b id="mapCnt">0</b> pins visible</div>
     <div id="hoverCard"><div class="hc-inner" id="hcInner"></div></div>
-    <div class="explore-search-box hide" id="exploreSearchBox">
-      <span class="explore-search-ic">🔍</span>
-      <input type="text" id="exploreSearchIn" placeholder="Search area to jump there…" autocomplete="off" oninput="_onExploreSearchInput()"/>
-      <div id="exploreSearchDD" class="explore-search-dd hide"></div>
-    </div>
     <div class="kw-pill hide" id="kwPill" role="status"><span class="kw-pill-txt">🔍 “<b id="kwPillTxt"></b>”</span><button type="button" onclick="clearKeyword()" title="Clear search" aria-label="Clear keyword search">×</button></div>
   </div>
   <div id="viewToggle" class="vtog">
@@ -1878,17 +1892,27 @@ function buildAutoTitle(){
   while(parts.length > 1 && parts.join(', ').length > 80) parts.pop();
   return parts.join(', ').slice(0, 80);
 }
+// Details are "Label: value" pairs joined with ", "; a new line starts only when
+// a line would pass DESC_LINE_MAX chars (Feedback Release 3 — was one line per field).
+const DESC_LINE_MAX = 70;
 function buildAutoDescription(){
   const p = readPostDetails(); if(!p) return '';
-  const lines = p.fields
+  const pairs = p.fields
     .filter(f => f.id !== 'total_price' && p.d[f.id] !== '' && !(f.id === 'food_type' && p.d[f.id] === 'Not applicable'))
     // Label without its unit "(sq ft)" or a question tail "/ Electric?"
-    .map(f => `- ${f.label.replace(/\s*\([^)]*\)\s*$/, '').replace(/\s*\/\s*[^/]*\?$/, '')}: ${fmtDetailValue(f, p.d[f.id])}`);
-  if(!lines.length) return '';
+    .map(f => `${f.label.replace(/\s*\([^)]*\)\s*$/, '').replace(/\s*\/\s*[^/]*\?$/, '')}: ${fmtDetailValue(f, p.d[f.id])}`);
+  if(!pairs.length) return '';
+  const lines = [];
+  let cur = '';
+  for(const pair of pairs){
+    if(cur && cur.length + 2 + pair.length > DESC_LINE_MAX){ lines.push(cur + ','); cur = pair; }
+    else cur = cur ? `${cur}, ${pair}` : pair;
+  }
+  lines.push(cur + '.');
   const parts = autoTitleParts(p);
   const core = p.sub === 'PG' ? parts.slice(0, 2).join(', ') : (parts[0] || p.sub);
   const opening = core + (p.cat === 're' ? '' : ' for sale') + '.';
-  return [opening, '', 'Details:', ...lines, '', DESC_CLOSING[p.cat] || DESC_CLOSING.hh].join('\n').slice(0, 1000);
+  return [opening, '', ...lines, '', DESC_CLOSING[p.cat] || DESC_CLOSING.hh].join('\n').slice(0, 1000);
 }
 // Title follows the details while it is empty or still the last suggestion;
 // once the seller types their own, it is left alone (force = ✨ Suggest button).
@@ -1995,6 +2019,10 @@ function listingRow(l){
 // STATE
 // ═══════════════════════════════════════════════
 const DEFAULT_LOC = { lat:12.9352, lng:77.6245, label:'Koramangala' };
+// "Whole city" radius (Feedback Release 3, 2026-10-29): replaces "Region 50 km" +
+// an unlimited "Whole city". 65 km from anywhere in the city reaches the growth
+// belts on the far side (Devanahalli, Hoskote, Kanakapura Rd, Hosur). No circle drawn.
+const WHOLE_CITY_KM = 65;
 let ST = {
   cat:'all', chip:'all', txn:null, sub:null, rad:5, q:'', exploreMode:false, viewMode:'map',
   selId:null, tab:'browse', editingId:null, sharedListing:null,
@@ -3254,7 +3282,7 @@ function updateCircle(){
   if(radCircle) radCircle.remove();
   const loc = activeLoc();
   const circleColor = ST.exploreMode ? '#3B82F6' : '#F06030';
-  if(ST.rad<999){
+  if(ST.rad<WHOLE_CITY_KM){
     radCircle=L.circle([loc.lat,loc.lng],{
       radius:ST.rad*1000,color:circleColor,fillColor:circleColor,
       fillOpacity:.06,weight:2.5,dashArray:'7 6',
@@ -3317,7 +3345,7 @@ async function loadListings(){
   ST.loadingListings = true;
   showSidebarLoading();
   const loc = activeLoc();
-  const radiusM = ST.rad >= 999 ? 999000 : ST.rad * 1000;
+  const radiusM = ST.rad * 1000;
   try {
     let url = `/api/listings?lat=${loc.lat}&lng=${loc.lng}&radius=${radiusM}`;
     if(ST.cat !== 'all') url += `&category=${ST.cat}`;
@@ -3562,7 +3590,7 @@ function renderSidebar(){
     } else if(ST.q){
       el.innerHTML = `<div class="sb-empty"><div class="sb-empty-ico">🔍</div><div class="sb-empty-ttl">No results for "${escHtml(ST.q)}"</div><div class="sb-empty-sub">Try a different word or clear the search.</div></div>`;
     } else {
-      el.innerHTML = `<div class="nearby-hd">📍 ${fl.length} listing${fl.length!==1?'s':''} within ${ST.rad>=999?'Bangalore':ST.rad+' km'}</div>`+(fl.length?fl.map(listingRow).join(''):`<div class="sb-empty"><div class="sb-empty-ico">📍</div><div class="sb-empty-ttl">No listings nearby</div><div class="sb-empty-sub">Try increasing the radius or switching category.</div></div>`);
+      el.innerHTML = `<div class="nearby-hd">📍 ${fl.length} listing${fl.length!==1?'s':''} within ${ST.rad>=WHOLE_CITY_KM?'Bangalore':ST.rad+' km'}</div>`+(fl.length?fl.map(listingRow).join(''):`<div class="sb-empty"><div class="sb-empty-ico">📍</div><div class="sb-empty-ttl">No listings nearby</div><div class="sb-empty-sub">Try increasing the radius or switching category.</div></div>`);
     }
     return;
   }
@@ -4856,7 +4884,7 @@ function setSub(s){
 }
 function setRad(r){
   ST.rad=r;
-  document.getElementById('radLbl').textContent = r>=999?'whole city':r+' km';
+  document.getElementById('radLbl').textContent = r>=WHOLE_CITY_KM?'whole city':r+' km';
   // match by each option's own data-r value, not its position in the menu
   document.querySelectorAll('.rbt').forEach(b=>b.classList.toggle('on',Number(b.dataset.r)===r));
   closeRadMenu();
@@ -4881,7 +4909,7 @@ function fitMapToRadius(fly){
     return;
   }
   let bounds, pad;
-  if(ST.rad<999&&radCircle){ bounds=radCircle.getBounds(); pad=[30,30]; }
+  if(ST.rad<WHOLE_CITY_KM&&radCircle){ bounds=radCircle.getBounds(); pad=[30,30]; }
   else{ const d=25/111,dg=d/Math.cos(loc.lat*Math.PI/180); bounds=L.latLngBounds([[loc.lat-d,loc.lng-dg],[loc.lat+d,loc.lng+dg]]); pad=[20,20]; }
   if(fly) map.flyToBounds(bounds,{padding:pad,duration:.8});
   else map.fitBounds(bounds,{padding:pad,animate:true});
@@ -4900,24 +4928,18 @@ function setSearchMode(mode){
   ST.exploreMode = (mode === 'explore');
   document.getElementById('smPin').classList.toggle('on', !ST.exploreMode);
   document.getElementById('smExplore').classList.toggle('on', ST.exploreMode);
-  const searchBox = document.getElementById('exploreSearchBox');
+  document.getElementById('searchModeBox').classList.toggle('exploring', ST.exploreMode);
   if(ST.exploreMode){
     _placeExploreMarker();
     map.on('move', _onExploreMove);
     map.on('moveend', _onExploreMoveEnd);
-    if(searchBox) searchBox.classList.remove('hide');
-    toast('🗺 Explore mode — pan the map to search any area');
+    toast('🗺 Move the map to explore any area — or tap 🔍 to search');
   } else {
     if(_exploreMarker){ _exploreMarker.remove(); _exploreMarker = null; }
     clearTimeout(_exploreMoveTO);
     map.off('move', _onExploreMove);
     map.off('moveend', _onExploreMoveEnd);
-    if(searchBox){
-      searchBox.classList.add('hide');
-      document.getElementById('exploreSearchIn').value = '';
-      document.getElementById('exploreSearchDD').classList.add('hide');
-      document.getElementById('exploreSearchDD').innerHTML = '';
-    }
+    closeExploreSearch();
   }
   updateCircle();
   if(!ST.exploreMode) fitMapToRadius(true);
@@ -4960,6 +4982,20 @@ function _onExploreMoveEnd(){
 let _exploreSearchTimer = null;
 let _exploreSearchResults = [];
 
+// 🔍 opens the field in place of the Explore button; ✕ (or picking a place) closes
+// it and stays in Explore — moving the map stays the main way to explore.
+function openExploreSearch(){
+  document.getElementById('searchModeBox').classList.add('searching');
+  document.getElementById('exploreSearchIn').focus();
+}
+function closeExploreSearch(){
+  clearTimeout(_exploreSearchTimer);
+  document.getElementById('searchModeBox').classList.remove('searching');
+  const inp = document.getElementById('exploreSearchIn'), dd = document.getElementById('exploreSearchDD');
+  inp.value = ''; inp.blur();
+  dd.classList.add('hide'); dd.innerHTML = '';
+}
+
 function _onExploreSearchInput(){
   clearTimeout(_exploreSearchTimer);
   const q = document.getElementById('exploreSearchIn').value.trim();
@@ -4996,14 +5032,18 @@ async function _runExploreSearch(q){
 function _pickExploreSearchResult(i){
   const m = _exploreSearchResults[i];
   if(!m) return;
-  document.getElementById('exploreSearchIn').value = m.display_name.split(',').slice(0,3).map(x=>x.trim()).join(', ');
-  document.getElementById('exploreSearchDD').classList.add('hide');
-  map.flyTo([+m.lat, +m.lon], 15);
+  const place = m.display_name.split(',')[0].trim();
+  closeExploreSearch(); // also closes the phone keyboard
+  toast(`🗺 Exploring ${place} — move the map to look around`);
+  // The field is in the header now, so it is usable in phone List view, where the
+  // map is hidden and an animated flyTo throws "Invalid LatLng (NaN, NaN)" (9J).
+  if(mapHidden()) map.setView([+m.lat, +m.lon], 15, {animate:false});
+  else map.flyTo([+m.lat, +m.lon], 15);
 }
 
 // Close the results dropdown on any click outside the search box, same
 // safety-net every other search dropdown in this app lacks (they live
-// inside modals that get closed a different way) — this one floats over
+// inside modals that get closed a different way) — this one drops down over
 // the live map, so a stray click needs to dismiss it instead of leaving
 // stale results hovering over the tiles.
 document.addEventListener('click', (e) => {
