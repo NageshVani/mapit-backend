@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-29 18:47 (UAE), end-of-day checkpoint (**Release 3 LIVE (PR #31 `f8910f9`, smoke 14/14). Day closed. Next session: 9L step 2 backend in two parts — merge uat into the 9L branch first.**)
+- **Last updated:** 2026-10-30 18:23 (UAE), checkpoint (**uat merged into `feat/session-9l-review-queue` (`e16317c`, local, not pushed): only Context.md conflicted — uat copy kept (verified superset); branch = uat + 3 9L files (019, rollback, plan). Session paused (urgent work). Next: 9L step 2 part 1 design brief.**)
+- **Last updated (previous):** 2026-10-29 18:47 (UAE), end-of-day checkpoint (**Release 3 LIVE (PR #31 `f8910f9`, smoke 14/14). Day closed. Next session: 9L step 2 backend in two parts — merge uat into the 9L branch first.**)
 - **Last updated (previous):** 2026-10-29 18:50 (UAE), checkpoint (**RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`): Whole city 65 km, comma "Write it for me", Explore + optional 🔍. uat checklist 1–6 PASS (Nagesh); prod serves it (radius menu + guide checked), `smoke:prod` 14/14. Next: 9L step 2 backend (bring uat into the 9L branch first).**)
 - **Last updated (previous):** 2026-10-29 18:30 (UAE), checkpoint (**Feedback Release 3 built on `fix/feedback-03` (from uat `0a76f71`, NOT pushed): Whole city = 65 km (Region 50 km removed), comma-style "Write it for me", Explore stays a mode button with search behind an optional 🔍 (no bar on the map). All 3 Nagesh localhost PASS; User Guide text + shots retaken. Next: push → uat → Arun check → PR `uat → main` → smoke; then 9L step 2 backend.**)
 - **Last updated (previous):** 2026-10-28 20:13 (UAE), checkpoint (**FIRST REAL LISTING + first feedback. Feedback Release 1 (PR #29 `404c3ca`: Bangalore tag, line breaks, half-BHK, PG rent-only, "listing is live" email, expiry off, Terms) and Feedback Release 2 (PR #30 `a8f7d9d`: auto-title + "✨ Write it for me") LIVE on prod, smoke 14/14 each. 019 clean + verified on UAT (prod NOT run). Next: 9L step 2 backend on `feat/session-9l-review-queue` (`ea94c32`, not pushed).**)
@@ -2562,7 +2563,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-29 18:47, end of day) — ordered (resume with /resume):**
+**⬅ NOW (2026-10-30 18:23) — item 1 below ✅ DONE (merge `e16317c`). NOW: item 2 (9L step 2 part 1 — Rule-1 design brief first, no code before Nagesh approves).**
+
+**⬅ (2026-10-29 18:47, end of day) — ordered (resume with /resume):**
 1. **Merge uat into `feat/session-9l-review-queue`** (local only; resolve Context.md by keeping uat's — it is the superset now).
 2. **9L step 2 part 1:** Rule-1 design brief → `requireReviewer` in `auth.js` + `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve`, `/:id/reject`, `/:id/release`, `/team`).
 3. **9L step 2 part 2:** `POST /api/auth/refresh`, seller rejection email (`notifySeller.js`), `npm run uat:review` incl. two approvers claiming at once.
