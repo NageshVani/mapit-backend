@@ -10,7 +10,7 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-30 18:23 (UAE), checkpoint (**uat merged into `feat/session-9l-review-queue` (`e16317c`, local, not pushed): only Context.md conflicted — uat copy kept (verified superset); branch = uat + 3 9L files (019, rollback, plan). Session paused (urgent work). Next: 9L step 2 part 1 design brief.**)
+- **Last updated:** 2026-10-30 18:24 (UAE), end-of-day checkpoint (**uat merged into `feat/session-9l-review-queue` (`e16317c`, local, not pushed): only Context.md conflicted — uat copy kept (verified superset); branch = uat + 3 9L files (019, rollback, plan). Session paused (urgent work, Nagesh). Next: 9L step 2 part 1 — Rule-1 design brief, no code before approval.**)
 - **Last updated (previous):** 2026-10-29 18:47 (UAE), end-of-day checkpoint (**Release 3 LIVE (PR #31 `f8910f9`, smoke 14/14). Day closed. Next session: 9L step 2 backend in two parts — merge uat into the 9L branch first.**)
 - **Last updated (previous):** 2026-10-29 18:50 (UAE), checkpoint (**RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`): Whole city 65 km, comma "Write it for me", Explore + optional 🔍. uat checklist 1–6 PASS (Nagesh); prod serves it (radius menu + guide checked), `smoke:prod` 14/14. Next: 9L step 2 backend (bring uat into the 9L branch first).**)
 - **Last updated (previous):** 2026-10-29 18:30 (UAE), checkpoint (**Feedback Release 3 built on `fix/feedback-03` (from uat `0a76f71`, NOT pushed): Whole city = 65 km (Region 50 km removed), comma-style "Write it for me", Explore stays a mode button with search behind an optional 🔍 (no bar on the map). All 3 Nagesh localhost PASS; User Guide text + shots retaken. Next: push → uat → Arun check → PR `uat → main` → smoke; then 9L step 2 backend.**)
@@ -130,6 +130,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-30 18:24, paused for urgent work) — Goal: Session 9L step 2 part 1 (backend) next session.** uat is merged into `feat/session-9l-review-queue` (`e16317c` + checkpoint `27b4194`, local, not pushed); branch = uat + only the 3 9L files. Start with the Rule-1 design brief for `requireReviewer` + `src/routes/review.js`; no code before Nagesh approves. Production still has no 019.
 
 **NOW (2026-10-29 18:47, end of day) — Goal: Session 9L step 2 (backend) next session.** Feedback Release 3 is LIVE on prod (PR #31 `f8910f9`, smoke 14/14); uat = `56fec11`. First merge uat into `feat/session-9l-review-queue` (local, not pushed; backup branch kept), then backend part 1 (`requireReviewer` + queue routes) and part 2 (`/api/auth/refresh`, rejection email, `uat:review` suite). Production still has no 019.
 
@@ -606,6 +608,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-30) uat merged into `feat/session-9l-review-queue` — merge `e16317c` (`--no-ff`, local, not pushed).** Only conflict: `Context.md` (both sides edited the same lines). Line check showed uat copy is a superset (3 branch-only lines = older versions of entries uat updated) → kept uat copy (`--theirs`). Verified: no conflict markers, Context.md == uat, two-file rule OK, `git diff uat` = only 019 / rollback / plan. Backup branch untouched.
+- ✅ **(2026-10-30) Explained the merge to Nagesh** (split point `0a76f71`, file-by-file merge, why only Context.md conflicted, superset check as the safe resolution method).
 - ✅ **(2026-10-29) RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`).** uat (`c3fe52f`) checklist 1–6 PASS; prod serves "Whole city 65 km" + new guide step; `smoke:prod` 14/14 before and after.
 - ✅ **(2026-10-29) Feedback Release 3 built on `fix/feedback-03`, 3 commits + guide/docs, NOT pushed** (Nagesh localhost PASS each, one at a time):
   - `c69871e` **Whole city · 65 km** — "Region 50 km" + unlimited "Whole city" (999 km) confused users → one option, real 65 km search, no circle, 25 km city framing kept. Five `999` checks → `WHOLE_CITY_KM` constant (menu `data-r="65"` must match). No server change (route caps at 999 km). Guide text updated. Click-test 1–4 PASS.
@@ -1353,7 +1357,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | **Feedback Release 3 (Whole city 65 km, comma description, Explore 🔍)** | ✅ RELEASED PR #31 `f8910f9` (2026-10-29), localhost + uat checklist PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html`, `public/user-guide.html`, `public/guide/*`, `scripts/guide-shots.js` | Branch `fix/feedback-03` (from uat `0a76f71`); screenshots `docs/screenshots/feedback-03/` |
 | **Feedback Release 2 (auto-title + Write it for me)** | ✅ RELEASED PR #30 `a8f7d9d` (2026-10-28), uat checklist 1–6 PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html` | Branch `feat/feedback-02-auto-title`; frontend only, no migration |
 | **Feedback Release 1 (FB-01…06 + Terms)** | ✅ RELEASED PR #29 `404c3ca` (2026-10-28), smoke 14/14 | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js`, `src/config/listingRules.js` (new), `src/server.js`, `src/utils/notifySeller.js`, `src/utils/notifyListings.js`, `public/admin.html`, `public/user-guide.html`, `docs/legal/terms-privacy-draft2.html` | Branch `fix/feedback-01`, 7 commits, no migration |
-| **Session 9L — Listing Review Queue (`/review`)** | 🔄 (2026-10-29: paused for Release 3; uat must be merged into the 9L branch before step 2) Step 1 DONE (019 clean on UAT, verify 6/6, EXPLAIN index scan, schema diff = 019 only, 2026-10-28); next: step 2 backend | `docs/technical/review-queue-plan.md`, `database/migrations/019-listing-review-queue.sql`, `database/scripts/019-rollback.sql` | Branch `feat/session-9l-review-queue` rebased onto uat (`6b1eba6` + `ea94c32`, not pushed); backup `backup/session-9l-pre-rebase`. Prod untouched until sign-off |
+| **Session 9L — Listing Review Queue (`/review`)** | 🔄 (2026-10-30: uat merged in, `e16317c`; next step 2 part 1 design brief) Step 1 DONE (019 clean on UAT, verify 6/6, EXPLAIN index scan, schema diff = 019 only, 2026-10-28); next: step 2 backend | `docs/technical/review-queue-plan.md`, `database/migrations/019-listing-review-queue.sql`, `database/scripts/019-rollback.sql` | Branch `feat/session-9l-review-queue` rebased onto uat (`6b1eba6` + `ea94c32`), uat merged in 2026-10-30 (`e16317c`, `27b4194`), not pushed; backup `backup/session-9l-pre-rebase`. Prod untouched until sign-off |
 | **Self-fill seller intake form (Google Sheet)** | ❌ Superseded 2026-10-26 (public release) | none yet | Apps Script `/exec` page (test GPS first) or neutral static host; owner mapit.backend@gmail.com; no MapIt name; no Supabase change; ~½ day |
 | **Real listings on prod (proxy posting)** | ❌ Superseded 2026-10-26 (public release; sellers post themselves) | none | Unbranded WhatsApp checklist → Arun/Nagesh post → approve within 4 h → Transfer when the seller joins |
 | **Admin 🔁 Transfer tab** | ✅ RELEASED PR #28 `9a2af82` (2026-10-25), smoke 14/14 | `src/routes/admin.js`, `public/admin.html`, `src/utils/auditLog.js`, `scripts/uat/admin-transfer.suite.js`, `package.json` | Option A manual handover; chats stay with admin; no migration |
@@ -1551,6 +1555,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+Context.md — 2026-10-30: on `feat/session-9l-review-queue`, conflict resolved to uat copy (merge `e16317c`); checkpoints `27b4194` + this one.
 MapIt_MVP_v1.html + public/index.html — 2026-10-29: `WHOLE_CITY_KM=65` (radius menu, 5 `999` checks); `buildAutoDescription()` comma lines (`DESC_LINE_MAX`); Explore search moved into `#searchModeBox` (`exploring`/`searching` classes, `#exploreSearchBtn`, `openExploreSearch()`/`closeExploreSearch()`, List-view `setView`).
 public/user-guide.html + public/guide/{radius,explore}.webp + shots.js — 2026-10-29: Whole city (65 km) text; Explore steps move-the-map first, 🔍 optional; shots retaken.
 scripts/guide-shots.js — 2026-10-29: explore markers → `#smExplore`, `#exploreSearchBtn`, `#smPin`.
@@ -1943,6 +1948,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-10-30) Python is not installed on the Windows laptop** (`python` opens the Microsoft Store alias) — use `node -e` for helper scripts.
+- **ℹ️ (2026-10-30) File is `Context.md` in git, not `CONTEXT.md`** — Windows ignores case (`core.ignorecase=true`); keep scripts/docs consistent so they also work on Linux (Vercel).
 - **ℹ️ (2026-10-29) `GET /api/listings` has no result cap** — fine at today's volume; at thousands of listings a 65 km Whole city search needs a limit / "load more".
 - **ℹ️ (2026-10-28) Turning expiry back on needs a plan** — `expires_at` is still written, so flipping `LISTING_EXPIRY_ENABLED` to true would hide every listing older than 30 days at once; push dates forward first (with 9H).
 - **ℹ️ (2026-10-28) `RENT_ONLY_SUBCATS` (page) and `RENT_ONLY_SUBCATEGORIES` (server) are two lists** — comments in both; server is the real rule.
@@ -2147,6 +2154,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-10-30) Bring uat into 9L by merge, not rebase** — merge is non-destructive (no rewritten commits, backup branch stays meaningful); later 9L → uat merge will not re-conflict with Release 3.
+- **(2026-10-30) Context.md conflicts: run the superset check first** (lines only in the incoming copy); if all are older versions of entries the other copy updated, keep the newer file whole; otherwise combine by hand.
 - **(2026-10-29, Nagesh) Whole city radius = 65 km** (James: radius is measured from the user, so edge-to-edge needs more than 50 km — e.g. Electronic City → Airport ~45 km, Anekal → Devanahalli ~60–65 km; 65 km reaches the growth belts where plots come from, inside the 100 km map bounds). Listings beyond 65 km of the user only via Explore — accepted. No circle drawn.
 - **(2026-10-29, Nagesh) Explore = move the map first; search optional behind 🔍** (Option 2 of 4; rejected: always-open field (implies typing), field + map hint, "Search this area" button (changes Explore + sits on the map)). Add a first-time "drag the map" hint only if UAT testers still miss panning.
 - **(2026-10-29) Description lines by length, not field groups** — one rule for all types, no per-type layout to maintain.
@@ -2563,7 +2572,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-30 18:23) — item 1 below ✅ DONE (merge `e16317c`). NOW: item 2 (9L step 2 part 1 — Rule-1 design brief first, no code before Nagesh approves).**
+**⬅ NOW (2026-10-30 18:24, paused for urgent work) — ordered (resume with /resume):**
+1. **9L step 2 part 1:** Rule-1 design brief (Nagesh approves first) → `requireReviewer` in `auth.js` + `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve`, `/:id/reject`, `/:id/release`, `/team`).
+2. **9L step 2 part 2:** `POST /api/auth/refresh`, seller rejection email (`notifySeller.js`), `npm run uat:review` incl. two approvers claiming at once.
+3. 9L steps 3–7 (phone mockup → `public/review.html` → seller side → UAT with both wives → release, 019 on prod first).
+4. Nagesh tells the seller Releases 1–3 are live.
+5. Later: 5-screen wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap (when volume grows).
+
+**⬅ ✅ DONE (2026-10-30): item 1 below (uat merged into 9L, `e16317c`).**
 
 **⬅ (2026-10-29 18:47, end of day) — ordered (resume with /resume):**
 1. **Merge uat into `feat/session-9l-review-queue`** (local only; resolve Context.md by keeping uat's — it is the superset now).
