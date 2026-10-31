@@ -50,6 +50,7 @@ const userRoutes         = require('./routes/users');
 const uploadRoutes       = require('./routes/uploads');
 const grievanceRoutes    = require('./routes/grievances');
 const adminRoutes        = require('./routes/admin');
+const reviewRoutes       = require('./routes/review');
 const { errorHandler } = require('./middleware/errorHandler');
 const { LISTING_EXPIRY_ENABLED } = require('./config/listingRules');
 
@@ -196,6 +197,7 @@ app.use('/api/users',         userRoutes);
 app.use('/api/uploads',       uploadRoutes);
 app.use('/api/grievances',    grievanceRoutes);
 app.use('/api/admin',         adminRoutes);
+app.use('/api/review',        reviewRoutes);   // Session 9L review queue
 
 // ── Admin dashboard (clean URL) ─────────────────────────────────
 // Client-side check inside admin.html is just a friendly front door —

@@ -10,6 +10,13 @@
   on `main`. Prod keeps today's admin Pending tab (approve / remove) as it is.
 - **D3 ✅** Sellers get an email when a listing is rejected, with the reason and a link to edit and resubmit.
 - **D4 ✅** Reject reasons in section 6 accepted for now. They may be added to or reworded later (a code setting, no migration).
+- **D6 ✅ (2026-10-31)** Approve/reject need the listing to be still pending **and claimed by me**. A seller edit clears the
+  claim, so an approver whose card shows the old text gets 409 "This listing just changed, loading again".
+- **D7 ✅ (2026-10-31)** The `listing_reviews` history row is written after the status change (two writes, not one
+  transaction). If it fails, the decision stands and the error is logged with IDs only. No migration 020.
+- **D8 ✅ (2026-10-31)** `npm run uat:review` is built with part 1 and extended in part 2.
+- **D9 ✅ (2026-10-31)** **Approve with note**: a third button opens a text box; the note (max 300) is saved in
+  `listing_reviews.reason_note` and shown to the seller in the "listing is live" email. No migration (019 allows it).
 - **Admin page:** `public/admin.html` (with the Transfer tab, live on prod since PR #28) is the real source.
   `MapIt_Admin_v1.html` is an older copy. Decide what to do with it later, during the build.
 
@@ -118,7 +125,7 @@ All routes go through `requireAuth`. All except `access-request` and `me` also g
 | `GET  /api/review/me` | `{ access: 'admin' \| 'active' \| 'requested' \| 'revoked' \| 'none', display_name }` |
 | `POST /api/review/access-request` `{display_name}` | After sign-up: creates the `requested` row. It never changes an existing row |
 | `POST /api/review/next` `{skip:[ids]}` | Claims and returns the next listing (fields below) + `remaining` count. Returns `{listing:null}` when the queue is empty |
-| `POST /api/review/:id/approve` | `status='active'`, `expires_at = +30 days`, history row. 409 if no longer pending |
+| `POST /api/review/:id/approve` `{note?}` | `status='active'`, `expires_at = +30 days`, history row; optional note goes in the seller email (D9). 409 if no longer pending or no longer claimed by me (D6) |
 | `POST /api/review/:id/reject` `{reason_code, note}` | `status='rejected'`, `rejection_reason` = the reason label (+ note), history row. 409 if no longer pending |
 | `POST /api/review/:id/release` | Skip: hand the listing back to the queue |
 | `GET  /api/review/team` *(admin)* | Roster with status |
@@ -169,6 +176,7 @@ already sets the listing back to `pending` (`PUT /api/listings/:id`), so it re-e
 └──────────────────────────────┘
 ```
 
+- **Approve with note** (D9) opens a bottom sheet with a text box (max 300, labelled "Shown to the seller").
 - **Reject** opens a bottom sheet with reason chips + an optional note. "Other" needs a note.
 - **Approve** has no confirm dialog (speed). Gotcha guard: both buttons stay disabled for 0.8 s after a
   new card appears, so a double tap can't approve the *next* listing by accident.
@@ -209,3 +217,12 @@ the 80/day review line.
 - **Approving from the old admin page** during the switch-over is safe: the conditional update gives a 409 on the review page.
 - `listing_reviews` rows are deleted with their listing (CASCADE). Fine for now. If hires need audits
   that outlive listings, change it to keep the rows.
+
+## 11. Build log
+
+- **2026-10-31 (UAE), step 2 part 1 DONE:** `requireReviewer` (`src/middleware/auth.js`), `src/routes/review.js`
+  (8 routes), `src/config/reviewReasons.js`, `newExpiry` moved to `src/config/listingRules.js`, seller edit clears the
+  claim (D6), approve note in the live email (D9), `sendEmail` skips `@example.com`. `npm run uat:review` 38/38 on UAT,
+  `uat:transfer` 20/20.
+- ⚠️ **Release order is now mandatory:** the seller-edit route writes `review_claimed_by`/`review_claimed_until`, so if this
+  code reaches production before migration 019, **sellers cannot edit listings**. Run 019 on prod first (step 6).

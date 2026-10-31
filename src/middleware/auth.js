@@ -83,4 +83,32 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { requireAuth, requireAdmin, isAdminEmail };
+// Reviewer gate (Session 9L, /review page) — must run AFTER requireAuth.
+// Admins (Rule 9 emails) are reviewers automatically and have no roster row;
+// everyone else needs staff_members.status = 'active' (migration 019).
+// Checked on every request, so a revoke applies on the approver's next tap.
+// Attaches req.reviewer = { role: 'admin' | 'approver', userId }.
+async function requireReviewer(req, res, next) {
+  try {
+    if (isAdminEmail(req.user?.email)) {
+      req.reviewer = { role: 'admin', userId: req.user.id };
+      return next();
+    }
+    const { data: staff, error } = await supabaseAdmin
+      .from('staff_members')
+      .select('status')
+      .eq('user_id', req.user.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (staff?.status !== 'active') {
+      return res.status(403).json({ error: 'Reviewer access required.', access: staff?.status || 'none' });
+    }
+    req.reviewer = { role: 'approver', userId: req.user.id };
+    next();
+  } catch (err) {
+    console.error('Reviewer check error:', err.message);
+    res.status(500).json({ error: 'Reviewer check failed.' });
+  }
+}
+
+module.exports = { requireAuth, requireAdmin, requireReviewer, isAdminEmail };
