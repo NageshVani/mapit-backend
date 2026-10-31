@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-31 18:35 (UAE), checkpoint (**Part 1 amended (Nagesh): approve note removed (D9 reversed), nobody reviews own listing incl. admins (D10, sellers post themselves). Suite 38/38. Open design question: third decision "Send back for changes" (Nagesh's "withdraw") — options A/B pending. Then part 2.**)
+- **Last updated:** 2026-10-31 19:05 (UAE), checkpoint (**D11 "Needs change" built (option A, no migration): `POST /api/review/:id/needs-change`, reasons split 7 change / 4 reject (new `spam`), seller text "Needs a small change: …" / "Not approved: …" in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20. Next: 9L step 2 part 2 (refresh, seller emails, two-approver race).**)
+- **Last updated (previous):** 2026-10-31 18:35 (UAE), checkpoint (**Part 1 amended (Nagesh): approve note removed (D9 reversed), nobody reviews own listing incl. admins (D10, sellers post themselves). Suite 38/38. Open design question: third decision "Send back for changes" (Nagesh's "withdraw") — options A/B pending. Then part 2.**)
 - **Last updated (previous):** 2026-10-31 17:26 (UAE), checkpoint (**9L step 2 part 1 DONE on `feat/session-9l-review-queue` (local, not pushed): `requireReviewer` + `src/routes/review.js` (8 routes) + Approve-with-note (D9) + seller edit clears the claim (D6). `npm run uat:review` 38/38 on UAT, `uat:transfer` 20/20. ⚠️ Release order: 019 on prod BEFORE this code, or seller edits break. Next: 9L step 2 part 2.**)
 - **Last updated (previous):** 2026-10-30 18:24 (UAE), end-of-day checkpoint (**uat merged into `feat/session-9l-review-queue` (`e16317c`, local, not pushed): only Context.md conflicted — uat copy kept (verified superset); branch = uat + 3 9L files (019, rollback, plan). Session paused (urgent work, Nagesh). Next: 9L step 2 part 1 — Rule-1 design brief, no code before approval.**)
 - **Last updated (previous):** 2026-10-29 18:47 (UAE), end-of-day checkpoint (**Release 3 LIVE (PR #31 `f8910f9`, smoke 14/14). Day closed. Next session: 9L step 2 backend in two parts — merge uat into the 9L branch first.**)
@@ -2163,7 +2164,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ## 💡 Decisions Made
 - **(2026-10-31, Nagesh) D9 reversed: approved listings need no note** (removed from route + email; no "Note from MapIt" in My Listings).
 - **(2026-10-31, Nagesh) D10: no more posting on sellers' behalf** — real sellers post directly (friends & family forward the link); nobody reviews their own listing, admins included. (Admin 🔁 Transfer tab stays as is.)
-- **⏸ (2026-10-31) Third review decision (Nagesh's "withdraw" = e.g. car photo on a two-wheeler listing):** design options presented, awaiting Nagesh.
+- **(2026-10-31, Nagesh) D11: third decision "Needs change"** (was "withdraw") — option A, no migration: status stays `rejected`, reason group (change/reject) sets the seller heading; button name "Needs change"; reasons added later from real feedback (code only).
 - **(2026-10-31, Nagesh) D6: approve/reject need "still pending AND claimed by me"**; seller edit clears the claim → approver gets 409 "This listing just changed, loading again" (no approving text never seen).
 - **(2026-10-31, Nagesh) D7: history row written after the status change** (not one transaction; failure logged with IDs only; no migration 020).
 - **(2026-10-31, Nagesh) D8: `uat:review` suite built in part 1**, extended in part 2.
@@ -2587,8 +2588,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-31 17:26) — ordered:**
-1. **9L step 2 part 2:** `POST /api/auth/refresh`, seller rejection email (`notifySeller.js`), extend `uat:review` (refresh, emails, two approvers claiming at once).
+**⬅ NOW (2026-10-31 19:05) — ordered:** (D11 Needs change DONE)
+1. **9L step 2 part 2:** `POST /api/auth/refresh`, seller email for Needs change + Reject (`notifySeller.js`, heading by group), extend `uat:review` (refresh, emails, two approvers claiming at once).
 2. Commit part 1 + part 2 on the 9L branch (local).
 3. 9L steps 3–7 (phone mockup with Approve / Approve with note / Reject → `public/review.html` → seller side → UAT with both wives → release: **019 on prod FIRST**, then merge).
 4. Nagesh tells the seller Releases 1–3 are live.

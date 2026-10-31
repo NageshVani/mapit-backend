@@ -1,18 +1,19 @@
 // ============================================================
 // Listing Review Queue — /review page for approvers (Session 9L)
 // Plan: docs/technical/review-queue-plan.md. Tables: migration 019.
-// GET  /api/review/me              — my access + reject reasons (requireAuth only)
+// GET  /api/review/me              — my access + reasons (requireAuth only)
 // POST /api/review/access-request  — after sign-up: ask to become an approver
 // POST /api/review/next            — claim + return the next pending listing
 // POST /api/review/:id/approve     — go live
-// POST /api/review/:id/reject      — rejected + reason (listing is kept)
+// POST /api/review/:id/needs-change — fixable: seller edits + resubmits (D11)
+// POST /api/review/:id/reject      — not acceptable + reason (listing is kept)
 // POST /api/review/:id/release     — Skip: hand the listing back to the queue
 // GET  /api/review/team            — admin: approver roster
 // POST /api/review/team/:userId    — admin: activate / revoke an approver
 //
 // Pattern: work queue with leases. claim_next_pending_listing() gives each
 // approver a different listing for LEASE_SECONDS (FOR UPDATE SKIP LOCKED).
-// Approve/reject only change a listing that is still pending AND claimed by
+// Every decision only changes a listing that is still pending AND claimed by
 // me — otherwise 409 (someone else decided, the claim ran out and was taken,
 // or the seller edited it, which clears the claim).
 // ============================================================
@@ -23,7 +24,7 @@ const { createError } = require('../middleware/errorHandler');
 const { logAuditEvent } = require('../utils/auditLog');
 const { notifySellerListingLive } = require('../utils/notifySeller');
 const { newExpiry } = require('../config/listingRules');
-const { REJECT_REASONS, REVIEW_NOTE_MAX } = require('../config/reviewReasons');
+const { REVIEW_REASONS, GROUP_HEADINGS, REVIEW_NOTE_MAX } = require('../config/reviewReasons');
 const { waitUntil } = require('@vercel/functions');
 
 const router = express.Router();
@@ -49,7 +50,7 @@ function validId(req, res, next) {
 // ── Who am I on /review? ─────────────────────────────────────
 router.get('/me', requireAuth, async (req, res, next) => {
   try {
-    const reasons = REJECT_REASONS.map(({ code, label, noteRequired }) => ({ code, label, noteRequired: !!noteRequired }));
+    const reasons = REVIEW_REASONS.map(({ group, code, label, noteRequired }) => ({ group, code, label, noteRequired: !!noteRequired }));
     if (isAdminEmail(req.user.email)) {
       const { data: profile } = await supabaseAdmin.from('profiles').select('full_name').eq('id', req.user.id).maybeSingle();
       return res.json({ access: 'admin', display_name: profile?.full_name || null, reasons, note_max: REVIEW_NOTE_MAX });
@@ -161,26 +162,38 @@ router.post('/:id/approve', requireAuth, requireReviewer, validId, async (req, r
   } catch (err) { next(err); }
 });
 
-// ── Reject (listing is kept, seller can edit + resubmit — D1) ─
-// Body: { reason_code, note? } — note required for 'other'.
-router.post('/:id/reject', requireAuth, requireReviewer, validId, async (req, res, next) => {
-  try {
-    const reason = REJECT_REASONS.find(r => r.code === req.body.reason_code);
-    if (!reason) return next(createError('Please choose a reason.'));
-    const note = cleanNote(req.body.note);
-    if (note.length > REVIEW_NOTE_MAX) return next(createError(`Note is too long (max ${REVIEW_NOTE_MAX} characters).`));
-    if (reason.noteRequired && !note) return next(createError('Please add a note for "Other".'));
+// ── Needs change / Reject (listing is kept, seller can edit + resubmit — D1) ─
+// Both store status 'rejected' (option A, D11); the reason's group decides the
+// seller's heading. Body: { reason_code, note? } — note required for 'Other'.
+// The code must belong to the button's group, so the approver's choice and
+// the seller's heading can never disagree.
+function decideWithReason(group, message) {
+  return async (req, res, next) => {
+    try {
+      const reason = REVIEW_REASONS.find(r => r.group === group && r.code === req.body.reason_code);
+      if (!reason) return next(createError('Please choose a reason.'));
+      const note = cleanNote(req.body.note);
+      if (note.length > REVIEW_NOTE_MAX) return next(createError(`Note is too long (max ${REVIEW_NOTE_MAX} characters).`));
+      if (reason.noteRequired && !note) return next(createError('Please add a note for "Other".'));
 
-    // Seller sees this text ("Not approved: …")
-    const sellerText = reason.noteRequired ? note : (note ? `${reason.label}: ${note}` : reason.label);
-    const listing = await decide(req.params.id, req.user.id, { status: 'rejected', rejection_reason: sellerText });
-    if (!listing) return next(createError(CHANGED_MSG, 409));
+      // The full sentence the seller sees in My Listings, e.g.
+      // "Needs a small change: Wrong category: listed as a car, it is a scooter"
+      const detail = reason.noteRequired ? note : (note ? `${reason.label}: ${note}` : reason.label);
+      const listing = await decide(req.params.id, req.user.id,
+        { status: 'rejected', rejection_reason: `${GROUP_HEADINGS[group]}: ${detail}` });
+      if (!listing) return next(createError(CHANGED_MSG, 409));
 
-    await recordReview({ listing_id: listing.id, reviewer_id: req.user.id, decision: 'rejected',
-      reason_code: reason.code, reason_note: note || null });
-    res.json({ ok: true, message: 'Rejected. The seller can edit and resubmit.' });
-  } catch (err) { next(err); }
-});
+      await recordReview({ listing_id: listing.id, reviewer_id: req.user.id, decision: 'rejected',
+        reason_code: reason.code, reason_note: note || null });
+      res.json({ ok: true, message });
+    } catch (err) { next(err); }
+  };
+}
+
+router.post('/:id/needs-change', requireAuth, requireReviewer, validId,
+  decideWithReason('change', 'Sent back to the seller for a change.'));
+router.post('/:id/reject', requireAuth, requireReviewer, validId,
+  decideWithReason('reject', 'Rejected. The seller has been told why.'));
 
 // ── Skip: release my claim ────────────────────────────────────
 // Always 200 — releasing a claim I no longer hold is harmless.

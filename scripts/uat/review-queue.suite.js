@@ -7,7 +7,7 @@
 // Creates 3 throwaway users (@example.com — sendEmail skips them, so no
 // seller emails) + 5 PENDING listings dated 2000-01-01 so they sit at the
 // FRONT of the FIFO queue, ahead of any real UAT pending listings.
-// Side effect: R20 makes a real seller edit → ONE "UPDATED" alert email to
+// Side effect: R26 makes a real seller edit → ONE "UPDATED" alert email to
 // listings@ (UAT-labelled; price-only edit, so no AI moderation call).
 // Everything is deleted by ID at the end.
 // Part 2 adds: /api/auth/refresh, rejection email, two approvers at once.
@@ -94,7 +94,8 @@ const reviewRows = async id =>
     let r = await call(null, 'GET', '/api/review/me');
     check('R01 /me without login → 401', r.status === 401, r.status);
     r = await call(X.token, 'GET', '/api/review/me');
-    check('R02 stranger /me → access none + 9 reasons', r.status === 200 && r.data.access === 'none' && r.data.reasons?.length === 9, JSON.stringify(r.data.access));
+    check('R02 stranger /me → access none + 11 reasons in 2 groups', r.status === 200 && r.data.access === 'none' && r.data.reasons?.length === 11
+      && r.data.reasons.filter(x => x.group === 'change').length === 7, JSON.stringify(r.data.access));
     r = await call(X.token, 'POST', '/api/review/next', {});
     check('R03 stranger /next → 403 (none)', r.status === 403 && r.data.access === 'none', r.status);
     r = await call(P.token, 'POST', '/api/review/access-request', { display_name: 'P' });
@@ -133,21 +134,25 @@ const reviewRows = async id =>
     // ── Decisions ──
     r = await call(admin.token, 'POST', `/api/review/${L1}/approve`, {});
     check('R18 approve a listing claimed by someone else → 409', r.status === 409, r.status);
-    r = await call(P.token, 'POST', `/api/review/${L1}/reject`, {});
-    check('R19a reject without reason → 400', r.status === 400, r.status);
-    r = await call(P.token, 'POST', `/api/review/${L1}/reject`, { reason_code: 'other' });
-    check('R19b "other" without note → 400', r.status === 400, r.status);
-    r = await call(P.token, 'POST', `/api/review/${L1}/reject`, { reason_code: 'photos', note: 'x'.repeat(301) });
+    r = await call(P.token, 'POST', `/api/review/${L1}/needs-change`, {});
+    check('R19a needs-change without reason → 400', r.status === 400, r.status);
+    r = await call(P.token, 'POST', `/api/review/${L1}/needs-change`, { reason_code: 'other_change' });
+    check('R19b "Other" without note → 400', r.status === 400, r.status);
+    r = await call(P.token, 'POST', `/api/review/${L1}/needs-change`, { reason_code: 'photos', note: 'x'.repeat(301) });
     check('R19c note over 300 → 400', r.status === 400, r.status);
-    r = await call(P.token, 'POST', '/api/review/not-a-uuid/reject', { reason_code: 'photos' });
+    r = await call(P.token, 'POST', '/api/review/not-a-uuid/needs-change', { reason_code: 'photos' });
     check('R19d bad listing id → 400', r.status === 400, r.status);
-    r = await call(P.token, 'POST', `/api/review/${L1}/reject`, { reason_code: 'photos', note: 'Please add a photo of the front.' });
-    let db = await listingRow(L1), hist = await reviewRows(L1);
-    check('R20 reject → kept as rejected, reason for seller, claim cleared, history row', r.status === 200
-      && db.status === 'rejected' && db.rejection_reason === 'Photos missing, unclear or not of the item: Please add a photo of the front.'
-      && !db.review_claimed_by && hist.length === 1 && hist[0].reason_code === 'photos' && hist[0].reviewer_id === P.id, JSON.stringify(db));
     r = await call(P.token, 'POST', `/api/review/${L1}/reject`, { reason_code: 'photos' });
-    check('R21 reject the same listing again → 409', r.status === 409, r.status);
+    check('R19e reject with a needs-change reason → 400 (groups never mix)', r.status === 400, r.status);
+    r = await call(P.token, 'POST', `/api/review/${L1}/needs-change`, { reason_code: 'spam' });
+    check('R19f needs-change with a reject reason → 400', r.status === 400, r.status);
+    r = await call(P.token, 'POST', `/api/review/${L1}/needs-change`, { reason_code: 'photos', note: 'Photo shows a car; this is a two-wheeler listing.' });
+    let db = await listingRow(L1), hist = await reviewRows(L1);
+    check('R20 needs-change → kept, "Needs a small change: …" for seller, claim cleared, history row', r.status === 200
+      && db.status === 'rejected' && db.rejection_reason === "Needs a small change: Photos don't match the item or category: Photo shows a car; this is a two-wheeler listing."
+      && !db.review_claimed_by && hist.length === 1 && hist[0].reason_code === 'photos' && hist[0].reviewer_id === P.id, db.rejection_reason);
+    r = await call(P.token, 'POST', `/api/review/${L1}/needs-change`, { reason_code: 'photos' });
+    check('R21 decide the same listing again → 409', r.status === 409, r.status);
 
     r = await call(P.token, 'POST', '/api/review/next', {});
     check('R22 next → L2', r.data.listing?.id === L2, r.data.listing?.id);
@@ -166,7 +171,7 @@ const reviewRows = async id =>
     r = await call(P.token, 'POST', `/api/review/${L3}/approve`, {});
     check('R27 approve after the seller edited → 409 "just changed"', r.status === 409 && /just changed/.test(r.data.error), r.status);
 
-    // Approve with note
+    // Approve
     r = await call(P.token, 'POST', '/api/review/next', { skip: [L2] });
     check('R28 next → L3 again (re-queued after the edit)', r.data.listing?.id === L3, r.data.listing?.id);
     await call(P.token, 'POST', `/api/review/${L3}/release`);
@@ -182,6 +187,14 @@ const reviewRows = async id =>
     r = await call(admin.token, 'POST', '/api/review/next', { skip: [Lown, L2, L3] });
     check('R31 admin is never given their own listing', r.status === 200 && r.data.listing?.id !== Ladm, r.data.listing?.id || 'queue empty');
     if (r.data.listing) await call(admin.token, 'POST', `/api/review/${r.data.listing.id}/release`);
+
+    // Reject (admin, on the approver's own listing — oldest unclaimed)
+    r = await call(admin.token, 'POST', '/api/review/next', {});
+    check('R31b admin next → Lown', r.data.listing?.id === Lown, r.data.listing?.id);
+    r = await call(admin.token, 'POST', `/api/review/${Lown}/reject`, { reason_code: 'spam' });
+    db = await listingRow(Lown); hist = await reviewRows(Lown);
+    check('R31c reject → "Not approved: …" for seller, history reason spam', r.status === 200 && db.status === 'rejected'
+      && db.rejection_reason === 'Not approved: Looks like spam or a fake listing' && hist[0]?.reason_code === 'spam', db.rejection_reason);
 
     // ── Revoke ──
     r = await call(admin.token, 'POST', `/api/review/team/${P.id}`, { status: 'revoked' });

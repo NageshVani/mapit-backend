@@ -19,6 +19,10 @@
   `listing_reviews.reason_note` and shown to the seller in the "listing is live" email. No migration (019 allows it).
 - **D10 ✅ (2026-10-31, Nagesh) Nobody reviews their own listing, admins included.** Sellers now post themselves
   (friends & family forward the link); admins no longer post on sellers' behalf, so the admin exception is gone.
+- **D11 ✅ (2026-10-31, Nagesh) Third decision "Needs change"** (Nagesh first called it "withdraw"): for fixable listings,
+  e.g. a car photo on a two-wheeler listing. Option A: no migration, both Needs change and Reject keep `status='rejected'`;
+  the reason code's group decides the seller heading ("Needs a small change: …" / "Not approved: …"), stored as the full
+  sentence in `rejection_reason`. Reasons can be added later from real feedback (code change, no migration).
 - **Admin page:** `public/admin.html` (with the Transfer tab, live on prod since PR #28) is the real source.
   `MapIt_Admin_v1.html` is an older copy. Decide what to do with it later, during the build.
 
@@ -128,6 +132,7 @@ All routes go through `requireAuth`. All except `access-request` and `me` also g
 | `POST /api/review/access-request` `{display_name}` | After sign-up: creates the `requested` row. It never changes an existing row |
 | `POST /api/review/next` `{skip:[ids]}` | Claims and returns the next listing (fields below) + `remaining` count. Returns `{listing:null}` when the queue is empty |
 | `POST /api/review/:id/approve` | `status='active'`, `expires_at = +30 days`, history row. 409 if no longer pending or no longer claimed by me (D6) |
+| `POST /api/review/:id/needs-change` `{reason_code, note}` | Fixable (D11): `status='rejected'`, `rejection_reason` = "Needs a small change: label (+ note)", history row. Code must be in the change group |
 | `POST /api/review/:id/reject` `{reason_code, note}` | `status='rejected'`, `rejection_reason` = the reason label (+ note), history row. 409 if no longer pending |
 | `POST /api/review/:id/release` | Skip: hand the listing back to the queue |
 | `GET  /api/review/team` *(admin)* | Roster with status |
@@ -229,3 +234,5 @@ the 80/day review line.
   code reaches production before migration 019, **sellers cannot edit listings**. Run 019 on prod first (step 6).
 - **2026-10-31 (later):** D9 reversed (approve note removed; `notifySeller.js` back to its pre-9L text), D10 (admins excluded from
   their own listings too). `uat:review` 38/38 (R30 approve, R31 admin never gets own listing), `uat:transfer` 20/20.
+- **2026-10-31 (evening):** D11 built: `POST /:id/needs-change` + reason groups in `src/config/reviewReasons.js` (7 change, 4 reject,
+  incl. new `spam`). Section 6's reason table is superseded by that file. `uat:review` 42/42, `uat:transfer` 20/20.
