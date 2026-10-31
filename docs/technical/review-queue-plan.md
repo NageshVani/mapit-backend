@@ -15,8 +15,10 @@
 - **D7 ✅ (2026-10-31)** The `listing_reviews` history row is written after the status change (two writes, not one
   transaction). If it fails, the decision stands and the error is logged with IDs only. No migration 020.
 - **D8 ✅ (2026-10-31)** `npm run uat:review` is built with part 1 and extended in part 2.
-- **D9 ✅ (2026-10-31)** **Approve with note**: a third button opens a text box; the note (max 300) is saved in
+- **D9 ❌ REVERSED (2026-10-31, Nagesh): approved listings need no note** — removed from the route and the email. Was: **Approve with note**: a third button opens a text box; the note (max 300) is saved in
   `listing_reviews.reason_note` and shown to the seller in the "listing is live" email. No migration (019 allows it).
+- **D10 ✅ (2026-10-31, Nagesh) Nobody reviews their own listing, admins included.** Sellers now post themselves
+  (friends & family forward the link); admins no longer post on sellers' behalf, so the admin exception is gone.
 - **Admin page:** `public/admin.html` (with the Transfer tab, live on prod since PR #28) is the real source.
   `MapIt_Admin_v1.html` is an older copy. Decide what to do with it later, during the build.
 
@@ -89,7 +91,7 @@ the request returns **409 "Already reviewed"** and the page loads the next one.
 - An **admin** (Nagesh/Arun) opens the **Team** panel on `/review` (admins only) and taps
   **Activate**. **Revoke** works at once, on the approver's next request.
 - Admins (Rule 9 emails) are approvers automatically; they have no roster row.
-- An approver is never given their **own** listings. Admins are exempt, because they post for sellers.
+- Nobody is given their **own** listings, admins included (D10).
 - **Data minimisation (Rule 8)**: approvers see the seller's **first name only**; admins see the full name.
   No phone, no email, no exact pin (the area-name address only). This matters most once outside hires join.
 - **Not on the review page**: suspend user, transfers, costs, reports. These stay on `/admin`.
@@ -125,7 +127,7 @@ All routes go through `requireAuth`. All except `access-request` and `me` also g
 | `GET  /api/review/me` | `{ access: 'admin' \| 'active' \| 'requested' \| 'revoked' \| 'none', display_name }` |
 | `POST /api/review/access-request` `{display_name}` | After sign-up: creates the `requested` row. It never changes an existing row |
 | `POST /api/review/next` `{skip:[ids]}` | Claims and returns the next listing (fields below) + `remaining` count. Returns `{listing:null}` when the queue is empty |
-| `POST /api/review/:id/approve` `{note?}` | `status='active'`, `expires_at = +30 days`, history row; optional note goes in the seller email (D9). 409 if no longer pending or no longer claimed by me (D6) |
+| `POST /api/review/:id/approve` | `status='active'`, `expires_at = +30 days`, history row. 409 if no longer pending or no longer claimed by me (D6) |
 | `POST /api/review/:id/reject` `{reason_code, note}` | `status='rejected'`, `rejection_reason` = the reason label (+ note), history row. 409 if no longer pending |
 | `POST /api/review/:id/release` | Skip: hand the listing back to the queue |
 | `GET  /api/review/team` *(admin)* | Roster with status |
@@ -176,7 +178,6 @@ already sets the listing back to `pending` (`PUT /api/listings/:id`), so it re-e
 └──────────────────────────────┘
 ```
 
-- **Approve with note** (D9) opens a bottom sheet with a text box (max 300, labelled "Shown to the seller").
 - **Reject** opens a bottom sheet with reason chips + an optional note. "Other" needs a note.
 - **Approve** has no confirm dialog (speed). Gotcha guard: both buttons stay disabled for 0.8 s after a
   new card appears, so a double tap can't approve the *next* listing by accident.
@@ -226,3 +227,5 @@ the 80/day review line.
   `uat:transfer` 20/20.
 - ⚠️ **Release order is now mandatory:** the seller-edit route writes `review_claimed_by`/`review_claimed_until`, so if this
   code reaches production before migration 019, **sellers cannot edit listings**. Run 019 on prod first (step 6).
+- **2026-10-31 (later):** D9 reversed (approve note removed; `notifySeller.js` back to its pre-9L text), D10 (admins excluded from
+  their own listings too). `uat:review` 38/38 (R30 approve, R31 admin never gets own listing), `uat:transfer` 20/20.

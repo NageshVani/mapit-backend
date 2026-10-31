@@ -16,7 +16,7 @@ const REJECT_REASONS = [
   { code: 'other',          label: 'Other', noteRequired: true },
 ];
 
-// Notes (reject reason or approve note) are shown to the seller.
+// Reject notes are shown to the seller.
 const REVIEW_NOTE_MAX = 300;   // = listing_reviews_note_check (migration 019)
 
 module.exports = { REJECT_REASONS, REVIEW_NOTE_MAX };

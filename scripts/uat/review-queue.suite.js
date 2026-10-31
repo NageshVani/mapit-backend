@@ -84,6 +84,7 @@ const reviewRows = async id =>
     const L2 = await makeListing(S.id, 'Review test 2', 2);
     const L3 = await makeListing(S.id, 'Review test 3', 3);
     const L4 = await makeListing(S.id, 'Review test 4', 4);
+    const Ladm = await makeListing(admin.id, 'Review test: admin\'s own', 5);
     await supabaseAdmin.from('listing_photos').insert([
       { listing_id: L1, storage_path: 'suite/b.jpg', public_url: 'https://example.com/b.jpg', sort_order: 1 },
       { listing_id: L1, storage_path: 'suite/a.jpg', public_url: 'https://example.com/a.jpg', sort_order: 0 },
@@ -171,13 +172,16 @@ const reviewRows = async id =>
     await call(P.token, 'POST', `/api/review/${L3}/release`);
     r = await call(P.token, 'POST', '/api/review/next', { skip: [L2, L3] });
     check('R29 next → L4', r.data.listing?.id === L4, r.data.listing?.id);
-    r = await call(P.token, 'POST', `/api/review/${L4}/approve`, { note: 'y'.repeat(301) });
-    check('R30 approve note over 300 → 400', r.status === 400, r.status);
-    r = await call(P.token, 'POST', `/api/review/${L4}/approve`, { note: 'Great photos, thank you!' });
+    r = await call(P.token, 'POST', `/api/review/${L4}/approve`, {});
     db = await listingRow(L4); hist = await reviewRows(L4);
-    check('R31 approve with note → active, 30-day expiry, note in history', r.status === 200 && db.status === 'active'
+    check('R30 approve → active, 30-day expiry, claim cleared, history row', r.status === 200 && db.status === 'active'
       && new Date(db.expires_at) > new Date(Date.now() + 29 * 86400e3) && !db.review_claimed_by
-      && hist[0]?.decision === 'approved' && hist[0].reason_note === 'Great photos, thank you!', JSON.stringify(db));
+      && hist.length === 1 && hist[0].decision === 'approved' && hist[0].reviewer_id === P.id, JSON.stringify(db));
+
+    // Nobody reviews their own listing — admins included (2026-10-31)
+    r = await call(admin.token, 'POST', '/api/review/next', { skip: [Lown, L2, L3] });
+    check('R31 admin is never given their own listing', r.status === 200 && r.data.listing?.id !== Ladm, r.data.listing?.id || 'queue empty');
+    if (r.data.listing) await call(admin.token, 'POST', `/api/review/${r.data.listing.id}/release`);
 
     // ── Revoke ──
     r = await call(admin.token, 'POST', `/api/review/team/${P.id}`, { status: 'revoked' });

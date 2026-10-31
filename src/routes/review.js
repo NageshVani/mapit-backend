@@ -4,7 +4,7 @@
 // GET  /api/review/me              — my access + reject reasons (requireAuth only)
 // POST /api/review/access-request  — after sign-up: ask to become an approver
 // POST /api/review/next            — claim + return the next pending listing
-// POST /api/review/:id/approve     — go live (+ optional note to the seller)
+// POST /api/review/:id/approve     — go live
 // POST /api/review/:id/reject      — rejected + reason (listing is kept)
 // POST /api/review/:id/release     — Skip: hand the listing back to the queue
 // GET  /api/review/team            — admin: approver roster
@@ -92,8 +92,9 @@ router.post('/next', requireAuth, requireReviewer, async (req, res, next) => {
     const { data: id, error } = await supabaseAdmin.rpc('claim_next_pending_listing', {
       p_reviewer:       req.user.id,
       p_lease_seconds:  LEASE_SECONDS,
-      // Approvers never review their own listings; admins post for sellers
-      p_exclude_seller: isAdmin ? null : req.user.id,
+      // Nobody reviews their own listing — admins included, since sellers
+      // now post themselves (no more posting on their behalf, 2026-10-31)
+      p_exclude_seller: req.user.id,
       p_skip:           skip,
     });
     if (error) return next(createError(error.message, 500));
@@ -146,21 +147,16 @@ async function recordReview(row) {
 }
 
 // ── Approve ───────────────────────────────────────────────────
-// Body: { note? } — optional "Approve with note", shown to the seller in the
-// listing-live email.
 router.post('/:id/approve', requireAuth, requireReviewer, validId, async (req, res, next) => {
   try {
-    const note = cleanNote(req.body.note);
-    if (note.length > REVIEW_NOTE_MAX) return next(createError(`Note is too long (max ${REVIEW_NOTE_MAX} characters).`));
-
     // The 30 days start when the listing goes live, not when it was posted
     const listing = await decide(req.params.id, req.user.id,
       { status: 'active', expires_at: newExpiry(), rejection_reason: null });
     if (!listing) return next(createError(CHANGED_MSG, 409));
 
-    await recordReview({ listing_id: listing.id, reviewer_id: req.user.id, decision: 'approved', reason_note: note || null });
+    await recordReview({ listing_id: listing.id, reviewer_id: req.user.id, decision: 'approved' });
     // Fire-and-forget seller email; waitUntil keeps Vercel alive for it.
-    waitUntil(notifySellerListingLive(listing, note || null));
+    waitUntil(notifySellerListingLive(listing));
     res.json({ ok: true, message: 'Approved. The listing is live.' });
   } catch (err) { next(err); }
 });
