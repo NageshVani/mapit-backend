@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-31 19:05 (UAE), checkpoint (**D11 "Needs change" built (option A, no migration): `POST /api/review/:id/needs-change`, reasons split 7 change / 4 reject (new `spam`), seller text "Needs a small change: …" / "Not approved: …" in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20. Next: 9L step 2 part 2 (refresh, seller emails, two-approver race).**)
+- **Last updated:** 2026-10-31 19:52 (UAE), end-of-day checkpoint (**9L part 1 + D11 "Needs change" committed (`564735e`), Arun explainer `docs/business/listing-approval-process.html` (`0c37dff`). Part 2 design brief (A refresh route, B Needs change/Reject seller emails, C refresh + race tests + one manual email check to Nagesh's inbox) presented — AWAITING Nagesh's approval. Paused (Nagesh, other work); resume tomorrow. Branch local, not pushed; prod untouched.**)
+- **Last updated (previous):** 2026-10-31 19:05 (UAE), checkpoint (**D11 "Needs change" built (option A, no migration): `POST /api/review/:id/needs-change`, reasons split 7 change / 4 reject (new `spam`), seller text "Needs a small change: …" / "Not approved: …" in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20. Next: 9L step 2 part 2 (refresh, seller emails, two-approver race).**)
 - **Last updated (previous):** 2026-10-31 18:35 (UAE), checkpoint (**Part 1 amended (Nagesh): approve note removed (D9 reversed), nobody reviews own listing incl. admins (D10, sellers post themselves). Suite 38/38. Open design question: third decision "Send back for changes" (Nagesh's "withdraw") — options A/B pending. Then part 2.**)
 - **Last updated (previous):** 2026-10-31 17:26 (UAE), checkpoint (**9L step 2 part 1 DONE on `feat/session-9l-review-queue` (local, not pushed): `requireReviewer` + `src/routes/review.js` (8 routes) + Approve-with-note (D9) + seller edit clears the claim (D6). `npm run uat:review` 38/38 on UAT, `uat:transfer` 20/20. ⚠️ Release order: 019 on prod BEFORE this code, or seller edits break. Next: 9L step 2 part 2.**)
 - **Last updated (previous):** 2026-10-30 18:24 (UAE), end-of-day checkpoint (**uat merged into `feat/session-9l-review-queue` (`e16317c`, local, not pushed): only Context.md conflicted — uat copy kept (verified superset); branch = uat + 3 9L files (019, rollback, plan). Session paused (urgent work, Nagesh). Next: 9L step 2 part 1 — Rule-1 design brief, no code before approval.**)
@@ -133,6 +134,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-10-31 19:52, end of day) — Goal: get Nagesh's approval of the 9L step 2 part 2 design brief, then build it.** Brief (in this session's chat, summarised in Next Steps): A `POST /api/auth/refresh` (backend route, Supabase rotates refresh tokens — page must save the new one); B `notifySellerListingReviewed(listing, group)` emails with "Open My Listings" → `/#my-listings` (hash handler built in step 5, same release); C suite: refresh (ok/401/400) + race (10 rounds × 2 approvers, 3 approvers/2 listings) + ONE manual email check to Nagesh's UAT inbox (needs his OK). ~1.5–2 h, no migration, no frontend.
 
 **NOW (2026-10-31 17:26) — Goal: Session 9L step 2 part 2 (backend) next.** Part 1 built + tested (38/38 on UAT), local branch only. Part 2 = `POST /api/auth/refresh`, seller rejection email (`notifySeller.js`, same `@example.com` skip), extend `uat:review` with refresh + email + two approvers claiming at once. Production still has no 019 and must get it FIRST at release (seller edit now writes the claim columns).
 
@@ -613,6 +616,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-10-31) Arun explainer** `docs/business/listing-approval-process.html` (`0c37dff`): roles, SVG flow diagram (edit loop), 3 decisions + reasons, edits, team join/revoke, privacy, status, 3 questions for Arun (reason wording, DPDP confidentiality for hires, review-time target). Checked at 1000 px + real 390 px emulation (page 390 wide; diagram swipes in its box). Added to `docs/index.html`.
+- ✅ **(2026-10-31) D11 "Needs change" built** (`564735e`): `POST /api/review/:id/needs-change`; reasons grouped 7 change / 4 reject (new `spam`, `other_change`); groups can't mix (400); seller sentence stored in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20.
+- ✅ **(2026-10-31) Part 1 amendments** (`ef794ff`): approve note removed (D9 reversed, `notifySeller.js` back to pre-9L); nobody reviews own listing incl. admins (D10).
+- ✅ **(2026-10-31) Explained the full approval process to Nagesh** (new listing, edit loop, staff review, decisions, "withdraw" options a/b/c).
 - ✅ **(2026-10-31) 9L step 2 part 1 — review backend** (Rule-1 brief approved by Nagesh with D6–D9). New: `requireReviewer` (`src/middleware/auth.js`: admin email OR `staff_members.status=active`, checked every request), `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve` {note?}, `/:id/reject`, `/:id/release`, `/team`, `/team/:userId`), `src/config/reviewReasons.js` (9 codes, note max 300), `newExpiry` moved to `src/config/listingRules.js`, seller edit clears the review claim (`listings.js`), optional reviewer note in the "listing is live" email (`notifySeller.js`), `sendEmail` skips `@example.com` (RFC 2606, no bounces), router mounted in `server.js`. Suite `npm run uat:review` (`scripts/uat/review-queue.suite.js`) **38/38** on UAT; `uat:transfer` 20/20. Each run sends ONE UAT "UPDATED" alert to listings@ (real seller edit, R26). Plan doc: decisions D6–D9 + build log.
 - ✅ **(2026-10-30) uat merged into `feat/session-9l-review-queue` — merge `e16317c` (`--no-ff`, local, not pushed).** Only conflict: `Context.md` (both sides edited the same lines). Line check showed uat copy is a superset (3 branch-only lines = older versions of entries uat updated) → kept uat copy (`--theirs`). Verified: no conflict markers, Context.md == uat, two-file rule OK, `git diff uat` = only 019 / rollback / plan. Backup branch untouched.
 - ✅ **(2026-10-30) Explained the merge to Nagesh** (split point `0a76f71`, file-by-file merge, why only Context.md conflicted, superset check as the safe resolution method).
@@ -1360,6 +1367,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **9L step 2 — review backend** | 🟡 Part 1 + D11 DONE (`85e9d08`, `ef794ff`, `564735e`; 42/42 on UAT). Part 2 brief awaiting approval | `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
+| **Arun approval-process explainer** | ✅ Done (`0c37dff`) | `docs/business/listing-approval-process.html`, `docs/index.html` | Nagesh to share with Arun; offer to publish as private web page stands |
 | **Feedback Release 3 (Whole city 65 km, comma description, Explore 🔍)** | ✅ RELEASED PR #31 `f8910f9` (2026-10-29), localhost + uat checklist PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html`, `public/user-guide.html`, `public/guide/*`, `scripts/guide-shots.js` | Branch `fix/feedback-03` (from uat `0a76f71`); screenshots `docs/screenshots/feedback-03/` |
 | **Feedback Release 2 (auto-title + Write it for me)** | ✅ RELEASED PR #30 `a8f7d9d` (2026-10-28), uat checklist 1–6 PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html` | Branch `feat/feedback-02-auto-title`; frontend only, no migration |
 | **Feedback Release 1 (FB-01…06 + Terms)** | ✅ RELEASED PR #29 `404c3ca` (2026-10-28), smoke 14/14 | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js`, `src/config/listingRules.js` (new), `src/server.js`, `src/utils/notifySeller.js`, `src/utils/notifyListings.js`, `public/admin.html`, `public/user-guide.html`, `docs/legal/terms-privacy-draft2.html` | Branch `fix/feedback-01`, 7 commits, no migration |
@@ -1561,6 +1570,16 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+src/routes/review.js — 2026-10-31 (NEW): /api/review router — me, access-request, next (claim RPC, allowlisted card, first name for approvers), approve, needs-change, reject (shared `decideWithReason`), release, team, team/:userId (audit `staff_status_change`).
+src/middleware/auth.js — 2026-10-31: `requireReviewer` (admin email OR staff_members active; 403 with `access`).
+src/config/reviewReasons.js — 2026-10-31 (NEW): `REVIEW_REASONS` (group change/reject), `GROUP_HEADINGS`, `REVIEW_NOTE_MAX` 300.
+src/config/listingRules.js — 2026-10-31: `newExpiry()` moved here (shared by listings.js + review.js).
+src/routes/listings.js — 2026-10-31: seller edit clears `review_claimed_by/_until` (D6) ⚠️ needs 019 on prod first; imports `newExpiry`.
+src/utils/email.js — 2026-10-31: `sendEmail` skips `@example.com` (test accounts, no bounces).
+src/server.js — 2026-10-31: mounts `/api/review`.
+scripts/uat/review-queue.suite.js + package.json — 2026-10-31 (NEW): `npm run uat:review`, 42 checks, UAT only, FIFO-front test listings dated 2000-01-01, cleanup by ID.
+docs/business/listing-approval-process.html + docs/index.html — 2026-10-31 (NEW): Arun explainer.
+docs/technical/review-queue-plan.md — 2026-10-31: decisions D6–D11, section 6 routes, build log.
 Context.md — 2026-10-30: on `feat/session-9l-review-queue`, conflict resolved to uat copy (merge `e16317c`); checkpoints `27b4194` + this one.
 MapIt_MVP_v1.html + public/index.html — 2026-10-29: `WHOLE_CITY_KM=65` (radius menu, 5 `999` checks); `buildAutoDescription()` comma lines (`DESC_LINE_MAX`); Explore search moved into `#searchModeBox` (`exploring`/`searching` classes, `#exploreSearchBtn`, `openExploreSearch()`/`closeExploreSearch()`, List-view `setView`).
 public/user-guide.html + public/guide/{radius,explore}.webp + shots.js — 2026-10-29: Whole city (65 km) text; Explore steps move-the-map first, 🔍 optional; shots retaken.
@@ -1954,6 +1973,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **⏸ (2026-10-31 19:52) Part 2 design brief awaiting Nagesh's approval** (A refresh, B seller emails, C tests + one manual email to his UAT inbox).
+- **ℹ️ (2026-10-31) Main app has no `#my-listings` link handler** — seller emails will link there; build the handler in step 5 (same release).
+- **ℹ️ (2026-10-31) Local server must be restarted after backend edits** (Node does not reload) — stale server caused one false FAIL (R31) today.
+- **ℹ️ (2026-10-31) Headless Chrome `--window-size` under ~500 px crops instead of resizing** — use DevTools `Emulation.setDeviceMetricsOverride` for real phone-width checks (as guide-shots does). Playwright is not installed.
 - **⚠️ (2026-10-31) Release order is now mandatory for 9L:** `PUT /api/listings/:id` writes `review_claimed_by`/`review_claimed_until` (019 columns). If 9L code reaches prod before 019 runs there, **every seller edit fails**. At release: 019 on prod → verify → then merge.
 - **ℹ️ (2026-10-31) Review claim keep-alive not built:** approve/reject only need `review_claimed_by = me`, so an expired-but-untaken claim still works; if someone else took it, 409 + reload. The plan's "Still reviewing? Tap to keep it" is optional for step 4.
 - **ℹ️ (2026-10-30) Python is not installed on the Windows laptop** (`python` opens the Microsoft Store alias) — use `node -e` for helper scripts.
@@ -2588,7 +2611,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-31 19:05) — ordered:** (D11 Needs change DONE)
+**⬅ NOW (2026-10-31 19:52, end of day) — ordered (resume with /resume):**
+1. **Nagesh approves the 9L part 2 brief** (A `POST /api/auth/refresh`; B Needs change / Reject seller emails via `notifySellerListingReviewed`, button → `/#my-listings`; C suite: refresh + two-approver race; one manual email check to his UAT inbox).
+2. Build part 2 → restart local server → `npm run uat:review` + `uat:transfer` → commit (local).
+3. Nagesh shares `docs/business/listing-approval-process.html` with Arun; collect answers to its 3 questions.
+4. 9L steps 3–7: phone mockup (Reject / Needs change / Approve + Skip) → `public/review.html` → seller side (My Listings shows `rejection_reason` + Edit & resubmit + `#my-listings` handler; admin Pending → link) → UAT with both wives → release: **019 on prod FIRST**, then merge.
+5. Nagesh tells the seller Releases 1–3 are live.
+6. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H (incl. "Remove with reason" for live listings); listings result cap.
+
+**⬅ NOW (2026-10-31 19:05) — ordered:** *(superseded by 19:52 list below)* (D11 Needs change DONE)
 1. **9L step 2 part 2:** `POST /api/auth/refresh`, seller email for Needs change + Reject (`notifySeller.js`, heading by group), extend `uat:review` (refresh, emails, two approvers claiming at once).
 2. Commit part 1 + part 2 on the 9L branch (local).
 3. 9L steps 3–7 (phone mockup with Approve / Approve with note / Reject → `public/review.html` → seller side → UAT with both wives → release: **019 on prod FIRST**, then merge).
