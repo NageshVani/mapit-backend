@@ -1391,7 +1391,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **9L review queue (steps 1–5 + guide)** | ✅ Built, click-tested by Nagesh, on uat (); step 6 (wives UAT) + step 7 (release) open | , , /, ,  | 019 + 020 on UAT only;  64/64 |
+| **9L review queue (steps 1–5 + guide)** | ✅ Built, click-tested by Nagesh, on uat (`0831a8a`); step 6 (wives UAT) + step 7 (release) open | `public/review.html`, `src/routes/review.js`, `MapIt_MVP_v1.html` / `public/index.html`, `public/admin.html`, `database/migrations/020-review-invites.sql` | 019 + 020 on UAT only; `uat:review` 64/64 |
 | **9L step 2 — review backend** | ✅ Part 1 + D11 + part 2 DONE (`85e9d08`, `ef794ff`, `564735e`, `3e700ca`, `7de9640`, `7a933ec`; 53/53 on UAT) | `src/routes/auth.js`, `src/utils/notifySeller.js`, `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
 | **Arun approval-process explainer** | ✅ Done (`0c37dff`) | `docs/business/listing-approval-process.html`, `docs/index.html` | Nagesh to share with Arun; offer to publish as private web page stands |
 | **Feedback Release 3 (Whole city 65 km, comma description, Explore 🔍)** | ✅ RELEASED PR #31 `f8910f9` (2026-10-29), localhost + uat checklist PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html`, `public/user-guide.html`, `public/guide/*`, `scripts/guide-shots.js` | Branch `fix/feedback-03` (from uat `0a76f71`); screenshots `docs/screenshots/feedback-03/` |
