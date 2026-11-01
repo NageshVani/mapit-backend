@@ -59,6 +59,7 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
 .hint{background:#FFF7ED;border:1px solid #FDBA74;color:#9A3412;border-radius:10px;padding:10px;font-size:12.5px;line-height:1.4;margin-top:16px}
 .msg{font-size:13px;font-weight:600;margin-top:10px;line-height:1.4}
 .msg.err{color:var(--red)}.msg.ok{color:#15803D}
+.invite-ok{background:#F0FDF4;border:1px solid #86EFAC;color:#166534;border-radius:10px;padding:10px;font-size:13px;font-weight:600;line-height:1.4}
 .big-ico{font-size:56px}
 .big-t{font-size:20px;font-weight:700;margin-top:10px}
 .big-s{font-size:14px;color:var(--muted);line-height:1.5;max-width:280px;margin-top:8px}
@@ -93,7 +94,10 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
       <div style="text-align:center;margin-top:8px"><button type="button" class="link" onclick="forgotPassword()">Forgot password?</button></div>
     </form>
 
+    <div class="hint hide" id="noInvite">To join the review team you need a personal invite link from the MapIt team. Already have an account? Use <b>Sign in</b>.</div>
+
     <form id="f-up" class="hide" onsubmit="sendCode(event)">
+      <div class="invite-ok">✅ You have been invited to the MapIt review team.</div>
       <label for="upEmail">Email</label>
       <input class="in" id="upEmail" type="email" autocomplete="email" required>
       <label for="upName">Your name</label>
@@ -121,7 +125,8 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
   <div class="view hide" id="v-request">
     <div class="big-t" style="margin-top:20px">Join the review team</div>
     <div class="big-s" style="max-width:none">Tell us your name and the MapIt team will activate your account.</div>
-    <form onsubmit="requestAccess(event)">
+    <div class="hint hide" id="reqNoInvite">You need a personal invite link from the MapIt team to join. Please ask them for one, then open it on this phone.</div>
+    <form id="f-req" onsubmit="requestAccess(event)">
       <label for="reqName">Your name</label>
       <input class="in" id="reqName" type="text" maxlength="40" required>
       <button class="btn" id="reqBtn">Request access</button>
@@ -286,15 +291,45 @@ async function route() {
     return show('waiting');
   }
   if (me.access === 'revoked') return show('revoked');
+  document.getElementById('f-req').classList.toggle('hide', !inviteValid);
+  document.getElementById('reqNoInvite').classList.toggle('hide', inviteValid);
+  if (invite && !inviteValid) setMsg('reqMsg', INVITE_BAD_MSG);
   show('request');
 }
+
+// ── Personal invite link (D16): /review?invite=K7P2-QX9M ──
+// Kept for this tab only (sessionStorage), so a reload or the code email
+// doesn't lose it. The server checks it again on access-request.
+const INVITE_KEY = 'mapit_review_invite';
+let invite = null;        // the code from the link
+let inviteValid = false;  // GET /api/review/invite/check
+
+function loadInvite() {
+  const fromUrl = new URLSearchParams(location.search).get('invite');
+  try {
+    if (fromUrl) sessionStorage.setItem(INVITE_KEY, fromUrl);
+    invite = fromUrl || sessionStorage.getItem(INVITE_KEY);
+  } catch { invite = fromUrl; }
+}
+function clearInvite() {
+  invite = null; inviteValid = false;
+  try { sessionStorage.removeItem(INVITE_KEY); } catch {}
+  if (location.search) history.replaceState(null, '', location.pathname);
+}
+async function checkInvite() {
+  if (!invite) return;
+  try { inviteValid = (await api('GET', '/api/review/invite/check?code=' + encodeURIComponent(invite))).valid === true; }
+  catch { inviteValid = false; }
+}
+const INVITE_BAD_MSG = 'This invite link is not valid, already used or expired. Please ask the MapIt team for a new one.';
 
 // ── Sign in ──
 function setTab(t) {
   document.getElementById('tabIn').classList.toggle('on', t === 'in');
   document.getElementById('tabUp').classList.toggle('on', t !== 'in');
   document.getElementById('f-in').classList.toggle('hide', t !== 'in');
-  document.getElementById('f-up').classList.toggle('hide', t !== 'up');
+  document.getElementById('f-up').classList.toggle('hide', t !== 'up' || !inviteValid);
+  document.getElementById('noInvite').classList.toggle('hide', t !== 'up' || inviteValid);
   document.getElementById('f-code').classList.toggle('hide', t !== 'code');
   setMsg('authMsg', '');
 }
@@ -359,8 +394,9 @@ async function verifyCode(e) {
     // so sign in again with the new password before going on.
     const s = await api('POST', '/api/auth/signin', { email: pending.email, password: pending.password });
     saveSession(s.session);
-    await api('POST', '/api/review/access-request', { display_name: pending.name });
+    await api('POST', '/api/review/access-request', { display_name: pending.name, invite });
     pending = null;
+    clearInvite();
     document.getElementById('upPwd').value = '';
     await route();
   } catch (err) {
@@ -374,7 +410,8 @@ async function requestAccess(e) {
   setMsg('reqMsg', '');
   busy('reqBtn', true, 'Sending…');
   try {
-    await api('POST', '/api/review/access-request', { display_name: document.getElementById('reqName').value });
+    await api('POST', '/api/review/access-request', { display_name: document.getElementById('reqName').value, invite });
+    clearInvite();
     await route();
   } catch (err) { setMsg('reqMsg', err.message); }
   finally { busy('reqBtn', false); }
@@ -390,9 +427,14 @@ async function signOut() {
 
 // ── Start ──
 loadSession();
+loadInvite();
 (async () => {
   if (session?.expires_at && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) await refreshSession();
   scheduleRefresh();
+  await checkInvite();
+  // Opened from an invite link → straight to Create account
+  setTab(inviteValid ? 'up' : 'in');
+  if (invite && !inviteValid) setMsg('authMsg', INVITE_BAD_MSG);
   route();
 })();
 </script>
