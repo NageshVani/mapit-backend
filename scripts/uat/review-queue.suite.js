@@ -80,6 +80,7 @@ const reviewRows = async id =>
     const P = await makeUser('approver', 'Priya Approver Test');   // future approver
     const S = await makeUser('seller', 'Suresh Seller Test');      // seller
     const X = await makeUser('stranger', 'Xavier Stranger Test');  // never requests access
+    const Q = await makeUser('approver2', 'Qamar Approver Test');  // second approver, race tests (C)
     const Lown = await makeListing(P.id, 'Review test: approver\'s own', 0);
     const L1 = await makeListing(S.id, 'Review test 1', 1);
     const L2 = await makeListing(S.id, 'Review test 2', 2);
@@ -197,13 +198,61 @@ const reviewRows = async id =>
     check('R31c reject → "Not approved: …" for seller, history reason spam', r.status === 200 && db.status === 'rejected'
       && db.rejection_reason === 'Not approved: Looks like spam or a fake listing' && hist[0]?.reason_code === 'spam', db.rejection_reason);
 
+    // ── Two approvers at once (part 2 C) ──
+    // Requests fire together with Promise.all. A pass is strong evidence, not
+    // proof (the requests may not overlap inside the DB); the real guard is
+    // FOR UPDATE SKIP LOCKED (019) + decide()'s conditional update.
+    await call(Q.token, 'POST', '/api/review/access-request', { display_name: 'Qamar Test' });
+    r = await call(admin.token, 'POST', `/api/review/team/${Q.id}`, { status: 'active' });
+    check('C0 second approver activated', r.status === 200, r.status);
+    // Clear the earlier test listings out of the queue, so each round starts clean
+    await supabaseAdmin.from('listings').update({ status: 'rejected', review_claimed_by: null, review_claimed_until: null })
+      .in('id', created.listings).eq('status', 'pending');
+    const offQueue = id => supabaseAdmin.from('listings').update({ status: 'rejected', review_claimed_by: null, review_claimed_until: null }).eq('id', id);
+    // Real UAT pending listings may be handed out too — release them at once
+    const releaseAll = (pairs) => Promise.all(pairs.filter(([, id]) => id).map(([tok, id]) => call(tok, 'POST', `/api/review/${id}/release`)));
+
+    let sameCount = 0, winCount = 0;
+    for (let round = 0; round < 10; round++) {
+      const Lr = await makeListing(S.id, `Race test round ${round + 1}`, 6);
+      const [a, b] = await Promise.all([call(P.token, 'POST', '/api/review/next', {}), call(Q.token, 'POST', '/api/review/next', {})]);
+      const ia = a.data.listing?.id, ib = b.data.listing?.id;
+      if (ia && ia === ib) sameCount++;
+      if ((ia === Lr) !== (ib === Lr)) winCount++;
+      await offQueue(Lr);
+      await releaseAll([[P.token, ia !== Lr && ia], [Q.token, ib !== Lr && ib]]);
+    }
+    check('C1 two approvers press Next together (10 rounds) → never the same listing', sameCount === 0, `${sameCount} clashes`);
+    check('C1b … and exactly one of them gets the test listing each round', winCount === 10, `${winCount}/10`);
+
+    const La = await makeListing(S.id, 'Race test A', 7);
+    const Lb = await makeListing(S.id, 'Race test B', 8);
+    const three = await Promise.all([P, Q, admin].map(u => call(u.token, 'POST', '/api/review/next', {})));
+    const ids = three.map(x => x.data.listing?.id).filter(Boolean);
+    check('C2 three approvers, two listings → all different, both handed out',
+      new Set(ids).size === ids.length && ids.includes(La) && ids.includes(Lb), ids.length);
+    await releaseAll([P, Q, admin].map((u, i) => [u.token, three[i].data.listing?.id]));
+    await offQueue(Lb);
+
+    // Double tap: Approve + Needs change on the same listing at the same moment
+    r = await call(P.token, 'POST', '/api/review/next', {});
+    if (r.data.listing?.id !== La) await releaseAll([[P.token, r.data.listing?.id]]);
+    const [d1, d2] = await Promise.all([
+      call(P.token, 'POST', `/api/review/${La}/approve`),
+      call(P.token, 'POST', `/api/review/${La}/needs-change`, { reason_code: 'price' }),
+    ]);
+    db = await listingRow(La); hist = await reviewRows(La);
+    check('C3 double tap → one 200 + one 409, one final state, one history row', r.data.listing?.id === La
+      && [d1.status, d2.status].sort().join() === '200,409' && ['active', 'rejected'].includes(db.status) && hist.length === 1,
+      `${d1.status}/${d2.status} ${db.status} hist=${hist.length}`);
+
     // ── Revoke ──
     r = await call(admin.token, 'POST', `/api/review/team/${P.id}`, { status: 'revoked' });
     await new Promise(res => setTimeout(res, 1500));   // audit row is fire-and-forget
     const { data: audit } = await supabaseAdmin.from('audit_log').select('id, metadata')
       .eq('event_type', 'staff_status_change').eq('user_id', admin.id).order('created_at', { ascending: false }).limit(5);
     const mine = (audit || []).filter(a => a.metadata?.staff_user_id === P.id);
-    created.auditIds = (audit || []).filter(a => a.metadata?.staff_user_id === P.id).map(a => a.id);
+    created.auditIds = (audit || []).filter(a => [P.id, Q.id].includes(a.metadata?.staff_user_id)).map(a => a.id);
     check('R32 audit rows for activate + revoke (IDs only)', mine.length === 2 && !JSON.stringify(mine).includes('@'), mine.length);
     r = await call(P.token, 'POST', '/api/review/next', {});
     check('R33 revoked approver /next → 403 at once', r.status === 403 && r.data.access === 'revoked', r.status);
