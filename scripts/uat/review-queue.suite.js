@@ -10,7 +10,8 @@
 // Side effect: R26 makes a real seller edit → ONE "UPDATED" alert email to
 // listings@ (UAT-labelled; price-only edit, so no AI moderation call).
 // Everything is deleted by ID at the end.
-// Part 2 adds: /api/auth/refresh, rejection email, two approvers at once.
+// Part 2 adds: /api/auth/refresh (F), seller emails (E — @example.com, so
+// skipped; a real one is a manual check), two approvers at once.
 const path = require('path'), crypto = require('crypto');
 const ROOT = process.cwd();
 const { createClient } = require(path.join(ROOT, 'node_modules/@supabase/supabase-js'));
@@ -225,6 +226,15 @@ const reviewRows = async id =>
       && s1.refresh_token && s1.refresh_token !== X.refresh && s1.expires_at && me.status === 200, `${r.status}/${me.status}`);
     r = await call(null, 'POST', '/api/auth/refresh', { refresh_token: s1.refresh_token });
     check('F4 the rotated refresh token works for the next refresh', r.status === 200 && r.data.session?.access_token, r.status);
+
+    // ── Seller emails (part 2 B) — must never throw, or a decision could fail ──
+    const { notifySellerListingReviewed } = require(path.join(ROOT, 'src/utils/notifySeller'));
+    let threw = false;
+    try { await notifySellerListingReviewed({ id: 'suite-e1', seller_id: crypto.randomUUID(), title: 'x' }, 'change'); } catch { threw = true; }
+    check('E1 email for an unknown seller → no throw, nothing sent', !threw);
+    threw = false;
+    try { await notifySellerListingReviewed({ id: 'suite-e2', seller_id: X.id, title: 'x', rejection_reason: 'Not approved: test' }, 'reject'); } catch { threw = true; }
+    check('E2 email for an @example.com seller → skipped, no throw', !threw);
   } catch (e) {
     fail++; console.error('ERROR', e.message);
   } finally {

@@ -22,7 +22,7 @@ const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin, requireReviewer, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 const { logAuditEvent } = require('../utils/auditLog');
-const { notifySellerListingLive } = require('../utils/notifySeller');
+const { notifySellerListingLive, notifySellerListingReviewed } = require('../utils/notifySeller');
 const { newExpiry } = require('../config/listingRules');
 const { REVIEW_REASONS, GROUP_HEADINGS, REVIEW_NOTE_MAX } = require('../config/reviewReasons');
 const { waitUntil } = require('@vercel/functions');
@@ -185,6 +185,7 @@ function decideWithReason(group, message) {
 
       await recordReview({ listing_id: listing.id, reviewer_id: req.user.id, decision: 'rejected',
         reason_code: reason.code, reason_note: note || null });
+      waitUntil(notifySellerListingReviewed(listing, group));
       res.json({ ok: true, message });
     } catch (err) { next(err); }
   };

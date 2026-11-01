@@ -111,4 +111,47 @@ async function notifySellerListingLive(listing) {
   }
 }
 
-module.exports = { notifySellerOfInterest, scoreAndNotify, notifySellerListingLive };
+// ── Tell the seller their listing was sent back (Session 9L, D11) ──
+// group 'change' = Needs change, 'reject' = Not approved. The reason shown is
+// listing.rejection_reason — the same sentence My Listings shows, so the two
+// never disagree. The approver is never named. Same rules as above: never
+// throws, phone-only accounts skipped, listing ID only in logs (Rule 8).
+async function notifySellerListingReviewed(listing, group) {
+  try {
+    const [{ data: sellerAuth }, { data: profile }] = await Promise.all([
+      supabaseAdmin.auth.admin.getUserById(listing.seller_id),
+      supabaseAdmin.from('profiles').select('nickname').eq('id', listing.seller_id).single(),
+    ]);
+    const sellerEmail = sellerAuth?.user?.email;
+    if (!sellerEmail) return;
+
+    const name   = escapeHtml(profile?.nickname || 'there');
+    const title  = escapeHtml(listing.title);
+    const reason = escapeHtml(listing.rejection_reason || '');
+    const link   = `${siteUrl()}/#my-listings`;
+    const isChange = group === 'change';
+
+    await sendEmail({
+      to:      sellerEmail,
+      subject: isChange
+        ? `✏️ Your listing "${listing.title}" needs a small change`
+        : `Your listing "${listing.title}" was not approved`,
+      html: `
+        <p>Hi ${name},</p>
+        <p>We reviewed your MapIt listing <strong>"${title}"</strong>${isChange
+          ? ' and it needs a small change before buyers can see it.'
+          : ' and could not approve it.'}</p>
+        <blockquote style="margin:12px 0;padding:8px 12px;border-left:3px solid #f06030;color:#444;">${reason}</blockquote>
+        <p>${isChange
+          ? 'Edit it in My Listings and save. It goes back for review automatically.'
+          : 'If you think this was a mistake, you can edit it in My Listings and save. It goes back for review automatically.'}</p>
+        <p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#f06030;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Open My Listings</a></p>
+        <p style="color:#888;font-size:12px;">You're receiving this because you posted a listing on MapIt.</p>
+      `,
+    });
+  } catch (err) {
+    console.error('Listing-reviewed email failed for listing', listing.id, '-', err.message);
+  }
+}
+
+module.exports = { notifySellerOfInterest, scoreAndNotify, notifySellerListingLive, notifySellerListingReviewed };
