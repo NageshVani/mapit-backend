@@ -59,12 +59,12 @@ router.get('/me', requireAuth, async (req, res, next) => {
     const reasons = REVIEW_REASONS.map(({ group, code, label, noteRequired }) => ({ group, code, label, noteRequired: !!noteRequired }));
     if (isAdminEmail(req.user.email)) {
       const { data: profile } = await supabaseAdmin.from('profiles').select('full_name').eq('id', req.user.id).maybeSingle();
-      return res.json({ access: 'admin', display_name: profile?.full_name || null, reasons, headings: GROUP_HEADINGS, note_max: REVIEW_NOTE_MAX });
+      return res.json({ access: 'admin', display_name: profile?.full_name || null, email: req.user.email, reasons, headings: GROUP_HEADINGS, note_max: REVIEW_NOTE_MAX });
     }
     const { data: staff, error } = await supabaseAdmin
       .from('staff_members').select('status, display_name').eq('user_id', req.user.id).maybeSingle();
     if (error) return next(createError(error.message, 500));
-    res.json({ access: staff?.status || 'none', display_name: staff?.display_name || null, reasons, headings: GROUP_HEADINGS, note_max: REVIEW_NOTE_MAX });
+    res.json({ access: staff?.status || 'none', display_name: staff?.display_name || null, email: req.user.email, reasons, headings: GROUP_HEADINGS, note_max: REVIEW_NOTE_MAX });
   } catch (err) { next(err); }
 });
 

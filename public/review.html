@@ -42,6 +42,7 @@ button,input{font-family:inherit;font-size:inherit}
 .dd button:last-child{border-bottom:0}
 .dd .danger{color:var(--red)}
 .view{flex:1;padding:18px 16px 28px}
+.who{background:#FFF7ED;border-bottom:1px solid #FED7AA;color:#9A3412;font-size:12.5px;font-weight:600;padding:6px 14px;overflow-wrap:anywhere}
 .center{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:70vh}
 
 .tabs{display:flex;background:var(--card);border-radius:10px;padding:3px;margin-bottom:16px}
@@ -145,6 +146,8 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
       <button onclick="menuGo('team')">👥 Team</button>
     </div>
   </div>
+  <!-- Who is reviewing — always visible, a phone may be shared at home -->
+  <div class="who hide" id="whoBar"></div>
 
   <!-- 1 + 2: sign in / create account -->
   <div class="view hide" id="v-auth">
@@ -363,6 +366,10 @@ function show(name) {
   VIEWS.forEach(v => document.getElementById('v-' + v).classList.toggle('hide', v !== name));
   const signedIn = !!session && name !== 'auth';
   document.getElementById('outBtn').classList.toggle('hide', !signedIn);
+  const who = document.getElementById('whoBar');
+  const whoName = me?.display_name || me?.email;
+  who.textContent = whoName ? `👤 Signed in as ${whoName}${me.access === 'admin' ? ' (admin)' : ''}` : '';
+  who.classList.toggle('hide', !signedIn || !whoName);
   document.getElementById('menuBtn').classList.toggle('hide', !signedIn || me?.access !== 'admin');
   document.getElementById('menu').classList.add('hide');
   document.getElementById('bar').classList.toggle('hide', name !== 'queue');
