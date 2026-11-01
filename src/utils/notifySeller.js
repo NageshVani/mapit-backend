@@ -154,4 +154,4 @@ async function notifySellerListingReviewed(listing, group) {
   }
 }
 
-module.exports = { notifySellerOfInterest, scoreAndNotify, notifySellerListingLive, notifySellerListingReviewed };
+module.exports = { notifySellerOfInterest, scoreAndNotify, notifySellerListingLive, notifySellerListingReviewed, siteUrl };

@@ -10,6 +10,7 @@
 // Side effect: R26 makes a real seller edit → ONE "UPDATED" alert email to
 // listings@ (UAT-labelled; price-only edit, so no AI moderation call).
 // Everything is deleted by ID at the end.
+// Invites (I, D16): needs migration 020 on UAT; invites are deleted at the end.
 // Part 2 adds: /api/auth/refresh (F), seller emails (E — @example.com, so
 // skipped; a real one is a manual check), two approvers at once.
 const path = require('path'), crypto = require('crypto');
@@ -77,6 +78,12 @@ const reviewRows = async id =>
 (async () => {
   try {
     const admin = await adminToken();
+    const newInvite = async name => {
+      const res = await call(admin.token, 'POST', '/api/review/invites', { display_name: name });
+      if (res.status !== 200) throw new Error('invite create failed: ' + res.status);
+      (created.invites = created.invites || []).push(res.data.invite.id);
+      return res.data;
+    };
     const P = await makeUser('approver', 'Priya Approver Test');   // future approver
     const S = await makeUser('seller', 'Suresh Seller Test');      // seller
     const X = await makeUser('stranger', 'Xavier Stranger Test');  // never requests access
@@ -100,14 +107,56 @@ const reviewRows = async id =>
       && r.data.reasons.filter(x => x.group === 'change').length === 7, JSON.stringify(r.data.access));
     r = await call(X.token, 'POST', '/api/review/next', {});
     check('R03 stranger /next → 403 (none)', r.status === 403 && r.data.access === 'none', r.status);
-    r = await call(P.token, 'POST', '/api/review/access-request', { display_name: 'P' });
+    // ── Invites (D16, migration 020) ──
+    r = await call(X.token, 'POST', '/api/review/invites', { display_name: 'Someone' });
+    check('I01 non-admin cannot create an invite → 403', r.status === 403, r.status);
+    r = await call(admin.token, 'POST', '/api/review/invites', { display_name: 'x' });
+    check('I02 invite without a proper name → 400', r.status === 400, r.status);
+    const invP = await newInvite('Priya (suite)');
+    const { data: invRow } = await supabaseAdmin.from('review_invites').select('code_hash').eq('id', invP.invite.id).single();
+    check('I03 invite → code K7P2-QX9M style, link, only a hash stored', /^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/.test(invP.code)
+      && invP.link.endsWith('/review?invite=' + invP.code) && /^[0-9a-f]{64}$/.test(invRow.code_hash) && !invRow.code_hash.includes(invP.code.replace('-', '')), invP.code);
+    const chk = async code => (await call(null, 'GET', '/api/review/invite/check?code=' + encodeURIComponent(code))).data.valid;
+    check('I04 check: valid, lowercase without dash too; junk → false',
+      await chk(invP.code) === true && await chk(invP.code.replace('-', '').toLowerCase()) === true && await chk('ZZZZ-ZZZZ') === false && await chk('<script>') === false);
+    r = await call(P.token, 'POST', '/api/review/access-request', { display_name: 'Priya T' });
+    const { data: noRow } = await supabaseAdmin.from('staff_members').select('user_id').eq('user_id', P.id).maybeSingle();
+    check('I05 access request without an invite → 403, no roster row', r.status === 403 && !noRow, r.status);
+    r = await call(P.token, 'POST', '/api/review/access-request', { display_name: 'Priya T', invite: 'ZZZZ-ZZZZ' });
+    check('I06 unknown invite → 403', r.status === 403, r.status);
+
+    r = await call(P.token, 'POST', '/api/review/access-request', { display_name: 'P', invite: invP.code });
     check('R04 name too short → 400', r.status === 400, r.status);
-    r = await call(P.token, 'POST', '/api/review/access-request', { display_name: '  Priya   T ' });
+    r = await call(P.token, 'POST', '/api/review/access-request', { display_name: '  Priya   T ', invite: invP.code });
     check('R05 access request → requested, name tidied', r.status === 200 && r.data.access === 'requested' && r.data.display_name === 'Priya T', JSON.stringify(r.data));
     r = await call(P.token, 'POST', '/api/review/next', {});
     check('R06 requested approver /next → 403 (requested)', r.status === 403 && r.data.access === 'requested', r.status);
     r = await call(P.token, 'POST', '/api/review/access-request', { display_name: 'Someone Else' });
     check('R07 second request changes nothing', r.data.display_name === 'Priya T' && r.data.access === 'requested', JSON.stringify(r.data));
+
+    // Used / expired / cancelled invites, and two people on one link at once
+    const R1 = await makeUser('race1', 'Rita Race Test'), R2 = await makeUser('race2', 'Ravi Race Test');
+    r = await call(R1.token, 'POST', '/api/review/access-request', { display_name: 'Rita', invite: invP.code });
+    check('I07 used invite: check → false, a second person → 403', await chk(invP.code) === false && r.status === 403, r.status);
+    const invOld = await newInvite('Old (suite)');
+    await supabaseAdmin.from('review_invites').update({ expires_at: new Date(Date.now() - 1000).toISOString() }).eq('id', invOld.invite.id);
+    r = await call(R1.token, 'POST', '/api/review/access-request', { display_name: 'Rita', invite: invOld.code });
+    check('I08 expired invite → 403', r.status === 403 && await chk(invOld.code) === false, r.status);
+    const invCan = await newInvite('Cancelled (suite)');
+    r = await call(admin.token, 'POST', `/api/review/invites/${invCan.invite.id}/cancel`);
+    const again = await call(admin.token, 'POST', `/api/review/invites/${invCan.invite.id}/cancel`);
+    const useCan = await call(R1.token, 'POST', '/api/review/access-request', { display_name: 'Rita', invite: invCan.code });
+    check('I09 cancel → 200, cancel again → 404, cancelled invite → 403', r.status === 200 && again.status === 404 && useCan.status === 403,
+      `${r.status}/${again.status}/${useCan.status}`);
+    const invRace = await newInvite('Race (suite)');
+    const both = await Promise.all([R1, R2].map(u => call(u.token, 'POST', '/api/review/access-request', { display_name: u.id === R1.id ? 'Rita' : 'Ravi', invite: invRace.code })));
+    check('I10 two people use one invite at the same moment → exactly one gets in', both.map(x => x.status).sort().join() === '200,403',
+      both.map(x => x.status).join('/'));
+    r = await call(admin.token, 'GET', '/api/review/invites');
+    const st = id => r.data.invites?.find(i => i.id === id);
+    check('I11 admin list: used (with name) / expired / cancelled / used, no hashes', st(invP.invite.id)?.status === 'used'
+      && st(invP.invite.id)?.used_by_name === 'Priya T' && st(invOld.invite.id)?.status === 'expired'
+      && st(invCan.invite.id)?.status === 'cancelled' && st(invRace.invite.id)?.status === 'used' && !JSON.stringify(r.data).includes('code_hash'));
     r = await call(P.token, 'GET', '/api/review/team');
     check('R08 non-admin /team → 403', r.status === 403, r.status);
     r = await call(admin.token, 'GET', '/api/review/team');
@@ -202,7 +251,8 @@ const reviewRows = async id =>
     // Requests fire together with Promise.all. A pass is strong evidence, not
     // proof (the requests may not overlap inside the DB); the real guard is
     // FOR UPDATE SKIP LOCKED (019) + decide()'s conditional update.
-    await call(Q.token, 'POST', '/api/review/access-request', { display_name: 'Qamar Test' });
+    const invQ = await newInvite('Qamar (suite)');
+    await call(Q.token, 'POST', '/api/review/access-request', { display_name: 'Qamar Test', invite: invQ.code });
     r = await call(admin.token, 'POST', `/api/review/team/${Q.id}`, { status: 'active' });
     check('C0 second approver activated', r.status === 200, r.status);
     // Clear the earlier test listings out of the queue, so each round starts clean
@@ -289,6 +339,10 @@ const reviewRows = async id =>
   } finally {
     if (created.listings.length) await supabaseAdmin.from('listings').delete().in('id', created.listings);
     if (created.auditIds?.length) await supabaseAdmin.from('audit_log').delete().in('id', created.auditIds);
+    if (created.invites?.length) {
+      await supabaseAdmin.from('audit_log').delete().like('event_type', 'review_invite_%').in('metadata->>invite_id', created.invites);
+      await supabaseAdmin.from('review_invites').delete().in('id', created.invites);
+    }
     for (const id of created.users) await supabaseAdmin.auth.admin.deleteUser(id);
     console.log(`\n${pass} passed, ${fail} failed. Cleaned up ${created.listings.length} listings, ${created.users.length} users.`);
     process.exit(fail ? 1 : 0);
