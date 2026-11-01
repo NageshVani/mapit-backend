@@ -619,6 +619,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-01) 9L step 3 — phone mockup approved** (`27d9101` + decisions commit): 10 screens at 360 px (sign in, create account, waiting, card, flagged card, Needs change sheet with seller preview, Reject sheet, after-decision toast, all clear + menu, Team). Rule 12: new page, no before shot; admin Pending before/after in step 5.
 - ✅ **(2026-11-01) 9L part 2 C — race checks** (`7a933ec`): second approver Q; C1 10 rounds × 2 approvers pressing Next together → 0 clashes, exactly one gets the test listing; C2 3 approvers / 2 listings → all different; C3 double tap Approve + Needs change → one 200 + one 409, one history row. Real UAT pending listings handed out are released at once. `uat:review` 53/53.
 - ✅ **(2026-11-01) 9L part 2 B — seller emails** (`7de9640`): `notifySellerListingReviewed(listing, group)` in `notifySeller.js`, called via `waitUntil` from `decideWithReason()`. Subject "✏️ … needs a small change" / "… was not approved"; body = `rejection_reason` (same text as My Listings); "Open My Listings" → `siteUrl()/#my-listings`; approver never named; never throws. Suite E1–E2. **Manual check:** one-off scratchpad script on UAT (alias `nagesh.aadi+review-test@gmail.com`, listing + account deleted after) → Nagesh received both emails. Approve already sends FB-05 "is live" email (`notifySellerListingLive`, review.js:160) — confirmed with Nagesh, no change.
 - ✅ **(2026-11-01) 9L part 2 A — `POST /api/auth/refresh`** (`3e700ca`): body `{ refresh_token }` → `{ session: { access_token, refresh_token, expires_in, expires_at } }`; 400 missing/oversized, 401 invalid/used; 60/h per IP (hard-coded, no env var — `.env.example` is not readable by James); per-request Supabase client. Suite F1–F4. Nagesh PowerShell check: 401 "Session expired" for a bogus token ✅.
@@ -2193,6 +2194,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-01, Nagesh) D15: /review mockup approved** (`docs/technical/review-page-mockup.html`, screenshot `docs/screenshots/session-9l/mockup-review-page-v1.png`): Reject · ✏️ Change · Approve + Skip; "Still reviewing? Keep it" banner LEFT OUT; "about N left" kept; waiting screen promises "usually the same day".
 - **(2026-11-01, Nagesh) D12: refresh = backend route** (not supabase-js in the browser, not longer token life). Per-request Supabase client so the shared anon client never holds a user's session.
 - **(2026-11-01, Nagesh) D13: seller emails never name the approver**; reason text = `rejection_reason`, so the email and My Listings always agree.
 - **(2026-11-01, Nagesh) D14: keep automated race checks** (C1–C3) in `uat:review` — no manual tapping needed; a pass is strong evidence, the real guard is SKIP LOCKED + conditional update.
@@ -2623,7 +2625,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ## 🔜 Next Steps (Queued)
 
 **⬅ NOW (2026-11-01 13:23) — ordered (resume with /resume):**
-1. **9L step 3: phone mockup** of `public/review.html` (sign-up / sign-in / waiting / queue card with Reject · Needs change · Approve + Skip / reason sheet / Team panel) → Nagesh OK; before screenshots (Rule 12).
+1. ✅ ~~**9L step 3: phone mockup**~~ approved 2026-11-01 (D15). ~~of `public/review.html` (sign-up / sign-in / waiting / queue card with Reject · Needs change · Approve + Skip / reason sheet / Team panel) → Nagesh OK; before screenshots (Rule 12).
 2. Step 4: build `public/review.html` (uses `/api/auth/refresh`, saves the new refresh token) → localhost click-test at phone width.
 3. Step 5: seller side — My Listings shows `rejection_reason` + Edit & resubmit + `#my-listings` handler; admin Pending → link (MapIt_MVP_v1.html + sync public/index.html).
 4. **HTML guide for the approvers (wives)** — exact flow + how to operate the review page, step by step with screenshots of the real page (Nagesh request 2026-11-01). Build after step 4 so it shows the real screens; `docs/` + link from docs/index.html.

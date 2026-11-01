@@ -187,7 +187,8 @@ already sets the listing back to `pending` (`PUT /api/listings/:id`), so it re-e
 - **Approve** has no confirm dialog (speed). Gotcha guard: both buttons stay disabled for 0.8 s after a
   new card appears, so a double tap can't approve the *next* listing by accident.
 - After a decision: "✓ Approved" toast, then the next card. When empty: "All clear 🎉" + "Check again".
-- The claim has 5 minutes. After 4 minutes idle the card shows "Still reviewing? Tap to keep it."
+- The claim has 5 minutes. ~~After 4 minutes idle the card shows "Still reviewing? Tap to keep it."~~ Left out (Nagesh, 2026-11-01): deciding after 5 min still works if nobody took the listing; otherwise 409 + next card.
+- **Mockup approved (Nagesh, 2026-11-01):** `docs/technical/review-page-mockup.html` (10 screens). Bottom bar Reject · ✏️ Change · Approve + Skip; "about N left" kept; waiting screen promises "usually the same day".
 - Single file, vanilla JS, no framework, no map library (photos + text only), so it loads fast on
   mobile data. Escape helper on everything from the DB (T-014 lesson).
 - Its own localStorage key (`mapit_review_session`), so it never mixes with a buyer account in
@@ -236,3 +237,4 @@ the 80/day review line.
   their own listings too). `uat:review` 38/38 (R30 approve, R31 admin never gets own listing), `uat:transfer` 20/20.
 - **2026-10-31 (evening):** D11 built: `POST /:id/needs-change` + reason groups in `src/config/reviewReasons.js` (7 change, 4 reject,
   incl. new `spam`). Section 6's reason table is superseded by that file. `uat:review` 42/42, `uat:transfer` 20/20.
+- **2026-11-01 (UAE):** step 2 part 2 DONE (`/api/auth/refresh`, seller emails for Needs change / Reject, race checks C1–C3; `uat:review` 53/53). Step 3 mockup approved (`review-page-mockup.html`, screenshot `docs/screenshots/session-9l/mockup-review-page-v1.png`).
