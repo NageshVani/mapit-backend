@@ -35,7 +35,8 @@ button,input{font-family:inherit;font-size:inherit}
 .logo{font-weight:700;font-size:17px}.logo b{color:var(--orange)}
 .pill{margin-left:auto;background:var(--card);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted2);font-weight:600}
 .menu-btn{margin-left:auto;background:none;border:0;font-size:22px;color:var(--muted2);padding:2px 6px;cursor:pointer}
-.pill + .menu-btn{margin-left:0}
+.out-btn{margin-left:auto;background:none;border:1.5px solid var(--border2);border-radius:9px;padding:5px 10px;font-weight:600;font-size:13px;color:var(--muted2);cursor:pointer}
+.pill + .out-btn,.out-btn + .menu-btn{margin-left:0}
 .dd{position:absolute;right:10px;top:50px;background:var(--panel);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);width:180px;overflow:hidden;z-index:6}
 .dd button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:13px 14px;font-weight:600;cursor:pointer}
 .dd button:last-child{border-bottom:0}
@@ -60,6 +61,56 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
 .msg{font-size:13px;font-weight:600;margin-top:10px;line-height:1.4}
 .msg.err{color:var(--red)}.msg.ok{color:#15803D}
 .invite-ok{background:#F0FDF4;border:1px solid #86EFAC;color:#166534;border-radius:10px;padding:10px;font-size:13px;font-weight:600;line-height:1.4}
+/* card (screens 4–5) */
+#card{padding-bottom:130px}
+.photos{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;background:#1F2937;height:260px;scrollbar-width:none}
+.photos::-webkit-scrollbar{display:none}
+.photos img{flex:0 0 100%;width:100%;height:260px;object-fit:contain;scroll-snap-align:center;cursor:zoom-in}
+.ph-wrap{position:relative}
+.ctr{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;border-radius:12px;padding:3px 9px}
+.no-photo{height:120px;display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--muted);font-size:13px}
+.flag{margin:12px 14px 0;background:#FEF2F2;border:1px solid #FCA5A5;color:#991B1B;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600;line-height:1.4}
+.cbody{padding:12px 14px}
+.ttl{font-size:18px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.price{font-size:20px;font-weight:700;color:var(--orange);margin-top:4px}
+.meta{font-size:13px;color:var(--muted2);margin-top:6px;line-height:1.5}
+.desc{font-size:14.5px;line-height:1.55;margin-top:10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.specs div{background:var(--card);border-radius:8px;padding:6px 8px;font-size:12px;color:var(--muted2);overflow-wrap:anywhere}
+.specs b{display:block;font-size:13px;color:var(--text)}
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;background:var(--panel);border-top:1px solid var(--border2);padding:10px 10px calc(8px + env(safe-area-inset-bottom));z-index:4}
+.btns{display:flex;gap:7px}
+.b{flex:1;height:56px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer}
+.b.rej{border:2px solid var(--red);color:var(--red);background:#fff}
+.b.chg{border:2px solid var(--gold);color:#B45309;background:#FFFBEB}
+.b.ok{background:var(--green);color:#fff;border:0;flex:1.25}
+.b:disabled,.skip:disabled{opacity:.4;cursor:default}
+.skip{display:block;margin:0 auto;background:none;border:0;font-size:13.5px;color:var(--muted2);font-weight:600;padding:9px 12px 2px;text-decoration:underline;cursor:pointer}
+
+/* sheet (screens 6–7) */
+.dim{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:8}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;background:var(--panel);border-radius:18px 18px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom));z-index:9}
+.grab{width:40px;height:4px;background:var(--card2);border-radius:2px;margin:0 auto 10px}
+.sh{font-size:17px;font-weight:700}
+.ss{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1.5px solid var(--border2);border-radius:18px;padding:8px 12px;font-size:13px;font-weight:500;background:#fff;cursor:pointer;text-align:left}
+.chip.on{border-color:var(--orange);background:#FFF1EB;color:#C2410C;font-weight:700}
+.ta{width:100%;border:1.5px solid var(--border2);border-radius:10px;padding:10px;font-size:15px;min-height:70px;resize:vertical;outline:none;font-family:inherit}
+.ta:focus{border-color:var(--orange)}
+.cnt{text-align:right;font-size:11px;color:var(--muted);margin-top:3px}
+.prev{background:var(--card);border-radius:10px;padding:9px 10px;font-size:13px;line-height:1.45;margin-top:8px;overflow-wrap:anywhere}
+.prev b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.send{display:flex;gap:8px;margin-top:12px}
+.send button{flex:1;padding:14px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;border:0}
+.send .c{border:1.5px solid var(--border2);background:#fff}
+.send .s.change{background:var(--gold);color:#fff}
+.send .s.reject{background:var(--red);color:#fff}
+.send .s:disabled{opacity:.45;cursor:default}
+
+.toast{position:fixed;left:50%;top:62px;transform:translateX(-50%);background:#111827;color:#fff;border-radius:22px;padding:9px 16px;font-size:13.5px;font-weight:600;max-width:92%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:10}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:11;display:flex;align-items:center;justify-content:center}
+.viewer img{max-width:100%;max-height:100%;object-fit:contain}
 .big-ico{font-size:56px}
 .big-t{font-size:20px;font-weight:700;margin-top:10px}
 .big-s{font-size:14px;color:var(--muted);line-height:1.5;max-width:280px;margin-top:8px}
@@ -70,11 +121,12 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
   <div class="hdr">
     <div class="logo">Map<b>It</b> Review</div>
     <div class="pill hide" id="countPill"></div>
+    <button class="out-btn hide" id="outBtn" onclick="signOut()">Sign out</button>
+    <!-- Menu only switches Queue / Team, so only admins see it -->
     <button class="menu-btn hide" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">☰</button>
     <div class="dd hide" id="menu">
       <button onclick="menuGo('queue')">📋 Review queue</button>
-      <button class="hide" id="menuTeam" onclick="menuGo('team')">👥 Team</button>
-      <button class="danger" onclick="signOut()">Sign out</button>
+      <button onclick="menuGo('team')">👥 Team</button>
     </div>
   </div>
 
@@ -153,12 +205,26 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
     </div>
   </div>
 
-  <!-- queue (step 4b) -->
-  <div class="view hide" id="v-queue">
+  <!-- 4–8: queue card -->
+  <div class="view hide" id="v-queue" style="padding:0">
+    <div id="card"></div>
+    <div class="bar" id="bar">
+      <div class="btns">
+        <button class="b rej" data-act onclick="openSheet('reject')">✕ Reject</button>
+        <button class="b chg" data-act onclick="openSheet('change')">✏️ Change</button>
+        <button class="b ok" data-act onclick="approve()">✓ Approve</button>
+      </div>
+      <button class="skip" data-act onclick="skip()">Skip for now</button>
+    </div>
+  </div>
+
+  <!-- 9: all clear -->
+  <div class="view hide" id="v-clear">
     <div class="center">
-      <div class="big-ico">📋</div>
-      <div class="big-t" id="queueHello">Signed in</div>
-      <div class="big-s">You have review access. The listing queue arrives in the next build step (4b).</div>
+      <div class="big-ico" id="clearIco">🎉</div>
+      <div class="big-t" id="clearTitle">All clear</div>
+      <div class="big-s" id="clearText">No listings are waiting for review. Thank you!</div>
+      <button class="btn ghost narrow" onclick="checkAgain()">Check again</button>
     </div>
   </div>
 
@@ -173,6 +239,27 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
 
   <div class="view" id="v-loading"><div class="center"><div class="big-s">Loading…</div></div></div>
 </div>
+
+<!-- 6 + 7: reason sheet (Change / Reject) -->
+<div class="dim hide" id="dim" onclick="closeSheet()"></div>
+<div class="sheet hide" id="sheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="sh" id="sheetTitle"></div>
+  <div class="ss" id="sheetSub"></div>
+  <div class="chips" id="chips"></div>
+  <label for="noteIn" id="noteLbl"></label>
+  <textarea class="ta" id="noteIn" rows="3" oninput="updateSheet()"></textarea>
+  <div class="cnt" id="noteCnt"></div>
+  <div class="prev" id="prev"><b>The seller will see</b><span id="prevText"></span></div>
+  <div class="msg" id="sheetMsg"></div>
+  <div class="send">
+    <button class="c" onclick="closeSheet()">Cancel</button>
+    <button class="s" id="sendBtn" onclick="sendDecision()"></button>
+  </div>
+</div>
+
+<div class="toast hide" id="toast"></div>
+<div class="viewer hide" id="viewer" onclick="this.classList.add('hide')"><img id="viewerImg" alt=""></div>
 
 <script>
 // ── Session (own key — never mixes with a buyer login in the same browser) ──
@@ -244,17 +331,19 @@ async function api(method, url, body, retried) {
 }
 
 // ── Views ──
-const VIEWS = ['auth', 'request', 'waiting', 'revoked', 'queue', 'team', 'loading'];
+const VIEWS = ['auth', 'request', 'waiting', 'revoked', 'queue', 'clear', 'team', 'loading'];
 function show(name) {
   VIEWS.forEach(v => document.getElementById('v-' + v).classList.toggle('hide', v !== name));
   const signedIn = !!session && name !== 'auth';
-  document.getElementById('menuBtn').classList.toggle('hide', !signedIn);
-  document.getElementById('menuTeam').classList.toggle('hide', me?.access !== 'admin');
+  document.getElementById('outBtn').classList.toggle('hide', !signedIn);
+  document.getElementById('menuBtn').classList.toggle('hide', !signedIn || me?.access !== 'admin');
   document.getElementById('menu').classList.add('hide');
+  document.getElementById('bar').classList.toggle('hide', name !== 'queue');
+  if (name !== 'queue' && name !== 'clear') document.getElementById('countPill').classList.add('hide');
   window.scrollTo(0, 0);
 }
 function toggleMenu() { document.getElementById('menu').classList.toggle('hide'); }
-function menuGo(v) { show(v); }
+function menuGo(v) { v === 'queue' ? loadNext() : show(v); }
 document.addEventListener('click', e => {
   if (!e.target.closest('#menu') && !e.target.closest('#menuBtn')) document.getElementById('menu').classList.add('hide');
 });
@@ -282,10 +371,7 @@ async function route() {
     document.getElementById('v-loading').querySelector('.big-s').textContent = e.message;
     return;
   }
-  if (me.access === 'admin' || me.access === 'active') {
-    document.getElementById('queueHello').textContent = me.display_name ? `Hello, ${me.display_name.split(' ')[0]}` : 'Signed in';
-    return show('queue');
-  }
+  if (me.access === 'admin' || me.access === 'active') return loadNext();
   if (me.access === 'requested') {
     document.getElementById('waitTitle').textContent = me.display_name ? `Thanks, ${me.display_name.split(' ')[0]}` : 'Thanks';
     return show('waiting');
@@ -418,11 +504,210 @@ async function requestAccess(e) {
 }
 
 async function signOut() {
+  // Hand back the listing I hold, so nobody waits 5 min for the claim to run out
+  if (current) { try { await api('POST', `/api/review/${current.id}/release`); } catch {} }
+  current = null; skipped = [];
   try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
   saveSession(null);
   me = null;
   setTab('in');
   show('auth');
+}
+
+// ── Queue (screens 4–9) ──
+// The server hands each approver a different listing for 5 minutes (claim).
+// skipped = listings skipped in this visit, so Next doesn't return them again.
+const SKIP_MAX = 50;          // = server SKIP_MAX
+const NEW_CARD_PAUSE_MS = 800; // a double tap can't decide the NEXT card by accident
+const CAT_LABEL = { re: 'Real Estate', veh: 'Vehicles', hh: 'Household' };
+const HIDE_DETAILS = new Set(['total_price', 'transaction_type']);
+let current = null;   // the listing on screen
+let skipped = [];
+let busyQueue = false;
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+// Exact amount, Indian grouping — approvers must spot an unrealistic price
+function priceText(l) {
+  if (!(l.price > 0)) return 'Price on request';
+  const rent = l.category === 're' && (l.details?.transaction_type === 'Rent' || /per\s*month|\/\s*month|monthly/i.test(l.price_label || ''));
+  return '₹' + Number(l.price).toLocaleString('en-IN') + (rent ? ' /month' : '');
+}
+function ago(iso) {
+  const m = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (m < 60) return `${m} min`;
+  const h = Math.round(m / 60);
+  return h < 48 ? `${h} h` : `${Math.round(h / 24)} days`;
+}
+const label = k => k.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+
+function setCount(remaining) {
+  const pill = document.getElementById('countPill');
+  pill.textContent = remaining > 0 ? `about ${remaining} left` : '0 left';
+  pill.classList.remove('hide');
+}
+
+function toast(text, ms = 1800) {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.remove('hide');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.add('hide'), ms);
+}
+
+function setActions(on) {
+  document.querySelectorAll('[data-act]').forEach(b => { b.disabled = !on; });
+}
+
+async function loadNext() {
+  if (busyQueue) return;
+  busyQueue = true;
+  setActions(false);
+  try {
+    const data = await api('POST', '/api/review/next', { skip: skipped.slice(-SKIP_MAX) });
+    setCount(data.remaining);
+    current = data.listing;
+    if (!current) {
+      const onlySkipped = skipped.length > 0;
+      document.getElementById('clearIco').textContent = onlySkipped ? '👍' : '🎉';
+      document.getElementById('clearTitle').textContent = onlySkipped ? 'Nothing more for now' : 'All clear';
+      document.getElementById('clearText').textContent = onlySkipped
+        ? 'You have skipped the rest for now. Tap Check again to see them.'
+        : 'No listings are waiting for review. Thank you!';
+      return show('clear');
+    }
+    renderCard(current);
+    show('queue');
+    setTimeout(() => setActions(true), NEW_CARD_PAUSE_MS);
+  } catch (err) {
+    if (err.status === 403) return route();   // access changed (e.g. revoked)
+    if (session) toast(err.message, 3500);
+  } finally { busyQueue = false; }
+}
+
+function checkAgain() { skipped = []; loadNext(); }
+
+function renderCard(l) {
+  const photos = (l.photos || []).filter(u => /^https:\/\//.test(u));
+  const photoHtml = photos.length
+    ? `<div class="ph-wrap"><div class="photos" id="photos">${photos.map(u => `<img src="${esc(u)}" alt="" loading="lazy" onclick="openPhoto(this.src)">`).join('')}</div>
+       <div class="ctr" id="photoCtr">1 / ${photos.length}</div></div>`
+    : '<div class="no-photo">No photos</div>';
+  const details = Object.entries(l.details || {})
+    .filter(([k, v]) => !HIDE_DETAILS.has(k) && v !== null && v !== '' && typeof v !== 'object')
+    .map(([k, v]) => `<div>${esc(label(k))}<b>${esc(v)}</b></div>`).join('');
+  document.getElementById('card').innerHTML = `
+    ${photoHtml}
+    ${l.flagged ? `<div class="flag">🚩 Flagged by the automatic check${l.flag_reason ? ': ' + esc(l.flag_reason) : ''}</div>` : ''}
+    <div class="cbody">
+      <div class="ttl">${esc(l.title)}</div>
+      <div class="price">${esc(priceText(l))}</div>
+      <div class="meta">${esc(CAT_LABEL[l.category] || l.category)} · ${esc(l.subcategory || '')} · ${esc(l.address || '')}<br>
+        Seller: ${esc(l.seller_name || '—')} · waiting ${esc(ago(l.created_at))}${l.reference_code ? ' · ' + esc(l.reference_code) : ''}</div>
+      <div class="desc">${esc(l.description || '')}</div>
+      ${details ? `<div class="specs">${details}</div>` : ''}
+    </div>`;
+  const strip = document.getElementById('photos');
+  if (strip) strip.addEventListener('scroll', () => {
+    const i = Math.round(strip.scrollLeft / strip.clientWidth) + 1;
+    document.getElementById('photoCtr').textContent = `${i} / ${photos.length}`;
+  }, { passive: true });
+}
+
+function openPhoto(src) {
+  document.getElementById('viewerImg').src = src;
+  document.getElementById('viewer').classList.remove('hide');
+}
+
+// After any decision: a 409 means someone else decided, the claim was taken
+// over, or the seller just edited it — never an error for the approver.
+async function decided(promise, okText) {
+  setActions(false);
+  try {
+    await promise;
+    current = null;
+    toast(okText);
+  } catch (err) {
+    if (err.status === 409) { current = null; toast(err.message, 3000); }
+    else if (err.status === 403) return route();
+    else { toast(err.message, 3500); setActions(true); return; }
+  }
+  loadNext();
+}
+
+function approve() {
+  if (!current) return;
+  decided(api('POST', `/api/review/${current.id}/approve`), '✓ Approved. Seller emailed.');
+}
+
+async function skip() {
+  if (!current) return;
+  setActions(false);
+  skipped.push(current.id);
+  try { await api('POST', `/api/review/${current.id}/release`); } catch {}
+  current = null;
+  loadNext();
+}
+
+// ── Reason sheet: Change (group 'change') / Reject (group 'reject') ──
+const SHEET = {
+  change: { title: '✏️ What needs to change?', sub: 'The seller can edit and send it again.', send: 'Send back', ok: '✏️ Sent back to the seller.' },
+  reject: { title: '✕ Why can\'t this go live?', sub: 'The seller is told the reason. You are never named.', send: 'Reject', ok: '✕ Rejected. Seller told why.' },
+};
+let sheetGroup = null, sheetReason = null;
+
+function openSheet(group) {
+  if (!current) return;
+  sheetGroup = group; sheetReason = null;
+  const s = SHEET[group];
+  document.getElementById('sheetTitle').textContent = s.title;
+  document.getElementById('sheetSub').textContent = s.sub;
+  const chips = document.getElementById('chips');
+  chips.innerHTML = '';
+  me.reasons.filter(r => r.group === group).forEach(r => {
+    const c = document.createElement('button');
+    c.className = 'chip';
+    c.textContent = r.label;
+    c.onclick = () => { sheetReason = r; chips.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === c)); updateSheet(); };
+    chips.appendChild(c);
+  });
+  document.getElementById('noteIn').value = '';
+  document.getElementById('noteIn').maxLength = me.note_max || 300;
+  const send = document.getElementById('sendBtn');
+  send.textContent = s.send;
+  send.className = 's ' + group;
+  setMsg('sheetMsg', '');
+  updateSheet();
+  document.getElementById('dim').classList.remove('hide');
+  document.getElementById('sheet').classList.remove('hide');
+}
+
+function closeSheet() {
+  document.getElementById('dim').classList.add('hide');
+  document.getElementById('sheet').classList.add('hide');
+}
+
+// Same sentence the server stores in rejection_reason (review.js decideWithReason)
+function updateSheet() {
+  const note = document.getElementById('noteIn').value.trim();
+  const max = me.note_max || 300;
+  const needNote = !!sheetReason?.noteRequired;
+  document.getElementById('noteLbl').textContent = needNote ? 'Note for the seller (needed for "Other")' : 'Note for the seller (optional)';
+  document.getElementById('noteCnt').textContent = `${note.length} / ${max}`;
+  const detail = !sheetReason ? '' : needNote ? note : (note ? `${sheetReason.label}: ${note}` : sheetReason.label);
+  const heading = me.headings?.[sheetGroup] || '';
+  document.getElementById('prevText').textContent = sheetReason ? `${heading}: ${detail || '…'}` : 'Choose a reason above.';
+  document.getElementById('sendBtn').disabled = !sheetReason || (needNote && !note) || note.length > max;
+}
+
+function sendDecision() {
+  if (!current || !sheetReason) return;
+  const action = sheetGroup === 'change' ? 'needs-change' : 'reject';
+  const body = { reason_code: sheetReason.code, note: document.getElementById('noteIn').value.trim() || undefined };
+  const ok = SHEET[sheetGroup].ok;
+  closeSheet();
+  decided(api('POST', `/api/review/${current.id}/${action}`, body), ok);
 }
 
 // ── Start ──
