@@ -111,6 +111,22 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
 .toast{position:fixed;left:50%;top:62px;transform:translateX(-50%);background:#111827;color:#fff;border-radius:22px;padding:9px 16px;font-size:13.5px;font-weight:600;max-width:92%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:10}
 .viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:11;display:flex;align-items:center;justify-content:center}
 .viewer img{max-width:100%;max-height:100%;object-fit:contain}
+/* team (screen 10) */
+.sec{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px}
+.mem{background:var(--panel);border:1px solid var(--border2);border-radius:12px;padding:11px 12px;margin-bottom:8px}
+.mem .n{font-weight:700;font-size:14.5px;overflow-wrap:anywhere}
+.mem .e{font-size:12px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.acts{display:flex;gap:7px;margin-top:9px}
+.acts button,.acts a{flex:1;text-align:center;padding:9px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;font-family:inherit}
+.a-ok{background:var(--green);color:#fff;border:0}
+.a-no{background:#fff;border:1.5px solid var(--border2);color:var(--muted2)}
+.a-rv{background:#fff;border:1.5px solid var(--red);color:var(--red)}
+.a-wa{background:#25D366;color:#fff;border:0}
+.acts button:disabled{opacity:.5;cursor:default}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px;margin-left:6px;vertical-align:2px}
+.t-req,.t-open{background:#FEF3C7;color:#92400E}.t-act,.t-used{background:#DCFCE7;color:#166534}.t-rev,.t-expired,.t-cancelled{background:var(--card);color:var(--muted)}
+.link-box{margin-top:8px;background:var(--card);border-radius:9px;padding:9px 10px;font-size:13px;font-weight:600;overflow-wrap:anywhere;user-select:all}
+.empty{font-size:13px;color:var(--muted);padding:2px 2px 6px}
 .big-ico{font-size:56px}
 .big-t{font-size:20px;font-weight:700;margin-top:10px}
 .big-s{font-size:14px;color:var(--muted);line-height:1.5;max-width:280px;margin-top:8px}
@@ -228,13 +244,24 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
     </div>
   </div>
 
-  <!-- team (step 4c) -->
+  <!-- 10: team (admins only — every /team and /invites route is requireAdmin) -->
   <div class="view hide" id="v-team">
-    <div class="center">
-      <div class="big-ico">👥</div>
-      <div class="big-t">Team</div>
-      <div class="big-s">Coming in build step 4c.</div>
-    </div>
+    <div class="sec" style="margin-top:0">Invite someone</div>
+    <form class="mem" onsubmit="createInvite(event)">
+      <label for="invName" style="margin-top:0">Who is it for?</label>
+      <input class="in" id="invName" type="text" maxlength="40" placeholder="e.g. Priya" required>
+      <button class="btn" id="invBtn" style="margin-top:10px">Create invite link</button>
+      <div class="msg" id="invMsg"></div>
+      <div class="hide" id="invOut">
+        <div class="note" style="margin-top:10px">Personal link for <b id="invFor"></b>, works once, valid 7 days. It is shown only now, so copy or share it.</div>
+        <div class="link-box" id="invLink"></div>
+        <div class="acts">
+          <button type="button" class="a-no" onclick="copyInvite()">Copy link</button>
+          <a class="a-wa" id="invWa" target="_blank" rel="noopener">Share on WhatsApp</a>
+        </div>
+      </div>
+    </form>
+    <div id="teamLists"><div class="note">Loading…</div></div>
   </div>
 
   <div class="view" id="v-loading"><div class="center"><div class="big-s">Loading…</div></div></div>
@@ -343,7 +370,7 @@ function show(name) {
   window.scrollTo(0, 0);
 }
 function toggleMenu() { document.getElementById('menu').classList.toggle('hide'); }
-function menuGo(v) { v === 'queue' ? loadNext() : show(v); }
+function menuGo(v) { v === 'queue' ? loadNext() : loadTeam(); }
 document.addEventListener('click', e => {
   if (!e.target.closest('#menu') && !e.target.closest('#menuBtn')) document.getElementById('menu').classList.add('hide');
 });
@@ -708,6 +735,109 @@ function sendDecision() {
   const ok = SHEET[sheetGroup].ok;
   closeSheet();
   decided(api('POST', `/api/review/${current.id}/${action}`, body), ok);
+}
+
+// ── Team (screen 10, admins) ──
+async function loadTeam() {
+  // Leaving the queue: hand back the listing I hold, so nobody waits 5 min
+  if (current) { const id = current.id; current = null; try { await api('POST', `/api/review/${id}/release`); } catch {} }
+  show('team');
+  document.getElementById('invOut').classList.add('hide');
+  setMsg('invMsg', '');
+  const box = document.getElementById('teamLists');
+  try {
+    const [{ team }, { invites }] = await Promise.all([api('GET', '/api/review/team'), api('GET', '/api/review/invites')]);
+    box.innerHTML = renderTeam(team) + renderInvites(invites);
+  } catch (err) {
+    if (err.status === 403) return route();
+    box.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+}
+
+const shortDate = iso => new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+function renderTeam(team) {
+  const groups = [
+    ['requested', 'Waiting', 't-req', m => `<button class="a-ok" data-member="${esc(m.user_id)}" data-status="active">Activate</button><button class="a-no" data-member="${esc(m.user_id)}" data-status="revoked">Ignore</button>`],
+    ['active', 'Active', 't-act', m => `<button class="a-rv" data-member="${esc(m.user_id)}" data-status="revoked" data-confirm="${esc(m.display_name)}">Revoke</button>`],
+    ['revoked', 'Revoked', 't-rev', m => `<button class="a-ok" data-member="${esc(m.user_id)}" data-status="active">Activate again</button>`],
+  ];
+  return groups.map(([status, title, cls, buttons]) => {
+    const rows = team.filter(m => m.status === status);
+    const when = m => status === 'requested' ? `asked ${ago(m.requested_at)} ago` : `since ${shortDate(m.decided_at || m.requested_at)}`;
+    return `<div class="sec">${title} (${rows.length})</div>` + (rows.length
+      ? rows.map(m => `<div class="mem"><div class="n">${esc(m.display_name)}<span class="tag ${cls}">${status === 'requested' ? 'requested' : status}</span></div>
+          <div class="e">${esc(m.email || '—')} · ${esc(when(m))}</div><div class="acts">${buttons(m)}</div></div>`).join('')
+      : '<div class="empty">Nobody here.</div>');
+  }).join('');
+}
+
+function renderInvites(invites) {
+  const label = { open: 'open', used: 'used', expired: 'expired', cancelled: 'cancelled' };
+  return `<div class="sec">Invites (${invites.length})</div>` + (invites.length
+    ? invites.map(i => {
+        const info = i.status === 'used' ? `used by ${esc(i.used_by_name || 'a deleted account')} · ${esc(shortDate(i.used_at))}`
+          : i.status === 'open' ? `valid until ${esc(shortDate(i.expires_at))}`
+          : i.status === 'expired' ? `expired ${esc(shortDate(i.expires_at))}` : `cancelled ${esc(shortDate(i.cancelled_at))}`;
+        return `<div class="mem"><div class="n">For ${esc(i.display_name)}<span class="tag t-${i.status}">${label[i.status]}</span></div>
+          <div class="e">${info}</div>${i.status === 'open' ? `<div class="acts"><button class="a-no" data-cancel="${esc(i.id)}">Cancel invite</button></div>` : ''}</div>`;
+      }).join('')
+    : '<div class="empty">No invites yet.</div>');
+}
+
+// One click handler for every Team button (event delegation)
+document.getElementById('teamLists').addEventListener('click', async e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.confirm && !confirm(`Revoke ${b.dataset.confirm}? They lose access on their next tap.`)) return;
+  b.disabled = true;
+  try {
+    if (b.dataset.member) {
+      await api('POST', `/api/review/team/${b.dataset.member}`, { status: b.dataset.status });
+      toast(b.dataset.status === 'active' ? '✓ Activated' : 'Done');
+    } else if (b.dataset.cancel) {
+      await api('POST', `/api/review/invites/${b.dataset.cancel}/cancel`);
+      toast('Invite cancelled');
+    }
+  } catch (err) { toast(err.message, 3500); }
+  loadTeamLists();
+});
+
+async function createInvite(e) {
+  e.preventDefault();
+  setMsg('invMsg', '');
+  busy('invBtn', true, 'Creating…');
+  try {
+    const name = document.getElementById('invName').value.trim();
+    const data = await api('POST', '/api/review/invites', { display_name: name });
+    document.getElementById('invFor').textContent = data.invite.display_name;
+    document.getElementById('invLink').textContent = data.link;
+    const msg = `Hi ${data.invite.display_name}, you are invited to join the MapIt review team. `
+      + `Open this link on your phone to create your account (works once, valid 7 days):\n${data.link}`;
+    document.getElementById('invWa').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    document.getElementById('invOut').classList.remove('hide');
+    document.getElementById('invName').value = '';
+    loadTeamLists();
+  } catch (err) { setMsg('invMsg', err.message); }
+  finally { busy('invBtn', false); }
+}
+// Refresh the lists only — keeps the new link on screen
+async function loadTeamLists() {
+  try {
+    const [{ team }, { invites }] = await Promise.all([api('GET', '/api/review/team'), api('GET', '/api/review/invites')]);
+    document.getElementById('teamLists').innerHTML = renderTeam(team) + renderInvites(invites);
+  } catch {}
+}
+
+async function copyInvite() {
+  const text = document.getElementById('invLink').textContent;
+  try { await navigator.clipboard.writeText(text); toast('Link copied'); }
+  catch {
+    // Older phones / http: select the text so a long-press copies it
+    const r = document.createRange(); r.selectNodeContents(document.getElementById('invLink'));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    toast('Press and hold to copy', 2500);
+  }
 }
 
 // ── Start ──
