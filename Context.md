@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-01 17:01 (UAE), checkpoint (**9L step 5 DONE (`c381227`, local): My Listings shows Needs a change / Not approved + reason + Edit & resubmit; #my-listings email link; admin Pending tile → /review. Nagesh full-loop click-test 1–6 PASS (real emails). 4c click-test 1–4 PASS; "Signed in as" bar added (`513bcc9`). UAT test data cleaned. Next: approver HTML guide, then step 6 UAT with both wives.**)
+- **Last updated:** 2026-11-01 17:09 (UAE), end-of-day checkpoint (**9L steps 1–5 + reviewer guide DONE and PUSHED to uat (`0831a8a`, fast-forward; branch `feat/session-9l-review-queue` also on origin). uat.mapit.co.in/review live (200 with bypass; 302 Vercel login without). Production untouched (no 019/020). Next session: UAT with both wives — first solve their access to the Vercel-protected uat.**)
+- **Last updated (previous):** 2026-11-01 17:01 (UAE), checkpoint (**9L step 5 DONE (`c381227`, local): My Listings shows Needs a change / Not approved + reason + Edit & resubmit; #my-listings email link; admin Pending tile → /review. Nagesh full-loop click-test 1–6 PASS (real emails). 4c click-test 1–4 PASS; "Signed in as" bar added (`513bcc9`). UAT test data cleaned. Next: approver HTML guide, then step 6 UAT with both wives.**)
 - **Last updated (previous):** 2026-11-01 15:27 (UAE), checkpoint (**9L step 4 a/b/c built on UAT (local, not pushed): /review sign-in/sign-up/waiting + refresh (`8554980`), personal invite links D16 + migration 020 run on UAT by Nagesh (`f2bd604`, `bbdca60`), queue card + Change/Reject/Approve/Skip (`2c1a99f`, Nagesh click-test 1–6 PASS), Team panel with invites (`24ac865`). `uat:review` 64/64. Next: Nagesh click-tests 4c (activate Approver@2), then step 5 seller side.**)
 - **Last updated (previous):** 2026-11-01 13:23 (UAE), checkpoint (**9L step 2 part 2 DONE (local, not pushed): A `POST /api/auth/refresh` (`3e700ca`), B seller emails for Needs change / Reject (`7de9640`, Nagesh received both real test emails), C two-approver race checks (`7a933ec`). `uat:review` 53/53, `uat:transfer` 20/20. Next: step 3 phone mockup; later an HTML guide for the approvers (wives).**)
 - **Last updated (previous):** 2026-10-31 19:52 (UAE), end-of-day checkpoint (**9L part 1 + D11 "Needs change" committed (`564735e`), Arun explainer `docs/business/listing-approval-process.html` (`0c37dff`). Part 2 design brief (A refresh route, B Needs change/Reject seller emails, C refresh + race tests + one manual email check to Nagesh's inbox) presented — AWAITING Nagesh's approval. Paused (Nagesh, other work); resume tomorrow. Branch local, not pushed; prod untouched.**)
@@ -137,6 +138,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-01 17:09, end of day) — Goal: 9L step 6, UAT with both wives (another day).** Everything is on uat (`0831a8a`). Before they can test, they need access past Vercel Authentication on uat (Open Issues). Then: Team panel invites on uat.mapit.co.in/review → sign up → review UAT listings → Nagesh + Arun sign-off → step 7 release (019 + 020 on prod FIRST).
 
 **NOW (2026-11-01 17:01) — Goal: HTML guide for the approvers, then 9L step 6 (UAT with both wives).** Steps 1–5 built on `feat/session-9l-review-queue` (local, not pushed). Prod has neither 019 nor 020 — both run on prod FIRST at release.
 
@@ -625,6 +628,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-01 17:05) Pushed to uat:** `feat/session-9l-review-queue` pushed to origin; uat fast-forwarded to `0831a8a` (origin/uat had nothing new). Vercel uat deploy checked with the bypass header: /review 200, `/api/review/invite/check` 200; without login → 302 (Vercel Authentication).
+- ✅ **(2026-11-01) Reviewer guide** `docs/uat/review-guide-approvers.html` (`7a9011a`, theme tokens `0831a8a`), linked in docs/index.html; also published as a PRIVATE artifact https://claude.ai/artifact/2sapXLWNnmWsGC6nDjpgqk (8 screenshots as files). Sections: get started (invite link), what to check, 4 choices, which to choose, good to know, Team panel for admins.
 - ✅ **(2026-11-01) 9L step 5 — seller side** (`c381227`): `reviewOutcome()` in MapIt_MVP_v1.html (label from the stored heading prefix, linked to GROUP_HEADINGS by comments both sides), reason box (heading stripped), orange "Edit & resubmit" (existing edit re-queues as pending). `#my-listings` saved at load (sessionStorage `mapit_open_my_listings`) → My Listings after sign-in, hash cleared. Admin Pending tile → `/review` (old section unreachable; delete after release). Two-file sync verified. Screenshots `before-/after-my-listings`, `after-my-listings-from-link`, `before-/after-admin-tiles` (session-9l). Nagesh full-loop click-test (post → approver2 Change → real email → Open My Listings → Edit & resubmit → Reject → admin tile) 1–6 PASS. Step-5 seed seller + listings deleted (0 TEST listings left).
 - ✅ **(2026-11-01) "Signed in as <name>" bar** on /review (`513bcc9`, Nagesh); `/me` returns own email as fallback. 4c click-test 1–4 PASS (activate Approver@2, review as approver, revoke/activate again, invite copy/cancel).
 - ✅ **(2026-11-01) 9L step 4c — Team panel** (`24ac865`): Invite someone (link shown once, Copy + Share on WhatsApp via wa.me), Waiting (Activate/Ignore), Active (Revoke + confirm), Revoked (Activate again), invite history + Cancel. Going to Team releases the held claim. CDP phone screenshots `after-review-team`, `after-review-invite-created`, `after-review-menu-admin`.
@@ -1386,6 +1391,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **9L review queue (steps 1–5 + guide)** | ✅ Built, click-tested by Nagesh, on uat (); step 6 (wives UAT) + step 7 (release) open | , , /, ,  | 019 + 020 on UAT only;  64/64 |
 | **9L step 2 — review backend** | ✅ Part 1 + D11 + part 2 DONE (`85e9d08`, `ef794ff`, `564735e`, `3e700ca`, `7de9640`, `7a933ec`; 53/53 on UAT) | `src/routes/auth.js`, `src/utils/notifySeller.js`, `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
 | **Arun approval-process explainer** | ✅ Done (`0c37dff`) | `docs/business/listing-approval-process.html`, `docs/index.html` | Nagesh to share with Arun; offer to publish as private web page stands |
 | **Feedback Release 3 (Whole city 65 km, comma description, Explore 🔍)** | ✅ RELEASED PR #31 `f8910f9` (2026-10-29), localhost + uat checklist PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html`, `public/user-guide.html`, `public/guide/*`, `scripts/guide-shots.js` | Branch `fix/feedback-03` (from uat `0a76f71`); screenshots `docs/screenshots/feedback-03/` |
@@ -1589,6 +1595,17 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+public/review.html — 2026-11-01 (NEW): /review page — sign in / invite sign-up / waiting, refresh, queue card + Change/Reject sheets + Approve/Skip, All clear, Team panel (invites, activate/revoke), Signed-in-as bar.
+src/routes/review.js — 2026-11-01: invites (create/list/cancel, public check, one-time use in access-request), /me returns headings + own email.
+src/routes/auth.js — 2026-11-01: POST /api/auth/refresh (per-request client, 60/h).
+src/utils/notifySeller.js — 2026-11-01: notifySellerListingReviewed (Needs change / Not approved email), siteUrl exported.
+database/migrations/020-review-invites.sql + database/scripts/020-rollback.sql — 2026-11-01 (NEW): review_invites table (run on UAT only).
+src/server.js — 2026-11-01: GET /review route. public/robots.txt: Disallow /review.
+MapIt_MVP_v1.html / public/index.html — 2026-11-01: reviewOutcome() + reason box + Edit & resubmit in My Listings; #my-listings link handler.
+public/admin.html — 2026-11-01: Pending tile → /review (old Pending section unreachable).
+src/config/reviewReasons.js — 2026-11-01: comment linking GROUP_HEADINGS to reviewOutcome().
+scripts/uat/review-queue.suite.js — 2026-11-01: F (refresh), E (emails), C (race), I (invites) → 64 checks.
+docs/uat/review-guide-approvers.html — 2026-11-01 (NEW): reviewer guide. docs/technical/review-page-mockup.html (NEW, approved D15).
 src/routes/review.js — 2026-10-31 (NEW): /api/review router — me, access-request, next (claim RPC, allowlisted card, first name for approvers), approve, needs-change, reject (shared `decideWithReason`), release, team, team/:userId (audit `staff_status_change`).
 src/middleware/auth.js — 2026-10-31: `requireReviewer` (admin email OR staff_members active; 403 with `access`).
 src/config/reviewReasons.js — 2026-10-31 (NEW): `REVIEW_REASONS` (group change/reject), `GROUP_HEADINGS`, `REVIEW_NOTE_MAX` 300.
@@ -1992,6 +2009,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **⏸ (2026-11-01) Wives can't open uat.mapit.co.in without a Vercel login** (Vercel Authentication, 302). Options for next session: (a) a Vercel shareable link for the uat deployment (no Vercel account needed; check how long it stays valid and that it covers /review + /api), (b) invite them as Vercel Viewer seats (Rule 11: confirm $0 first), (c) turn protection off only during the test (least preferred). Decide before step 6.
+- **⚠️ (2026-11-01) Release order now 019 AND 020 on prod before merging 9L** — without 020, every new approver sign-up fails (access-request reads review_invites); without 019, seller edits fail.
+- **ℹ️ (2026-11-01) Reviewer guide artifact is private** — Nagesh shares it from its Share menu; Team screenshots show his +approver1/2 test aliases (offer: blur). Guide says mapit.co.in/review (post-release address); during UAT use uat.mapit.co.in/review.
+- **ℹ️ (2026-11-01) UAT test approvers +approver1 ("Test Approver") and +approver2 ("Approver@2") are active on UAT** — keep or delete (Nagesh to decide).
+- **ℹ️ (2026-11-01) Admin page old Pending section (approve / hard-delete Remove) is unreachable but still in public/admin.html** — delete after the release settles.
 - **✅ (2026-11-01) Part 2 brief approved and built** (A refresh, B seller emails, C race checks; manual email check done).
 - **ℹ️ (2026-11-01) Review page must save the NEW refresh_token after every refresh** (Supabase rotates them; keeping the old one logs the approver out after ~2 h). Check in step 4.
 - **ℹ️ (2026-11-01) Windows PowerShell 5.1 shows any 4xx reply as a red error** — the first line is the server's JSON; use `try { … } catch { $_.Exception.Response.StatusCode.value__ ; $_.ErrorDetails.Message }` for clean output.
@@ -2206,6 +2228,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-01, Nagesh) Wives UAT on another day**; 9L pushed to uat now (fast-forward, no PR to main yet).
+- **(2026-11-01, James) Reviewer guide kept in the repo AND published as a private artifact** so the wives can open it on a phone; same content, theme-aware styling.
 - **(2026-11-01, Nagesh) D18: seller edit keeps `rejection_reason`** — My Listings shows it only while status is rejected; allows a later "Resubmitted, last time: …" hint for approvers.
 - **(2026-11-01, Nagesh) D16: /review sign-up needs a personal invite link** (admin creates in Team panel; one-time, 7 days); the invite does NOT activate — admin still taps Activate. New table `review_invites` (migration 020), not the archived `invite_codes` (Rule 9).
 - **(2026-11-01, Nagesh) D17: Sign out is a visible header button**, not in the ☰ menu; menu (Queue/Team) shows for admins only.
@@ -2639,7 +2663,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-11-01 17:01) — ordered (resume with /resume):**
+**⬅ NOW (2026-11-01 17:09, end of day) — ordered (resume with /resume):**
+1. **Wives' access to uat** (Open Issues: shareable link vs Viewer seats vs protection off) → Nagesh decides.
+2. **Step 6 UAT:** Nagesh/Arun create invite links in the Team panel on uat.mapit.co.in/review (Share on WhatsApp) + share the reviewer guide artifact → wives sign up → admin Activates → they review UAT listings (post a few test listings first) → Nagesh + Arun sign-off.
+3. Decide: keep/delete UAT test approvers +approver1/+approver2; blur aliases in guide screenshots if wanted.
+4. **Step 7 release:** 019 + 020 on PROD first (SQL Editor picker = jneoxwumccmjwaojfazh) → verify + schema diff → PR uat → main → `smoke:prod` → invites for the wives on prod.
+5. After release: delete admin old Pending section; tell the seller Releases 1–3 are live.
+6. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap.
+
+**⬅ (superseded) NOW (2026-11-01 17:01) — ordered (resume with /resume):**
 1. **HTML guide for the approvers (wives)**: invite link → create account → wait → review (card, Change/Reject/Approve/Skip, what the seller sees); plus a Team-panel section for Nagesh/Arun (invite, activate, revoke). Real screenshots from session-9l.
 2. Decide: keep or delete UAT test approvers `+approver1`/`+approver2`.
 3. Step 6: push branch → uat → wives get invite links from the Team panel (uat.mapit.co.in/review) → test with UAT listings → Nagesh + Arun sign-off.
