@@ -23,7 +23,9 @@ const REVIEW_REASONS = [
   { group: 'reject', code: 'other',          label: 'Other', noteRequired: true },
 ];
 
-// Heading the seller sees in My Listings (and the part 2 email)
+// Heading the seller sees in My Listings (and the part 2 email). The page
+// reads the label from this prefix (reviewOutcome() in MapIt_MVP_v1.html):
+// reword a heading there too, or old + new listings show "Not live".
 const GROUP_HEADINGS = { change: 'Needs a small change', reject: 'Not approved' };
 
 // Notes are shown to the seller.

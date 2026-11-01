@@ -251,9 +251,12 @@ html,body{min-height:100%;font-family:'Outfit',sans-serif;background:var(--ink);
         <div class="adm-block-label">Overview</div>
         <div class="adm-block-count">&nbsp;</div>
       </div>
-      <div class="adm-block" id="admTabPending" onclick="switchAdmSection('pending')">
+      <!-- Session 9L (D2): pending listings are reviewed on /review now. The old
+           Pending section below (approve / hard-delete Remove) is unreachable
+           and kept only until the release settles — then delete it. -->
+      <div class="adm-block" id="admTabPending" onclick="location.href='/review'">
         <span class="adm-block-ico">📋</span>
-        <div class="adm-block-label">Pending Listings</div>
+        <div class="adm-block-label">Pending Listings → Review queue</div>
         <div class="adm-block-count" id="admCountPending">&nbsp;</div>
       </div>
       <div class="adm-block" id="admTabReports" onclick="switchAdmSection('reports')">
