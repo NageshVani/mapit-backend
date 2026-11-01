@@ -206,6 +206,12 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
+// ── Review queue for approvers (Session 9L) — same idea: /api/review is
+// gated by requireReviewer / requireAdmin, the page is only the front door.
+app.get('/review', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/review.html'));
+});
+
 // ── Legal pages ──────────────────────────────────────────────
 // Terms and Privacy are one combined document (docs/legal/terms-privacy-draft2.html,
 // finalized v1.0, approved by Arun 2026-07-21) — Part I is Terms, Part II is

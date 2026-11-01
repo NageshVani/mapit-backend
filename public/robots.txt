@@ -1,6 +1,7 @@
 User-agent: *
 Disallow: /api/
 Disallow: /admin
+Disallow: /review
 Allow: /
 
 Sitemap: https://mapit.co.in/sitemap.xml

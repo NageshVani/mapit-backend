@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>MapIt Review</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- ============================================================
+     MapIt Review — listing review queue for approvers (Session 9L)
+     Mockup: docs/technical/review-page-mockup.html (approved D15).
+     Step 4a: sign in / create account / waiting + session refresh.
+     Every /api/review route is gated server-side (requireReviewer /
+     requireAdmin); the screens here are only a friendly front door.
+     ============================================================ -->
+<style>
+:root{
+  --ink:#F7F9FC;--deep:#EDF0F5;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
+  --orange:#F06030;--orange2:#FF7A50;
+  --blue:#3B82F6;--green:#22C55E;--gold:#F59E0B;--red:#EF4444;
+  --text:#111827;--muted:#6B7280;--muted2:#4B5563;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--text);font-size:15px;-webkit-tap-highlight-color:transparent}
+button,input{font-family:inherit;font-size:inherit}
+.hide{display:none !important}
+
+.app{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;background:var(--ink)}
+.hdr{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--border2);padding:12px 14px;display:flex;align-items:center;gap:8px}
+.logo{font-weight:700;font-size:17px}.logo b{color:var(--orange)}
+.pill{margin-left:auto;background:var(--card);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted2);font-weight:600}
+.menu-btn{margin-left:auto;background:none;border:0;font-size:22px;color:var(--muted2);padding:2px 6px;cursor:pointer}
+.pill + .menu-btn{margin-left:0}
+.dd{position:absolute;right:10px;top:50px;background:var(--panel);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);width:180px;overflow:hidden;z-index:6}
+.dd button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:13px 14px;font-weight:600;cursor:pointer}
+.dd button:last-child{border-bottom:0}
+.dd .danger{color:var(--red)}
+.view{flex:1;padding:18px 16px 28px}
+.center{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:70vh}
+
+.tabs{display:flex;background:var(--card);border-radius:10px;padding:3px;margin-bottom:16px}
+.tabs button{flex:1;padding:9px;border:0;border-radius:8px;font-weight:600;color:var(--muted);background:transparent;cursor:pointer}
+.tabs .on{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:12px 0 5px}
+.in{width:100%;background:var(--panel);border:1.5px solid var(--border2);border-radius:10px;padding:12px;font-size:16px;color:var(--text);outline:none}
+.in:focus{border-color:var(--orange)}
+.code-in{letter-spacing:.5em;text-align:center;font-size:22px;font-weight:700}
+.btn{display:block;width:100%;text-align:center;padding:14px;border-radius:12px;font-weight:700;font-size:15px;margin-top:18px;background:var(--orange);color:#fff;border:0;cursor:pointer}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.ghost{background:transparent;border:1.5px solid var(--border2);color:var(--text)}
+.btn.narrow{width:200px}
+.link{background:none;border:0;color:var(--muted2);text-decoration:underline;font-weight:600;cursor:pointer;padding:6px}
+.note{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:10px}
+.hint{background:#FFF7ED;border:1px solid #FDBA74;color:#9A3412;border-radius:10px;padding:10px;font-size:12.5px;line-height:1.4;margin-top:16px}
+.msg{font-size:13px;font-weight:600;margin-top:10px;line-height:1.4}
+.msg.err{color:var(--red)}.msg.ok{color:#15803D}
+.big-ico{font-size:56px}
+.big-t{font-size:20px;font-weight:700;margin-top:10px}
+.big-s{font-size:14px;color:var(--muted);line-height:1.5;max-width:280px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <div class="logo">Map<b>It</b> Review</div>
+    <div class="pill hide" id="countPill"></div>
+    <button class="menu-btn hide" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">☰</button>
+    <div class="dd hide" id="menu">
+      <button onclick="menuGo('queue')">📋 Review queue</button>
+      <button class="hide" id="menuTeam" onclick="menuGo('team')">👥 Team</button>
+      <button class="danger" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- 1 + 2: sign in / create account -->
+  <div class="view hide" id="v-auth">
+    <div class="tabs">
+      <button id="tabIn" class="on" onclick="setTab('in')">Sign in</button>
+      <button id="tabUp" onclick="setTab('up')">Create account</button>
+    </div>
+
+    <form id="f-in" onsubmit="signIn(event)">
+      <label for="inEmail">Email</label>
+      <input class="in" id="inEmail" type="email" autocomplete="email" required>
+      <label for="inPwd">Password</label>
+      <input class="in" id="inPwd" type="password" autocomplete="current-password" required>
+      <button class="btn" id="inBtn">Sign in</button>
+      <div style="text-align:center;margin-top:8px"><button type="button" class="link" onclick="forgotPassword()">Forgot password?</button></div>
+    </form>
+
+    <form id="f-up" class="hide" onsubmit="sendCode(event)">
+      <label for="upEmail">Email</label>
+      <input class="in" id="upEmail" type="email" autocomplete="email" required>
+      <label for="upName">Your name</label>
+      <input class="in" id="upName" type="text" autocomplete="name" maxlength="40" placeholder="Shown to the MapIt team" required>
+      <label for="upPwd">Choose a password</label>
+      <input class="in" id="upPwd" type="password" autocomplete="new-password" required>
+      <div class="note" style="margin-top:6px">8+ characters, one capital letter, one symbol.</div>
+      <button class="btn" id="upBtn">Email me a code</button>
+      <div class="note">Already use MapIt with this email? This sets a new password for that account too.</div>
+    </form>
+
+    <form id="f-code" class="hide" onsubmit="verifyCode(event)">
+      <div class="note" style="margin-top:0">We emailed a 6-digit code to <b id="codeEmail"></b>. Check Spam if it doesn't arrive in a minute.</div>
+      <label for="codeIn">Code</label>
+      <input class="in code-in" id="codeIn" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required>
+      <button class="btn" id="codeBtn">Request access</button>
+      <div style="text-align:center;margin-top:8px"><button type="button" class="link" onclick="setTab('up')">Change email</button></div>
+    </form>
+
+    <div class="msg" id="authMsg"></div>
+    <div class="hint">This page is only for the MapIt review team. Buying or selling? Go to <b>www.mapit.co.in</b>.</div>
+  </div>
+
+  <!-- name form: signed in, but never asked for access (e.g. an existing buyer account) -->
+  <div class="view hide" id="v-request">
+    <div class="big-t" style="margin-top:20px">Join the review team</div>
+    <div class="big-s" style="max-width:none">Tell us your name and the MapIt team will activate your account.</div>
+    <form onsubmit="requestAccess(event)">
+      <label for="reqName">Your name</label>
+      <input class="in" id="reqName" type="text" maxlength="40" required>
+      <button class="btn" id="reqBtn">Request access</button>
+    </form>
+    <div class="msg" id="reqMsg"></div>
+  </div>
+
+  <!-- 3: waiting -->
+  <div class="view hide" id="v-waiting">
+    <div class="center">
+      <div class="big-ico">⏳</div>
+      <div class="big-t" id="waitTitle">Thanks</div>
+      <div class="big-s">Your request has been sent. The MapIt team will activate your account, usually the same day.</div>
+      <button class="btn ghost narrow" onclick="route()">Check again</button>
+    </div>
+  </div>
+
+  <!-- revoked -->
+  <div class="view hide" id="v-revoked">
+    <div class="center">
+      <div class="big-ico">🔒</div>
+      <div class="big-t">Access turned off</div>
+      <div class="big-s">Your review access is not active. Please contact the MapIt team.</div>
+    </div>
+  </div>
+
+  <!-- queue (step 4b) -->
+  <div class="view hide" id="v-queue">
+    <div class="center">
+      <div class="big-ico">📋</div>
+      <div class="big-t" id="queueHello">Signed in</div>
+      <div class="big-s">You have review access. The listing queue arrives in the next build step (4b).</div>
+    </div>
+  </div>
+
+  <!-- team (step 4c) -->
+  <div class="view hide" id="v-team">
+    <div class="center">
+      <div class="big-ico">👥</div>
+      <div class="big-t">Team</div>
+      <div class="big-s">Coming in build step 4c.</div>
+    </div>
+  </div>
+
+  <div class="view" id="v-loading"><div class="center"><div class="big-s">Loading…</div></div></div>
+</div>
+
+<script>
+// ── Session (own key — never mixes with a buyer login in the same browser) ──
+const SESSION_KEY = 'mapit_review_session';
+const REFRESH_EARLY_MS = 5 * 60 * 1000;   // renew 5 min before the 1 h token ends
+let session = null;      // { access_token, refresh_token, expires_at (seconds) }
+let me = null;           // GET /api/review/me
+let refreshTimer = null;
+let refreshing = null;   // one refresh at a time (shared promise)
+
+function loadSession() {
+  try { session = JSON.parse(localStorage.getItem(SESSION_KEY)) || null; } catch { session = null; }
+}
+function saveSession(s) {
+  session = s ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at } : null;
+  try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(session)) : localStorage.removeItem(SESSION_KEY); } catch {}
+  scheduleRefresh();
+}
+
+// Supabase ROTATES refresh tokens: always save the new one (saveSession does).
+async function refreshSession() {
+  if (!session?.refresh_token) return false;
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    try {
+      const r = await fetch('/api/auth/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: session.refresh_token }) });
+      if (!r.ok) return false;
+      saveSession((await r.json()).session);
+      return true;
+    } catch { return false; }
+    finally { refreshing = null; }
+  })();
+  return refreshing;
+}
+
+function scheduleRefresh() {
+  clearTimeout(refreshTimer);
+  if (!session?.expires_at) return;
+  const wait = Math.max(session.expires_at * 1000 - Date.now() - REFRESH_EARLY_MS, 0);
+  refreshTimer = setTimeout(refreshSession, wait);
+}
+
+// Phones pause timers while the screen is off, so check again on return.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && session?.expires_at
+      && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) refreshSession();
+});
+
+// ── API helper: on 401, refresh once and retry; still 401 → sign-in screen ──
+async function api(method, url, body, retried) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (session?.access_token) headers.Authorization = 'Bearer ' + session.access_token;
+  let r;
+  try {
+    r = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  } catch {
+    throw new Error('No connection. Please check your internet and try again.');
+  }
+  const data = await r.json().catch(() => ({}));
+  if (r.status === 401 && session && !retried) {
+    if (await refreshSession()) return api(method, url, body, true);
+    saveSession(null);
+    show('auth');
+    throw new Error('Your session ended. Please sign in again.');
+  }
+  if (!r.ok) { const e = new Error(data.error || 'Something went wrong. Please try again.'); e.status = r.status; e.data = data; throw e; }
+  return data;
+}
+
+// ── Views ──
+const VIEWS = ['auth', 'request', 'waiting', 'revoked', 'queue', 'team', 'loading'];
+function show(name) {
+  VIEWS.forEach(v => document.getElementById('v-' + v).classList.toggle('hide', v !== name));
+  const signedIn = !!session && name !== 'auth';
+  document.getElementById('menuBtn').classList.toggle('hide', !signedIn);
+  document.getElementById('menuTeam').classList.toggle('hide', me?.access !== 'admin');
+  document.getElementById('menu').classList.add('hide');
+  window.scrollTo(0, 0);
+}
+function toggleMenu() { document.getElementById('menu').classList.toggle('hide'); }
+function menuGo(v) { show(v); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('#menu') && !e.target.closest('#menuBtn')) document.getElementById('menu').classList.add('hide');
+});
+
+function setMsg(id, text, kind = 'err') {
+  const el = document.getElementById(id);
+  el.textContent = text || '';
+  el.className = 'msg ' + kind;
+}
+function busy(btnId, on, label) {
+  const b = document.getElementById(btnId);
+  if (on) { b.dataset.label = b.textContent; b.textContent = label || 'Please wait…'; }
+  else if (b.dataset.label) b.textContent = b.dataset.label;
+  b.disabled = on;
+}
+
+// Decide the screen from the server's answer, never from local guesses
+async function route() {
+  if (!session) return show('auth');
+  show('loading');
+  try {
+    me = await api('GET', '/api/review/me');
+  } catch (e) {
+    if (!session) return;                 // api() already showed sign-in
+    document.getElementById('v-loading').querySelector('.big-s').textContent = e.message;
+    return;
+  }
+  if (me.access === 'admin' || me.access === 'active') {
+    document.getElementById('queueHello').textContent = me.display_name ? `Hello, ${me.display_name.split(' ')[0]}` : 'Signed in';
+    return show('queue');
+  }
+  if (me.access === 'requested') {
+    document.getElementById('waitTitle').textContent = me.display_name ? `Thanks, ${me.display_name.split(' ')[0]}` : 'Thanks';
+    return show('waiting');
+  }
+  if (me.access === 'revoked') return show('revoked');
+  show('request');
+}
+
+// ── Sign in ──
+function setTab(t) {
+  document.getElementById('tabIn').classList.toggle('on', t === 'in');
+  document.getElementById('tabUp').classList.toggle('on', t !== 'in');
+  document.getElementById('f-in').classList.toggle('hide', t !== 'in');
+  document.getElementById('f-up').classList.toggle('hide', t !== 'up');
+  document.getElementById('f-code').classList.toggle('hide', t !== 'code');
+  setMsg('authMsg', '');
+}
+
+async function signIn(e) {
+  e.preventDefault();
+  setMsg('authMsg', '');
+  busy('inBtn', true, 'Signing in…');
+  try {
+    const data = await api('POST', '/api/auth/signin', {
+      email: document.getElementById('inEmail').value, password: document.getElementById('inPwd').value });
+    saveSession(data.session);
+    document.getElementById('inPwd').value = '';
+    await route();
+  } catch (err) {
+    setMsg('authMsg', /invalid login/i.test(err.message) ? 'Email or password is not right.' : err.message);
+  } finally { busy('inBtn', false); }
+}
+
+// Reset link opens the MapIt app, which sets the new password; then come back here.
+async function forgotPassword() {
+  const email = document.getElementById('inEmail').value.trim();
+  if (!email) return setMsg('authMsg', 'Type your email above first, then tap Forgot password.');
+  try {
+    await api('POST', '/api/auth/reset-password', { email, redirectTo: location.origin + '/' });
+    setMsg('authMsg', 'Reset link sent. It opens MapIt to set a new password; then come back to this page and sign in.', 'ok');
+  } catch (err) { setMsg('authMsg', err.message); }
+}
+
+// ── Create account: details → code → password → sign in again → request access ──
+let pending = null;   // { email, name, password } until the code is verified (never stored)
+
+async function sendCode(e) {
+  e.preventDefault();
+  setMsg('authMsg', '');
+  const email = document.getElementById('upEmail').value.trim().toLowerCase();
+  const name = document.getElementById('upName').value.trim().replace(/\s+/g, ' ');
+  const password = document.getElementById('upPwd').value;
+  if (name.length < 2) return setMsg('authMsg', 'Please enter your name (2–40 characters).');
+  busy('upBtn', true, 'Sending code…');
+  try {
+    await api('POST', '/api/auth/signup', { email, password });
+    pending = { email, name, password };
+    document.getElementById('codeEmail').textContent = email;
+    document.getElementById('codeIn').value = '';
+    setTab('code');
+    document.getElementById('codeIn').focus();
+  } catch (err) { setMsg('authMsg', err.message); }
+  finally { busy('upBtn', false); }
+}
+
+async function verifyCode(e) {
+  e.preventDefault();
+  if (!pending) return setTab('up');
+  setMsg('authMsg', '');
+  busy('codeBtn', true, 'Checking…');
+  try {
+    const v = await api('POST', '/api/auth/verify-otp', { email: pending.email, token: document.getElementById('codeIn').value.trim() });
+    saveSession(v.session);
+    await api('PUT', '/api/auth/password', { password: pending.password });
+    // Setting a password ends the session it was set with (Session 9a finding),
+    // so sign in again with the new password before going on.
+    const s = await api('POST', '/api/auth/signin', { email: pending.email, password: pending.password });
+    saveSession(s.session);
+    await api('POST', '/api/review/access-request', { display_name: pending.name });
+    pending = null;
+    document.getElementById('upPwd').value = '';
+    await route();
+  } catch (err) {
+    setMsg('authMsg', /expired|invalid/i.test(err.message) ? 'That code is not right or has expired. Check it, or go back and send a new one.' : err.message);
+  } finally { busy('codeBtn', false); }
+}
+
+// Signed in, but never requested access (e.g. signed in with a buyer account)
+async function requestAccess(e) {
+  e.preventDefault();
+  setMsg('reqMsg', '');
+  busy('reqBtn', true, 'Sending…');
+  try {
+    await api('POST', '/api/review/access-request', { display_name: document.getElementById('reqName').value });
+    await route();
+  } catch (err) { setMsg('reqMsg', err.message); }
+  finally { busy('reqBtn', false); }
+}
+
+async function signOut() {
+  try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
+  saveSession(null);
+  me = null;
+  setTab('in');
+  show('auth');
+}
+
+// ── Start ──
+loadSession();
+(async () => {
+  if (session?.expires_at && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) await refreshSession();
+  scheduleRefresh();
+  route();
+})();
+</script>
+</body>
+</html>
