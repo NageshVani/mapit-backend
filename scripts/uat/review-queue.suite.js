@@ -54,7 +54,7 @@ async function makeUser(tag, fullName) {
   if (pErr) throw pErr;
   const { data: s, error: sErr } = await anon().auth.signInWithPassword({ email, password });
   if (sErr) throw sErr;
-  return { id, email, token: s.session.access_token };
+  return { id, email, token: s.session.access_token, refresh: s.session.refresh_token };
 }
 
 async function makeListing(sellerId, title, minute) {
@@ -210,6 +210,21 @@ const reviewRows = async id =>
     check('R34 revoked approver cannot re-request their way back', r.data.access === 'revoked', r.data.access);
     r = await call(admin.token, 'POST', `/api/review/team/${X.id}`, { status: 'active' });
     check('R35 activate someone with no request → 404', r.status === 404, r.status);
+
+    // ── Session refresh (part 2 A) ──
+    // "Old refresh token is rejected" is NOT checked: Supabase accepts a used
+    // token for ~10 s (reuse grace period), so that check would be flaky.
+    r = await call(null, 'POST', '/api/auth/refresh', {});
+    check('F1 refresh without a token → 400', r.status === 400, r.status);
+    r = await call(null, 'POST', '/api/auth/refresh', { refresh_token: 'not-a-real-token' });
+    check('F2 refresh with a made-up token → 401', r.status === 401, r.status);
+    r = await call(null, 'POST', '/api/auth/refresh', { refresh_token: X.refresh });
+    const s1 = r.data.session || {};
+    const me = await call(s1.access_token, 'GET', '/api/auth/me');
+    check('F3 refresh → new tokens, new access token works on /me', r.status === 200 && s1.access_token && s1.access_token !== X.token
+      && s1.refresh_token && s1.refresh_token !== X.refresh && s1.expires_at && me.status === 200, `${r.status}/${me.status}`);
+    r = await call(null, 'POST', '/api/auth/refresh', { refresh_token: s1.refresh_token });
+    check('F4 the rotated refresh token works for the next refresh', r.status === 200 && r.data.session?.access_token, r.status);
   } catch (e) {
     fail++; console.error('ERROR', e.message);
   } finally {

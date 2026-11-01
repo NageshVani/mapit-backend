@@ -7,6 +7,7 @@ console.log('[auth.js] Auth router loaded');
 const crypto    = require('crypto');
 const express   = require('express');
 const rateLimit  = require('express-rate-limit');
+const { createClient } = require('@supabase/supabase-js');
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { requireAuth, isAdminEmail } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
@@ -615,6 +616,39 @@ router.put('/default-view', requireAuth, async (req, res, next) => {
       .single();
     if (error) return next(createError(error.message));
     res.json({ profile });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── Refresh the session (Session 9L, review page) ─────────────
+// POST /api/auth/refresh
+// Body: { refresh_token } → { session: { access_token, refresh_token, expires_in, expires_at } }
+// Supabase ROTATES refresh tokens: the old one stops working (after a ~10 s
+// grace period), so the caller must save the new refresh_token every time.
+// A fresh client per request: refreshSession() stores the session inside the
+// client, and the shared `supabase` client must never hold a user's session.
+const refreshLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 60,   // a page refreshes about once an hour; 60 leaves room for a shared office/home IP
+  message: { error: 'Too many refresh requests. Please sign in again.' },
+});
+
+router.post('/refresh', refreshLimiter, async (req, res, next) => {
+  try {
+    const { refresh_token } = req.body || {};
+    if (typeof refresh_token !== 'string' || !refresh_token || refresh_token.length > 512) {
+      return res.status(400).json({ error: 'refresh_token is required' });
+    }
+    const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data, error } = await client.auth.refreshSession({ refresh_token });
+    if (error || !data?.session) {
+      return res.status(401).json({ error: 'Session expired. Please sign in again.' });
+    }
+    const { access_token, refresh_token: newRefresh, expires_in, expires_at } = data.session;
+    res.json({ session: { access_token, refresh_token: newRefresh, expires_in, expires_at } });
   } catch (err) {
     next(err);
   }
