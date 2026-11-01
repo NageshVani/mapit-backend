@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-31 19:52 (UAE), end-of-day checkpoint (**9L part 1 + D11 "Needs change" committed (`564735e`), Arun explainer `docs/business/listing-approval-process.html` (`0c37dff`). Part 2 design brief (A refresh route, B Needs change/Reject seller emails, C refresh + race tests + one manual email check to Nagesh's inbox) presented — AWAITING Nagesh's approval. Paused (Nagesh, other work); resume tomorrow. Branch local, not pushed; prod untouched.**)
+- **Last updated:** 2026-11-01 13:23 (UAE), checkpoint (**9L step 2 part 2 DONE (local, not pushed): A `POST /api/auth/refresh` (`3e700ca`), B seller emails for Needs change / Reject (`7de9640`, Nagesh received both real test emails), C two-approver race checks (`7a933ec`). `uat:review` 53/53, `uat:transfer` 20/20. Next: step 3 phone mockup; later an HTML guide for the approvers (wives).**)
+- **Last updated (previous):** 2026-10-31 19:52 (UAE), end-of-day checkpoint (**9L part 1 + D11 "Needs change" committed (`564735e`), Arun explainer `docs/business/listing-approval-process.html` (`0c37dff`). Part 2 design brief (A refresh route, B Needs change/Reject seller emails, C refresh + race tests + one manual email check to Nagesh's inbox) presented — AWAITING Nagesh's approval. Paused (Nagesh, other work); resume tomorrow. Branch local, not pushed; prod untouched.**)
 - **Last updated (previous):** 2026-10-31 19:05 (UAE), checkpoint (**D11 "Needs change" built (option A, no migration): `POST /api/review/:id/needs-change`, reasons split 7 change / 4 reject (new `spam`), seller text "Needs a small change: …" / "Not approved: …" in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20. Next: 9L step 2 part 2 (refresh, seller emails, two-approver race).**)
 - **Last updated (previous):** 2026-10-31 18:35 (UAE), checkpoint (**Part 1 amended (Nagesh): approve note removed (D9 reversed), nobody reviews own listing incl. admins (D10, sellers post themselves). Suite 38/38. Open design question: third decision "Send back for changes" (Nagesh's "withdraw") — options A/B pending. Then part 2.**)
 - **Last updated (previous):** 2026-10-31 17:26 (UAE), checkpoint (**9L step 2 part 1 DONE on `feat/session-9l-review-queue` (local, not pushed): `requireReviewer` + `src/routes/review.js` (8 routes) + Approve-with-note (D9) + seller edit clears the claim (D6). `npm run uat:review` 38/38 on UAT, `uat:transfer` 20/20. ⚠️ Release order: 019 on prod BEFORE this code, or seller edits break. Next: 9L step 2 part 2.**)
@@ -134,6 +135,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-01 13:23) — Goal: 9L step 3, phone mockup of `public/review.html`.** Step 2 (backend) is complete: part 1 + D11 + part 2 (refresh, seller emails, race checks), 53/53 on UAT, branch `feat/session-9l-review-queue` local, not pushed. Production still has no 019 (must run FIRST at release).
 
 **NOW (2026-10-31 19:52, end of day) — Goal: get Nagesh's approval of the 9L step 2 part 2 design brief, then build it.** Brief (in this session's chat, summarised in Next Steps): A `POST /api/auth/refresh` (backend route, Supabase rotates refresh tokens — page must save the new one); B `notifySellerListingReviewed(listing, group)` emails with "Open My Listings" → `/#my-listings` (hash handler built in step 5, same release); C suite: refresh (ok/401/400) + race (10 rounds × 2 approvers, 3 approvers/2 listings) + ONE manual email check to Nagesh's UAT inbox (needs his OK). ~1.5–2 h, no migration, no frontend.
 
@@ -616,6 +619,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-01) 9L part 2 C — race checks** (`7a933ec`): second approver Q; C1 10 rounds × 2 approvers pressing Next together → 0 clashes, exactly one gets the test listing; C2 3 approvers / 2 listings → all different; C3 double tap Approve + Needs change → one 200 + one 409, one history row. Real UAT pending listings handed out are released at once. `uat:review` 53/53.
+- ✅ **(2026-11-01) 9L part 2 B — seller emails** (`7de9640`): `notifySellerListingReviewed(listing, group)` in `notifySeller.js`, called via `waitUntil` from `decideWithReason()`. Subject "✏️ … needs a small change" / "… was not approved"; body = `rejection_reason` (same text as My Listings); "Open My Listings" → `siteUrl()/#my-listings`; approver never named; never throws. Suite E1–E2. **Manual check:** one-off scratchpad script on UAT (alias `nagesh.aadi+review-test@gmail.com`, listing + account deleted after) → Nagesh received both emails. Approve already sends FB-05 "is live" email (`notifySellerListingLive`, review.js:160) — confirmed with Nagesh, no change.
+- ✅ **(2026-11-01) 9L part 2 A — `POST /api/auth/refresh`** (`3e700ca`): body `{ refresh_token }` → `{ session: { access_token, refresh_token, expires_in, expires_at } }`; 400 missing/oversized, 401 invalid/used; 60/h per IP (hard-coded, no env var — `.env.example` is not readable by James); per-request Supabase client. Suite F1–F4. Nagesh PowerShell check: 401 "Session expired" for a bogus token ✅.
 - ✅ **(2026-10-31) Arun explainer** `docs/business/listing-approval-process.html` (`0c37dff`): roles, SVG flow diagram (edit loop), 3 decisions + reasons, edits, team join/revoke, privacy, status, 3 questions for Arun (reason wording, DPDP confidentiality for hires, review-time target). Checked at 1000 px + real 390 px emulation (page 390 wide; diagram swipes in its box). Added to `docs/index.html`.
 - ✅ **(2026-10-31) D11 "Needs change" built** (`564735e`): `POST /api/review/:id/needs-change`; reasons grouped 7 change / 4 reject (new `spam`, `other_change`); groups can't mix (400); seller sentence stored in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20.
 - ✅ **(2026-10-31) Part 1 amendments** (`ef794ff`): approve note removed (D9 reversed, `notifySeller.js` back to pre-9L); nobody reviews own listing incl. admins (D10).
@@ -1367,7 +1373,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **9L step 2 — review backend** | 🟡 Part 1 + D11 DONE (`85e9d08`, `ef794ff`, `564735e`; 42/42 on UAT). Part 2 brief awaiting approval | `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
+| **9L step 2 — review backend** | ✅ Part 1 + D11 + part 2 DONE (`85e9d08`, `ef794ff`, `564735e`, `3e700ca`, `7de9640`, `7a933ec`; 53/53 on UAT) | `src/routes/auth.js`, `src/utils/notifySeller.js`, `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
 | **Arun approval-process explainer** | ✅ Done (`0c37dff`) | `docs/business/listing-approval-process.html`, `docs/index.html` | Nagesh to share with Arun; offer to publish as private web page stands |
 | **Feedback Release 3 (Whole city 65 km, comma description, Explore 🔍)** | ✅ RELEASED PR #31 `f8910f9` (2026-10-29), localhost + uat checklist PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html`, `public/user-guide.html`, `public/guide/*`, `scripts/guide-shots.js` | Branch `fix/feedback-03` (from uat `0a76f71`); screenshots `docs/screenshots/feedback-03/` |
 | **Feedback Release 2 (auto-title + Write it for me)** | ✅ RELEASED PR #30 `a8f7d9d` (2026-10-28), uat checklist 1–6 PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html` | Branch `feat/feedback-02-auto-title`; frontend only, no migration |
@@ -1973,7 +1979,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **⏸ (2026-10-31 19:52) Part 2 design brief awaiting Nagesh's approval** (A refresh, B seller emails, C tests + one manual email to his UAT inbox).
+- **✅ (2026-11-01) Part 2 brief approved and built** (A refresh, B seller emails, C race checks; manual email check done).
+- **ℹ️ (2026-11-01) Review page must save the NEW refresh_token after every refresh** (Supabase rotates them; keeping the old one logs the approver out after ~2 h). Check in step 4.
+- **ℹ️ (2026-11-01) Windows PowerShell 5.1 shows any 4xx reply as a red error** — the first line is the server's JSON; use `try { … } catch { $_.Exception.Response.StatusCode.value__ ; $_.ErrorDetails.Message }` for clean output.
 - **ℹ️ (2026-10-31) Main app has no `#my-listings` link handler** — seller emails will link there; build the handler in step 5 (same release).
 - **ℹ️ (2026-10-31) Local server must be restarted after backend edits** (Node does not reload) — stale server caused one false FAIL (R31) today.
 - **ℹ️ (2026-10-31) Headless Chrome `--window-size` under ~500 px crops instead of resizing** — use DevTools `Emulation.setDeviceMetricsOverride` for real phone-width checks (as guide-shots does). Playwright is not installed.
@@ -2185,6 +2193,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-01, Nagesh) D12: refresh = backend route** (not supabase-js in the browser, not longer token life). Per-request Supabase client so the shared anon client never holds a user's session.
+- **(2026-11-01, Nagesh) D13: seller emails never name the approver**; reason text = `rejection_reason`, so the email and My Listings always agree.
+- **(2026-11-01, Nagesh) D14: keep automated race checks** (C1–C3) in `uat:review` — no manual tapping needed; a pass is strong evidence, the real guard is SKIP LOCKED + conditional update.
 - **(2026-10-31, Nagesh) D9 reversed: approved listings need no note** (removed from route + email; no "Note from MapIt" in My Listings).
 - **(2026-10-31, Nagesh) D10: no more posting on sellers' behalf** — real sellers post directly (friends & family forward the link); nobody reviews their own listing, admins included. (Admin 🔁 Transfer tab stays as is.)
 - **(2026-10-31, Nagesh) D11: third decision "Needs change"** (was "withdraw") — option A, no migration: status stays `rejected`, reason group (change/reject) sets the seller heading; button name "Needs change"; reasons added later from real feedback (code only).
@@ -2610,6 +2621,17 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-01 13:23) — ordered (resume with /resume):**
+1. **9L step 3: phone mockup** of `public/review.html` (sign-up / sign-in / waiting / queue card with Reject · Needs change · Approve + Skip / reason sheet / Team panel) → Nagesh OK; before screenshots (Rule 12).
+2. Step 4: build `public/review.html` (uses `/api/auth/refresh`, saves the new refresh token) → localhost click-test at phone width.
+3. Step 5: seller side — My Listings shows `rejection_reason` + Edit & resubmit + `#my-listings` handler; admin Pending → link (MapIt_MVP_v1.html + sync public/index.html).
+4. **HTML guide for the approvers (wives)** — exact flow + how to operate the review page, step by step with screenshots of the real page (Nagesh request 2026-11-01). Build after step 4 so it shows the real screens; `docs/` + link from docs/index.html.
+5. Step 6: UAT with both wives → Nagesh + Arun sign-off. Step 7 release: **019 on prod FIRST** → verify → PR uat → main → `smoke:prod`.
+6. Nagesh shares `docs/business/listing-approval-process.html` with Arun; tells the seller Releases 1–3 are live.
+7. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap.
+
+**⬅ ✅ DONE (2026-11-01): items 1–2 below (part 2 approved + built).**
 
 **⬅ NOW (2026-10-31 19:52, end of day) — ordered (resume with /resume):**
 1. **Nagesh approves the 9L part 2 brief** (A `POST /api/auth/refresh`; B Needs change / Reject seller emails via `notifySellerListingReviewed`, button → `/#my-listings`; C suite: refresh + two-approver race; one manual email check to his UAT inbox).
