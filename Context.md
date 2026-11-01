@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-01 15:27 (UAE), checkpoint (**9L step 4 a/b/c built on UAT (local, not pushed): /review sign-in/sign-up/waiting + refresh (`8554980`), personal invite links D16 + migration 020 run on UAT by Nagesh (`f2bd604`, `bbdca60`), queue card + Change/Reject/Approve/Skip (`2c1a99f`, Nagesh click-test 1–6 PASS), Team panel with invites (`24ac865`). `uat:review` 64/64. Next: Nagesh click-tests 4c (activate Approver@2), then step 5 seller side.**)
+- **Last updated:** 2026-11-01 17:01 (UAE), checkpoint (**9L step 5 DONE (`c381227`, local): My Listings shows Needs a change / Not approved + reason + Edit & resubmit; #my-listings email link; admin Pending tile → /review. Nagesh full-loop click-test 1–6 PASS (real emails). 4c click-test 1–4 PASS; "Signed in as" bar added (`513bcc9`). UAT test data cleaned. Next: approver HTML guide, then step 6 UAT with both wives.**)
+- **Last updated (previous):** 2026-11-01 15:27 (UAE), checkpoint (**9L step 4 a/b/c built on UAT (local, not pushed): /review sign-in/sign-up/waiting + refresh (`8554980`), personal invite links D16 + migration 020 run on UAT by Nagesh (`f2bd604`, `bbdca60`), queue card + Change/Reject/Approve/Skip (`2c1a99f`, Nagesh click-test 1–6 PASS), Team panel with invites (`24ac865`). `uat:review` 64/64. Next: Nagesh click-tests 4c (activate Approver@2), then step 5 seller side.**)
 - **Last updated (previous):** 2026-11-01 13:23 (UAE), checkpoint (**9L step 2 part 2 DONE (local, not pushed): A `POST /api/auth/refresh` (`3e700ca`), B seller emails for Needs change / Reject (`7de9640`, Nagesh received both real test emails), C two-approver race checks (`7a933ec`). `uat:review` 53/53, `uat:transfer` 20/20. Next: step 3 phone mockup; later an HTML guide for the approvers (wives).**)
 - **Last updated (previous):** 2026-10-31 19:52 (UAE), end-of-day checkpoint (**9L part 1 + D11 "Needs change" committed (`564735e`), Arun explainer `docs/business/listing-approval-process.html` (`0c37dff`). Part 2 design brief (A refresh route, B Needs change/Reject seller emails, C refresh + race tests + one manual email check to Nagesh's inbox) presented — AWAITING Nagesh's approval. Paused (Nagesh, other work); resume tomorrow. Branch local, not pushed; prod untouched.**)
 - **Last updated (previous):** 2026-10-31 19:05 (UAE), checkpoint (**D11 "Needs change" built (option A, no migration): `POST /api/review/:id/needs-change`, reasons split 7 change / 4 reject (new `spam`), seller text "Needs a small change: …" / "Not approved: …" in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20. Next: 9L step 2 part 2 (refresh, seller emails, two-approver race).**)
@@ -136,6 +137,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-01 17:01) — Goal: HTML guide for the approvers, then 9L step 6 (UAT with both wives).** Steps 1–5 built on `feat/session-9l-review-queue` (local, not pushed). Prod has neither 019 nor 020 — both run on prod FIRST at release.
 
 **NOW (2026-11-01 15:27) — Goal: Nagesh click-tests 4c (Team panel: activate Approver@2, invite, cancel, revoke), then 9L step 5 (seller side).** Prod has neither 019 nor 020 — BOTH must run on prod FIRST at release.
 
@@ -622,6 +625,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-01) 9L step 5 — seller side** (`c381227`): `reviewOutcome()` in MapIt_MVP_v1.html (label from the stored heading prefix, linked to GROUP_HEADINGS by comments both sides), reason box (heading stripped), orange "Edit & resubmit" (existing edit re-queues as pending). `#my-listings` saved at load (sessionStorage `mapit_open_my_listings`) → My Listings after sign-in, hash cleared. Admin Pending tile → `/review` (old section unreachable; delete after release). Two-file sync verified. Screenshots `before-/after-my-listings`, `after-my-listings-from-link`, `before-/after-admin-tiles` (session-9l). Nagesh full-loop click-test (post → approver2 Change → real email → Open My Listings → Edit & resubmit → Reject → admin tile) 1–6 PASS. Step-5 seed seller + listings deleted (0 TEST listings left).
+- ✅ **(2026-11-01) "Signed in as <name>" bar** on /review (`513bcc9`, Nagesh); `/me` returns own email as fallback. 4c click-test 1–4 PASS (activate Approver@2, review as approver, revoke/activate again, invite copy/cancel).
 - ✅ **(2026-11-01) 9L step 4c — Team panel** (`24ac865`): Invite someone (link shown once, Copy + Share on WhatsApp via wa.me), Waiting (Activate/Ignore), Active (Revoke + confirm), Revoked (Activate again), invite history + Cancel. Going to Team releases the held claim. CDP phone screenshots `after-review-team`, `after-review-invite-created`, `after-review-menu-admin`.
 - ✅ **(2026-11-01) 9L step 4b — queue** (`2c1a99f`): card (photo strip + full screen, flagged banner, exact ₹ price, details grid, seller name, waiting time), 0.8 s pause, Change/Reject sheets with seller preview (`/me` now returns `headings`), 409 → toast + next, 403 → re-route, All clear / Nothing more for now. Sign out = header button; ☰ admin-only (Nagesh). Nagesh click-test 1–6 PASS. UAT seed: 4 TEST listings via scratchpad `seed-4b.js` (@example.com seller; cleanup pending).
 - ✅ **(2026-11-01) D16 personal invite links** (`f2bd604` backend, `bbdca60` page): migration 020 `review_invites` (hash only, 7 days, one-time via one conditional UPDATE) — **run on UAT by Nagesh, verified** (anon 42501). Admin create/list/cancel; public `/invite/check` (30/h, valid only). Invite does NOT activate. Suite I01–I11 (64/64). Nagesh test: `+approver2` ("Approver@2") signed up via invite → Thanks ✅.
@@ -2201,6 +2206,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-01, Nagesh) D18: seller edit keeps `rejection_reason`** — My Listings shows it only while status is rejected; allows a later "Resubmitted, last time: …" hint for approvers.
 - **(2026-11-01, Nagesh) D16: /review sign-up needs a personal invite link** (admin creates in Team panel; one-time, 7 days); the invite does NOT activate — admin still taps Activate. New table `review_invites` (migration 020), not the archived `invite_codes` (Rule 9).
 - **(2026-11-01, Nagesh) D17: Sign out is a visible header button**, not in the ☰ menu; menu (Queue/Team) shows for admins only.
 - **(2026-11-01, Nagesh) D15: /review mockup approved** (`docs/technical/review-page-mockup.html`, screenshot `docs/screenshots/session-9l/mockup-review-page-v1.png`): Reject · ✏️ Change · Approve + Skip; "Still reviewing? Keep it" banner LEFT OUT; "about N left" kept; waiting screen promises "usually the same day".
@@ -2633,7 +2639,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-11-01 15:27) — ordered (resume with /resume):**
+**⬅ NOW (2026-11-01 17:01) — ordered (resume with /resume):**
+1. **HTML guide for the approvers (wives)**: invite link → create account → wait → review (card, Change/Reject/Approve/Skip, what the seller sees); plus a Team-panel section for Nagesh/Arun (invite, activate, revoke). Real screenshots from session-9l.
+2. Decide: keep or delete UAT test approvers `+approver1`/`+approver2`.
+3. Step 6: push branch → uat → wives get invite links from the Team panel (uat.mapit.co.in/review) → test with UAT listings → Nagesh + Arun sign-off.
+4. Step 7 release: **019 + 020 on prod FIRST** → verify → PR uat → main → smoke:prod → invites for the wives on prod.
+5. After release: delete the unreachable admin Pending section; tell the seller Releases 1–3 are live.
+
+**⬅ (superseded) NOW (2026-11-01 15:27) — ordered (resume with /resume):**
 1. **Nagesh click-tests 4c** (Team: activate Approver@2, sign in as it and review a TEST listing; create + cancel an invite; Revoke + Activate again).
 2. **Cleanup UAT test data** when done: `node -r dotenv/config <scratchpad>/seed-4b.js cleanup` (or by title "(TEST)"), delete `+approver1`/`+approver2` accounts.
 3. Step 5: seller side (My Listings `rejection_reason` + Edit & resubmit + `#my-listings` handler; admin Pending → link) — before/after screenshots.
