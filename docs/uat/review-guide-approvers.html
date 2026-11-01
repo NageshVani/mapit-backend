@@ -4,56 +4,89 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>Reviewer Guide</title>
+<title>MapIt Reviewer Guide</title>
 <!-- Session 9L (2026-11-01): guide for MapIt listing reviewers (approvers).
      Screenshots: docs/screenshots/session-9l/ (UAT, phone width, test data). -->
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* Layout: one reading column of white "sheets" on MapIt's cool grey, phone screenshots framed like the real phone. */
 :root{
-  --ink:#F7F9FC;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
-  --orange:#F06030;--green:#22C55E;--gold:#F59E0B;--red:#EF4444;--blue:#3B82F6;
-  --text:#111827;--muted:#6B7280;--muted2:#4B5563;--border2:rgba(0,0,0,0.13);
+  --bg:#F3F5F9;--sheet:#FFFFFF;--soft:#EEF1F6;--line:rgba(17,24,39,.12);
+  --fg:#111827;--muted:#5B6474;
+  --accent:#F06030;--accent-soft:#FFF1EB;--accent-fg:#C2410C;
+  --ok:#15803D;--ok-soft:#ECFDF3;--ok-line:#22C55E;
+  --chg:#92400E;--chg-soft:#FFFBEB;--chg-line:#F59E0B;
+  --rej:#991B1B;--rej-soft:#FEF2F2;--rej-line:#EF4444;
+  --info:#1E40AF;--info-soft:#EFF6FF;--info-line:#BFDBFE;
+  --warn:#9A3412;--warn-soft:#FFF7ED;--warn-line:#FDBA74;
+  --frame:#1F2937;
+  --font:'Outfit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F131A;--sheet:#171C25;--soft:#202734;--line:rgba(255,255,255,.12);
+  --fg:#E8ECF2;--muted:#A3ACBB;
+  --accent:#FF7A50;--accent-soft:#3A2018;--accent-fg:#FFB199;
+  --ok:#6EE7A0;--ok-soft:#10261A;--ok-line:#22C55E;
+  --chg:#FCD34D;--chg-soft:#2A2110;--chg-line:#F59E0B;
+  --rej:#FCA5A5;--rej-soft:#2C1416;--rej-line:#EF4444;
+  --info:#BFDBFE;--info-soft:#14203A;--info-line:#2C4A80;
+  --warn:#FDBA74;--warn-soft:#2B1B10;--warn-line:#9A5A26;
+  --frame:#3A4352;color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0F131A;--sheet:#171C25;--soft:#202734;--line:rgba(255,255,255,.12);
+  --fg:#E8ECF2;--muted:#A3ACBB;
+  --accent:#FF7A50;--accent-soft:#3A2018;--accent-fg:#FFB199;
+  --ok:#6EE7A0;--ok-soft:#10261A;--ok-line:#22C55E;
+  --chg:#FCD34D;--chg-soft:#2A2110;--chg-line:#F59E0B;
+  --rej:#FCA5A5;--rej-soft:#2C1416;--rej-line:#EF4444;
+  --info:#BFDBFE;--info-soft:#14203A;--info-line:#2C4A80;
+  --warn:#FDBA74;--warn-soft:#2B1B10;--warn-line:#9A5A26;
+  --frame:#3A4352;color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--text);font-size:16px;line-height:1.6}
-.wrap{max-width:720px;margin:0 auto;padding:24px 16px 60px}
-header{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:20px;margin-bottom:22px}
-.logo{font-weight:700;font-size:20px}.logo b{color:var(--orange)}
-h1{font-size:25px;line-height:1.25;margin:6px 0 8px}
-.lead{color:var(--muted2)}
-nav{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
-nav a{font-size:13.5px;font-weight:600;color:var(--orange);background:#FFF1EB;border-radius:20px;padding:5px 12px;text-decoration:none}
-section{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:20px;margin-bottom:18px}
-h2{font-size:20px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
-h2 .n{background:var(--orange);color:#fff;border-radius:50%;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+body{font-family:var(--font);background:var(--bg);color:var(--fg);font-size:16px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-block:24px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+header,section{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}
+.logo{font-weight:700;font-size:20px}.logo b{color:var(--accent)}
+h1{font-size:26px;line-height:1.25;margin:6px 0 8px;text-wrap:balance}
+h2{font-size:20px;line-height:1.3;margin-bottom:10px;display:flex;align-items:center;gap:10px;text-wrap:balance}
 h3{font-size:16.5px;margin:16px 0 6px}
-p{margin:8px 0}
+.lead{color:var(--muted)}
+nav{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+nav a{font-size:13.5px;font-weight:600;color:var(--accent-fg);background:var(--accent-soft);border-radius:20px;padding:5px 12px;text-decoration:none}
+nav a:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2 .n{background:var(--accent);color:#fff;border-radius:50%;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+p{margin:8px 0;max-width:65ch}
 ol,ul{padding-left:22px;margin:8px 0}
 li{margin:5px 0}
-.shot{display:block;max-width:300px;width:100%;margin:14px auto;border-radius:18px;border:6px solid #1F2937;box-shadow:0 8px 24px rgba(0,0,0,.14)}
-.shots{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
-.shots figure{flex:0 1 260px;text-align:center}
+.shot{display:block;max-width:min(300px,100%);width:100%;height:auto;margin:14px auto;border-radius:18px;border:6px solid var(--frame);box-shadow:0 8px 24px rgba(0,0,0,.16)}
+.shots{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:6px}
+.shots figure{flex:0 1 260px;min-width:0;text-align:center}
 .shots .shot{margin:0 auto}
 figcaption{font-size:13px;color:var(--muted);margin-top:6px}
-.tip{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:12px 14px;margin:12px 0;font-size:15px}
-.warn{background:#FFF7ED;border:1px solid #FDBA74;border-radius:12px;padding:12px 14px;margin:12px 0;font-size:15px}
+.tip,.warn{border-radius:12px;padding:12px 14px;margin:12px 0;font-size:15px}
+.tip{background:var(--info-soft);border:1px solid var(--info-line)}
+.warn{background:var(--warn-soft);border:1px solid var(--warn-line)}
 .choices{display:grid;gap:10px;margin-top:10px}
 .choice{border-radius:12px;padding:12px 14px;border:2px solid}
 .choice b{font-size:16.5px}
-.c-ok{border-color:var(--green);background:#F0FDF4}
-.c-chg{border-color:var(--gold);background:#FFFBEB}
-.c-rej{border-color:var(--red);background:#FEF2F2}
-.c-skip{border-color:var(--border2);background:var(--card)}
+.c-ok{border-color:var(--ok-line);background:var(--ok-soft)}
+.c-chg{border-color:var(--chg-line);background:var(--chg-soft)}
+.c-rej{border-color:var(--rej-line);background:var(--rej-soft)}
+.c-skip{border-color:var(--line);background:var(--soft)}
+.table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14.5px}
-th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--card2);vertical-align:top}
-th{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 .pill{display:inline-block;border-radius:8px;padding:1px 8px;font-weight:700;font-size:13px;white-space:nowrap}
-.p-ok{background:#DCFCE7;color:#166534}.p-chg{background:#FEF3C7;color:#92400E}.p-rej{background:#FEE2E2;color:#991B1B}
+.p-ok{background:var(--ok-soft);color:var(--ok)}.p-chg{background:var(--chg-soft);color:var(--chg)}.p-rej{background:var(--rej-soft);color:var(--rej)}.p-skip{background:var(--soft);color:var(--fg)}
 .check{list-style:none;padding-left:0}
 .check li{padding-left:28px;position:relative}
-.check li::before{content:"✔";position:absolute;left:4px;color:var(--green);font-weight:700}
-.admin{border:2px dashed var(--border2)}
-footer{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}
+.check li::before{content:"✔";position:absolute;left:4px;color:var(--ok);font-weight:700}
+.note-small{font-size:14px;color:var(--muted)}
+.admin{border:2px dashed var(--line)}
+footer{text-align:center;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -105,7 +138,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}
     <li>The description is honest and complete enough for a buyer.</li>
   </ul>
   <div class="tip">🚩 A <b>red "Flagged" note</b> means our automatic check noticed something, like a phone number in the text. Look extra carefully, but <b>you decide</b>: the flag is a hint, not a verdict.</div>
-  <p style="font-size:14px;color:var(--muted)">(These screenshots use test listings, so some photos don't match the title. On a real listing, that is exactly when you would tap <b>Change</b>.)</p>
+  <p class="note-small">(These screenshots use test listings, so some photos don't match the title. On a real listing, that is exactly when you would tap <b>Change</b>.)</p>
 </section>
 
 <section id="choices">
@@ -117,7 +150,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}
     <div class="choice c-rej"><b>✕ Reject</b>: the listing can't be on MapIt (not allowed, a duplicate, spam or fake). Pick a reason and tap <b>Reject</b>.</div>
     <div class="choice c-skip"><b>Skip for now</b>: not sure? Skip it. It goes back to the queue for you or someone else later. Nothing is sent to the seller.</div>
   </div>
-  <div class="shots" style="margin-top:14px">
+  <div class="shots">
     <figure><img class="shot" src="../screenshots/session-9l/after-review-sheet-change.png" alt="Change sheet with reasons, note and preview"><figcaption>✏️ Change: reason, note, preview</figcaption></figure>
     <figure><img class="shot" src="../screenshots/session-9l/after-review-sheet-reject-other.png" alt="Reject sheet with Other chosen and the button grey"><figcaption>✕ Reject: "Other" needs a note</figcaption></figure>
   </div>
@@ -127,7 +160,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}
 
 <section id="which">
   <h2><span class="n">4</span>Which one should I choose?</h2>
-  <table>
+  <div class="table-wrap"><table>
     <tr><th>You notice…</th><th>Choose</th></tr>
     <tr><td>Everything looks fine</td><td><span class="pill p-ok">✓ Approve</span></td></tr>
     <tr><td>A car photo on a scooter listing</td><td><span class="pill p-chg">✏️ Change</span> Photos don't match</td></tr>
@@ -139,8 +172,8 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}
     <tr><td>The same item posted twice by the same seller</td><td><span class="pill p-rej">✕ Reject</span> Duplicate</td></tr>
     <tr><td>Something that can't be sold on MapIt</td><td><span class="pill p-rej">✕ Reject</span> Not allowed on MapIt</td></tr>
     <tr><td>Looks like a scam, fake or advertising</td><td><span class="pill p-rej">✕ Reject</span> Spam or fake</td></tr>
-    <tr><td>You're not sure</td><td><span class="pill" style="background:var(--card)">Skip for now</span> and ask the MapIt team</td></tr>
-  </table>
+    <tr><td>You're not sure</td><td><span class="pill p-skip">Skip for now</span> and ask the MapIt team</td></tr>
+  </table></div>
   <div class="tip">💡 <b>When in doubt between Change and Reject, choose Change.</b> The seller gets a chance to fix it. Reject is for listings that can never be on MapIt.</div>
 </section>
 
