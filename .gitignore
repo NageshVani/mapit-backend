@@ -32,3 +32,6 @@ OAuth Google cloud.rtf
 
 # Marketing video drafts (large, first cuts) — keep out of git (2026-10-17)
 docs/Videos/
+
+# UAT review-queue seed state (scripts/uat/review-seed.js)
+scripts/uat/.review-seed.json

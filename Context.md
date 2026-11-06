@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-01 17:09 (UAE), end-of-day checkpoint (**9L steps 1–5 + reviewer guide DONE and PUSHED to uat (`0831a8a`, fast-forward; branch `feat/session-9l-review-queue` also on origin). uat.mapit.co.in/review live (200 with bypass; 302 Vercel login without). Production untouched (no 019/020). Next session: UAT with both wives — first solve their access to the Vercel-protected uat.**)
+- **Last updated:** 2026-11-06 18:12 (UAE), checkpoint (**Supabase alerts reviewed (only `spatial_ref_sys`, accepted); Python 3.14 installed; wives uat access solved (Vercel Shareable Link, curl-tested, combined invite link); `scripts/uat/review-seed.js` + batch 1 (12 pending) on UAT, Nagesh sees 12 waiting; standalone wives guide built (scratchpad). Next: Nagesh sends guide + invites → wives review → seed 2/3 → sign-off → step 7.**)
+- **Last updated (previous):** 2026-11-01 17:09 (UAE), end-of-day checkpoint (**9L steps 1–5 + reviewer guide DONE and PUSHED to uat (`0831a8a`, fast-forward; branch `feat/session-9l-review-queue` also on origin). uat.mapit.co.in/review live (200 with bypass; 302 Vercel login without). Production untouched (no 019/020). Next session: UAT with both wives — first solve their access to the Vercel-protected uat.**)
 - **Last updated (previous):** 2026-11-01 17:01 (UAE), checkpoint (**9L step 5 DONE (`c381227`, local): My Listings shows Needs a change / Not approved + reason + Edit & resubmit; #my-listings email link; admin Pending tile → /review. Nagesh full-loop click-test 1–6 PASS (real emails). 4c click-test 1–4 PASS; "Signed in as" bar added (`513bcc9`). UAT test data cleaned. Next: approver HTML guide, then step 6 UAT with both wives.**)
 - **Last updated (previous):** 2026-11-01 15:27 (UAE), checkpoint (**9L step 4 a/b/c built on UAT (local, not pushed): /review sign-in/sign-up/waiting + refresh (`8554980`), personal invite links D16 + migration 020 run on UAT by Nagesh (`f2bd604`, `bbdca60`), queue card + Change/Reject/Approve/Skip (`2c1a99f`, Nagesh click-test 1–6 PASS), Team panel with invites (`24ac865`). `uat:review` 64/64. Next: Nagesh click-tests 4c (activate Approver@2), then step 5 seller side.**)
 - **Last updated (previous):** 2026-11-01 13:23 (UAE), checkpoint (**9L step 2 part 2 DONE (local, not pushed): A `POST /api/auth/refresh` (`3e700ca`), B seller emails for Needs change / Reject (`7de9640`, Nagesh received both real test emails), C two-approver race checks (`7a933ec`). `uat:review` 53/53, `uat:transfer` 20/20. Next: step 3 phone mockup; later an HTML guide for the approvers (wives).**)
@@ -138,6 +139,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-06 18:12) — Goal: 9L step 6, wives UAT (2–3 days).** Access solved (Vercel Shareable Link, uat branch), 12 practice listings seeded (batch 1), wives guide ready. Nagesh sends guide → invite links (combined with `_vercel_share`) → activates them → they review; top up with `seed 2` / `seed 3`; `status` = answer key → Nagesh + Arun sign-off → step 7 release (019 + 020 on prod FIRST).
 
 **NOW (2026-11-01 17:09, end of day) — Goal: 9L step 6, UAT with both wives (another day).** Everything is on uat (`0831a8a`). Before they can test, they need access past Vercel Authentication on uat (Open Issues). Then: Team panel invites on uat.mapit.co.in/review → sign up → review UAT listings → Nagesh + Arun sign-off → step 7 release (019 + 020 on prod FIRST).
 
@@ -628,6 +631,11 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-06) Supabase "Action required" alerts reviewed:** 17 weekly emails (31 May–31 Oct) all `rls_disabled_in_public`; RLS on every MapIt table (baseline 17 + 019/020); UAT `security:client-check` 31 PASS / 0 FAIL / 1 WARN (A-18 `spatial_ref_sys`); Nagesh confirmed Advisors → Security lists only `public.spatial_ref_sys`.
+- ✅ **(2026-11-06) Python 3.14.10 installed** (winget, user scope, `py` launcher, pip 26.2.2; PATH ahead of the Store alias).
+- ✅ **(2026-11-06) Wives uat access:** Vercel Shareable Link (uat branch, deployment `0831a8a`) created by Nagesh; curl-tested (cookie 7 days, /review + /api pass, combined `?invite=…&_vercel_share=…` link works).
+- ✅ **(2026-11-06) UAT practice listings:** `scripts/uat/review-seed.js` (seed 1|2|3, status, cleanup); batch 1 = 12 pending seeded; Nagesh click-test: first card 2BHK Jayanagar, 12 waiting ✅. Two give-away descriptions fixed (Alto row updated by ID).
+- ✅ **(2026-11-06) Wives copy of the reviewer guide:** `MapIt-Reviewer-Guide.html` (scratchpad, 618 KB, 6 screenshots inlined, Team section removed, "Next time" tip → the link you were sent); render checked. Repo guide unchanged.
 - ✅ **(2026-11-01 17:05) Pushed to uat:** `feat/session-9l-review-queue` pushed to origin; uat fast-forwarded to `0831a8a` (origin/uat had nothing new). Vercel uat deploy checked with the bypass header: /review 200, `/api/review/invite/check` 200; without login → 302 (Vercel Authentication).
 - ✅ **(2026-11-01) Reviewer guide** `docs/uat/review-guide-approvers.html` (`7a9011a`, theme tokens `0831a8a`), linked in docs/index.html; also published as a PRIVATE artifact https://claude.ai/artifact/2sapXLWNnmWsGC6nDjpgqk (8 screenshots as files). Sections: get started (invite link), what to check, 4 choices, which to choose, good to know, Team panel for admins.
 - ✅ **(2026-11-01) 9L step 5 — seller side** (`c381227`): `reviewOutcome()` in MapIt_MVP_v1.html (label from the stored heading prefix, linked to GROUP_HEADINGS by comments both sides), reason box (heading stripped), orange "Edit & resubmit" (existing edit re-queues as pending). `#my-listings` saved at load (sessionStorage `mapit_open_my_listings`) → My Listings after sign-in, hash cleared. Admin Pending tile → `/review` (old section unreachable; delete after release). Two-file sync verified. Screenshots `before-/after-my-listings`, `after-my-listings-from-link`, `before-/after-admin-tiles` (session-9l). Nagesh full-loop click-test (post → approver2 Change → real email → Open My Listings → Edit & resubmit → Reject → admin tile) 1–6 PASS. Step-5 seed seller + listings deleted (0 TEST listings left).
@@ -1391,6 +1399,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **9L step 6 — wives UAT** | 🔄 Started 2026-11-06: access + batch 1 (12) + guide ready; Nagesh sending guide/invites | `scripts/uat/review-seed.js`, `.gitignore`, `Context.md` (not committed yet) | Shareable Link revoke at step 7; `seed 2`/`seed 3` day 2/3; `cleanup` after |
 | **9L review queue (steps 1–5 + guide)** | ✅ Built, click-tested by Nagesh, on uat (`0831a8a`); step 6 (wives UAT) + step 7 (release) open | `public/review.html`, `src/routes/review.js`, `MapIt_MVP_v1.html` / `public/index.html`, `public/admin.html`, `database/migrations/020-review-invites.sql` | 019 + 020 on UAT only; `uat:review` 64/64 |
 | **9L step 2 — review backend** | ✅ Part 1 + D11 + part 2 DONE (`85e9d08`, `ef794ff`, `564735e`, `3e700ca`, `7de9640`, `7a933ec`; 53/53 on UAT) | `src/routes/auth.js`, `src/utils/notifySeller.js`, `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
 | **Arun approval-process explainer** | ✅ Done (`0c37dff`) | `docs/business/listing-approval-process.html`, `docs/index.html` | Nagesh to share with Arun; offer to publish as private web page stands |
@@ -1595,6 +1604,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+scripts/uat/review-seed.js — 2026-11-06 (NEW): UAT-only practice listings for /review (batches 1–3, status answer key, cleanup).
+.gitignore — 2026-11-06: ignore scripts/uat/.review-seed.json (seed state).
 public/review.html — 2026-11-01 (NEW): /review page — sign in / invite sign-up / waiting, refresh, queue card + Change/Reject sheets + Approve/Skip, All clear, Team panel (invites, activate/revoke), Signed-in-as bar.
 src/routes/review.js — 2026-11-01: invites (create/list/cancel, public check, one-time use in access-request), /me returns headings + own email.
 src/routes/auth.js — 2026-11-01: POST /api/auth/refresh (per-request client, 60/h).
@@ -2009,7 +2020,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **⏸ (2026-11-01) Wives can't open uat.mapit.co.in without a Vercel login** (Vercel Authentication, 302). Options for next session: (a) a Vercel shareable link for the uat deployment (no Vercel account needed; check how long it stays valid and that it covers /review + /api), (b) invite them as Vercel Viewer seats (Rule 11: confirm $0 first), (c) turn protection off only during the test (least preferred). Decide before step 6.
+- **⚠️ (2026-11-06) Team panel "Share on WhatsApp" link has no `_vercel_share` token** → during UAT send the combined link by hand (`https://uat.mapit.co.in/review?invite=<CODE>&_vercel_share=<TOKEN>`); not an issue on prod (no Vercel protection).
+- **ℹ️ (2026-11-06) Both wives share one queue** — 12 listings split between them; run `seed 2` early if one sees All clear.
+- **ℹ️ (2026-11-06) Supabase Advisors also show 15 Warnings + 14 Info** — not reviewed; once after the 9L release. Screenshot project not named — Nagesh to confirm prod shows the same single Error.
+- **ℹ️ (2026-11-06) Wives guide copy lives in the scratchpad** (temp folder) — Nagesh copies it out before sending; rebuild = inline the repo guide again.
+- **✅ (2026-11-06) Resolved — Vercel Shareable Link on the `uat` branch** (created by Nagesh from deployment `0831a8a`; token NOT stored in git — Nagesh has it). James curl-tested with no Vercel login: link → 307 + `_vercel_jwt` cookie (Max-Age 604800 = **7 days**, per browser, per host uat.mapit.co.in); with the cookie `/`, `/review`, `/review?invite=…`, `/api/config` (UAT Supabase), `/api/review/invite/check`, `/user-guide.html` all 200 (`/api/listings` 401 = MapIt's own login, i.e. Vercel let it through). **Combined link works:** `https://uat.mapit.co.in/review?invite=<CODE>&_vercel_share=<TOKEN>` → 307 to `/review?invite=<CODE>` with cookie → 200. Send each wife that ONE link (solves WhatsApp in-app browser vs Chrome cookie split). **Revoke after UAT** (Deployment → Share → "Only people with access") — on the step 7 checklist.
+- **(superseded) ⏸ (2026-11-01) Wives can't open uat.mapit.co.in without a Vercel login** (Vercel Authentication, 302). Options for next session: (a) a Vercel shareable link for the uat deployment (no Vercel account needed; check how long it stays valid and that it covers /review + /api), (b) invite them as Vercel Viewer seats (Rule 11: confirm $0 first), (c) turn protection off only during the test (least preferred). Decide before step 6.
 - **⚠️ (2026-11-01) Release order now 019 AND 020 on prod before merging 9L** — without 020, every new approver sign-up fails (access-request reads review_invites); without 019, seller edits fail.
 - **ℹ️ (2026-11-01) Reviewer guide artifact is private** — Nagesh shares it from its Share menu; Team screenshots show his +approver1/2 test aliases (offer: blur). Guide says mapit.co.in/review (post-release address); during UAT use uat.mapit.co.in/review.
 - **ℹ️ (2026-11-01) UAT test approvers +approver1 ("Test Approver") and +approver2 ("Approver@2") are active on UAT** — keep or delete (Nagesh to decide).
@@ -2022,7 +2038,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **ℹ️ (2026-10-31) Headless Chrome `--window-size` under ~500 px crops instead of resizing** — use DevTools `Emulation.setDeviceMetricsOverride` for real phone-width checks (as guide-shots does). Playwright is not installed.
 - **⚠️ (2026-10-31) Release order is now mandatory for 9L:** `PUT /api/listings/:id` writes `review_claimed_by`/`review_claimed_until` (019 columns). If 9L code reaches prod before 019 runs there, **every seller edit fails**. At release: 019 on prod → verify → then merge.
 - **ℹ️ (2026-10-31) Review claim keep-alive not built:** approve/reject only need `review_claimed_by = me`, so an expired-but-untaken claim still works; if someone else took it, 409 + reload. The plan's "Still reviewing? Tap to keep it" is optional for step 4.
-- **ℹ️ (2026-10-30) Python is not installed on the Windows laptop** (`python` opens the Microsoft Store alias) — use `node -e` for helper scripts.
+- **ℹ️ (2026-10-30) Python is not installed on the Windows laptop** (`python` opens the Microsoft Store alias) — use `node -e` for helper scripts. **✅ (2026-11-06) Resolved: Python 3.14.10 installed (user scope, winget); `python` / `py` work in new terminals.**
 - **ℹ️ (2026-10-30) File is `Context.md` in git, not `CONTEXT.md`** — Windows ignores case (`core.ignorecase=true`); keep scripts/docs consistent so they also work on Linux (Vercel).
 - **ℹ️ (2026-10-29) `GET /api/listings` has no result cap** — fine at today's volume; at thousands of listings a 65 km Whole city search needs a limit / "load more".
 - **ℹ️ (2026-10-28) Turning expiry back on needs a plan** — `expires_at` is still written, so flipping `LISTING_EXPIRY_ENABLED` to true would hide every listing older than 30 days at once; push dates forward first (with 9H).
@@ -2228,6 +2244,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-06, Nagesh + James) `spatial_ref_sys` Supabase alert = accepted risk until after 9L release** — PostGIS table, no user data, owned by supabase_admin (can't enable RLS); real fix = move PostGIS out of `public` (ask Supabase support, UAT first).
+- **(2026-11-06, James) Wives get uat via a Vercel Shareable Link (uat branch)** — free on Pro, no Vercel account, follows the branch, no expiry until revoked; not Viewer seats (cost check) or protection off (public uat).
+- **(2026-11-06, James) Practice data via a committed UAT script (`scripts/uat/review-seed.js`)**, not ad-hoc SQL — fake @example.com sellers (no emails), batches for multi-day tests, answer key via `status`, reusable for future approver training.
+- **(2026-11-06, James) Wives get a trimmed standalone guide** (no Team section, UAT "Next time" wording); repo guide stays the post-release version.
 - **(2026-11-01, Nagesh) Wives UAT on another day**; 9L pushed to uat now (fast-forward, no PR to main yet).
 - **(2026-11-01, James) Reviewer guide kept in the repo AND published as a private artifact** so the wives can open it on a phone; same content, theme-aware styling.
 - **(2026-11-01, Nagesh) D18: seller edit keeps `rejection_reason`** — My Listings shows it only while status is rejected; allows a later "Resubmitted, last time: …" hint for approvers.
@@ -2663,13 +2683,26 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-11-01 17:09, end of day) — ordered (resume with /resume):**
-1. **Wives' access to uat** (Open Issues: shareable link vs Viewer seats vs protection off) → Nagesh decides.
+**⬅ NOW (2026-11-06 18:12) — ordered (resume with /resume):**
+1. Commit `scripts/uat/review-seed.js` + `.gitignore` + Context.md to `feat/session-9l-review-queue` (Nagesh OK pending).
+2. Nagesh sends each wife the standalone guide (copy out of the scratchpad first), then creates her invite in Team and sends the combined link `…/review?invite=<CODE>&_vercel_share=<TOKEN>`.
+3. Wives sign up → Nagesh activates in Team → they review batch 1.
+4. Day 2: `node -r dotenv/config scripts/uat/review-seed.js seed 2`; day 3: `seed 3`. Check `status` (expected vs actual, who) + collect their feedback.
+5. Nagesh + Arun sign-off → `cleanup`; decide +approver1/+approver2 test accounts.
+6. **Step 7 release:** 019 + 020 on PROD first → verify + schema diff → PR uat → main → `smoke:prod` → wives invites on prod → **revoke the uat Shareable Link**.
+7. After release: delete admin old Pending section; review Supabase Advisors 15 Warnings / 14 Info; ask Supabase about moving PostGIS out of `public`; tell the seller Releases 1–3 are live.
+8. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap.
+
+**⬅ (superseded) NOW (2026-11-01 17:09, end of day) — ordered:**
+1. ✅ ~~**Wives' access to uat**~~ DONE 2026-11-06: Vercel Shareable Link (uat branch), curl-tested; send combined link `…/review?invite=<CODE>&_vercel_share=<TOKEN>`. Revoke after UAT.
+1b. ✅ **UAT practice listings (2026-11-06):** new `scripts/uat/review-seed.js` (UAT-only guard, fake @example.com sellers Ramesh Gowda / Priya Nair → no real emails, titles end "(TEST)", photo ROWS reuse existing UAT photo URLs, storage untouched). **Batch 1 seeded: 12 pending** (6 approve, 4 needs-change: contact info / price ₹1 / wrong category / photos mismatch, 2 reject: spam / ivory). Day 2: `node -r dotenv/config scripts/uat/review-seed.js seed 2` (6: duplicate, location-in-Mysuru, counterfeit, 3 approve); day 3: `seed 3` (5). `status` = expected vs actual per listing + who decided (answer key, not for approvers). After UAT: `cleanup`. State file `scripts/uat/.review-seed.json` (git-ignored) — don't delete before cleanup.
 2. **Step 6 UAT:** Nagesh/Arun create invite links in the Team panel on uat.mapit.co.in/review (Share on WhatsApp) + share the reviewer guide artifact → wives sign up → admin Activates → they review UAT listings (post a few test listings first) → Nagesh + Arun sign-off.
 3. Decide: keep/delete UAT test approvers +approver1/+approver2; blur aliases in guide screenshots if wanted.
-4. **Step 7 release:** 019 + 020 on PROD first (SQL Editor picker = jneoxwumccmjwaojfazh) → verify + schema diff → PR uat → main → `smoke:prod` → invites for the wives on prod.
+4. **Step 7 release:** 019 + 020 on PROD first (SQL Editor picker = jneoxwumccmjwaojfazh) → verify + schema diff → PR uat → main → `smoke:prod` → invites for the wives on prod → **revoke the uat Shareable Link**.
 5. After release: delete admin old Pending section; tell the seller Releases 1–3 are live.
 6. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap.
+7. ✅ ~~**🐍 Install Python on the Windows laptop**~~ DONE 2026-11-06: Python 3.14.10 via `winget install --id Python.Python.3.14 --scope user` (+ `py` launcher, pip 26.2.2), user PATH puts Python before WindowsApps (Store alias no longer wins). No packages installed yet — install per need (prefer a venv per tool).
+8. **Supabase "Action required" weekly alerts (2026-11-06):** 17 emails 31 May–31 Oct (`supabase_action_required_alerts R1.xlsx`), all `rls_disabled_in_public`. Same known item as 2026-07-08: PostGIS `spatial_ref_sys` (UAT check 31 PASS / 0 FAIL / 1 WARN = A-18). ✅ Nagesh confirmed in Advisors → Security (2026-11-06): 1 Error = `public.spatial_ref_sys` only (screenshot's project not named — confirm prod shows the same). **Decision: accepted risk until after 9L release**; real fix = move PostGIS out of `public` (ask Supabase support, UAT first). Same page shows **15 Warnings + 14 Info** — not reviewed yet; review once after the 9L release (out of scope now).
 
 **⬅ (superseded) NOW (2026-11-01 17:01) — ordered (resume with /resume):**
 1. **HTML guide for the approvers (wives)**: invite link → create account → wait → review (card, Change/Reject/Approve/Skip, what the seller sees); plus a Team-panel section for Nagesh/Arun (invite, activate, revoke). Real screenshots from session-9l.
