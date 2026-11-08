@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-08 13:10 (UAE), checkpoint (**Prod watch-outs CLOSED: SPF fixed; Better Stack uptime monitor live (test alert received); npm audit fix RELEASED — PR #32 `fix/npm-audit → main` merged (`aef8443`), prod vulns 10 → 1 moderate (unused uuid), `smoke:prod` 14/14. Next: 9L wives UAT (check sign-ups).**)
+- **Last updated:** 2026-11-08 14:18 (UAE), end-of-day checkpoint (**Wife 1 signed up + reviewing on phone (6 Nov links had no valid invite — new one made); wife 2 tomorrow/day after (Diwali). Seller "views" already live → stays PUBLIC; follow-up after 9L. Posting wizard brief saved for Arun (`docs/business/posting-wizard-brief.html`); listing PREVIEW before Submit = part of the wizard (screen ⑤). James recommends frontend split before the wizard. Branch 9L: 10 local commits, docs only, not pushed.**)
+- **Last updated (previous):** 2026-11-08 13:10 (UAE), checkpoint (**Prod watch-outs CLOSED: SPF fixed; Better Stack uptime monitor live (test alert received); npm audit fix RELEASED — PR #32 `fix/npm-audit → main` merged (`aef8443`), prod vulns 10 → 1 moderate (unused uuid), `smoke:prod` 14/14. Next: 9L wives UAT (check sign-ups).**)
 - **Last updated (previous):** 2026-11-08 11:18 (UAE), checkpoint (**Production watch-out review before wider outreach: old 🔴 items verified fixed; duplicate SPF FIXED on Namecheap (one record, verified on 3 resolvers); Sentry uptime needs a paid seat → Better Stack free instead (Nagesh signs up after a break); then npm audit fix (branch from main), then wives UAT.**)
 - **Last updated (previous):** 2026-11-06 18:17 (UAE), end-of-day checkpoint (**Guide + combined invite links SENT to both wives by Nagesh; waiting for their sign-ups (tomorrow or day after). Commit `a895a39` (local, not pushed). Next session: activate wives in Team → they review batch 1 → seed 2/3 → sign-off → step 7.**)
 - **Last updated (previous):** 2026-11-06 18:12 (UAE), checkpoint (**Supabase alerts reviewed (only `spatial_ref_sys`, accepted); Python 3.14 installed; wives uat access solved (Vercel Shareable Link, curl-tested, combined invite link); `scripts/uat/review-seed.js` + batch 1 (12 pending) on UAT, Nagesh sees 12 waiting; standalone wives guide built (scratchpad). Next: Nagesh sends guide + invites → wives review → seed 2/3 → sign-off → step 7.**)
@@ -143,7 +144,9 @@
 
 ## 🎯 Current Goal
 
-**NOW (2026-11-08 ~13:40) — 9L step 6 running:** wife 1 signed up 09:35 UTC (new invite, combined link with share token from uat deployment `0831a8a`), activated by Nagesh, reviewing on her phone — approve / reject / needs-change all work. First decision: "2BHK independent house" (expected Approve) → Needs change / other_change. Next: wife 2 invite → sign-up → activate; then `seed 2` / `seed 3`, `status`, collect feedback.
+**NOW (2026-11-08 14:18, end of day) — Goal: finish 9L step 6 (wives UAT) → sign-off → step 7 release.** Wife 1 active and reviewing; wife 2 signs up tomorrow or day after. Afterwards (in order): views follow-up → frontend split (if Nagesh + Arun agree) → posting wizard incl. listing preview.
+
+**(2026-11-08 ~13:40) — 9L step 6 running:** wife 1 signed up 09:35 UTC (new invite, combined link with share token from uat deployment `0831a8a`), activated by Nagesh, reviewing on her phone — approve / reject / needs-change all work. First decision: "2BHK independent house" (expected Approve) → Needs change / other_change. Next: wife 2 invite → sign-up → activate; then `seed 2` / `seed 3`, `status`, collect feedback.
 
 **(2026-11-08 13:10) — Goal: 9L step 6, wives UAT.** Prod watch-outs closed (SPF ✅, uptime ✅, npm audit ✅ PR #32). Leftovers (Nagesh, small): Better Stack regions/placeholders check, delete Sentry monitor, Namecheap auto-renew.
 
@@ -643,6 +646,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 ## ✅ Completed This Session
 - ✅ **(2026-11-08) Production watch-out review:** UAT blockers = zero prod risk; old 🔴 items verified FIXED (XSS `escHtml` `4277c2f`; listings "Allow public read" dropped by 018; Share Feedback 100dvh; bypass secret rotated 17 Oct; prod Supabase on Pro = no auto-pause). Prod /health 200 (0.7 s).
+- ✅ **(2026-11-08 14:10) Posting wizard brief** `docs/business/posting-wizard-brief.html` (for Arun; 5 screens, behaviour, one-file vs split, order after 9L, 4 questions) + docs/index.html entry (`e403fd6`); preview note + Q3 answered (`4bfa2d1`).
+- ✅ **(2026-11-08 ~14:00) Seller "views" request checked:** already live since 27 Jun (`94054d1`), shown on listing detail; gaps logged; Nagesh: stays public.
+- ✅ **(2026-11-08) Remote Control (phone → Lenovo) explained** — Nagesh deferred trying it; for phone testing use Vercel preview links (localhost doesn't work from a phone; LAN IP hits CORS 403; tunnels rejected).
 - ✅ **(2026-11-08 ~13:40) 9L wives UAT started:** UAT check found NO valid invites for the wives (only 1 Nov test invites: one used, one cancelled — 6 Nov message went out without a fresh invite). Nagesh created a new invite + combined link (token from uat deployment `0831a8a` → Share); wife 1 signed up, activated, reviews on phone OK. 11 still pending.
 - ✅ **(2026-11-08 13:05) npm audit fix RELEASED — PR #32 merged (`aef8443`), from `fix/npm-audit` (branched from `main`, commit `46c9e41`):** lockfile only, in-range, no --force — body-parser 1.20.9, compression 1.8.2, express 4.22.3 (→ qs 6.16.2; `npm audit fix` alone didn't bump express → `npm update express`), zod 4.6.7 (via @vercel/functions), morgan/proxy-addr/side-channel patches. Prod-dep vulns 10 (1 crit, 6 high) → 1 moderate (`uuid` — never imported, fix is breaking v14 → skip). Tests: localhost curl (health, gzip, JSON validation, malformed 400, 11 MB → 413) + Nagesh click test (browse, listing, sign-in, message, pin, edit) + Vercel preview + `smoke:prod` 14/14 after merge, prod gzip on.
 - ✅ **(2026-11-08 12:50) Uptime monitor LIVE (Better Stack free, Nagesh):** monitor 5202045 "mapit.co.in/health" → URL `https://www.mapit.co.in/health` (www direct, follow-redirects off), GET, every 3 min, recovery 3 min, confirmation immediate, IPv4+IPv6, SSL verify on; notify primary responder by **E-mail** (ticked); **test alert received** on nagesh.aadi@. James reviewed config from PDFs. Paid-only: SSL/domain expiry checks (use Namecheap auto-renew instead).
@@ -1418,6 +1424,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
 | **Prod watch-outs before outreach (2026-11-08)** | ✅ SPF ✅; uptime monitor ✅ (Better Stack, test alert received 12:50); npm audit fix ✅ (PR #32 `aef8443`, smoke:prod 14/14) | Namecheap DNS; `package-lock.json` (main); Context.md | Sentry uptime refused: "not enough budget to create new seat" — delete the disabled Sentry monitor |
+| **Posting wizard + listing preview (design)** | 📝 Brief saved, waiting for Arun's answers (Q1 draft, Q2 photos, Q4 split; Q3 = full preview, Nagesh) | `docs/business/posting-wizard-brief.html`, `docs/index.html` | Build after 9L (+ split); phone mockups first |
 | **9L step 6 — wives UAT** | 🔄 2026-11-08: wife 1 (V***) signed up via new invite + share link, activated, reviewing on phone (approve/reject/change work); wife 2 invite pending. (6 Nov links never had a valid invite — no invite rows existed.) | `scripts/uat/review-seed.js`, `.gitignore`, `Context.md` (`a895a39`, local) | Shareable Link revoke at step 7; `seed 2`/`seed 3` day 2/3; `cleanup` after |
 | **9L review queue (steps 1–5 + guide)** | ✅ Built, click-tested by Nagesh, on uat (`0831a8a`); step 6 (wives UAT) + step 7 (release) open | `public/review.html`, `src/routes/review.js`, `MapIt_MVP_v1.html` / `public/index.html`, `public/admin.html`, `database/migrations/020-review-invites.sql` | 019 + 020 on UAT only; `uat:review` 64/64 |
 | **9L step 2 — review backend** | ✅ Part 1 + D11 + part 2 DONE (`85e9d08`, `ef794ff`, `564735e`, `3e700ca`, `7de9640`, `7a933ec`; 53/53 on UAT) | `src/routes/auth.js`, `src/utils/notifySeller.js`, `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
@@ -1623,6 +1630,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+docs/business/posting-wizard-brief.html — 2026-11-08 (NEW): wizard design brief for Arun (5 screens, preview before Submit, one-file vs split, 4 questions).
+docs/index.html — 2026-11-08: added the posting-wizard-brief entry under business.
 package-lock.json — 2026-11-08 (on `main` via PR #32, not yet on uat/9L branch): npm audit fix + express 4.22.3. uat never changed the lockfile → 9L release merge stays clean.
 (2026-11-08) DNS (Namecheap SPF) — no repo file.
 scripts/uat/review-seed.js — 2026-11-06 (NEW): UAT-only practice listings for /review (batches 1–3, status answer key, cleanup).
@@ -2048,6 +2057,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **ℹ️ (2026-11-08) Stale entries below — RESOLVED (verified 2026-11-08):** 🔴 stored XSS (2026-10-08), 🔴 listings "Allow public read" (2026-10-09), 🔴 Share Feedback on iPhone (2026-10-16), 🟡 rotate bypass secret, 🟡 prod Supabase auto-pause, 🟡 main-page innerHTML audit. Still open from the 10-15 audit: Resend Full-access key swap, prod redirect URLs (exact www + bare), remove `SUPABASE_DB_PASSWORD` from Vercel → post-9L clean-up.
 - **ℹ️ (2026-11-08) Grievance Officer without a name** — accepted risk; with public outreach now, Arun to reconsider adding a name (IT Rules 2021 r.3(2)).
 - **ℹ️ (2026-11-08) Sentry alert mails → mapit.backend@gmail.com** — Gmail forwarding filter (from sentry.io → nagesh.aadi@) still not set.
+- **⚠️ (2026-11-08) Lesson: the 6 Nov invite links never worked** (no invite rows existed). Before sending any invite: check Team shows it OPEN + test the combined link in incognito. The "~13 Nov expiry" note below is obsolete; wife 2's code expires 7 days after it is created.
+- **ℹ️ (2026-11-08) 9L branch / uat still on the OLD lockfile** (npm audit fix only on main) — harmless; release merge is clean (uat never changed the lockfile).
 - **💡 (2026-11-08) Production user request: sellers want to see "number of views".** Finding: ALREADY BUILT and live since 2026-06-27 (`94054d1`) — `listings.views_count` + `POST /api/listings/:id/view` (called on every detail open); listing detail shows "👁 N views" to EVERYONE incl. the seller. Gaps: (a) not shown on My Listings cards (seller must open each listing); (b) counts every open incl. the seller's own + repeat opens; (c) read-then-write increment (lost updates under concurrency — fix = atomic RPC, needs a migration); (d) no per-IP limit beyond /api 1000. Proposed small build AFTER 9L release: 👁 on My Listings cards + skip the call when the viewer is the owner (frontend only, no migration). DECIDED (Nagesh, 2026-11-08): keep views PUBLIC. Reply to the user meanwhile: "open your listing — views show under the address".
 - **⏰ (2026-11-06) Invite codes expire ~13 Nov** (7 days) — if a wife hasn't signed up by then: cancel + new invite + new combined link. Vercel access cookie = 7 days from first open per browser (reopen link if a Vercel login appears).
 - **ℹ️ (2026-11-06) No notification on approver access requests** — Nagesh checks Team → Waiting (or James queries UAT `staff_members` status=requested). Possible small later feature: email admins on access-request.
@@ -2277,6 +2288,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-08, Nagesh) Listing preview before "Submit for review" is built AS PART OF the wizard** (screen ⑤), not earlier on the current form. Reuse the real listing-detail renderer (single source of truth); preview must not call the view counter.
+- **(2026-11-08, James — recommendation, pending Nagesh + Arun) Frontend split option 1 right after 9L, before the wizard** — file is ~5,900 lines / 345 KB / 251 functions; blocks parallel work; split at a quiet moment so the wizard is born in `js/post-wizard.js`. Vite stays v2.
+- **(2026-11-08, Nagesh) Wizard work today = design brief only, no code** — 9L UAT must finish first (same file, possible 9L fixes, Rule 2).
+- **(2026-11-08, Nagesh) Remote Control trial postponed.**
 - **(2026-11-08, Nagesh) Listing view count stays PUBLIC** (seller + buyers see "👁 N views"). Follow-up right after 9L release: 👁 on My Listings cards + don't count the owner's own opens; atomic increment with the next migration.
 - **(2026-11-08, Nagesh) Order: SPF → uptime monitor → npm audit fix → wives UAT.**
 - **(2026-11-08, Nagesh + James) SPF: merge into one record** (not delete the Resend/SES part) — zero breakage, reversible; Resend parts at root are redundant but harmless.
@@ -2721,12 +2736,21 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-11-08 ~14:00) — ordered (resume with /resume):**
+**⬅ NOW (2026-11-08 14:18, end of day) — ordered (resume with /resume):**
+1. **Wife 2 sign-up** (tomorrow / day after): new invite in Team → combined link `https://uat.mapit.co.in/review?invite=<CODE>&_vercel_share=<TOKEN>` (token: uat deployment `0831a8a` → Share) → incognito test → send → Activate.
+2. **Wife 1 + 2 finish batch 1** (11 pending); ask wife 1 why "2BHK independent house" got Needs change. Then `seed 2` / `seed 3` → `status` → feedback → Nagesh + Arun sign-off → `cleanup`.
+3. Push the 9L branch (10 local docs commits) with the next 9L step; optionally merge `main` (npm audit fix) into 9L/uat first.
+4. **Step 7 release:** 019 + 020 on PROD first → schema diff → PR uat → main → `smoke:prod` → wives' invites on prod → revoke uat Shareable Link.
+5. Nagesh shares the wizard brief (PDF) with Arun → collect Q1, Q2, Q4 (+ confirm Q3 full preview).
+6. After 9L: views follow-up (👁 on My Listings, skip owner's own views) → frontend split option 1 (if agreed) → posting wizard with preview (phone mockups first).
+7. Nagesh's small leftovers: Better Stack regions/placeholders, delete Sentry monitor, Namecheap auto-renew. Post-9L clean-up list (Resend key, redirect URLs, `SUPABASE_DB_PASSWORD`, Sentry Gmail forward, Grievance Officer name).
+
+**⬅ (2026-11-08 ~14:00) — ordered (superseded):**
 1. **Wife 2 sign-up** — tomorrow or day after (festival today): new invite in Team → combined link (token from uat deployment `0831a8a` → Share) → incognito test → send → activate.
 2. Wife 1 continues batch 1 (11 pending); ask why "2BHK independent house" got Needs change. Then `seed 2` / `seed 3` → `status` → sign-off → step 7.
 3. **Logged (not started) — seller "views" request (production user, 2026-11-08):** see Open Issues. Small follow-up AFTER 9L release.
 4. **Posting wizard brief SAVED (2026-11-08):** `docs/business/posting-wizard-brief.html` (linked in docs/index.html) — Nagesh shares with Arun; 4 open questions (draft text-only?, photo required?, summary vs full preview, split file first?). James now recommends: after 9L → views follow-up → **frontend split option 1** (one session, before the wizard, may end the Two-File Rule) → wizard (phone mockups first). Design only, no code.
-5. **NEW build noted (Nagesh, 2026-11-08): listing PREVIEW before "Submit for review"** — seller sees the listing exactly as buyers will (photos, title, price, details, description, approximate area on map), with Edit links back to each part. Answers wizard brief Q3 (full preview, not summary card; Arun to confirm). Home = wizard screen ⑤; reuse the existing listing-detail renderer so preview = real view (no second layout to maintain). Open: build inside the wizard, or earlier on the current form after 9L (preview works on either).
+5. **NEW build noted (Nagesh, 2026-11-08): listing PREVIEW before "Submit for review"** — seller sees the listing exactly as buyers will (photos, title, price, details, description, approximate area on map), with Edit links back to each part. Answers wizard brief Q3 (full preview, not summary card; Arun to confirm). Home = wizard screen ⑤; reuse the existing listing-detail renderer so preview = real view (no second layout to maintain). DECIDED (Nagesh, 2026-11-08): build inside the wizard.
 
 **⬅ (2026-11-08 11:18) — ordered:**
 1. ✅ **Uptime** — Better Stack live, test alert received (12:50). Leftovers in Open Issues (regions/placeholders check, delete Sentry monitor, Namecheap auto-renew).
