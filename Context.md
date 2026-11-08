@@ -2726,6 +2726,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 2. Wife 1 continues batch 1 (11 pending); ask why "2BHK independent house" got Needs change. Then `seed 2` / `seed 3` → `status` → sign-off → step 7.
 3. **Logged (not started) — seller "views" request (production user, 2026-11-08):** see Open Issues. Small follow-up AFTER 9L release.
 4. **Posting wizard brief SAVED (2026-11-08):** `docs/business/posting-wizard-brief.html` (linked in docs/index.html) — Nagesh shares with Arun; 4 open questions (draft text-only?, photo required?, summary vs full preview, split file first?). James now recommends: after 9L → views follow-up → **frontend split option 1** (one session, before the wizard, may end the Two-File Rule) → wizard (phone mockups first). Design only, no code.
+5. **NEW build noted (Nagesh, 2026-11-08): listing PREVIEW before "Submit for review"** — seller sees the listing exactly as buyers will (photos, title, price, details, description, approximate area on map), with Edit links back to each part. Answers wizard brief Q3 (full preview, not summary card; Arun to confirm). Home = wizard screen ⑤; reuse the existing listing-detail renderer so preview = real view (no second layout to maintain). Open: build inside the wizard, or earlier on the current form after 9L (preview works on either).
 
 **⬅ (2026-11-08 11:18) — ordered:**
 1. ✅ **Uptime** — Better Stack live, test alert received (12:50). Leftovers in Open Issues (regions/placeholders check, delete Sentry monitor, Namecheap auto-renew).
