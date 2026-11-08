@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-08 11:18 (UAE), checkpoint (**Production watch-out review before wider outreach: old 🔴 items verified fixed; duplicate SPF FIXED on Namecheap (one record, verified on 3 resolvers); Sentry uptime needs a paid seat → Better Stack free instead (Nagesh signs up after a break); then npm audit fix (branch from main), then wives UAT.**)
+- **Last updated:** 2026-11-08 13:10 (UAE), checkpoint (**Prod watch-outs CLOSED: SPF fixed; Better Stack uptime monitor live (test alert received); npm audit fix RELEASED — PR #32 `fix/npm-audit → main` merged (`aef8443`), prod vulns 10 → 1 moderate (unused uuid), `smoke:prod` 14/14. Next: 9L wives UAT (check sign-ups).**)
+- **Last updated (previous):** 2026-11-08 11:18 (UAE), checkpoint (**Production watch-out review before wider outreach: old 🔴 items verified fixed; duplicate SPF FIXED on Namecheap (one record, verified on 3 resolvers); Sentry uptime needs a paid seat → Better Stack free instead (Nagesh signs up after a break); then npm audit fix (branch from main), then wives UAT.**)
 - **Last updated (previous):** 2026-11-06 18:17 (UAE), end-of-day checkpoint (**Guide + combined invite links SENT to both wives by Nagesh; waiting for their sign-ups (tomorrow or day after). Commit `a895a39` (local, not pushed). Next session: activate wives in Team → they review batch 1 → seed 2/3 → sign-off → step 7.**)
 - **Last updated (previous):** 2026-11-06 18:12 (UAE), checkpoint (**Supabase alerts reviewed (only `spatial_ref_sys`, accepted); Python 3.14 installed; wives uat access solved (Vercel Shareable Link, curl-tested, combined invite link); `scripts/uat/review-seed.js` + batch 1 (12 pending) on UAT, Nagesh sees 12 waiting; standalone wives guide built (scratchpad). Next: Nagesh sends guide + invites → wives review → seed 2/3 → sign-off → step 7.**)
 - **Last updated (previous):** 2026-11-01 17:09 (UAE), end-of-day checkpoint (**9L steps 1–5 + reviewer guide DONE and PUSHED to uat (`0831a8a`, fast-forward; branch `feat/session-9l-review-queue` also on origin). uat.mapit.co.in/review live (200 with bypass; 302 Vercel login without). Production untouched (no 019/020). Next session: UAT with both wives — first solve their access to the Vercel-protected uat.**)
@@ -142,7 +143,9 @@
 
 ## 🎯 Current Goal
 
-**NOW (2026-11-08 11:18) — Goal: close live production watch-outs before wider outreach, then 9L wives UAT.** Order agreed (Nagesh): ✅ SPF → ⏸ uptime monitor (Better Stack free, Nagesh signs up after a break) → npm audit fix (branch from `main`, NOT uat) → wives UAT (9L step 6).
+**NOW (2026-11-08 13:10) — Goal: 9L step 6, wives UAT.** Prod watch-outs closed (SPF ✅, uptime ✅, npm audit ✅ PR #32). Leftovers (Nagesh, small): Better Stack regions/placeholders check, delete Sentry monitor, Namecheap auto-renew.
+
+**(2026-11-08 11:18) — Goal: close live production watch-outs before wider outreach, then 9L wives UAT.** Order agreed (Nagesh): ✅ SPF → ⏸ uptime monitor (Better Stack free, Nagesh signs up after a break) → npm audit fix (branch from `main`, NOT uat) → wives UAT (9L step 6).
 
 **NOW (2026-11-06 18:17, end of day) — Goal: 9L step 6, wives UAT (next 1–2 days).** Guide + invite links sent; waiting for sign-up requests (no notification — wives WhatsApp Nagesh after "Thanks", or ask James to check UAT). Then activate → review batch 1 → `seed 2`/`seed 3` → `status` → sign-off → step 7 release.
 
@@ -638,6 +641,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 ## ✅ Completed This Session
 - ✅ **(2026-11-08) Production watch-out review:** UAT blockers = zero prod risk; old 🔴 items verified FIXED (XSS `escHtml` `4277c2f`; listings "Allow public read" dropped by 018; Share Feedback 100dvh; bypass secret rotated 17 Oct; prod Supabase on Pro = no auto-pause). Prod /health 200 (0.7 s).
+- ✅ **(2026-11-08 13:05) npm audit fix RELEASED — PR #32 merged (`aef8443`), from `fix/npm-audit` (branched from `main`, commit `46c9e41`):** lockfile only, in-range, no --force — body-parser 1.20.9, compression 1.8.2, express 4.22.3 (→ qs 6.16.2; `npm audit fix` alone didn't bump express → `npm update express`), zod 4.6.7 (via @vercel/functions), morgan/proxy-addr/side-channel patches. Prod-dep vulns 10 (1 crit, 6 high) → 1 moderate (`uuid` — never imported, fix is breaking v14 → skip). Tests: localhost curl (health, gzip, JSON validation, malformed 400, 11 MB → 413) + Nagesh click test (browse, listing, sign-in, message, pin, edit) + Vercel preview + `smoke:prod` 14/14 after merge, prod gzip on.
 - ✅ **(2026-11-08 12:50) Uptime monitor LIVE (Better Stack free, Nagesh):** monitor 5202045 "mapit.co.in/health" → URL `https://www.mapit.co.in/health` (www direct, follow-redirects off), GET, every 3 min, recovery 3 min, confirmation immediate, IPv4+IPv6, SSL verify on; notify primary responder by **E-mail** (ticked); **test alert received** on nagesh.aadi@. James reviewed config from PDFs. Paid-only: SSL/domain expiry checks (use Namecheap auto-renew instead).
 - ✅ **(2026-11-08) Duplicate root SPF FIXED (Namecheap, Nagesh):** one `@` record `v=spf1 include:zohomail.com include:amazonses.com include:spf.resend.com ~all`, Zoho-only record deleted; James verified on dns1.registrar-servers.com, 8.8.8.8, 1.1.1.1 (single SPF, zoho-verification kept). Resend mail was never affected (`send.mapit.co.in` has its own SPF); Zoho DKIM `zmail` + DMARC `p=none` present.
 - ✅ **(2026-11-06) Committed** `a895a39` feat(uat): review-seed script + .gitignore + checkpoint (local, not pushed; share token verified absent).
@@ -1410,7 +1414,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Prod watch-outs before outreach (2026-11-08)** | 🔄 SPF ✅; uptime monitor ✅ (Better Stack, test alert received 12:50); npm audit fix ⬜; then 9L UAT | Namecheap DNS (no repo files); Context.md | Sentry uptime refused: "not enough budget to create new seat" — delete the disabled Sentry monitor |
+| **Prod watch-outs before outreach (2026-11-08)** | ✅ SPF ✅; uptime monitor ✅ (Better Stack, test alert received 12:50); npm audit fix ✅ (PR #32 `aef8443`, smoke:prod 14/14) | Namecheap DNS; `package-lock.json` (main); Context.md | Sentry uptime refused: "not enough budget to create new seat" — delete the disabled Sentry monitor |
 | **9L step 6 — wives UAT** | 🔄 2026-11-06: guide + invites SENT; waiting for sign-ups; batch 1 (12) waiting | `scripts/uat/review-seed.js`, `.gitignore`, `Context.md` (`a895a39`, local) | Shareable Link revoke at step 7; `seed 2`/`seed 3` day 2/3; `cleanup` after |
 | **9L review queue (steps 1–5 + guide)** | ✅ Built, click-tested by Nagesh, on uat (`0831a8a`); step 6 (wives UAT) + step 7 (release) open | `public/review.html`, `src/routes/review.js`, `MapIt_MVP_v1.html` / `public/index.html`, `public/admin.html`, `database/migrations/020-review-invites.sql` | 019 + 020 on UAT only; `uat:review` 64/64 |
 | **9L step 2 — review backend** | ✅ Part 1 + D11 + part 2 DONE (`85e9d08`, `ef794ff`, `564735e`, `3e700ca`, `7de9640`, `7a933ec`; 53/53 on UAT) | `src/routes/auth.js`, `src/utils/notifySeller.js`, `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
@@ -1616,7 +1620,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
-(2026-11-08) No repo code changed — DNS (Namecheap SPF) + Context.md checkpoint only.
+package-lock.json — 2026-11-08 (on `main` via PR #32, not yet on uat/9L branch): npm audit fix + express 4.22.3. uat never changed the lockfile → 9L release merge stays clean.
+(2026-11-08) DNS (Namecheap SPF) — no repo file.
 scripts/uat/review-seed.js — 2026-11-06 (NEW): UAT-only practice listings for /review (batches 1–3, status answer key, cleanup).
 .gitignore — 2026-11-06: ignore scripts/uat/.review-seed.json (seed state).
 public/review.html — 2026-11-01 (NEW): /review page — sign in / invite sign-up / waiting, refresh, queue card + Change/Reject sheets + Approve/Skip, All clear, Team panel (invites, activate/revoke), Signed-in-as bar.
@@ -2035,7 +2040,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ## 🐛 Open Issues / Blockers
 - **🔴 (2026-11-08) Do NOT open a uat → main PR until the 9L release:** `origin/uat` is 30 commits ahead of main incl. all 9L code; merging without 019 + 020 on prod breaks every seller edit / approver sign-up. **Prod hotfixes (incl. npm audit fix) branch from `main`.**
 - **✅ (2026-11-08 12:50) Uptime monitor RESOLVED** — Better Stack free, www /health, 3 min, email test alert received. Small leftovers (Nagesh): confirm ≥1 region ticked (Asia preferred) + grey example fields (Authorization header, proxy, metadata, body) are placeholders, not values; optional timeout 30 s → 10 s; invite Arun to the Better Stack team if free plan allows; delete the disabled Sentry monitor "MapIt prod /health" (id 10889098); check **Namecheap Auto-Renew ON** for mapit.co.in (domain expiry check is paid in Better Stack).
-- **🟡 (2026-11-08) `npm audit --omit=dev`:** high body-parser (DoS) + compression (DoS) + zod; moderate morgan, qs, uuid (uuid fix is breaking → skip); critical proxy-addr does NOT apply (`trust proxy 1` = hop count, not subnet). Plan: `npm audit fix` (no --force) on a branch from main → UAT → release.
+- **✅ (2026-11-08 13:05) `npm audit` RESOLVED** — PR #32 merged; 1 moderate left (`uuid` ^10 in package.json but never imported — possible later tidy-up: remove the unused dependency). uat/9L branch still run the old lockfile until the 9L release merge (or merge main → uat earlier).
 - **ℹ️ (2026-11-08) `/health` is shallow** (no Supabase call) — uptime monitor catches app/deploy/DNS failures, not DB outages. Possible later: DB-aware health check.
 - **ℹ️ (2026-11-08) Stale entries below — RESOLVED (verified 2026-11-08):** 🔴 stored XSS (2026-10-08), 🔴 listings "Allow public read" (2026-10-09), 🔴 Share Feedback on iPhone (2026-10-16), 🟡 rotate bypass secret, 🟡 prod Supabase auto-pause, 🟡 main-page innerHTML audit. Still open from the 10-15 audit: Resend Full-access key swap, prod redirect URLs (exact www + bare), remove `SUPABASE_DB_PASSWORD` from Vercel → post-9L clean-up.
 - **ℹ️ (2026-11-08) Grievance Officer without a name** — accepted risk; with public outreach now, Arun to reconsider adding a name (IT Rules 2021 r.3(2)).
@@ -2713,7 +2718,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 **⬅ NOW (2026-11-08 11:18) — ordered (resume with /resume):**
 1. ✅ **Uptime** — Better Stack live, test alert received (12:50). Leftovers in Open Issues (regions/placeholders check, delete Sentry monitor, Namecheap auto-renew).
-2. **npm audit fix:** branch `fix/npm-audit` from `main` → `npm audit fix` (no --force) → localhost check → preview check → PR to main → `smoke:prod`. Do NOT route via uat (9L is on it).
+2. ✅ **npm audit fix** — PR #32 merged (`aef8443`), smoke:prod 14/14.
 3. **9L wives UAT** — 2026-11-06 list below (check sign-ups, activate, seed 2/3, sign-off, step 7 release).
 4. Post-9L clean-up: Resend key → Sending access; prod redirect URLs; remove `SUPABASE_DB_PASSWORD` from Vercel; Gmail forward for sentry.io; Arun: Grievance Officer name.
 
