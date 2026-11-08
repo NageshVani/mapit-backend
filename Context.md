@@ -2048,6 +2048,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **ℹ️ (2026-11-08) Stale entries below — RESOLVED (verified 2026-11-08):** 🔴 stored XSS (2026-10-08), 🔴 listings "Allow public read" (2026-10-09), 🔴 Share Feedback on iPhone (2026-10-16), 🟡 rotate bypass secret, 🟡 prod Supabase auto-pause, 🟡 main-page innerHTML audit. Still open from the 10-15 audit: Resend Full-access key swap, prod redirect URLs (exact www + bare), remove `SUPABASE_DB_PASSWORD` from Vercel → post-9L clean-up.
 - **ℹ️ (2026-11-08) Grievance Officer without a name** — accepted risk; with public outreach now, Arun to reconsider adding a name (IT Rules 2021 r.3(2)).
 - **ℹ️ (2026-11-08) Sentry alert mails → mapit.backend@gmail.com** — Gmail forwarding filter (from sentry.io → nagesh.aadi@) still not set.
+- **💡 (2026-11-08) Production user request: sellers want to see "number of views".** Finding: ALREADY BUILT and live since 2026-06-27 (`94054d1`) — `listings.views_count` + `POST /api/listings/:id/view` (called on every detail open); listing detail shows "👁 N views" to EVERYONE incl. the seller. Gaps: (a) not shown on My Listings cards (seller must open each listing); (b) counts every open incl. the seller's own + repeat opens; (c) read-then-write increment (lost updates under concurrency — fix = atomic RPC, needs a migration); (d) no per-IP limit beyond /api 1000. Proposed small build AFTER 9L release: 👁 on My Listings cards + skip the call when the viewer is the owner (frontend only, no migration). Open question for Nagesh + Arun: keep views PUBLIC or seller-only? Reply to the user meanwhile: "open your listing — views show under the address".
 - **⏰ (2026-11-06) Invite codes expire ~13 Nov** (7 days) — if a wife hasn't signed up by then: cancel + new invite + new combined link. Vercel access cookie = 7 days from first open per browser (reopen link if a Vercel login appears).
 - **ℹ️ (2026-11-06) No notification on approver access requests** — Nagesh checks Team → Waiting (or James queries UAT `staff_members` status=requested). Possible small later feature: email admins on access-request.
 - **ℹ️ (2026-11-06) UAT Supabase is Free plan — may pause after ~1 week inactive**; if uat data stops loading, Supabase dashboard → Restore project.
@@ -2719,7 +2720,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-11-08 11:18) — ordered (resume with /resume):**
+**⬅ NOW (2026-11-08 ~14:00) — ordered (resume with /resume):**
+1. **Wife 2 sign-up** — tomorrow or day after (festival today): new invite in Team → combined link (token from uat deployment `0831a8a` → Share) → incognito test → send → activate.
+2. Wife 1 continues batch 1 (11 pending); ask why "2BHK independent house" got Needs change. Then `seed 2` / `seed 3` → `status` → sign-off → step 7.
+3. **Logged (not started) — seller "views" request (production user, 2026-11-08):** see Open Issues. Small follow-up AFTER 9L release.
+
+**⬅ (2026-11-08 11:18) — ordered:**
 1. ✅ **Uptime** — Better Stack live, test alert received (12:50). Leftovers in Open Issues (regions/placeholders check, delete Sentry monitor, Namecheap auto-renew).
 2. ✅ **npm audit fix** — PR #32 merged (`aef8443`), smoke:prod 14/14.
 3. **9L wives UAT** — 2026-11-06 list below (check sign-ups, activate, seed 2/3, sign-off, step 7 release).
