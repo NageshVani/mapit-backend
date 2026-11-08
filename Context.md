@@ -2725,6 +2725,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 1. **Wife 2 sign-up** — tomorrow or day after (festival today): new invite in Team → combined link (token from uat deployment `0831a8a` → Share) → incognito test → send → activate.
 2. Wife 1 continues batch 1 (11 pending); ask why "2BHK independent house" got Needs change. Then `seed 2` / `seed 3` → `status` → sign-off → step 7.
 3. **Logged (not started) — seller "views" request (production user, 2026-11-08):** see Open Issues. Small follow-up AFTER 9L release.
+4. **Posting wizard brief SAVED (2026-11-08):** `docs/business/posting-wizard-brief.html` (linked in docs/index.html) — Nagesh shares with Arun; 4 open questions (draft text-only?, photo required?, summary vs full preview, split file first?). James now recommends: after 9L → views follow-up → **frontend split option 1** (one session, before the wizard, may end the Two-File Rule) → wizard (phone mockups first). Design only, no code.
 
 **⬅ (2026-11-08 11:18) — ordered:**
 1. ✅ **Uptime** — Better Stack live, test alert received (12:50). Leftovers in Open Issues (regions/placeholders check, delete Sentry monitor, Namecheap auto-renew).

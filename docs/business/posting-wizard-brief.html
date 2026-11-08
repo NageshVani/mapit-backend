@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Posting Wizard Brief</title>
+<style>
+  :root {
+    --orange: #f06030; --orange-light: #fff4ef; --teal: #0d9488; --red: #dc2626; --red-light: #fef2f2;
+    --yellow: #b45309; --yellow-light: #fffbeb; --green: #16a34a; --green-light: #f0fdf4;
+    --grey-50: #f9fafb; --grey-200: #e5e7eb; --grey-500: #6b7280; --grey-700: #374151; --grey-900: #111827;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: var(--font); font-size: 15px; line-height: 1.6; color: var(--grey-900); background: #fff; margin: 0; padding: 24px 16px 64px; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 2px solid var(--orange); }
+  h3 { font-size: 16px; margin: 20px 0 6px; }
+  .meta { color: var(--grey-500); font-size: 13px; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; border: 1px solid var(--grey-200); padding: 6px 8px; }
+  th { background: var(--grey-50); }
+  .box { border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+  .warn { background: var(--yellow-light); border-left: 4px solid var(--yellow); }
+  .ok { background: var(--green-light); border-left: 4px solid var(--green); }
+  .info { background: var(--orange-light); border-left: 4px solid var(--orange); }
+  ol li, ul li { margin-bottom: 4px; }
+  .steps { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 8px; margin: 8px 0; }
+  .step { flex: 0 0 150px; border: 2px solid var(--grey-700); border-radius: 16px; padding: 10px; background: var(--grey-50); font-size: 13px; line-height: 1.45; }
+  .step b.n { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: var(--orange); color: #fff; text-align: center; line-height: 22px; font-size: 12px; margin-right: 4px; }
+  .step .unlock { margin-top: 6px; color: var(--teal); font-weight: 600; font-size: 12px; }
+  .q { border: 1px solid var(--grey-200); border-radius: 8px; padding: 10px 14px; margin: 10px 0; }
+  .q .ans { margin-top: 6px; color: var(--grey-500); font-size: 13px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 10px; padding: 0 8px; }
+  .tag.done { background: var(--green-light); color: var(--green); }
+  .tag.next { background: var(--yellow-light); color: var(--yellow); }
+  code { font-size: 13px; background: var(--grey-50); padding: 0 4px; border-radius: 4px; }
+  @media (max-width: 600px) { table { font-size: 13px; } th, td { padding: 4px 6px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Posting Wizard — Design Brief</h1>
+<div class="meta">For Arun · prepared by James for Nagesh · 8 Nov 2026 · Design only, no code yet<br>
+Status: <span class="tag next">waiting for your answers</span> (section 6). Build starts after the review queue (9L) is live on mapit.co.in.</div>
+
+<div class="box info"><b>In one paragraph:</b> today a seller fills one long form to post a listing. On a phone that feels like a lot, and some people give up halfway. The wizard splits the same form into <b>5 short screens</b>, one topic each, with a <b>Next</b> button. Nothing new is asked of the seller; the questions are the same, just in smaller pieces. This was your idea (12 Oct), and Nagesh fixed the screen order on 20 Oct.</div>
+
+<h2>1. What is already in place</h2>
+<ul>
+  <li><span class="tag done">live</span> The form already has numbered sections and a step bar at the top (20 Oct).</li>
+  <li><span class="tag done">live</span> <b>Auto-title:</b> the title fills itself from the details (e.g. "Maruti Swift 2014 – 52,000 km, 1st owner"), and stops once the seller types their own.</li>
+  <li><span class="tag done">live</span> <b>"✨ Write it for me"</b> drafts the description.</li>
+  <li><span class="tag next">on UAT</span> <b>Review queue (9L):</b> every new listing waits for an approver; the seller can be asked to change something and then resubmits.</li>
+</ul>
+<p>So the wizard is mostly about <b>turning the existing sections into screens</b>, not building a new form.</p>
+
+<h2>2. The 5 screens</h2>
+<div class="steps" aria-label="The five wizard screens in order">
+  <div class="step"><b class="n">1</b><b>What</b><br>Real Estate / Vehicles / Household → type → Sell or Rent<div class="unlock">Next: type chosen</div></div>
+  <div class="step"><b class="n">2</b><b>Details</b><br>Questions for that type, title (auto), description (✨)<div class="unlock">Next: title filled</div></div>
+  <div class="step"><b class="n">3</b><b>Price &amp; photos</b><br>Price (shown in words), up to 5 photos<div class="unlock">Next: price + 1 photo</div></div>
+  <div class="step"><b class="n">4</b><b>Location</b><br>Pin on map, search or GPS, "Show exact pin"<div class="unlock">Next: pin placed</div></div>
+  <div class="step"><b class="n">5</b><b>Review &amp; contact</b><br>Phone choice + summary card<div class="unlock">Submit for review</div></div>
+</div>
+<p style="color:var(--grey-500);font-size:13px;margin-top:0">On a phone, swipe sideways to see all five.</p>
+
+<table>
+  <tr><th>#</th><th>Screen</th><th>What the seller does</th><th>"Next" becomes active when</th></tr>
+  <tr><td>1</td><td><b>What</b></td><td>Picks category, type (e.g. 2BHK flat, car, sofa) and Sell or Rent</td><td>A type is chosen</td></tr>
+  <tr><td>2</td><td><b>Details</b></td><td>Answers the questions for that type; checks the auto-title; writes or generates the description</td><td>The title is filled</td></tr>
+  <tr><td>3</td><td><b>Price &amp; photos</b></td><td>Enters the price (shown in words, e.g. "₹ 4.5 lakh"); adds up to 5 photos</td><td>Price above 0 <b>and</b> at least 1 photo (plots excepted, see question 2)</td></tr>
+  <tr><td>4</td><td><b>Location</b></td><td>Places the pin (search, GPS or tap); chooses whether buyers see the exact pin or the approximate area</td><td>The pin is placed</td></tr>
+  <tr><td>5</td><td><b>Review &amp; contact</b></td><td>Chooses how buyers can contact them; checks a summary (photo, title, price, area)</td><td>→ <b>Submit for review</b></td></tr>
+</table>
+
+<h3>Why this order</h3>
+<ul>
+  <li><b>Category first</b> because it decides which questions appear on screen 2.</li>
+  <li><b>Map late</b> because it is the heaviest screen to load. By screen 4 the seller has already put in effort and is less likely to quit.</li>
+  <li><b>Privacy choice right before submit</b> ("Show exact pin", phone sharing), where the seller is most likely to read it.</li>
+</ul>
+
+<h2>3. How it behaves</h2>
+<ul>
+  <li><b>Back never loses anything.</b> Everything typed stays when moving between screens.</li>
+  <li><b>The phone's back button</b> goes to the previous screen, not out of the form. (This is the most common annoyance in phone forms.)</li>
+  <li><b>Accidental refresh or close:</b> the seller can continue from a saved draft (details in question 1).</li>
+  <li><b>Step bar on every screen.</b> When <b>editing</b> an existing listing, every step can be tapped, so a seller who only wants to fix the price jumps straight to screen 3.</li>
+  <li><b>"Needs change" link (new):</b> when an approver asks for a change, "Edit &amp; resubmit" opens the wizard <b>on the screen that needs fixing</b>. Example: reason "Price missing or unrealistic" opens screen 3.</li>
+  <li><b>After Submit:</b> a clear "Sent for review — usually within 4 hours" screen, matching the review queue.</li>
+</ul>
+
+<h2>4. A bigger question: one file or several</h2>
+<p>The whole website (map, listings, posting, chat, sign-in) is one file of about <b>5,900 lines</b>. That was the right choice for building the MVP quickly. It is now causing real friction:</p>
+<ul>
+  <li><b>Everything changes the same file</b>, so two features can't be worked on at the same time. Today, for example, the wizard has to wait because the review queue changed the same file.</li>
+  <li><b>Any small fix makes every visitor download the whole app again</b> (about 345 KB).</li>
+  <li><b>Easier to break something by accident</b>, because all parts share one space.</li>
+</ul>
+<p><b>Proposal:</b> split it into a few plain files (one for the look, about 6–8 for the parts: map, listings, posting, chat…). <b>Visitors see no difference</b>; no new tools and no cost. It is about one working session, done at a quiet moment, right after the review queue goes live and <b>before</b> the wizard. The wizard then gets its own file from day one instead of being moved later.</p>
+<div class="box ok"><b>James's recommendation:</b> split first, then the wizard. A full rebuild with a modern framework is <b>not</b> needed now; that is a "version 2" topic.</div>
+
+<h2>5. Proposed order after the review queue is live</h2>
+<ol>
+  <li>Small: show "👁 views" on each seller's My Listings, and don't count the seller's own visits <i>(view counts stay public, decided 8 Nov)</i>.</li>
+  <li>Split the one big file into several (section 4), about 1 session.</li>
+  <li>Posting wizard, about 1 session; phone mockups for your approval first.</li>
+</ol>
+<p>No database changes and no new monthly costs for any of the three.</p>
+
+<h2>6. Questions for Arun and Nagesh</h2>
+<div class="q"><b>1. Saved draft:</b> if the seller refreshes or closes the page halfway, should we keep only the typed text, or the photos too?<br>
+<i>James suggests text only: photos are large on phones, and re-adding a photo is quick.</i><div class="ans">Answer: ______________________</div></div>
+<div class="q"><b>2. Photos:</b> should at least one photo be <b>required</b> for every category except plots, or only <b>recommended</b>?<br>
+<i>Required gives better listings; recommended gives fewer drop-offs.</i><div class="ans">Answer: ______________________</div></div>
+<div class="q"><b>3. Last screen:</b> a short summary card, or a full preview exactly as buyers will see the listing?<br>
+<i>The full preview builds trust but takes longer to scroll on a phone.</i><div class="ans">Answer: ______________________</div></div>
+<div class="q"><b>4. One file or several:</b> agree to split the file (section 4) before building the wizard?<div class="ans">Answer: ______________________</div></div>
+
+<h2>7. Technical notes (for Nagesh and James)</h2>
+<ul>
+  <li>Keep the existing field IDs (e.g. <code>pf_total_price</code>) so save, edit, auto-title and "Write it for me" keep working unchanged.</li>
+  <li>Leaflet blank-map trap: a map inside a hidden screen draws grey tiles. Call <code>invalidateSize()</code> when screen 4 opens.</li>
+  <li>Phone back button: push a history entry per screen and listen for <code>popstate</code>.</li>
+  <li>"Next" checks are for convenience only; the server keeps validating every field (Rule 8).</li>
+  <li>File split: keep functions global (buttons use <code>onclick</code>), load scripts in a fixed order, and add a version tag (<code>app.js?v=…</code>) so phones don't keep an old copy. The split may also end the "two copies of the page" rule.</li>
+</ul>
+
+</main>
+</body>
+</html>
