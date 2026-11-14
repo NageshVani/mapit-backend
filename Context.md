@@ -10,7 +10,7 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-14 ~17:15 (UAE) (**9L RELEASED to production — PR #33 merged (`5efbe07`), smoke:prod 14/14, prod /review 200. Next: prod invites for both wives → activate → revoke uat Shareable Link → frontend split option 1.**)
+- **Last updated:** 2026-11-14 17:14 (UAE), checkpoint (**9L RELEASED to production — PR #33 merged (`5efbe07`), smoke:prod 14/14, prod /review 200. Next: prod invites for both wives → activate → revoke uat Shareable Link → frontend split option 1.**)
 - **Last updated (previous):** 2026-11-14 14:35 (UAE), checkpoint (**9L step 7 started: migrations 019 + 020 RUN ON PRODUCTION by Nagesh (no errors; all 3 tables exist); schema inventory prod vs UAT = identical (only Postgres 17.6 vs 17.11). Earlier the same day 019-rollback.sql was run on prod by mistake BEFORE 019 — no-op (all IF EXISTS; check showed all 3 tables NULL). Next: push 9L → uat → PR uat → main → smoke:prod.**)
 - **Last updated (previous):** 2026-11-14 (UAE), checkpoint (**9L UAT: wife 1 decided all 12 batch-1 listings (6/12 right action group); wife 2 never started — UAT has NO invite for her (only the 8 Nov one, used by wife 1). Wizard brief: all 4 answers in (text-only draft; ≥1 photo required except plots; full preview; split NOW, option 1). Better Stack monitor live since 8 Nov (per records; James cannot see the account).**)
 - **Last updated (previous):** 2026-11-08 14:18 (UAE), end-of-day checkpoint (**Wife 1 signed up + reviewing on phone (6 Nov links had no valid invite — new one made); wife 2 tomorrow/day after (Diwali). Seller "views" already live → stays PUBLIC; follow-up after 9L. Posting wizard brief saved for Arun (`docs/business/posting-wizard-brief.html`); listing PREVIEW before Submit = part of the wizard (screen ⑤). James recommends frontend split before the wizard. Branch 9L: 10 local commits, docs only, not pushed.**)
@@ -665,6 +665,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-14 ~17:10) 9L RELEASED to production:** PR #33 uat → main (opened by James, merged by Nagesh, `5efbe07`); Vercel prod deploy success; `smoke:prod` 14/14; prod `/review` 200, `/api/review/me` 401 unauthenticated.
+- ✅ **(2026-11-14 ~16:55) Pre-release:** merged `origin/main` (npm audit fix) into 9L (`ec3c062`, lockfile only) → `npm ci` → `uat:review` 64/64 → 9L + `uat` fast-forwarded + pushed → uat preview success, endpoints 200 → Nagesh uat click-test ✅ (All clear) → `smoke:prod` baseline 14/14.
+- ✅ **(2026-11-14) Better Stack regions confirmed:** Europe, North America, Asia, Australia all ticked; no maintenance window (correct).
+- ✅ **(2026-11-14 17:14) CONTEXT updated** (`99589c5`, pushed on 9L branch) + this checkpoint.
 - ✅ **(2026-11-14 14:41) Schema re-confirmed with clean `rev1` inventories** (prod = UAT after unwrapping). 9L branch pushed to origin (`ed98a98`, CONTEXT note).
 - ✅ **(2026-11-14) Lost chat recovered** from the Claude Code transcript (`f61c60fe…`); 019/020 opened in VS Code.
 - ✅ **(2026-11-14 14:35) PRODUCTION DB: migrations 019 (review queue) + 020 (review invites) run on `jneoxwumccmjwaojfazh` by Nagesh** — both "No rows returned", no error (verify blocks passed); prod vs UAT schema inventory ✅ identical (only Postgres version differs). Earlier mistaken `019-rollback.sql` on prod was a no-op (019 not yet run; all IF EXISTS).
@@ -1446,7 +1450,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **9L step 7 — production release** | 🔄 2026-11-14: DB ✅ (019 + 020 on prod, schema = UAT); branch pushed `ed98a98`; code release waiting for Nagesh's go | `Context.md`; prod DB (SQL Editor) | Next: merge main → 9L, `uat:review`, ff uat, PR uat → main, smoke:prod, wives' prod invites, revoke Shareable Link |
+| **9L step 7 — production release** | ✅ code + DB live 2026-11-14 (PR #33 `5efbe07`, smoke:prod 14/14); 🔄 remaining: prod invites for both wives, revoke uat Shareable Link | `package-lock.json` (merge), `Context.md`; GitHub PR #33 | Next: Team → invite → incognito test → send → Activate |
+| **CLAUDE.md review "now that MapIt is live"** | 📝 Requested by Nagesh 2026-11-14, not started | `CLAUDE.md` | Discuss considerations first; no edits until agreed |
 | **Prod watch-outs before outreach (2026-11-08)** | ✅ SPF ✅; uptime monitor ✅ (Better Stack, test alert received 12:50); npm audit fix ✅ (PR #32 `aef8443`, smoke:prod 14/14) | Namecheap DNS; `package-lock.json` (main); Context.md | Sentry uptime refused: "not enough budget to create new seat" — delete the disabled Sentry monitor |
 | **Posting wizard + listing preview (design)** | 📝 Brief saved, waiting for Arun's answers (Q1 draft, Q2 photos, Q4 split; Q3 = full preview, Nagesh) | `docs/business/posting-wizard-brief.html`, `docs/index.html` | Build after 9L (+ split); phone mockups first |
 | **9L step 6 — wives UAT** | 🔄 2026-11-08: wife 1 (V***) signed up via new invite + share link, activated, reviewing on phone (approve/reject/change work); wife 2 invite pending. (6 Nov links never had a valid invite — no invite rows existed.) | `scripts/uat/review-seed.js`, `.gitignore`, `Context.md` (`a895a39`, local) | Shareable Link revoke at step 7; `seed 2`/`seed 3` day 2/3; `cleanup` after |
@@ -1654,6 +1659,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+package-lock.json — 2026-11-14: npm audit fix from main merged into 9L (`ec3c062`); now on main via PR #33.
+Context.md — 2026-11-14 17:14: 9L release record, new Next Steps, 2 🔴 issues marked resolved (`99589c5` + this checkpoint).
+(2026-11-14) GitHub — PR #33 uat → main merged (`5efbe07`); branches `uat` + `feat/session-9l-review-queue` at `ec3c062`+.
 Context.md — 2026-11-14: 019/020 prod run, mistaken no-op rollback, schema check, release next steps (`ed98a98` + this checkpoint).
 (2026-11-14) Production DB — migrations 019 + 020 applied in SQL Editor (no repo file changed).
 docs/business/posting-wizard-brief.html — 2026-11-08 (NEW): wizard design brief for Arun (5 screens, preview before Submit, one-file vs split, 4 questions).
@@ -2076,6 +2084,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-11-14) Git tracks the file as `Context.md`, while the docs and skills call it `CONTEXT.md`** — fine on Windows, but `git add CONTEXT.md` misses it, and a case-sensitive system (Linux/macOS) won't find a `CONTEXT.md` reference. Fix later: `git mv Context.md CONTEXT.md` (two-step via a temp name on Windows).
+- **ℹ️ (2026-11-14) Wives' UAT accounts do not exist on prod** (separate DBs) — both sign up fresh via prod invites.
 - **ℹ️ (2026-11-14) `compare-schema-inventory.js` gives a false "match" on wrapped input** ("Copy as JSON" → `[{"schema_inventory":"…"}]`, or Markdown table) — it finds no sections and reports ✅. Small later fix: auto-unwrap, and fail if `tables` is missing. Until then: unwrap before comparing.
 - **✅ RESOLVED 2026-11-14 ~17:15 (PR #33 merged, `5efbe07`) — was: 🔴 (2026-11-14) Prod DB now has 019 + 020 but prod code is still pre-9L** — harmless (additive only), but finish the code release soon so the two don't drift.
 - **ℹ️ (2026-11-14) `main` has npm audit fix (`46c9e41`) that uat/9L lack** → merge main into 9L before the uat → main PR (proposed, awaiting go).
@@ -2319,6 +2329,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-14) Merged `main` into 9L (not rebase / cherry-pick)** before the release PR so uat tested exactly what prod got; rebase would rewrite a pushed branch, cherry-pick would duplicate the commit.
+- **(2026-11-14) PR #33 merged with a merge commit** (same as earlier releases); prod invites need no `_vercel_share` token.
+- **(2026-11-14, Nagesh) Next discussion: revise CLAUDE.md for the live-product phase** before starting the split.
 - **(2026-11-14, Nagesh) Guide wording stays as is** — wife 1's wrong decisions were deliberate tests. Mistake-alert feature (A + B recommended) decided after the split.
 - **(2026-11-14, Nagesh) 019 + 020 ran on prod BEFORE the code merge** (code depends on them; additive, so safe to run first).
 - **(2026-11-14, James — proposed) Merge `main` into 9L before uat → main PR** so uat preview tests 9L + audit fix together and the PR holds only 9L.
@@ -2770,7 +2783,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-11-14 ~17:15, after 9L release) — ordered:**
+**⬅ NOW (2026-11-14 17:14, checkpoint) — ordered (resume with /resume):**
+0. **Discuss CLAUDE.md changes now that MapIt is live** (Nagesh's considerations) — talk first, edit only after agreement.
 1. Prod: Team panel at https://www.mapit.co.in/review → invite both wives (check invite shows OPEN + test link in incognito before sending; no `_vercel_share` needed on prod) → they sign up → Activate.
 2. Revoke the uat Vercel Shareable Link (Deployment → Share → "Only people with access").
 3. Post-release: delete admin old Pending section; Supabase Advisors 15 Warnings / 14 Info review; tell the seller Releases 1–3 are live.
