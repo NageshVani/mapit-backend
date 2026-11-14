@@ -11,6 +11,7 @@
     "uat:9c": "node -r dotenv/config scripts/uat/9c-phone-otp.suite.js",
     "uat:transfer": "node -r dotenv/config scripts/uat/admin-transfer.suite.js",
     "uat:review": "node -r dotenv/config scripts/uat/review-queue.suite.js",
+    "uat:photos": "node -r dotenv/config scripts/uat/photo-exif.suite.js",
     "smoke:prod": "node -r dotenv/config scripts/smoke/prod-readonly.js",
     "security:client-check": "node -r dotenv/config scripts/security/client-access-check.js"
   },
@@ -27,10 +28,12 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.7.0",
+    "sharp": "^0.35.5",
     "uuid": "^10.0.0",
     "ws": "^8.21.0"
   },
   "devDependencies": {
+    "exifr": "^7.1.3",
     "nodemon": "^3.1.4"
   },
   "engines": {
