@@ -2101,7 +2101,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **⚠️ (2026-11-14) Local `.env` has `MAX_PHOTOS_PER_LISTING=10`** (rule = 5; `.env.example` 5). Vercel Preview confirmed 5 (uat:photos P6). **Nagesh: check Vercel Production env var = 5.** Fix local .env to 5.
+- **✅ RESOLVED 2026-11-14 18:20 — photo limits:** Vercel Production has no MAX_PHOTOS_PER_LISTING → code default 5 ✅; MAX_PHOTO_SIZE=5242880 (5 MB) ✅; local .env set to 5 by Nagesh. Note: Vercel caps any request body at ~4.5 MB anyway; browser shrinking keeps photos well below.
 - **ℹ️ (2026-11-14) Multer middleware errors return 500** (file > 5 MB, > 5 files in one request → "Unexpected field") — the route's catch never sees them. Pre-existing; small later fix: error-mapping middleware → friendly 400.
 - **ℹ️ (2026-11-14) Admin emails hard-coded in `src/middleware/auth.js` AND in the public HTML** (visible in page source) → move to admin role in `staff_members` later (decided); placeholder in CLAUDE.md v5.
 - **ℹ️ (2026-11-14) Windows: stopping a background `npm start` leaves the child `node` on port 3001** → start the server with `node -r dotenv/config src/server.js` directly; check `Get-NetTCPConnection -LocalPort 3001`.
@@ -2814,7 +2814,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 **⬅ NOW (2026-11-14 18:08, checkpoint) — ordered (resume with /resume):**
 1. **CLAUDE.md v5.0 + backlog doc** on `docs/claude-md-v5`: draft → show diff → Nagesh/Arun approve → commit → PR. Include: stale fixes (CSP actually on; Rule 6 wording; finished one-offs → history; MVP/sessions → release names), live-ops rules (hotfix + Vercel rollback, incidents, no prod write SQL by Claude, expand-then-contract, photo metadata stripped server-side), admin-role placeholder, one-line mobile/market guardrails; projects → backlog.
 2. 9L leftovers: prod invites for both wives (Team → invite → incognito test → send → Activate); revoke uat Shareable Link.
-3. Nagesh: Vercel Production `MAX_PHOTOS_PER_LISTING` = 5; local .env → 5.
+3. ✅ Photo limits checked (Production default 5, MAX_PHOTO_SIZE 5 MB, local .env 5).
 4. Then frontend split option 1 → views follow-up → posting wizard.
 
 **⬅ (2026-11-14 17:14) — superseded:**
