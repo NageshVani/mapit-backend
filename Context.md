@@ -10,7 +10,7 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-14 18:25 (UAE), END OF DAY checkpoint (**3 prod releases today: PR #33 9L, PR #34 photo EXIF strip, PR #35 UAT/LOCAL watermark — smoke:prod 15/15; photo limits verified. Local server stopped. Tomorrow (/resume): CLAUDE.md v5.0 + backlog on `docs/claude-md-v5` → 9L prod invites + revoke uat Shareable Link → frontend split.**)
+- **Last updated:** 2026-11-14 18:21 (UAE), END OF DAY checkpoint (**3 prod releases today: PR #33 9L, PR #34 photo EXIF strip, PR #35 UAT/LOCAL watermark — smoke:prod 15/15; photo limits verified. Local server stopped. Tomorrow (/resume): CLAUDE.md v5.0 + backlog on `docs/claude-md-v5` → 9L prod invites + revoke uat Shareable Link → frontend split.**)
 - **Last updated (previous):** 2026-11-14 14:35 (UAE), checkpoint (**9L step 7 started: migrations 019 + 020 RUN ON PRODUCTION by Nagesh (no errors; all 3 tables exist); schema inventory prod vs UAT = identical (only Postgres 17.6 vs 17.11). Earlier the same day 019-rollback.sql was run on prod by mistake BEFORE 019 — no-op (all IF EXISTS; check showed all 3 tables NULL). Next: push 9L → uat → PR uat → main → smoke:prod.**)
 - **Last updated (previous):** 2026-11-14 (UAE), checkpoint (**9L UAT: wife 1 decided all 12 batch-1 listings (6/12 right action group); wife 2 never started — UAT has NO invite for her (only the 8 Nov one, used by wife 1). Wizard brief: all 4 answers in (text-only draft; ≥1 photo required except plots; full preview; split NOW, option 1). Better Stack monitor live since 8 Nov (per records; James cannot see the account).**)
 - **Last updated (previous):** 2026-11-08 14:18 (UAE), end-of-day checkpoint (**Wife 1 signed up + reviewing on phone (6 Nov links had no valid invite — new one made); wife 2 tomorrow/day after (Diwali). Seller "views" already live → stays PUBLIC; follow-up after 9L. Posting wizard brief saved for Arun (`docs/business/posting-wizard-brief.html`); listing PREVIEW before Submit = part of the wizard (screen ⑤). James recommends frontend split before the wizard. Branch 9L: 10 local commits, docs only, not pushed.**)
@@ -667,7 +667,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
-- ✅ **(2026-11-14 18:25) End of day:** photo limits verified (Production default 5, MAX_PHOTO_SIZE 5 MB, local .env 5); local server on 3001 stopped (port free); branch `docs/claude-md-v5` pushed (`d6b9a9c` + this checkpoint).
+- ✅ **(2026-11-14 18:21) End of day:** photo limits verified (Production default 5, MAX_PHOTO_SIZE 5 MB, local .env 5); local server on 3001 stopped (port free); branch `docs/claude-md-v5` pushed (`d6b9a9c` + this checkpoint).
 - ✅ **(2026-11-14 ~18:05) PR #35 UAT / LOCAL TEST watermark RELEASED** (`1c5bb7b`): `/api/config` returns `environment` (VERCEL_ENV or `local`); shared `public/env-badge.js` (index, review, admin) draws a diagonal red "UAT · TEST DATA" / grey "LOCAL TEST" (opacity .28, white outline, pointer-events none) + [UAT]/[LOCAL] tab title; prod: script exits on www/bare host + fail-safe. New smoke **S-15** (prod=production, uat=preview). smoke:prod **15/15**; prod screenshot clean. Nagesh: "exactly how I wanted".
 - ✅ **(2026-11-14 ~17:45) PR #34 photo EXIF/GPS strip RELEASED** (`befb186`): server re-encodes every photo with sharp 0.35.5 (rotate, ≤1600 px, JPEG, no metadata); unreadable/HEIC → 400 friendly message; non-image → 400 (was 500); toast shows server reason. `npm run uat:photos` 13/13 on localhost AND on the Vercel preview (Linux sharp). smoke:prod 14/14. Nagesh local click-test OK.
 - ✅ **(2026-11-14 ~17:30) Read-only EXIF scan:** prod 6/6 and UAT 24/24 photos have NO GPS (scanner proven with a GPS control photo) → no backfill needed.
@@ -2812,7 +2812,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-11-14 18:25, end of day — tomorrow, resume with /resume; Nagesh: do steps 1, 2, 4 tomorrow):**
+**⬅ NOW (2026-11-14 18:21, end of day — tomorrow, resume with /resume; Nagesh: do steps 1, 2, 4 tomorrow):**
 1. **CLAUDE.md v5.0 + backlog doc** on `docs/claude-md-v5`: draft → show diff → Nagesh/Arun approve → commit → PR. Include: stale fixes (CSP actually on; Rule 6 wording; finished one-offs → history; MVP/sessions → release names), live-ops rules (hotfix + Vercel rollback, incidents, no prod write SQL by Claude, expand-then-contract, photo metadata stripped server-side), admin-role placeholder, one-line mobile/market guardrails; projects → backlog.
 2. 9L leftovers: prod invites for both wives (Team → invite → incognito test → send → Activate); revoke uat Shareable Link.
 3. ✅ Photo limits checked (Production default 5, MAX_PHOTO_SIZE 5 MB, local .env 5).
