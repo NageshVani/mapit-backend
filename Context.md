@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-14 14:35 (UAE), checkpoint (**9L step 7 started: migrations 019 + 020 RUN ON PRODUCTION by Nagesh (no errors; all 3 tables exist); schema inventory prod vs UAT = identical (only Postgres 17.6 vs 17.11). Earlier the same day 019-rollback.sql was run on prod by mistake BEFORE 019 — no-op (all IF EXISTS; check showed all 3 tables NULL). Next: push 9L → uat → PR uat → main → smoke:prod.**)
+- **Last updated:** 2026-11-14 14:43 (UAE), checkpoint before break (**019 + 020 LIVE on prod DB; schema prod = UAT re-confirmed with Nagesh's clean `rev1` inventories; 9L branch pushed (`ed98a98`). Paused for a break. Next: on Nagesh's go — merge `main` (npm audit fix) into 9L → `uat:review` → ff uat → PR uat → main → smoke:prod.**)
+- **Last updated (previous):** 2026-11-14 14:35 (UAE), checkpoint (**9L step 7 started: migrations 019 + 020 RUN ON PRODUCTION by Nagesh (no errors; all 3 tables exist); schema inventory prod vs UAT = identical (only Postgres 17.6 vs 17.11). Earlier the same day 019-rollback.sql was run on prod by mistake BEFORE 019 — no-op (all IF EXISTS; check showed all 3 tables NULL). Next: push 9L → uat → PR uat → main → smoke:prod.**)
 - **Last updated (previous):** 2026-11-14 (UAE), checkpoint (**9L UAT: wife 1 decided all 12 batch-1 listings (6/12 right action group); wife 2 never started — UAT has NO invite for her (only the 8 Nov one, used by wife 1). Wizard brief: all 4 answers in (text-only draft; ≥1 photo required except plots; full preview; split NOW, option 1). Better Stack monitor live since 8 Nov (per records; James cannot see the account).**)
 - **Last updated (previous):** 2026-11-08 14:18 (UAE), end-of-day checkpoint (**Wife 1 signed up + reviewing on phone (6 Nov links had no valid invite — new one made); wife 2 tomorrow/day after (Diwali). Seller "views" already live → stays PUBLIC; follow-up after 9L. Posting wizard brief saved for Arun (`docs/business/posting-wizard-brief.html`); listing PREVIEW before Submit = part of the wizard (screen ⑤). James recommends frontend split before the wizard. Branch 9L: 10 local commits, docs only, not pushed.**)
 - **Last updated (previous):** 2026-11-08 13:10 (UAE), checkpoint (**Prod watch-outs CLOSED: SPF fixed; Better Stack uptime monitor live (test alert received); npm audit fix RELEASED — PR #32 `fix/npm-audit → main` merged (`aef8443`), prod vulns 10 → 1 moderate (unused uuid), `smoke:prod` 14/14. Next: 9L wives UAT (check sign-ups).**)
@@ -146,7 +147,10 @@
 
 ## 🎯 Current Goal
 
-**NOW (2026-11-14 14:35) — 9L step 7 release: DB part DONE on production.** 019 + 020 run on prod `jneoxwumccmjwaojfazh` (Nagesh, SQL Editor, "No rows returned", no error); `to_regclass` check shows `staff_members`, `listing_reviews`, `review_invites` present. Schema inventory prod vs UAT: ✅ identical (ignoring generated_at; NOTE Postgres 17.6 vs 17.11). Next: push `feat/session-9l-review-queue` → merge into uat → PR uat → main (Nagesh merges) → `smoke:prod` → invites for both wives on prod → revoke uat Shareable Link → then split (option 1) from clean main.
+**NOW (2026-11-14 14:43, break) — Goal: finish 9L step 7 release (code part).** DB part done on prod. Waiting for Nagesh's go on: merge `origin/main` into `feat/session-9l-review-queue` (brings npm audit fix `46c9e41`, lockfile only) so uat tests exactly what prod gets → `npm run uat:review` → fast-forward `uat` + push → check uat.mapit.co.in/review → PR uat → main (Nagesh/Arun merge) → `smoke:prod` → prod invites for both wives → revoke uat Shareable Link. Then split (option 1) from clean main.
+- **Schema re-check (14:41):** Nagesh re-ran the inventory → `schema-prod-2026-11-14 rev1.json` + `schema-uat-2026-11-14 rev1.json` (both "Copy as JSON" wrapper `[{"schema_inventory":"…"}]`). ⚠️ Comparing the wrapped files directly says "match" trivially (no sections found) — must unwrap first. Unwrapped: ✅ identical, only Postgres 17.6 vs 17.11.
+
+**(2026-11-14 14:35) — 9L step 7 release: DB part DONE on production.** 019 + 020 run on prod `jneoxwumccmjwaojfazh` (Nagesh, SQL Editor, "No rows returned", no error); `to_regclass` check shows `staff_members`, `listing_reviews`, `review_invites` present. Schema inventory prod vs UAT: ✅ identical (ignoring generated_at; NOTE Postgres 17.6 vs 17.11). Next: push `feat/session-9l-review-queue` → merge into uat → PR uat → main (Nagesh merges) → `smoke:prod` → invites for both wives on prod → revoke uat Shareable Link → then split (option 1) from clean main.
 - **Mistake, harmless:** before running 019, Nagesh ran `019-rollback.sql` on PRODUCTION by mistake. All statements are `DROP ... IF EXISTS` on 019-only objects and 019 had not been run on prod yet → no-op; read-only `to_regclass` check returned NULL for all 3 tables. UAT verified untouched (staff_members 3, listing_reviews 3, review_invites 3). Habit: name SQL Editor tabs after the file before pasting.
 - **Saved inventory formats differ:** prod file was saved as a Markdown table (`| schema_inventory |`, `<br>` + escaped `\n`), UAT file as "Copy as JSON" (`[{"schema_inventory":"<string>"}]`). Neither is raw JSON → `compare-schema-inventory.js` needs unwrapping + line-break normalisation first (done in scratchpad; user files untouched). Next time: copy the single result CELL only.
 - **Alert idea for wrong review decisions (A seller "second look" + B daily admin digest recommended)** — logged in Open Issues; decide after the split.
@@ -659,6 +663,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-14 14:41) Schema re-confirmed with clean `rev1` inventories** (prod = UAT after unwrapping). 9L branch pushed to origin (`ed98a98`, CONTEXT note).
+- ✅ **(2026-11-14) Lost chat recovered** from the Claude Code transcript (`f61c60fe…`); 019/020 opened in VS Code.
 - ✅ **(2026-11-14 14:35) PRODUCTION DB: migrations 019 (review queue) + 020 (review invites) run on `jneoxwumccmjwaojfazh` by Nagesh** — both "No rows returned", no error (verify blocks passed); prod vs UAT schema inventory ✅ identical (only Postgres version differs). Earlier mistaken `019-rollback.sql` on prod was a no-op (019 not yet run; all IF EXISTS).
 - ✅ **(2026-11-08) Production watch-out review:** UAT blockers = zero prod risk; old 🔴 items verified FIXED (XSS `escHtml` `4277c2f`; listings "Allow public read" dropped by 018; Share Feedback 100dvh; bypass secret rotated 17 Oct; prod Supabase on Pro = no auto-pause). Prod /health 200 (0.7 s).
 - ✅ **(2026-11-08 14:10) Posting wizard brief** `docs/business/posting-wizard-brief.html` (for Arun; 5 screens, behaviour, one-file vs split, order after 9L, 4 questions) + docs/index.html entry (`e403fd6`); preview note + Q3 answered (`4bfa2d1`).
@@ -1438,6 +1444,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **9L step 7 — production release** | 🔄 2026-11-14: DB ✅ (019 + 020 on prod, schema = UAT); branch pushed `ed98a98`; code release waiting for Nagesh's go | `Context.md`; prod DB (SQL Editor) | Next: merge main → 9L, `uat:review`, ff uat, PR uat → main, smoke:prod, wives' prod invites, revoke Shareable Link |
 | **Prod watch-outs before outreach (2026-11-08)** | ✅ SPF ✅; uptime monitor ✅ (Better Stack, test alert received 12:50); npm audit fix ✅ (PR #32 `aef8443`, smoke:prod 14/14) | Namecheap DNS; `package-lock.json` (main); Context.md | Sentry uptime refused: "not enough budget to create new seat" — delete the disabled Sentry monitor |
 | **Posting wizard + listing preview (design)** | 📝 Brief saved, waiting for Arun's answers (Q1 draft, Q2 photos, Q4 split; Q3 = full preview, Nagesh) | `docs/business/posting-wizard-brief.html`, `docs/index.html` | Build after 9L (+ split); phone mockups first |
 | **9L step 6 — wives UAT** | 🔄 2026-11-08: wife 1 (V***) signed up via new invite + share link, activated, reviewing on phone (approve/reject/change work); wife 2 invite pending. (6 Nov links never had a valid invite — no invite rows existed.) | `scripts/uat/review-seed.js`, `.gitignore`, `Context.md` (`a895a39`, local) | Shareable Link revoke at step 7; `seed 2`/`seed 3` day 2/3; `cleanup` after |
@@ -1645,6 +1652,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+Context.md — 2026-11-14: 019/020 prod run, mistaken no-op rollback, schema check, release next steps (`ed98a98` + this checkpoint).
+(2026-11-14) Production DB — migrations 019 + 020 applied in SQL Editor (no repo file changed).
 docs/business/posting-wizard-brief.html — 2026-11-08 (NEW): wizard design brief for Arun (5 screens, preview before Submit, one-file vs split, 4 questions).
 docs/index.html — 2026-11-08: added the posting-wizard-brief entry under business.
 package-lock.json — 2026-11-08 (on `main` via PR #32, not yet on uat/9L branch): npm audit fix + express 4.22.3. uat never changed the lockfile → 9L release merge stays clean.
@@ -2065,6 +2074,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-11-14) `compare-schema-inventory.js` gives a false "match" on wrapped input** ("Copy as JSON" → `[{"schema_inventory":"…"}]`, or Markdown table) — it finds no sections and reports ✅. Small later fix: auto-unwrap, and fail if `tables` is missing. Until then: unwrap before comparing.
+- **🔴 (2026-11-14) Prod DB now has 019 + 020 but prod code is still pre-9L** — harmless (additive only), but finish the code release soon so the two don't drift.
+- **ℹ️ (2026-11-14) `main` has npm audit fix (`46c9e41`) that uat/9L lack** → merge main into 9L before the uat → main PR (proposed, awaiting go).
 - **💡 (2026-11-14) Idea (Nagesh): alert on a mistaken approval / rejection.** Wife 1's wrong decisions in UAT were deliberate (to test what happens) — guide stays as is. Options proposed: (A) seller "Ask for a second look" on rejection / needs-change → admin email; (B) daily admin digest of all review decisions with one-tap reopen; (C) spot-check: re-queue a random share of approvals for an admin second look (per-approver accuracy); (D) rule checks before Approve (phone/email/URL in text, price ₹1, photo count) → "Are you sure?". James recommends A + B first. Not in 9L scope — decide after the split.
 - **✅ (2026-11-14) UAT practice data cleaned** (`review-seed.js cleanup`: 12 listings + 2 fake sellers deleted).
 - **🔴 (2026-11-08) Do NOT open a uat → main PR until the 9L release:** `origin/uat` is 30 commits ahead of main incl. all 9L code; merging without 019 + 020 on prod breaks every seller edit / approver sign-up. **Prod hotfixes (incl. npm audit fix) branch from `main`.**
@@ -2305,6 +2317,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-14, Nagesh) Guide wording stays as is** — wife 1's wrong decisions were deliberate tests. Mistake-alert feature (A + B recommended) decided after the split.
+- **(2026-11-14, Nagesh) 019 + 020 ran on prod BEFORE the code merge** (code depends on them; additive, so safe to run first).
+- **(2026-11-14, James — proposed) Merge `main` into 9L before uat → main PR** so uat preview tests 9L + audit fix together and the PR holds only 9L.
 - **(2026-11-08, Nagesh) Listing preview before "Submit for review" is built AS PART OF the wizard** (screen ⑤), not earlier on the current form. Reuse the real listing-detail renderer (single source of truth); preview must not call the view counter.
 - **(2026-11-08, James — recommendation, pending Nagesh + Arun) Frontend split option 1 right after 9L, before the wizard** — file is ~5,900 lines / 345 KB / 251 functions; blocks parallel work; split at a quiet moment so the wizard is born in `js/post-wizard.js`. Vite stays v2.
 - **(2026-11-08, Nagesh) Wizard work today = design brief only, no code** — 9L UAT must finish first (same file, possible 9L fixes, Rule 2).
@@ -2752,6 +2767,15 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-14 14:43, after break) — ordered (resume with /resume):**
+1. Nagesh says go → merge `origin/main` into `feat/session-9l-review-queue` (stop if conflict) → `npm run uat:review` on UAT.
+2. Fast-forward `uat` to the 9L branch + push → Vercel preview → check uat.mapit.co.in/review.
+3. Open PR uat → main; Nagesh/Arun merge → `npm run smoke:prod` (+ check prod /review loads).
+4. Prod: invites for both wives (Team panel) → activate → revoke the uat Shareable Link.
+5. Nagesh: Better Stack check (Asia region, delete old Sentry monitor, Namecheap auto-renew).
+6. Frontend split option 1 on a new branch from clean main → views follow-up → posting wizard.
+7. Later: mistake-alert (A + B); fix `compare-schema-inventory.js` false match on wrapped input.
 
 **⬅ NOW (2026-11-08 14:18, end of day) — ordered (resume with /resume):**
 1. **Wife 2 sign-up** (tomorrow / day after): new invite in Team → combined link `https://uat.mapit.co.in/review?invite=<CODE>&_vercel_share=<TOKEN>` (token: uat deployment `0831a8a` → Share) → incognito test → send → Activate.
