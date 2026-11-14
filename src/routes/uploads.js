@@ -6,11 +6,36 @@
 // ============================================================
 const express         = require('express');
 const multer          = require('multer');
+const sharp           = require('sharp');
 const { supabaseAdmin } = require('../config/supabase');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { createError } = require('../middleware/errorHandler');
 
 const router = express.Router();
+
+// ── Photo cleaning (privacy) ─────────────────────────────────
+// Every photo is re-encoded on the server before it is stored, so NO
+// metadata survives — above all EXIF GPS, which would reveal the exact spot
+// a photo was taken and undo fuzzLocation() on the map. The browser's
+// shrinkPhoto() also drops EXIF, but it falls back to the original file
+// (HEIC on Android, already-small photos) and API / app clients skip it —
+// so the server is the only place that can guarantee it.
+// .rotate() first: it turns the pixels upright from the EXIF orientation,
+// which is about to be dropped (otherwise portrait photos show sideways).
+// sharp never copies metadata unless .withMetadata()/.keepExif() is called.
+const PHOTO_MAX_PX = 1600, PHOTO_JPEG_Q = 80;
+sharp.cache(false);          // serverless: don't hold decoded images between requests
+const UNSUPPORTED_PHOTO_MSG =
+  "This photo format isn't supported — please choose a JPEG photo, or set your camera to 'Most compatible'.";
+
+async function cleanPhoto(buffer) {
+  return sharp(buffer, { failOn: 'error' })
+    .rotate()
+    .resize({ width: PHOTO_MAX_PX, height: PHOTO_MAX_PX, fit: 'inside', withoutEnlargement: true })
+    .flatten({ background: '#ffffff' })   // transparent PNG/WebP → white, not black
+    .jpeg({ quality: PHOTO_JPEG_Q, mozjpeg: true })
+    .toBuffer();
+}
 
 // Multer: store file in memory (we stream to Supabase)
 const upload = multer({
@@ -24,7 +49,7 @@ const upload = multer({
     if (allowed.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPEG, PNG, WebP and HEIC images are allowed.'));
+      cb(createError(UNSUPPORTED_PHOTO_MSG));   // 400 with the same friendly text
     }
   },
 });
@@ -66,18 +91,29 @@ router.post('/listing/:listing_id', requireAuth, upload.array('photos', 5), asyn
 
     const bucket  = process.env.STORAGE_BUCKET || 'listing-photos';
     const results = [];
+    let unsupported = 0;
 
     for (let i = 0; i < files.length; i++) {
       const file      = files[i];
-      const ext       = file.originalname.split('.').pop().toLowerCase();
-      const filename  = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      // Clean first — a photo we cannot decode is never stored (it could
+      // carry GPS we cannot strip, and most browsers could not show it).
+      let cleaned;
+      try {
+        cleaned = await cleanPhoto(file.buffer);
+      } catch (_) {
+        unsupported++;
+        continue;
+      }
+
+      const filename  = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
       const storagePath = `${req.user.id}/${listing_id}/${filename}`;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabaseAdmin.storage
         .from(bucket)
-        .upload(storagePath, file.buffer, {
-          contentType: file.mimetype,
+        .upload(storagePath, cleaned, {
+          contentType: 'image/jpeg',
           // 60 days (> 30-day listing life + 15-day grace). Safe only because
           // every file name is unique and upsert is false — never reuse a path.
           cacheControl: '5184000',
@@ -110,12 +146,14 @@ router.post('/listing/:listing_id', requireAuth, upload.array('photos', 5), asyn
     }
 
     if (results.length === 0) {
-      return next(createError('All uploads failed. Please try again.'));
+      return next(createError(unsupported ? UNSUPPORTED_PHOTO_MSG : 'All uploads failed. Please try again.'));
     }
 
     res.status(201).json({
       photos:  results,
       message: `${results.length} photo(s) uploaded successfully.`,
+      // Some photos were skipped because they could not be read — the page shows why.
+      ...(unsupported && { unsupported, warning: UNSUPPORTED_PHOTO_MSG }),
     });
   } catch (err) {
     // Handle multer errors

@@ -4758,6 +4758,7 @@ async function submitListing(){
     // then upload any added photos.
     const listingId  = ST.editingId || data.listing?.id;
     let photoFailed = false;
+    let photoReason = '';   // server's friendly reason (e.g. unsupported photo format)
     if(ST.editingId){
       for(const pid of _editPhotosRemove){
         try { await apiDelete(`/api/uploads/photo/${pid}`); } catch(_){ photoFailed = true; }
@@ -4775,11 +4776,15 @@ async function submitListing(){
           headers:{ Authorization:`Bearer ${ST.session?.access_token}` },
           body:fd,
         });
-        photoFailed = !up.ok;
+        const upBody = await up.json().catch(() => ({}));
+        photoFailed = !up.ok || !!upBody.warning;   // warning = some photos skipped
+        photoReason = (up.ok ? upBody.warning : upBody.error) || '';
       } catch(_){ photoFailed = true; }
     }
 
-    const msg = photoFailed
+    const msg = photoReason
+      ? `⚠️ Listing saved, but a photo was not added. ${photoReason}`
+      : photoFailed
       ? '⚠️ Listing saved, but some photo changes failed. Open Edit to check its photos (each must be under 5 MB).'
       : ST.editingId
         ? '🔄 Listing updated and re-submitted for review.'
