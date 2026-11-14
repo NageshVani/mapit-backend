@@ -31,10 +31,14 @@
       el.appendChild(t);
       el.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none;' +
         'display:flex;align-items:center;justify-content:center;overflow:hidden;';
+      // Colour fill + white outline/halo: stays visible on a busy, colourful
+      // map (streets, parks, water) as well as on plain pages. 0.14 vanished
+      // on the signed-in map, so 0.28.
       t.style.cssText = 'transform:rotate(-30deg);white-space:nowrap;user-select:none;' +
-        'font:800 clamp(44px,11vw,150px)/1 system-ui,-apple-system,"Segoe UI",sans-serif;' +
-        'letter-spacing:.04em;opacity:.14;color:' + (uat ? '#d32f2f' : '#5f6368') + ';' +
-        '-webkit-text-stroke:1px ' + (uat ? '#d32f2f' : '#5f6368') + ';';
+        'font:900 clamp(44px,11vw,150px)/1 system-ui,-apple-system,"Segoe UI",sans-serif;' +
+        'letter-spacing:.04em;opacity:.28;color:' + (uat ? '#c62828' : '#37474f') + ';' +
+        '-webkit-text-stroke:2px #fff;paint-order:stroke fill;' +
+        'text-shadow:0 0 6px rgba(255,255,255,.9);';
       document.body.appendChild(el);
     })
     .catch(function () { /* fail-safe: no watermark */ });
