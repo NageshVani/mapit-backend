@@ -10,7 +10,7 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-14 14:43 (UAE), checkpoint before break (**019 + 020 LIVE on prod DB; schema prod = UAT re-confirmed with Nagesh's clean `rev1` inventories; 9L branch pushed (`ed98a98`). Paused for a break. Next: on Nagesh's go — merge `main` (npm audit fix) into 9L → `uat:review` → ff uat → PR uat → main → smoke:prod.**)
+- **Last updated:** 2026-11-14 ~17:15 (UAE) (**9L RELEASED to production — PR #33 merged (`5efbe07`), smoke:prod 14/14, prod /review 200. Next: prod invites for both wives → activate → revoke uat Shareable Link → frontend split option 1.**)
 - **Last updated (previous):** 2026-11-14 14:35 (UAE), checkpoint (**9L step 7 started: migrations 019 + 020 RUN ON PRODUCTION by Nagesh (no errors; all 3 tables exist); schema inventory prod vs UAT = identical (only Postgres 17.6 vs 17.11). Earlier the same day 019-rollback.sql was run on prod by mistake BEFORE 019 — no-op (all IF EXISTS; check showed all 3 tables NULL). Next: push 9L → uat → PR uat → main → smoke:prod.**)
 - **Last updated (previous):** 2026-11-14 (UAE), checkpoint (**9L UAT: wife 1 decided all 12 batch-1 listings (6/12 right action group); wife 2 never started — UAT has NO invite for her (only the 8 Nov one, used by wife 1). Wizard brief: all 4 answers in (text-only draft; ≥1 photo required except plots; full preview; split NOW, option 1). Better Stack monitor live since 8 Nov (per records; James cannot see the account).**)
 - **Last updated (previous):** 2026-11-08 14:18 (UAE), end-of-day checkpoint (**Wife 1 signed up + reviewing on phone (6 Nov links had no valid invite — new one made); wife 2 tomorrow/day after (Diwali). Seller "views" already live → stays PUBLIC; follow-up after 9L. Posting wizard brief saved for Arun (`docs/business/posting-wizard-brief.html`); listing PREVIEW before Submit = part of the wizard (screen ⑤). James recommends frontend split before the wizard. Branch 9L: 10 local commits, docs only, not pushed.**)
@@ -146,6 +146,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-14 ~17:15) — 9L RELEASED to production.** Merged `origin/main` (npm audit fix) into 9L (`ec3c062`, lockfile only, no conflict) → `npm ci` → `uat:review` 64/64 (localhost vs UAT) → 9L branch + `uat` fast-forwarded + pushed → uat Preview deploy success, endpoints 200, unbypassed 302 → Nagesh uat click-test ✅ (All clear) → `smoke:prod` baseline 14/14 → **PR #33 uat → main opened by James, merged by Nagesh (`5efbe07`)** → prod deploy success → `smoke:prod` 14/14 → prod `/review` 200 ("MapIt Review"), `/api/review/me` 401 without login. Prod DB and code back in step. Better Stack: all 4 regions ticked (Europe, N. America, Asia, Australia), no maintenance window. Remaining 9L: prod invites for both wives → activate → revoke uat Shareable Link. Then split (option 1) from clean main.
 
 **NOW (2026-11-14 14:43, break) — Goal: finish 9L step 7 release (code part).** DB part done on prod. Waiting for Nagesh's go on: merge `origin/main` into `feat/session-9l-review-queue` (brings npm audit fix `46c9e41`, lockfile only) so uat tests exactly what prod gets → `npm run uat:review` → fast-forward `uat` + push → check uat.mapit.co.in/review → PR uat → main (Nagesh/Arun merge) → `smoke:prod` → prod invites for both wives → revoke uat Shareable Link. Then split (option 1) from clean main.
 - **Schema re-check (14:41):** Nagesh re-ran the inventory → `schema-prod-2026-11-14 rev1.json` + `schema-uat-2026-11-14 rev1.json` (both "Copy as JSON" wrapper `[{"schema_inventory":"…"}]`). ⚠️ Comparing the wrapped files directly says "match" trivially (no sections found) — must unwrap first. Unwrapped: ✅ identical, only Postgres 17.6 vs 17.11.
@@ -2075,11 +2077,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🐛 Open Issues / Blockers
 - **ℹ️ (2026-11-14) `compare-schema-inventory.js` gives a false "match" on wrapped input** ("Copy as JSON" → `[{"schema_inventory":"…"}]`, or Markdown table) — it finds no sections and reports ✅. Small later fix: auto-unwrap, and fail if `tables` is missing. Until then: unwrap before comparing.
-- **🔴 (2026-11-14) Prod DB now has 019 + 020 but prod code is still pre-9L** — harmless (additive only), but finish the code release soon so the two don't drift.
+- **✅ RESOLVED 2026-11-14 ~17:15 (PR #33 merged, `5efbe07`) — was: 🔴 (2026-11-14) Prod DB now has 019 + 020 but prod code is still pre-9L** — harmless (additive only), but finish the code release soon so the two don't drift.
 - **ℹ️ (2026-11-14) `main` has npm audit fix (`46c9e41`) that uat/9L lack** → merge main into 9L before the uat → main PR (proposed, awaiting go).
 - **💡 (2026-11-14) Idea (Nagesh): alert on a mistaken approval / rejection.** Wife 1's wrong decisions in UAT were deliberate (to test what happens) — guide stays as is. Options proposed: (A) seller "Ask for a second look" on rejection / needs-change → admin email; (B) daily admin digest of all review decisions with one-tap reopen; (C) spot-check: re-queue a random share of approvals for an admin second look (per-approver accuracy); (D) rule checks before Approve (phone/email/URL in text, price ₹1, photo count) → "Are you sure?". James recommends A + B first. Not in 9L scope — decide after the split.
 - **✅ (2026-11-14) UAT practice data cleaned** (`review-seed.js cleanup`: 12 listings + 2 fake sellers deleted).
-- **🔴 (2026-11-08) Do NOT open a uat → main PR until the 9L release:** `origin/uat` is 30 commits ahead of main incl. all 9L code; merging without 019 + 020 on prod breaks every seller edit / approver sign-up. **Prod hotfixes (incl. npm audit fix) branch from `main`.**
+- **✅ RESOLVED 2026-11-14 (9L released via PR #33) — was: 🔴 (2026-11-08) Do NOT open a uat → main PR until the 9L release:** `origin/uat` is 30 commits ahead of main incl. all 9L code; merging without 019 + 020 on prod breaks every seller edit / approver sign-up. **Prod hotfixes (incl. npm audit fix) branch from `main`.**
 - **✅ (2026-11-08 12:50) Uptime monitor RESOLVED** — Better Stack free, www /health, 3 min, email test alert received. Small leftovers (Nagesh): confirm ≥1 region ticked (Asia preferred) + grey example fields (Authorization header, proxy, metadata, body) are placeholders, not values; optional timeout 30 s → 10 s; invite Arun to the Better Stack team if free plan allows; delete the disabled Sentry monitor "MapIt prod /health" (id 10889098); check **Namecheap Auto-Renew ON** for mapit.co.in (domain expiry check is paid in Better Stack).
 - **✅ (2026-11-08 13:05) `npm audit` RESOLVED** — PR #32 merged; 1 moderate left (`uuid` ^10 in package.json but never imported — possible later tidy-up: remove the unused dependency). uat/9L branch still run the old lockfile until the 9L release merge (or merge main → uat earlier).
 - **ℹ️ (2026-11-08) `/health` is shallow** (no Supabase call) — uptime monitor catches app/deploy/DNS failures, not DB outages. Possible later: DB-aware health check.
@@ -2767,6 +2769,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-14 ~17:15, after 9L release) — ordered:**
+1. Prod: Team panel at https://www.mapit.co.in/review → invite both wives (check invite shows OPEN + test link in incognito before sending; no `_vercel_share` needed on prod) → they sign up → Activate.
+2. Revoke the uat Vercel Shareable Link (Deployment → Share → "Only people with access").
+3. Post-release: delete admin old Pending section; Supabase Advisors 15 Warnings / 14 Info review; tell the seller Releases 1–3 are live.
+4. Nagesh leftovers: delete old Sentry monitor (10889098), Namecheap auto-renew (Better Stack regions ✅ done).
+5. Frontend split option 1 on a new branch from clean main → views follow-up → posting wizard.
+6. Later: mistake-alert (A + B); fix `compare-schema-inventory.js` false match on wrapped input; remove unused `uuid` dependency.
 
 **⬅ NOW (2026-11-14 14:43, after break) — ordered (resume with /resume):**
 1. Nagesh says go → merge `origin/main` into `feat/session-9l-review-queue` (stop if conflict) → `npm run uat:review` on UAT.
