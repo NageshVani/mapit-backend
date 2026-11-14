@@ -26,7 +26,7 @@ const { moderateAndAlert } = require('../utils/notifyListings');
 const { notifySellerListingLive } = require('../utils/notifySeller');
 const { needsPhoneVerification } = require('../utils/phoneGate');
 const { waitUntil } = require('@vercel/functions');
-const { LISTING_EXPIRY_ENABLED, enforceRentOnly, missingRequiredDetail } = require('../config/listingRules');
+const { LISTING_EXPIRY_ENABLED, newExpiry, enforceRentOnly, missingRequiredDetail } = require('../config/listingRules');
 
 const router = express.Router();
 
@@ -38,12 +38,10 @@ const VALID_STATUSES   = ['active', 'sold', 'expired'];
 // show_phone column is kept (no migration) in case the decision changes.
 const SHOW_PHONE = 'never';
 
-// Listing life: 30 days from approval, renewable by the owner.
+// Listing life: 30 days from approval (newExpiry, src/config/listingRules.js).
 // Lazy expiry: reads hide listings past expires_at; nothing flips status to
 // 'expired' yet (that cron + seller emails come with Session 9H).
 // Switched off by LISTING_EXPIRY_ENABLED (FB-06) — see src/config/listingRules.js.
-const LISTING_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-const newExpiry = () => new Date(Date.now() + LISTING_TTL_MS).toISOString();
 const isLive = l => !LISTING_EXPIRY_ENABLED || !l.expires_at || new Date(l.expires_at).getTime() > Date.now();
 
 // Description keeps the seller's line breaks (feedback FB-02, 2026-10-28):
@@ -785,8 +783,12 @@ router.put('/:id', requireAuth, async (req, res, next) => {
       updates.address = await areaName(pt.lat, pt.lng);
     }
 
-    // Re-submit for review whenever the owner edits
+    // Re-submit for review whenever the owner edits. Clearing the review
+    // claim (migration 019) makes an approver's open card for the OLD text
+    // return 409 on approve/reject, so nobody approves text they never saw.
     updates.status = 'pending';
+    updates.review_claimed_by = null;
+    updates.review_claimed_until = null;
     updates.show_phone = SHOW_PHONE;   // older listings saved 'on_agreement'
 
     const { data: listing, error } = await supabaseAdmin

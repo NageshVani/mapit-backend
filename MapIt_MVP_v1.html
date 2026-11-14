@@ -249,6 +249,10 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .fav-ttl{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
 .fav-price{font-size:14.5px;font-weight:700;color:var(--orange);margin-bottom:2px;}
 .fav-dist{font-size:11.5px;color:var(--muted);}
+/* Session 9L — reviewer's reason on a sent-back listing (My Listings) */
+.rev-reason{margin-top:5px;padding:6px 8px;border-radius:7px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.35);font-size:12px;line-height:1.4;color:var(--text);overflow-wrap:anywhere;}
+.rev-reason.no{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.35);}
+.edit-btn.resubmit{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600;}
 .fav-rm{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;flex-shrink:0;align-self:center;}
 .fav-rm:hover{background:rgba(239,68,68,.15);color:var(--red);}
 
@@ -3479,6 +3483,21 @@ function openMyAds(){
   switchTab('mine');
 }
 
+// Session 9L — a reviewer sent the listing back. Both outcomes are status
+// 'rejected'; the stored sentence starts with the heading, so the label comes
+// from it. Keep these prefixes in step with GROUP_HEADINGS in
+// src/config/reviewReasons.js — a reworded heading falls back to "Not live".
+// rejection_reason is kept when the seller edits (D18) but only shown here
+// while the status is still 'rejected'.
+function reviewOutcome(l){
+  if(l.status !== 'rejected') return null;
+  const full = l.rejection_reason || '';
+  const reason = full.replace(/^(Needs a small change|Not approved):\s*/, '');   // the label already says it
+  if(full.startsWith('Needs a small change')) return { kind:'change', label:'Needs a change', color:'var(--gold)', reason };
+  if(full.startsWith('Not approved'))         return { kind:'reject', label:'Not approved',   color:'var(--red)',  reason };
+  return { kind:'other', label:'Not live', color:'var(--muted)', reason: full };
+}
+
 async function renderMyAds(el){
   el.innerHTML = `<div class="sb-empty"><div class="loading-spin"></div><div class="sb-empty-sub">Loading your listings…</div></div>`;
   try {
@@ -3506,6 +3525,7 @@ async function renderMyAds(el){
         const expired = l.status==='active' && days!==null && days <= 0;
         const canRenew = l.status==='active' && days!==null && days <= 5;
         const shownStatus = expired ? 'expired' : l.status;
+        const review = reviewOutcome(l);
         const expiryHtml = (()=>{
           if(l.status==='pending') return `<div class="fav-dist" style="color:var(--muted);">${expiryOn ? 'Live for 30 days once approved' : 'Goes live once approved'}</div>`;
           if(l.status!=='active' || days===null) return '';
@@ -3522,12 +3542,17 @@ async function renderMyAds(el){
           <div class="fav-info">
             <div class="fav-ttl">${escHtml(l.title)}</div>
             <div class="fav-price">${priceText(l)}</div>
-            <div class="fav-dist" style="color:${STATUS_COLOR[shownStatus]||'var(--muted)'};">● ${shownStatus.charAt(0).toUpperCase()+shownStatus.slice(1)}</div>
+            ${review
+              ? `<div class="fav-dist" style="color:${review.color};font-weight:600;">● ${review.label}</div>
+                 ${review.reason ? `<div class="rev-reason${review.kind==='reject'?' no':''}">${escHtml(review.reason)}</div>` : ''}`
+              : `<div class="fav-dist" style="color:${STATUS_COLOR[shownStatus]||'var(--muted)'};">● ${shownStatus.charAt(0).toUpperCase()+shownStatus.slice(1)}</div>`}
             ${expiryHtml}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;">
             ${canRenew?`<button class="renew-btn" onclick="event.stopPropagation();renewListing('${l.id}')">🔄 Renew</button>`:''}
-            <button class="edit-btn" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit</button>
+            ${review
+              ? `<button class="edit-btn resubmit" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit &amp;<br>resubmit</button>`
+              : `<button class="edit-btn" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit</button>`}
             ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}',${ttlArg})">✅ Sold</button>`:''}
             <button class="del-btn" onclick="event.stopPropagation();deleteListing('${l.id}',${ttlArg})">🗑️ Del</button>
           </div>
@@ -3972,6 +3997,19 @@ function shareListingUrl(id){
 // or signing up first — Google's redirect replaces the hash.
 const SHARE_HASH_KEY = 'mapit_shared_listing';
 try { if(/^#listing-/.test(location.hash)) sessionStorage.setItem(SHARE_HASH_KEY, location.hash); } catch(_){}
+// Session 9L — seller emails (Needs change / Not approved) link to
+// #my-listings. Saved at load the same way, so it survives signing in first.
+const MINE_HASH_KEY = 'mapit_open_my_listings';
+try { if(location.hash === '#my-listings') sessionStorage.setItem(MINE_HASH_KEY, '1'); } catch(_){}
+function checkMyListingsLink(){
+  let open = false;
+  try { open = sessionStorage.getItem(MINE_HASH_KEY) === '1'; sessionStorage.removeItem(MINE_HASH_KEY); } catch(_){}
+  if(!open) return;
+  if(location.hash === '#my-listings') history.replaceState(null, '', location.pathname);   // not again on reload
+  setViewMode('list', false);   // phones: show the list pane
+  switchTab('mine');
+  try { expandFromRail(); } catch(_){}
+}
 async function checkShareUrl(){
   let hash = location.hash;
   try { hash = /^#listing-/.test(hash) ? hash : (sessionStorage.getItem(SHARE_HASH_KEY) || ''); sessionStorage.removeItem(SHARE_HASH_KEY); } catch(_){}
@@ -5235,6 +5273,7 @@ async function initApp(){
   await loadSaved();
   loadMyAdsCount();
   checkShareUrl();
+  checkMyListingsLink();
   // Load conversations — builds the unread badge count, the listing_id →
   // conversation map (buyer's own conversation per listing — drives the
   // "I'm Interested" vs "💬 Chat" button branch), and the full id →
@@ -5318,7 +5357,8 @@ function showAuthOrWelcome(){
   let skip = false;
   try {
     skip = localStorage.getItem(WELCOME_HIDE_KEY) === '1'
-        || /^#listing-/.test(location.hash) || !!sessionStorage.getItem(SHARE_HASH_KEY);
+        || /^#listing-/.test(location.hash) || !!sessionStorage.getItem(SHARE_HASH_KEY)
+        || !!sessionStorage.getItem(MINE_HASH_KEY);   // email link → straight to sign-in
   } catch(_){}
   if(skip){ openAuthSignIn(); return; }
   renderWelcomePins();

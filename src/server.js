@@ -50,6 +50,7 @@ const userRoutes         = require('./routes/users');
 const uploadRoutes       = require('./routes/uploads');
 const grievanceRoutes    = require('./routes/grievances');
 const adminRoutes        = require('./routes/admin');
+const reviewRoutes       = require('./routes/review');
 const { errorHandler } = require('./middleware/errorHandler');
 const { LISTING_EXPIRY_ENABLED } = require('./config/listingRules');
 
@@ -196,12 +197,19 @@ app.use('/api/users',         userRoutes);
 app.use('/api/uploads',       uploadRoutes);
 app.use('/api/grievances',    grievanceRoutes);
 app.use('/api/admin',         adminRoutes);
+app.use('/api/review',        reviewRoutes);   // Session 9L review queue
 
 // ── Admin dashboard (clean URL) ─────────────────────────────────
 // Client-side check inside admin.html is just a friendly front door —
 // every admin API route is independently gated by requireAdmin.
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
+// ── Review queue for approvers (Session 9L) — same idea: /api/review is
+// gated by requireReviewer / requireAdmin, the page is only the front door.
+app.get('/review', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/review.html'));
 });
 
 // ── Legal pages ──────────────────────────────────────────────

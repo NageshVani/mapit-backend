@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapIt — Listing Approval Process</title>
+<style>
+  :root {
+    --orange: #f06030; --orange-light: #fff4ef; --teal: #0d9488; --red: #dc2626; --red-light: #fef2f2;
+    --yellow: #b45309; --yellow-light: #fffbeb; --green: #16a34a; --green-light: #f0fdf4;
+    --grey-50: #f9fafb; --grey-200: #e5e7eb; --grey-500: #6b7280; --grey-700: #374151; --grey-900: #111827;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: var(--font); font-size: 15px; line-height: 1.6; color: var(--grey-900); background: #fff; margin: 0; padding: 24px 16px 64px; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; padding-top: 12px; border-top: 2px solid var(--orange); }
+  h3 { font-size: 16px; margin: 20px 0 6px; }
+  .meta { color: var(--grey-500); font-size: 13px; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; border: 1px solid var(--grey-200); padding: 6px 8px; }
+  th { background: var(--grey-50); }
+  .box { border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+  .danger { background: var(--red-light); border-left: 4px solid var(--red); }
+  .warn { background: var(--yellow-light); border-left: 4px solid var(--yellow); }
+  .ok { background: var(--green-light); border-left: 4px solid var(--green); }
+  .info { background: var(--orange-light); border-left: 4px solid var(--orange); }
+  ol li, ul li { margin-bottom: 4px; }
+  .flow { margin: 12px 0 4px; border: 1px solid var(--grey-200); border-radius: 10px; padding: 8px; background: #fff; overflow-x: auto; }
+  .flow svg { width: 100%; min-width: 560px; height: auto; display: block; }   /* phones: readable text, swipe the diagram */
+  .caption { color: var(--grey-500); font-size: 13px; margin: 4px 0 12px; }
+  .seller-msg { font-style: italic; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 10px; padding: 0 8px; }
+  .tag.done { background: var(--green-light); color: var(--green); }
+  .tag.next { background: var(--yellow-light); color: var(--yellow); }
+  .phone { font-family: var(--font); font-size: 13px; line-height: 1.5; max-width: 300px; margin: 8px 0; border: 2px solid var(--grey-700); border-radius: 18px; padding: 10px 12px; background: var(--grey-50); }
+  .phone .bar { display: flex; gap: 6px; margin-top: 8px; }
+  .phone .bar span { flex: 1; text-align: center; border-radius: 8px; padding: 6px 2px; font-weight: 600; color: #fff; }
+  @media (max-width: 600px) { table { font-size: 13px; } th, td { padding: 4px 6px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Listing Approval Process</h1>
+<div class="meta">For Arun · prepared by James for Nagesh · 31 Oct 2026 · Session 9L (review queue)<br>
+Status: server side built and tested on UAT (42 automatic checks pass). The review page itself, the seller screens and the release to mapit.co.in are still to come (section 9).</div>
+
+<div class="box info"><b>In one paragraph:</b> every listing is checked by a person before buyers can see it. Checking moves out of the admin page into its own phone page, <b>www.mapit.co.in/review</b>, so more people than Nagesh and you can do it, starting with both your wives, and hired staff later. Each reviewer gets one listing at a time and chooses <b>Approve</b>, <b>Needs change</b> or <b>Reject</b>. Nothing is ever deleted by a reviewer: a listing that is not approved stays with the seller, with the reason, so they can fix it and send it again.</div>
+
+<h2>1. Who is involved</h2>
+<table>
+  <tr><th>Person</th><th>What they do</th><th>What they can see</th></tr>
+  <tr><td><b>Seller</b></td><td>Posts or edits a listing, fixes it if asked</td><td>Their own listings and the review result</td></tr>
+  <tr><td><b>Approver</b><br>(both wives now, hires later)</td><td>Reviews listings on <b>/review</b></td><td>Photos, title, description, details, price, area name, seller's <b>first name only</b>. Never the phone, email or exact map pin.</td></tr>
+  <tr><td><b>Admin</b><br>(Nagesh, Arun)</td><td>Everything an approver does, plus adds and removes approvers</td><td>Also the seller's full name and the approvers' emails</td></tr>
+  <tr><td><b>Buyer</b></td><td>Browses the map</td><td>Only <b>approved</b> (live) listings</td></tr>
+</table>
+
+<h2>2. The whole flow on one page</h2>
+<div class="flow">
+<svg viewBox="0 0 680 560" role="img" aria-label="Listing approval flow: seller posts, listing waits hidden in the queue, an approver approves, asks for a change, or rejects; any seller edit sends the listing back to the queue">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+    </marker>
+  </defs>
+  <style>
+    .n { stroke-width: 1.5; rx: 10; }
+    .t { font: 600 14px -apple-system, 'Segoe UI', system-ui, sans-serif; fill: #111827; text-anchor: middle; }
+    .s { font: 12px -apple-system, 'Segoe UI', system-ui, sans-serif; fill: #374151; text-anchor: middle; }
+    .l { stroke: #374151; stroke-width: 1.5; fill: none; }
+    .loop { stroke: #b45309; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+  </style>
+
+  <!-- 1 Seller posts -->
+  <rect class="n" x="200" y="10" width="280" height="46" fill="#fff4ef" stroke="#f06030"/>
+  <text class="t" x="340" y="38">Seller posts a listing</text>
+  <line class="l" x1="340" y1="56" x2="340" y2="84" marker-end="url(#ar)"/>
+
+  <!-- 2 Pending -->
+  <rect class="n" x="200" y="86" width="280" height="50" fill="#f9fafb" stroke="#6b7280"/>
+  <text class="t" x="340" y="107">Pending</text>
+  <text class="s" x="340" y="125">hidden from buyers · AI check adds 🚩 if unsure</text>
+  <line class="l" x1="340" y1="136" x2="340" y2="164" marker-end="url(#ar)"/>
+
+  <!-- 3 Queue -->
+  <rect class="n" x="200" y="166" width="280" height="50" fill="#f9fafb" stroke="#6b7280"/>
+  <text class="t" x="340" y="187">Review queue</text>
+  <text class="s" x="340" y="205">oldest first · one listing per approver</text>
+  <line class="l" x1="340" y1="216" x2="340" y2="244" marker-end="url(#ar)"/>
+
+  <!-- 4 Approver decides -->
+  <rect class="n" x="200" y="246" width="280" height="46" fill="#ecfeff" stroke="#0d9488"/>
+  <text class="t" x="340" y="274">Approver decides on /review</text>
+
+  <!-- branches -->
+  <path class="l" d="M300,292 L120,336" marker-end="url(#ar)"/>
+  <line class="l" x1="340" y1="292" x2="340" y2="336" marker-end="url(#ar)"/>
+  <path class="l" d="M380,292 L560,336" marker-end="url(#ar)"/>
+
+  <rect class="n" x="20" y="338" width="200" height="46" fill="#f0fdf4" stroke="#16a34a"/>
+  <text class="t" x="120" y="366">✓ Approve</text>
+  <rect class="n" x="240" y="338" width="200" height="46" fill="#fffbeb" stroke="#b45309"/>
+  <text class="t" x="340" y="366">↩ Needs change</text>
+  <rect class="n" x="460" y="338" width="200" height="46" fill="#fef2f2" stroke="#dc2626"/>
+  <text class="t" x="560" y="366">✕ Reject</text>
+
+  <line class="l" x1="120" y1="384" x2="120" y2="412" marker-end="url(#ar)"/>
+  <line class="l" x1="340" y1="384" x2="340" y2="412" marker-end="url(#ar)"/>
+  <line class="l" x1="560" y1="384" x2="560" y2="412" marker-end="url(#ar)"/>
+
+  <rect class="n" x="20" y="414" width="200" height="64" fill="#fff" stroke="#16a34a"/>
+  <text class="t" x="120" y="438">Live on the map</text>
+  <text class="s" x="120" y="458">30 days · seller emailed</text>
+  <rect class="n" x="240" y="414" width="200" height="64" fill="#fff" stroke="#b45309"/>
+  <text class="t" x="340" y="438">"Needs a small change"</text>
+  <text class="s" x="340" y="458">+ reason · seller emailed</text>
+  <rect class="n" x="460" y="414" width="200" height="64" fill="#fff" stroke="#dc2626"/>
+  <text class="t" x="560" y="438">"Not approved"</text>
+  <text class="s" x="560" y="458">+ reason · seller emailed</text>
+
+  <!-- edit loop back to Pending -->
+  <line class="loop" x1="120" y1="478" x2="120" y2="520"/>
+  <line class="loop" x1="340" y1="478" x2="340" y2="520"/>
+  <line class="loop" x1="560" y1="478" x2="560" y2="520"/>
+  <path class="loop" d="M120,520 L668,520 L668,111 L482,111" marker-end="url(#ar)"/>
+  <text class="s" x="394" y="544" style="fill:#b45309;font-weight:600">Seller edits (any listing, any time) → back to Pending, re-checked</text>
+</svg>
+</div>
+<div class="caption">Solid arrows: the normal path. Dashed: any edit by the seller sends the listing back to the queue, including a live one. On a phone, swipe the diagram sideways.</div>
+
+<h2>3. When a seller posts a listing</h2>
+<ol>
+  <li>The listing is saved as <b>Pending</b>. Buyers cannot see it. The seller sees "Pending review" in <b>My Listings</b>.</li>
+  <li>An automatic AI check reads the title and description. If it is unsure (for example, a phone number in the text), the listing gets a <b>🚩 flag</b> and the AI's reason. The flag is a hint for the reviewer, never an automatic rejection.</li>
+  <li>The admin mailbox <b>listings@mapit.co.in</b> gets an alert, as today.</li>
+  <li>The listing joins the <b>review queue</b>. The queue is first come, first served: the seller who has waited longest is reviewed first.</li>
+</ol>
+
+<h2>4. How an approver reviews</h2>
+<p>The approver opens <b>www.mapit.co.in/review</b> on their phone and taps <b>Next</b>. The page shows one listing as a card (sketch, final design comes in the next step):</p>
+<div class="phone">
+  <b>MapIt Review</b> · about 12 left<br>
+  [ photo 1 of 5, swipe → ]<br>
+  🚩 AI note: phone number in description<br>
+  <b>Honda Activa 2020 · ₹55,000</b><br>
+  Two-wheelers · Indiranagar<br>
+  Seller: Ramesh · waiting 2 h<br>
+  Full description and details…
+  <div class="bar"><span style="background:#dc2626">✕ Reject</span><span style="background:#b45309">↩ Needs change</span><span style="background:#16a34a">✓ Approve</span></div>
+  <div style="text-align:center;margin-top:4px;color:#6b7280">Skip</div>
+</div>
+<ul>
+  <li><b>No double work:</b> when an approver opens a listing it is held for them for <b>5 minutes</b>. Two approvers tapping Next at the same moment always get two different listings.</li>
+  <li><b>Phone dies or approver walks away:</b> after 5 minutes the hold runs out and the listing goes back into the queue by itself.</li>
+  <li><b>Skip:</b> hands the listing back so someone else can take it (useful when unsure).</li>
+  <li><b>Nobody reviews their own listing.</b> This includes admins.</li>
+  <li>After each decision the next listing loads, until the queue shows <b>"All clear 🎉"</b>.</li>
+</ul>
+
+<h2>5. The three decisions</h2>
+<table>
+  <tr><th>Decision</th><th>When to use it</th><th>What happens</th><th>What the seller sees</th></tr>
+  <tr><td><b>✓ Approve</b></td><td>The listing is fine</td><td>Goes <b>live</b> on the map; the 30-day period starts</td><td>Email: "Your listing is live on MapIt"</td></tr>
+  <tr><td><b>↩ Needs change</b></td><td>A genuine listing with something fixable, e.g. a car photo on a two-wheeler listing</td><td>Stays hidden, kept with photos. The approver picks a reason and can add a short note (max 300 characters).</td><td class="seller-msg">"Needs a small change: Photos don't match the item or category: Photo shows a car; this is a two-wheeler listing." + Edit &amp; resubmit</td></tr>
+  <tr><td><b>✕ Reject</b></td><td>Not acceptable on MapIt at all</td><td>Stays hidden, kept with photos. Reason required.</td><td class="seller-msg">"Not approved: This item is not allowed on MapIt"</td></tr>
+</table>
+
+<h3>Reasons the approver can choose</h3>
+<table>
+  <tr><th>↩ Needs change (fixable)</th><th>✕ Reject (not acceptable)</th></tr>
+  <tr><td>
+    Photos don't match the item or category<br>
+    Wrong category<br>
+    Price missing or unrealistic<br>
+    Location looks wrong<br>
+    Phone number, email or links in the title or description<br>
+    Details are incomplete or misleading<br>
+    Other (a note is required)
+  </td><td>
+    This item is not allowed on MapIt<br>
+    Duplicate of another listing<br>
+    Looks like spam or a fake listing<br>
+    Other (a note is required)
+  </td></tr>
+</table>
+<p>Reasons only appear under the right button, so an approver can't send a fixable listing a "Not approved" message by mistake. <b>New reasons can be added any time</b> from real experience; it is a small code change, no database work.</p>
+<div class="box warn"><b>Notes are shown to the seller.</b> Approvers should write them politely and never include anything private.</div>
+
+<h2>6. When a seller edits a listing</h2>
+<ul>
+  <li><b>Any edit sends the listing back to the queue</b>, whatever its state: live, pending, "Needs change" or "Not approved". It is checked again before buyers see the new version.</li>
+  <li>⚠️ A <b>live listing that is edited disappears from the map</b> until it is approved again. This is why quick reviews matter, and worth telling sellers.</li>
+  <li>The listing <b>keeps its original place in the line</b>, so a fixed listing is usually reviewed quickly.</li>
+  <li><b>Edited while an approver is looking at it:</b> the approver's tap is refused with "This listing just changed. Loading again." Nobody can approve text they did not see.</li>
+  <li>The seller can still <b>delete</b> a listing or <b>mark it sold</b> at any time.</li>
+</ul>
+
+<h2>7. Joining and leaving the review team</h2>
+<ol>
+  <li>A new approver signs up on <b>/review</b> with email, a strong password and an email code (same as the main app).</li>
+  <li>The page then says <b>"Waiting for approval"</b>. Signing up alone gives <b>no access</b>.</li>
+  <li>Nagesh or Arun opens <b>Team</b> on /review and taps <b>Activate</b>. From then on the person can review.</li>
+  <li><b>Revoke</b> works at once, on the approver's very next tap. A revoked person cannot request access again; only an admin can reactivate them.</li>
+</ol>
+<div class="box info">Strangers can create an account on /review, but it does nothing until an admin activates it. Unknown requests can simply be revoked.</div>
+
+<h2>8. Safety and records</h2>
+<ul>
+  <li><b>Privacy:</b> approvers never see a seller's phone, email or exact location, only the first name and area name. This matters most once outside staff join.</li>
+  <li><b>Every decision is recorded:</b> who decided, when, the reason and the note. Useful for checking a new approver's quality.</li>
+  <li><b>Nothing is deleted</b> by reviewing. Today's admin "Remove" (a permanent delete, seller never told why) is replaced by Needs change / Reject.</li>
+  <li>Taking down a listing that is already live (for example after a buyer's report) stays with admins on /admin. "Remove with a reason" for that case is planned separately (9H).</li>
+</ul>
+
+<h2>9. What is ready and what is next</h2>
+<table>
+  <tr><th>Part</th><th>Status</th></tr>
+  <tr><td>Review rules on the server: queue, 5-minute hold, three decisions, reasons, team access, records</td><td><span class="tag done">Built · tested on UAT</span></td></tr>
+  <tr><td>Approvers stay signed in for a full shift (today sign-in lasts 1 hour)</td><td><span class="tag next">Next</span></td></tr>
+  <tr><td>Emails to the seller for "Needs change" and "Not approved"</td><td><span class="tag next">Next</span></td></tr>
+  <tr><td>Phone mock-up of /review for Nagesh's OK, then the page itself</td><td><span class="tag next">Next</span></td></tr>
+  <tr><td>Seller side: reason + "Edit &amp; resubmit" in My Listings; admin Pending tab becomes a link to /review</td><td><span class="tag next">Next</span></td></tr>
+  <tr><td>Both wives try it on uat.mapit.co.in, Nagesh/Arun sign off, then release to www.mapit.co.in</td><td><span class="tag next">Last</span></td></tr>
+</table>
+<div class="box ok"><b>Until release, nothing changes on www.mapit.co.in.</b> Nagesh and you keep approving from the admin Pending tab as today. At release the database update goes to production first, then the new code.</div>
+<div class="box warn"><b>At release:</b> the wives sign up again on www.mapit.co.in/review (UAT test accounts don't carry over), and an admin activates them.</div>
+
+<h2>10. Questions for Arun</h2>
+<ol>
+  <li>Are the reason wordings in section 5 fine to show to sellers?</li>
+  <li>For hired approvers later: do we need a short confidentiality agreement before they see listings and first names (DPDP)?</li>
+  <li>What review time should we aim for, so a seller's listing is live within a few hours of posting?</li>
+</ol>
+</main>
+</body>
+</html>

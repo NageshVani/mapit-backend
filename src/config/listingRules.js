@@ -11,6 +11,11 @@
 // or every listing older than 30 days disappears at once (plan with 9H).
 const LISTING_EXPIRY_ENABLED = false;
 
+// Listing life: 30 days from approval (admin page or /review), renewable by
+// the owner. Lazy expiry: reads hide listings past expires_at (see above).
+const LISTING_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const newExpiry = () => new Date(Date.now() + LISTING_TTL_MS).toISOString();
+
 // Real Estate types that can only be rented (PG, feedback FB-04, 2026-10-28).
 // The page greys out "Sell" for these; the server is the real rule and stores
 // details.transaction_type = 'Rent' whatever the client sent.
@@ -38,4 +43,4 @@ function missingRequiredDetail(category, subcategory, details) {
   return id ? req[id] : null;
 }
 
-module.exports = { LISTING_EXPIRY_ENABLED, RENT_ONLY_SUBCATEGORIES, enforceRentOnly, missingRequiredDetail };
+module.exports = { LISTING_EXPIRY_ENABLED, newExpiry,RENT_ONLY_SUBCATEGORIES, enforceRentOnly, missingRequiredDetail };

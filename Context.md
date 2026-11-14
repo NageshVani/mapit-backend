@@ -10,7 +10,26 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-10-29 18:30 (UAE), checkpoint (**Feedback Release 3 built on `fix/feedback-03` (from uat `0a76f71`, NOT pushed): Whole city = 65 km (Region 50 km removed), comma-style "Write it for me", Explore stays a mode button with search behind an optional 🔍 (no bar on the map). All 3 Nagesh localhost PASS; User Guide text + shots retaken. Next: push → uat → Arun check → PR `uat → main` → smoke; then 9L step 2 backend.**)
+- **Last updated:** 2026-11-14 14:43 (UAE), checkpoint before break (**019 + 020 LIVE on prod DB; schema prod = UAT re-confirmed with Nagesh's clean `rev1` inventories; 9L branch pushed (`ed98a98`). Paused for a break. Next: on Nagesh's go — merge `main` (npm audit fix) into 9L → `uat:review` → ff uat → PR uat → main → smoke:prod.**)
+- **Last updated (previous):** 2026-11-14 14:35 (UAE), checkpoint (**9L step 7 started: migrations 019 + 020 RUN ON PRODUCTION by Nagesh (no errors; all 3 tables exist); schema inventory prod vs UAT = identical (only Postgres 17.6 vs 17.11). Earlier the same day 019-rollback.sql was run on prod by mistake BEFORE 019 — no-op (all IF EXISTS; check showed all 3 tables NULL). Next: push 9L → uat → PR uat → main → smoke:prod.**)
+- **Last updated (previous):** 2026-11-14 (UAE), checkpoint (**9L UAT: wife 1 decided all 12 batch-1 listings (6/12 right action group); wife 2 never started — UAT has NO invite for her (only the 8 Nov one, used by wife 1). Wizard brief: all 4 answers in (text-only draft; ≥1 photo required except plots; full preview; split NOW, option 1). Better Stack monitor live since 8 Nov (per records; James cannot see the account).**)
+- **Last updated (previous):** 2026-11-08 14:18 (UAE), end-of-day checkpoint (**Wife 1 signed up + reviewing on phone (6 Nov links had no valid invite — new one made); wife 2 tomorrow/day after (Diwali). Seller "views" already live → stays PUBLIC; follow-up after 9L. Posting wizard brief saved for Arun (`docs/business/posting-wizard-brief.html`); listing PREVIEW before Submit = part of the wizard (screen ⑤). James recommends frontend split before the wizard. Branch 9L: 10 local commits, docs only, not pushed.**)
+- **Last updated (previous):** 2026-11-08 13:10 (UAE), checkpoint (**Prod watch-outs CLOSED: SPF fixed; Better Stack uptime monitor live (test alert received); npm audit fix RELEASED — PR #32 `fix/npm-audit → main` merged (`aef8443`), prod vulns 10 → 1 moderate (unused uuid), `smoke:prod` 14/14. Next: 9L wives UAT (check sign-ups).**)
+- **Last updated (previous):** 2026-11-08 11:18 (UAE), checkpoint (**Production watch-out review before wider outreach: old 🔴 items verified fixed; duplicate SPF FIXED on Namecheap (one record, verified on 3 resolvers); Sentry uptime needs a paid seat → Better Stack free instead (Nagesh signs up after a break); then npm audit fix (branch from main), then wives UAT.**)
+- **Last updated (previous):** 2026-11-06 18:17 (UAE), end-of-day checkpoint (**Guide + combined invite links SENT to both wives by Nagesh; waiting for their sign-ups (tomorrow or day after). Commit `a895a39` (local, not pushed). Next session: activate wives in Team → they review batch 1 → seed 2/3 → sign-off → step 7.**)
+- **Last updated (previous):** 2026-11-06 18:12 (UAE), checkpoint (**Supabase alerts reviewed (only `spatial_ref_sys`, accepted); Python 3.14 installed; wives uat access solved (Vercel Shareable Link, curl-tested, combined invite link); `scripts/uat/review-seed.js` + batch 1 (12 pending) on UAT, Nagesh sees 12 waiting; standalone wives guide built (scratchpad). Next: Nagesh sends guide + invites → wives review → seed 2/3 → sign-off → step 7.**)
+- **Last updated (previous):** 2026-11-01 17:09 (UAE), end-of-day checkpoint (**9L steps 1–5 + reviewer guide DONE and PUSHED to uat (`0831a8a`, fast-forward; branch `feat/session-9l-review-queue` also on origin). uat.mapit.co.in/review live (200 with bypass; 302 Vercel login without). Production untouched (no 019/020). Next session: UAT with both wives — first solve their access to the Vercel-protected uat.**)
+- **Last updated (previous):** 2026-11-01 17:01 (UAE), checkpoint (**9L step 5 DONE (`c381227`, local): My Listings shows Needs a change / Not approved + reason + Edit & resubmit; #my-listings email link; admin Pending tile → /review. Nagesh full-loop click-test 1–6 PASS (real emails). 4c click-test 1–4 PASS; "Signed in as" bar added (`513bcc9`). UAT test data cleaned. Next: approver HTML guide, then step 6 UAT with both wives.**)
+- **Last updated (previous):** 2026-11-01 15:27 (UAE), checkpoint (**9L step 4 a/b/c built on UAT (local, not pushed): /review sign-in/sign-up/waiting + refresh (`8554980`), personal invite links D16 + migration 020 run on UAT by Nagesh (`f2bd604`, `bbdca60`), queue card + Change/Reject/Approve/Skip (`2c1a99f`, Nagesh click-test 1–6 PASS), Team panel with invites (`24ac865`). `uat:review` 64/64. Next: Nagesh click-tests 4c (activate Approver@2), then step 5 seller side.**)
+- **Last updated (previous):** 2026-11-01 13:23 (UAE), checkpoint (**9L step 2 part 2 DONE (local, not pushed): A `POST /api/auth/refresh` (`3e700ca`), B seller emails for Needs change / Reject (`7de9640`, Nagesh received both real test emails), C two-approver race checks (`7a933ec`). `uat:review` 53/53, `uat:transfer` 20/20. Next: step 3 phone mockup; later an HTML guide for the approvers (wives).**)
+- **Last updated (previous):** 2026-10-31 19:52 (UAE), end-of-day checkpoint (**9L part 1 + D11 "Needs change" committed (`564735e`), Arun explainer `docs/business/listing-approval-process.html` (`0c37dff`). Part 2 design brief (A refresh route, B Needs change/Reject seller emails, C refresh + race tests + one manual email check to Nagesh's inbox) presented — AWAITING Nagesh's approval. Paused (Nagesh, other work); resume tomorrow. Branch local, not pushed; prod untouched.**)
+- **Last updated (previous):** 2026-10-31 19:05 (UAE), checkpoint (**D11 "Needs change" built (option A, no migration): `POST /api/review/:id/needs-change`, reasons split 7 change / 4 reject (new `spam`), seller text "Needs a small change: …" / "Not approved: …" in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20. Next: 9L step 2 part 2 (refresh, seller emails, two-approver race).**)
+- **Last updated (previous):** 2026-10-31 18:35 (UAE), checkpoint (**Part 1 amended (Nagesh): approve note removed (D9 reversed), nobody reviews own listing incl. admins (D10, sellers post themselves). Suite 38/38. Open design question: third decision "Send back for changes" (Nagesh's "withdraw") — options A/B pending. Then part 2.**)
+- **Last updated (previous):** 2026-10-31 17:26 (UAE), checkpoint (**9L step 2 part 1 DONE on `feat/session-9l-review-queue` (local, not pushed): `requireReviewer` + `src/routes/review.js` (8 routes) + Approve-with-note (D9) + seller edit clears the claim (D6). `npm run uat:review` 38/38 on UAT, `uat:transfer` 20/20. ⚠️ Release order: 019 on prod BEFORE this code, or seller edits break. Next: 9L step 2 part 2.**)
+- **Last updated (previous):** 2026-10-30 18:24 (UAE), end-of-day checkpoint (**uat merged into `feat/session-9l-review-queue` (`e16317c`, local, not pushed): only Context.md conflicted — uat copy kept (verified superset); branch = uat + 3 9L files (019, rollback, plan). Session paused (urgent work, Nagesh). Next: 9L step 2 part 1 — Rule-1 design brief, no code before approval.**)
+- **Last updated (previous):** 2026-10-29 18:47 (UAE), end-of-day checkpoint (**Release 3 LIVE (PR #31 `f8910f9`, smoke 14/14). Day closed. Next session: 9L step 2 backend in two parts — merge uat into the 9L branch first.**)
+- **Last updated (previous):** 2026-10-29 18:50 (UAE), checkpoint (**RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`): Whole city 65 km, comma "Write it for me", Explore + optional 🔍. uat checklist 1–6 PASS (Nagesh); prod serves it (radius menu + guide checked), `smoke:prod` 14/14. Next: 9L step 2 backend (bring uat into the 9L branch first).**)
+- **Last updated (previous):** 2026-10-29 18:30 (UAE), checkpoint (**Feedback Release 3 built on `fix/feedback-03` (from uat `0a76f71`, NOT pushed): Whole city = 65 km (Region 50 km removed), comma-style "Write it for me", Explore stays a mode button with search behind an optional 🔍 (no bar on the map). All 3 Nagesh localhost PASS; User Guide text + shots retaken. Next: push → uat → Arun check → PR `uat → main` → smoke; then 9L step 2 backend.**)
 - **Last updated (previous):** 2026-10-28 20:13 (UAE), checkpoint (**FIRST REAL LISTING + first feedback. Feedback Release 1 (PR #29 `404c3ca`: Bangalore tag, line breaks, half-BHK, PG rent-only, "listing is live" email, expiry off, Terms) and Feedback Release 2 (PR #30 `a8f7d9d`: auto-title + "✨ Write it for me") LIVE on prod, smoke 14/14 each. 019 clean + verified on UAT (prod NOT run). Next: 9L step 2 backend on `feat/session-9l-review-queue` (`ea94c32`, not pushed).**)
 - **Last updated (previous):** 2026-10-26 19:50 (UAE), checkpoint (**STRATEGY CHANGE: mapit.co.in goes PUBLIC now (stealth seeding + "no MapIt name" rule ended). Session 9L started: dedicated mobile-first review page `/review` for approvers (Nagesh, Arun + both wives; hires later). Plan + draft migration 019 committed on `feat/session-9l-review-queue` (`e67326d`, NOT pushed, NOT run). Decisions D1–D5 taken; PROD UNTOUCHED until UAT test + sign-off. Next: Nagesh runs 019 on UAT → backend.**)
 - **Last updated (previous):** 2026-10-25 13:06 (UAE), checkpoint (**Planning only, no code: unbranded WhatsApp seller checklist drafted; NEW rule = no "MapIt" name in pre-launch outreach until prod has enough listings; self-fill intake form (Google Sheet via Apps Script, owner mapit.backend@gmail.com) ⏸ pending Nagesh + Arun on hosting; invite-link option C rejected; chat pop-up moved after enough listings; seller tips + "Write it for me" description + quick-add chips added to the wizard scope. Next: Arun's real listings on prod.**)
@@ -127,6 +146,49 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-14 14:43, break) — Goal: finish 9L step 7 release (code part).** DB part done on prod. Waiting for Nagesh's go on: merge `origin/main` into `feat/session-9l-review-queue` (brings npm audit fix `46c9e41`, lockfile only) so uat tests exactly what prod gets → `npm run uat:review` → fast-forward `uat` + push → check uat.mapit.co.in/review → PR uat → main (Nagesh/Arun merge) → `smoke:prod` → prod invites for both wives → revoke uat Shareable Link. Then split (option 1) from clean main.
+- **Schema re-check (14:41):** Nagesh re-ran the inventory → `schema-prod-2026-11-14 rev1.json` + `schema-uat-2026-11-14 rev1.json` (both "Copy as JSON" wrapper `[{"schema_inventory":"…"}]`). ⚠️ Comparing the wrapped files directly says "match" trivially (no sections found) — must unwrap first. Unwrapped: ✅ identical, only Postgres 17.6 vs 17.11.
+
+**(2026-11-14 14:35) — 9L step 7 release: DB part DONE on production.** 019 + 020 run on prod `jneoxwumccmjwaojfazh` (Nagesh, SQL Editor, "No rows returned", no error); `to_regclass` check shows `staff_members`, `listing_reviews`, `review_invites` present. Schema inventory prod vs UAT: ✅ identical (ignoring generated_at; NOTE Postgres 17.6 vs 17.11). Next: push `feat/session-9l-review-queue` → merge into uat → PR uat → main (Nagesh merges) → `smoke:prod` → invites for both wives on prod → revoke uat Shareable Link → then split (option 1) from clean main.
+- **Mistake, harmless:** before running 019, Nagesh ran `019-rollback.sql` on PRODUCTION by mistake. All statements are `DROP ... IF EXISTS` on 019-only objects and 019 had not been run on prod yet → no-op; read-only `to_regclass` check returned NULL for all 3 tables. UAT verified untouched (staff_members 3, listing_reviews 3, review_invites 3). Habit: name SQL Editor tabs after the file before pasting.
+- **Saved inventory formats differ:** prod file was saved as a Markdown table (`| schema_inventory |`, `<br>` + escaped `\n`), UAT file as "Copy as JSON" (`[{"schema_inventory":"<string>"}]`). Neither is raw JSON → `compare-schema-inventory.js` needs unwrapping + line-break normalisation first (done in scratchpad; user files untouched). Next time: copy the single result CELL only.
+- **Alert idea for wrong review decisions (A seller "second look" + B daily admin digest recommended)** — logged in Open Issues; decide after the split.
+
+**(2026-11-14) — 9L UAT result + wizard answers.**
+- **Wife 1 ("Vani Nagesh") reviewed all 12 batch-1 listings.** Right action group 6/12: Apache, 2BHK rent, PG approved ✓; BDA site Needs change ✓ (reason location, expected price); spam + ivory rejected ✓ but the two reasons are SWAPPED (spam→prohibited, ivory→spam). Wrong: 3 good listings stopped (2BHK house → other_change, Wagon R → duplicate, cot → price); Swift (contact info) rejected as spam instead of Needs change; Alto (wrong category) + sofa (photos mismatch) approved. Pattern = strict on good listings, missed category/photo checks → guide/card wording, not code bugs (to confirm with her). seed 2 / seed 3 never run.
+- **Wife 2 could not start:** UAT review_invites has only 3 rows (2× 1 Nov tests, 1× 8 Nov used by wife 1) → no invite was ever created for her. Expected blocker; ask Nagesh what she saw.
+- **Wizard brief answered (Arun + Nagesh, 14 Nov):** Q1 draft = text only; Q2 ≥1 photo REQUIRED for every category except plots; Q3 full preview (Arun agrees); Q4 split NOW, option 1. Brief updated.
+- **DECIDED (Nagesh, 14 Nov): release 9L first, then the split from a clean main.** 9L sign-off on wife 1's result; wife 2 joins straight on prod after release. Order: 9L sign-off → cleanup UAT seed → step 7 release (019 + 020 on PROD first) → split (option 1) → views follow-up → wizard.
+- **Better Stack:** monitor live since 2026-11-08 12:50 (test alert received). James has no access to the account; leftovers unchanged (region, placeholders, Sentry monitor delete, Namecheap auto-renew).
+
+**NOW (2026-11-08 14:18, end of day) — Goal: finish 9L step 6 (wives UAT) → sign-off → step 7 release.** Wife 1 active and reviewing; wife 2 signs up tomorrow or day after. Afterwards (in order): views follow-up → frontend split (if Nagesh + Arun agree) → posting wizard incl. listing preview.
+
+**(2026-11-08 ~13:40) — 9L step 6 running:** wife 1 signed up 09:35 UTC (new invite, combined link with share token from uat deployment `0831a8a`), activated by Nagesh, reviewing on her phone — approve / reject / needs-change all work. First decision: "2BHK independent house" (expected Approve) → Needs change / other_change. Next: wife 2 invite → sign-up → activate; then `seed 2` / `seed 3`, `status`, collect feedback.
+
+**(2026-11-08 13:10) — Goal: 9L step 6, wives UAT.** Prod watch-outs closed (SPF ✅, uptime ✅, npm audit ✅ PR #32). Leftovers (Nagesh, small): Better Stack regions/placeholders check, delete Sentry monitor, Namecheap auto-renew.
+
+**(2026-11-08 11:18) — Goal: close live production watch-outs before wider outreach, then 9L wives UAT.** Order agreed (Nagesh): ✅ SPF → ⏸ uptime monitor (Better Stack free, Nagesh signs up after a break) → npm audit fix (branch from `main`, NOT uat) → wives UAT (9L step 6).
+
+**NOW (2026-11-06 18:17, end of day) — Goal: 9L step 6, wives UAT (next 1–2 days).** Guide + invite links sent; waiting for sign-up requests (no notification — wives WhatsApp Nagesh after "Thanks", or ask James to check UAT). Then activate → review batch 1 → `seed 2`/`seed 3` → `status` → sign-off → step 7 release.
+
+**NOW (2026-11-06 18:12) — Goal: 9L step 6, wives UAT (2–3 days).** Access solved (Vercel Shareable Link, uat branch), 12 practice listings seeded (batch 1), wives guide ready. Nagesh sends guide → invite links (combined with `_vercel_share`) → activates them → they review; top up with `seed 2` / `seed 3`; `status` = answer key → Nagesh + Arun sign-off → step 7 release (019 + 020 on prod FIRST).
+
+**NOW (2026-11-01 17:09, end of day) — Goal: 9L step 6, UAT with both wives (another day).** Everything is on uat (`0831a8a`). Before they can test, they need access past Vercel Authentication on uat (Open Issues). Then: Team panel invites on uat.mapit.co.in/review → sign up → review UAT listings → Nagesh + Arun sign-off → step 7 release (019 + 020 on prod FIRST).
+
+**NOW (2026-11-01 17:01) — Goal: HTML guide for the approvers, then 9L step 6 (UAT with both wives).** Steps 1–5 built on `feat/session-9l-review-queue` (local, not pushed). Prod has neither 019 nor 020 — both run on prod FIRST at release.
+
+**NOW (2026-11-01 15:27) — Goal: Nagesh click-tests 4c (Team panel: activate Approver@2, invite, cancel, revoke), then 9L step 5 (seller side).** Prod has neither 019 nor 020 — BOTH must run on prod FIRST at release.
+
+**NOW (2026-11-01 13:23) — Goal: 9L step 3, phone mockup of `public/review.html`.** Step 2 (backend) is complete: part 1 + D11 + part 2 (refresh, seller emails, race checks), 53/53 on UAT, branch `feat/session-9l-review-queue` local, not pushed. Production still has no 019 (must run FIRST at release).
+
+**NOW (2026-10-31 19:52, end of day) — Goal: get Nagesh's approval of the 9L step 2 part 2 design brief, then build it.** Brief (in this session's chat, summarised in Next Steps): A `POST /api/auth/refresh` (backend route, Supabase rotates refresh tokens — page must save the new one); B `notifySellerListingReviewed(listing, group)` emails with "Open My Listings" → `/#my-listings` (hash handler built in step 5, same release); C suite: refresh (ok/401/400) + race (10 rounds × 2 approvers, 3 approvers/2 listings) + ONE manual email check to Nagesh's UAT inbox (needs his OK). ~1.5–2 h, no migration, no frontend.
+
+**NOW (2026-10-31 17:26) — Goal: Session 9L step 2 part 2 (backend) next.** Part 1 built + tested (38/38 on UAT), local branch only. Part 2 = `POST /api/auth/refresh`, seller rejection email (`notifySeller.js`, same `@example.com` skip), extend `uat:review` with refresh + email + two approvers claiming at once. Production still has no 019 and must get it FIRST at release (seller edit now writes the claim columns).
+
+**NOW (2026-10-30 18:24, paused for urgent work) — Goal: Session 9L step 2 part 1 (backend) next session.** uat is merged into `feat/session-9l-review-queue` (`e16317c` + checkpoint `27b4194`, local, not pushed); branch = uat + only the 3 9L files. Start with the Rule-1 design brief for `requireReviewer` + `src/routes/review.js`; no code before Nagesh approves. Production still has no 019.
+
+**NOW (2026-10-29 18:47, end of day) — Goal: Session 9L step 2 (backend) next session.** Feedback Release 3 is LIVE on prod (PR #31 `f8910f9`, smoke 14/14); uat = `56fec11`. First merge uat into `feat/session-9l-review-queue` (local, not pushed; backup branch kept), then backend part 1 (`requireReviewer` + queue routes) and part 2 (`/api/auth/refresh`, rejection email, `uat:review` suite). Production still has no 019.
 
 **NOW (2026-10-29, Thursday) — Goal: Feedback Release 3 (Nagesh's feedback) on uat → Arun check → PR `uat → main`; then Session 9L step 2 (backend).** Built + Nagesh localhost PASS on `fix/feedback-03`: (1) radius menu = 1/3/5/10 km + **Whole city · 65 km** (`WHOLE_CITY_KM`, no circle, city framing); (2) "✨ Write it for me" details as comma lines (`DESC_LINE_MAX` 70); (3) Explore = mode button "Exploring ✕" + optional 🔍 header search field (was a bar over the map). 9L unchanged; production untouched.
 
@@ -601,6 +663,44 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-14 14:41) Schema re-confirmed with clean `rev1` inventories** (prod = UAT after unwrapping). 9L branch pushed to origin (`ed98a98`, CONTEXT note).
+- ✅ **(2026-11-14) Lost chat recovered** from the Claude Code transcript (`f61c60fe…`); 019/020 opened in VS Code.
+- ✅ **(2026-11-14 14:35) PRODUCTION DB: migrations 019 (review queue) + 020 (review invites) run on `jneoxwumccmjwaojfazh` by Nagesh** — both "No rows returned", no error (verify blocks passed); prod vs UAT schema inventory ✅ identical (only Postgres version differs). Earlier mistaken `019-rollback.sql` on prod was a no-op (019 not yet run; all IF EXISTS).
+- ✅ **(2026-11-08) Production watch-out review:** UAT blockers = zero prod risk; old 🔴 items verified FIXED (XSS `escHtml` `4277c2f`; listings "Allow public read" dropped by 018; Share Feedback 100dvh; bypass secret rotated 17 Oct; prod Supabase on Pro = no auto-pause). Prod /health 200 (0.7 s).
+- ✅ **(2026-11-08 14:10) Posting wizard brief** `docs/business/posting-wizard-brief.html` (for Arun; 5 screens, behaviour, one-file vs split, order after 9L, 4 questions) + docs/index.html entry (`e403fd6`); preview note + Q3 answered (`4bfa2d1`).
+- ✅ **(2026-11-08 ~14:00) Seller "views" request checked:** already live since 27 Jun (`94054d1`), shown on listing detail; gaps logged; Nagesh: stays public.
+- ✅ **(2026-11-08) Remote Control (phone → Lenovo) explained** — Nagesh deferred trying it; for phone testing use Vercel preview links (localhost doesn't work from a phone; LAN IP hits CORS 403; tunnels rejected).
+- ✅ **(2026-11-08 ~13:40) 9L wives UAT started:** UAT check found NO valid invites for the wives (only 1 Nov test invites: one used, one cancelled — 6 Nov message went out without a fresh invite). Nagesh created a new invite + combined link (token from uat deployment `0831a8a` → Share); wife 1 signed up, activated, reviews on phone OK. 11 still pending.
+- ✅ **(2026-11-08 13:05) npm audit fix RELEASED — PR #32 merged (`aef8443`), from `fix/npm-audit` (branched from `main`, commit `46c9e41`):** lockfile only, in-range, no --force — body-parser 1.20.9, compression 1.8.2, express 4.22.3 (→ qs 6.16.2; `npm audit fix` alone didn't bump express → `npm update express`), zod 4.6.7 (via @vercel/functions), morgan/proxy-addr/side-channel patches. Prod-dep vulns 10 (1 crit, 6 high) → 1 moderate (`uuid` — never imported, fix is breaking v14 → skip). Tests: localhost curl (health, gzip, JSON validation, malformed 400, 11 MB → 413) + Nagesh click test (browse, listing, sign-in, message, pin, edit) + Vercel preview + `smoke:prod` 14/14 after merge, prod gzip on.
+- ✅ **(2026-11-08 12:50) Uptime monitor LIVE (Better Stack free, Nagesh):** monitor 5202045 "mapit.co.in/health" → URL `https://www.mapit.co.in/health` (www direct, follow-redirects off), GET, every 3 min, recovery 3 min, confirmation immediate, IPv4+IPv6, SSL verify on; notify primary responder by **E-mail** (ticked); **test alert received** on nagesh.aadi@. James reviewed config from PDFs. Paid-only: SSL/domain expiry checks (use Namecheap auto-renew instead).
+- ✅ **(2026-11-08) Duplicate root SPF FIXED (Namecheap, Nagesh):** one `@` record `v=spf1 include:zohomail.com include:amazonses.com include:spf.resend.com ~all`, Zoho-only record deleted; James verified on dns1.registrar-servers.com, 8.8.8.8, 1.1.1.1 (single SPF, zoho-verification kept). Resend mail was never affected (`send.mapit.co.in` has its own SPF); Zoho DKIM `zmail` + DMARC `p=none` present.
+- ✅ **(2026-11-06) Committed** `a895a39` feat(uat): review-seed script + .gitignore + checkpoint (local, not pushed; share token verified absent).
+- ✅ **(2026-11-06) Nagesh sent the guide + combined invite links to both wives.**
+- ✅ **(2026-11-06) Supabase "Action required" alerts reviewed:** 17 weekly emails (31 May–31 Oct) all `rls_disabled_in_public`; RLS on every MapIt table (baseline 17 + 019/020); UAT `security:client-check` 31 PASS / 0 FAIL / 1 WARN (A-18 `spatial_ref_sys`); Nagesh confirmed Advisors → Security lists only `public.spatial_ref_sys`.
+- ✅ **(2026-11-06) Python 3.14.10 installed** (winget, user scope, `py` launcher, pip 26.2.2; PATH ahead of the Store alias).
+- ✅ **(2026-11-06) Wives uat access:** Vercel Shareable Link (uat branch, deployment `0831a8a`) created by Nagesh; curl-tested (cookie 7 days, /review + /api pass, combined `?invite=…&_vercel_share=…` link works).
+- ✅ **(2026-11-06) UAT practice listings:** `scripts/uat/review-seed.js` (seed 1|2|3, status, cleanup); batch 1 = 12 pending seeded; Nagesh click-test: first card 2BHK Jayanagar, 12 waiting ✅. Two give-away descriptions fixed (Alto row updated by ID).
+- ✅ **(2026-11-06) Wives copy of the reviewer guide:** `MapIt-Reviewer-Guide.html` (scratchpad, 618 KB, 6 screenshots inlined, Team section removed, "Next time" tip → the link you were sent); render checked. Repo guide unchanged.
+- ✅ **(2026-11-01 17:05) Pushed to uat:** `feat/session-9l-review-queue` pushed to origin; uat fast-forwarded to `0831a8a` (origin/uat had nothing new). Vercel uat deploy checked with the bypass header: /review 200, `/api/review/invite/check` 200; without login → 302 (Vercel Authentication).
+- ✅ **(2026-11-01) Reviewer guide** `docs/uat/review-guide-approvers.html` (`7a9011a`, theme tokens `0831a8a`), linked in docs/index.html; also published as a PRIVATE artifact https://claude.ai/artifact/2sapXLWNnmWsGC6nDjpgqk (8 screenshots as files). Sections: get started (invite link), what to check, 4 choices, which to choose, good to know, Team panel for admins.
+- ✅ **(2026-11-01) 9L step 5 — seller side** (`c381227`): `reviewOutcome()` in MapIt_MVP_v1.html (label from the stored heading prefix, linked to GROUP_HEADINGS by comments both sides), reason box (heading stripped), orange "Edit & resubmit" (existing edit re-queues as pending). `#my-listings` saved at load (sessionStorage `mapit_open_my_listings`) → My Listings after sign-in, hash cleared. Admin Pending tile → `/review` (old section unreachable; delete after release). Two-file sync verified. Screenshots `before-/after-my-listings`, `after-my-listings-from-link`, `before-/after-admin-tiles` (session-9l). Nagesh full-loop click-test (post → approver2 Change → real email → Open My Listings → Edit & resubmit → Reject → admin tile) 1–6 PASS. Step-5 seed seller + listings deleted (0 TEST listings left).
+- ✅ **(2026-11-01) "Signed in as <name>" bar** on /review (`513bcc9`, Nagesh); `/me` returns own email as fallback. 4c click-test 1–4 PASS (activate Approver@2, review as approver, revoke/activate again, invite copy/cancel).
+- ✅ **(2026-11-01) 9L step 4c — Team panel** (`24ac865`): Invite someone (link shown once, Copy + Share on WhatsApp via wa.me), Waiting (Activate/Ignore), Active (Revoke + confirm), Revoked (Activate again), invite history + Cancel. Going to Team releases the held claim. CDP phone screenshots `after-review-team`, `after-review-invite-created`, `after-review-menu-admin`.
+- ✅ **(2026-11-01) 9L step 4b — queue** (`2c1a99f`): card (photo strip + full screen, flagged banner, exact ₹ price, details grid, seller name, waiting time), 0.8 s pause, Change/Reject sheets with seller preview (`/me` now returns `headings`), 409 → toast + next, 403 → re-route, All clear / Nothing more for now. Sign out = header button; ☰ admin-only (Nagesh). Nagesh click-test 1–6 PASS. UAT seed: 4 TEST listings via scratchpad `seed-4b.js` (@example.com seller; cleanup pending).
+- ✅ **(2026-11-01) D16 personal invite links** (`f2bd604` backend, `bbdca60` page): migration 020 `review_invites` (hash only, 7 days, one-time via one conditional UPDATE) — **run on UAT by Nagesh, verified** (anon 42501). Admin create/list/cancel; public `/invite/check` (30/h, valid only). Invite does NOT activate. Suite I01–I11 (64/64). Nagesh test: `+approver2` ("Approver@2") signed up via invite → Thanks ✅.
+- ✅ **(2026-11-01) 9L step 4a** (`8554980`): `public/review.html` + `/review` route + robots Disallow; "Nagesh/Arun" → "the MapIt team" (Nagesh).
+- ✅ **(2026-11-01) 9L step 3 — phone mockup approved** (`27d9101` + decisions commit): 10 screens at 360 px (sign in, create account, waiting, card, flagged card, Needs change sheet with seller preview, Reject sheet, after-decision toast, all clear + menu, Team). Rule 12: new page, no before shot; admin Pending before/after in step 5.
+- ✅ **(2026-11-01) 9L part 2 C — race checks** (`7a933ec`): second approver Q; C1 10 rounds × 2 approvers pressing Next together → 0 clashes, exactly one gets the test listing; C2 3 approvers / 2 listings → all different; C3 double tap Approve + Needs change → one 200 + one 409, one history row. Real UAT pending listings handed out are released at once. `uat:review` 53/53.
+- ✅ **(2026-11-01) 9L part 2 B — seller emails** (`7de9640`): `notifySellerListingReviewed(listing, group)` in `notifySeller.js`, called via `waitUntil` from `decideWithReason()`. Subject "✏️ … needs a small change" / "… was not approved"; body = `rejection_reason` (same text as My Listings); "Open My Listings" → `siteUrl()/#my-listings`; approver never named; never throws. Suite E1–E2. **Manual check:** one-off scratchpad script on UAT (alias `nagesh.aadi+review-test@gmail.com`, listing + account deleted after) → Nagesh received both emails. Approve already sends FB-05 "is live" email (`notifySellerListingLive`, review.js:160) — confirmed with Nagesh, no change.
+- ✅ **(2026-11-01) 9L part 2 A — `POST /api/auth/refresh`** (`3e700ca`): body `{ refresh_token }` → `{ session: { access_token, refresh_token, expires_in, expires_at } }`; 400 missing/oversized, 401 invalid/used; 60/h per IP (hard-coded, no env var — `.env.example` is not readable by James); per-request Supabase client. Suite F1–F4. Nagesh PowerShell check: 401 "Session expired" for a bogus token ✅.
+- ✅ **(2026-10-31) Arun explainer** `docs/business/listing-approval-process.html` (`0c37dff`): roles, SVG flow diagram (edit loop), 3 decisions + reasons, edits, team join/revoke, privacy, status, 3 questions for Arun (reason wording, DPDP confidentiality for hires, review-time target). Checked at 1000 px + real 390 px emulation (page 390 wide; diagram swipes in its box). Added to `docs/index.html`.
+- ✅ **(2026-10-31) D11 "Needs change" built** (`564735e`): `POST /api/review/:id/needs-change`; reasons grouped 7 change / 4 reject (new `spam`, `other_change`); groups can't mix (400); seller sentence stored in `rejection_reason`. `uat:review` 42/42, `uat:transfer` 20/20.
+- ✅ **(2026-10-31) Part 1 amendments** (`ef794ff`): approve note removed (D9 reversed, `notifySeller.js` back to pre-9L); nobody reviews own listing incl. admins (D10).
+- ✅ **(2026-10-31) Explained the full approval process to Nagesh** (new listing, edit loop, staff review, decisions, "withdraw" options a/b/c).
+- ✅ **(2026-10-31) 9L step 2 part 1 — review backend** (Rule-1 brief approved by Nagesh with D6–D9). New: `requireReviewer` (`src/middleware/auth.js`: admin email OR `staff_members.status=active`, checked every request), `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve` {note?}, `/:id/reject`, `/:id/release`, `/team`, `/team/:userId`), `src/config/reviewReasons.js` (9 codes, note max 300), `newExpiry` moved to `src/config/listingRules.js`, seller edit clears the review claim (`listings.js`), optional reviewer note in the "listing is live" email (`notifySeller.js`), `sendEmail` skips `@example.com` (RFC 2606, no bounces), router mounted in `server.js`. Suite `npm run uat:review` (`scripts/uat/review-queue.suite.js`) **38/38** on UAT; `uat:transfer` 20/20. Each run sends ONE UAT "UPDATED" alert to listings@ (real seller edit, R26). Plan doc: decisions D6–D9 + build log.
+- ✅ **(2026-10-30) uat merged into `feat/session-9l-review-queue` — merge `e16317c` (`--no-ff`, local, not pushed).** Only conflict: `Context.md` (both sides edited the same lines). Line check showed uat copy is a superset (3 branch-only lines = older versions of entries uat updated) → kept uat copy (`--theirs`). Verified: no conflict markers, Context.md == uat, two-file rule OK, `git diff uat` = only 019 / rollback / plan. Backup branch untouched.
+- ✅ **(2026-10-30) Explained the merge to Nagesh** (split point `0a76f71`, file-by-file merge, why only Context.md conflicted, superset check as the safe resolution method).
+- ✅ **(2026-10-29) RELEASED: Feedback Release 3 — PR #31 `uat → main` merged by Nagesh (`f8910f9`).** uat (`c3fe52f`) checklist 1–6 PASS; prod serves "Whole city 65 km" + new guide step; `smoke:prod` 14/14 before and after.
 - ✅ **(2026-10-29) Feedback Release 3 built on `fix/feedback-03`, 3 commits + guide/docs, NOT pushed** (Nagesh localhost PASS each, one at a time):
   - `c69871e` **Whole city · 65 km** — "Region 50 km" + unlimited "Whole city" (999 km) confused users → one option, real 65 km search, no circle, 25 km city framing kept. Five `999` checks → `WHOLE_CITY_KM` constant (menu `data-r="65"` must match). No server change (route caps at 999 km). Guide text updated. Click-test 1–4 PASS.
   - `e17cce3` **Comma-style "Write it for me"** — `buildAutoDescription()`: `Label: value` pairs joined with ", ", new line only past 70 chars (`DESC_LINE_MAX`), no "Details:" heading/bullets. Checked Apartment/PG/Cars/Furniture. Click-test 1–5 PASS.
@@ -1344,9 +1444,17 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **9L step 7 — production release** | 🔄 2026-11-14: DB ✅ (019 + 020 on prod, schema = UAT); branch pushed `ed98a98`; code release waiting for Nagesh's go | `Context.md`; prod DB (SQL Editor) | Next: merge main → 9L, `uat:review`, ff uat, PR uat → main, smoke:prod, wives' prod invites, revoke Shareable Link |
+| **Prod watch-outs before outreach (2026-11-08)** | ✅ SPF ✅; uptime monitor ✅ (Better Stack, test alert received 12:50); npm audit fix ✅ (PR #32 `aef8443`, smoke:prod 14/14) | Namecheap DNS; `package-lock.json` (main); Context.md | Sentry uptime refused: "not enough budget to create new seat" — delete the disabled Sentry monitor |
+| **Posting wizard + listing preview (design)** | 📝 Brief saved, waiting for Arun's answers (Q1 draft, Q2 photos, Q4 split; Q3 = full preview, Nagesh) | `docs/business/posting-wizard-brief.html`, `docs/index.html` | Build after 9L (+ split); phone mockups first |
+| **9L step 6 — wives UAT** | 🔄 2026-11-08: wife 1 (V***) signed up via new invite + share link, activated, reviewing on phone (approve/reject/change work); wife 2 invite pending. (6 Nov links never had a valid invite — no invite rows existed.) | `scripts/uat/review-seed.js`, `.gitignore`, `Context.md` (`a895a39`, local) | Shareable Link revoke at step 7; `seed 2`/`seed 3` day 2/3; `cleanup` after |
+| **9L review queue (steps 1–5 + guide)** | ✅ Built, click-tested by Nagesh, on uat (`0831a8a`); step 6 (wives UAT) + step 7 (release) open | `public/review.html`, `src/routes/review.js`, `MapIt_MVP_v1.html` / `public/index.html`, `public/admin.html`, `database/migrations/020-review-invites.sql` | 019 + 020 on UAT only; `uat:review` 64/64 |
+| **9L step 2 — review backend** | ✅ Part 1 + D11 + part 2 DONE (`85e9d08`, `ef794ff`, `564735e`, `3e700ca`, `7de9640`, `7a933ec`; 53/53 on UAT) | `src/routes/auth.js`, `src/utils/notifySeller.js`, `src/middleware/auth.js`, `src/routes/review.js`, `src/config/reviewReasons.js`, `src/config/listingRules.js`, `src/routes/listings.js`, `src/utils/email.js`, `src/server.js`, `scripts/uat/review-queue.suite.js`, `package.json` | Branch `feat/session-9l-review-queue` local, NOT pushed; 019 on UAT only |
+| **Arun approval-process explainer** | ✅ Done (`0c37dff`) | `docs/business/listing-approval-process.html`, `docs/index.html` | Nagesh to share with Arun; offer to publish as private web page stands |
+| **Feedback Release 3 (Whole city 65 km, comma description, Explore 🔍)** | ✅ RELEASED PR #31 `f8910f9` (2026-10-29), localhost + uat checklist PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html`, `public/user-guide.html`, `public/guide/*`, `scripts/guide-shots.js` | Branch `fix/feedback-03` (from uat `0a76f71`); screenshots `docs/screenshots/feedback-03/` |
 | **Feedback Release 2 (auto-title + Write it for me)** | ✅ RELEASED PR #30 `a8f7d9d` (2026-10-28), uat checklist 1–6 PASS, smoke 14/14 | `MapIt_MVP_v1.html` / `public/index.html` | Branch `feat/feedback-02-auto-title`; frontend only, no migration |
 | **Feedback Release 1 (FB-01…06 + Terms)** | ✅ RELEASED PR #29 `404c3ca` (2026-10-28), smoke 14/14 | `MapIt_MVP_v1.html`/`public/index.html`, `src/routes/listings.js`, `src/config/listingRules.js` (new), `src/server.js`, `src/utils/notifySeller.js`, `src/utils/notifyListings.js`, `public/admin.html`, `public/user-guide.html`, `docs/legal/terms-privacy-draft2.html` | Branch `fix/feedback-01`, 7 commits, no migration |
-| **Session 9L — Listing Review Queue (`/review`)** | 🔄 Step 1 DONE (019 clean on UAT, verify 6/6, EXPLAIN index scan, schema diff = 019 only, 2026-10-28); next: step 2 backend | `docs/technical/review-queue-plan.md`, `database/migrations/019-listing-review-queue.sql`, `database/scripts/019-rollback.sql` | Branch `feat/session-9l-review-queue` rebased onto uat (`6b1eba6` + `ea94c32`, not pushed); backup `backup/session-9l-pre-rebase`. Prod untouched until sign-off |
+| **Session 9L — Listing Review Queue (`/review`)** | 🔄 (2026-10-30: uat merged in, `e16317c`; next step 2 part 1 design brief) Step 1 DONE (019 clean on UAT, verify 6/6, EXPLAIN index scan, schema diff = 019 only, 2026-10-28); next: step 2 backend | `docs/technical/review-queue-plan.md`, `database/migrations/019-listing-review-queue.sql`, `database/scripts/019-rollback.sql` | Branch `feat/session-9l-review-queue` rebased onto uat (`6b1eba6` + `ea94c32`), uat merged in 2026-10-30 (`e16317c`, `27b4194`), not pushed; backup `backup/session-9l-pre-rebase`. Prod untouched until sign-off |
 | **Self-fill seller intake form (Google Sheet)** | ❌ Superseded 2026-10-26 (public release) | none yet | Apps Script `/exec` page (test GPS first) or neutral static host; owner mapit.backend@gmail.com; no MapIt name; no Supabase change; ~½ day |
 | **Real listings on prod (proxy posting)** | ❌ Superseded 2026-10-26 (public release; sellers post themselves) | none | Unbranded WhatsApp checklist → Arun/Nagesh post → approve within 4 h → Transfer when the seller joins |
 | **Admin 🔁 Transfer tab** | ✅ RELEASED PR #28 `9a2af82` (2026-10-25), smoke 14/14 | `src/routes/admin.js`, `public/admin.html`, `src/utils/auditLog.js`, `scripts/uat/admin-transfer.suite.js`, `package.json` | Option A manual handover; chats stay with admin; no migration |
@@ -1544,6 +1652,40 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+Context.md — 2026-11-14: 019/020 prod run, mistaken no-op rollback, schema check, release next steps (`ed98a98` + this checkpoint).
+(2026-11-14) Production DB — migrations 019 + 020 applied in SQL Editor (no repo file changed).
+docs/business/posting-wizard-brief.html — 2026-11-08 (NEW): wizard design brief for Arun (5 screens, preview before Submit, one-file vs split, 4 questions).
+docs/index.html — 2026-11-08: added the posting-wizard-brief entry under business.
+package-lock.json — 2026-11-08 (on `main` via PR #32, not yet on uat/9L branch): npm audit fix + express 4.22.3. uat never changed the lockfile → 9L release merge stays clean.
+(2026-11-08) DNS (Namecheap SPF) — no repo file.
+scripts/uat/review-seed.js — 2026-11-06 (NEW): UAT-only practice listings for /review (batches 1–3, status answer key, cleanup).
+.gitignore — 2026-11-06: ignore scripts/uat/.review-seed.json (seed state).
+public/review.html — 2026-11-01 (NEW): /review page — sign in / invite sign-up / waiting, refresh, queue card + Change/Reject sheets + Approve/Skip, All clear, Team panel (invites, activate/revoke), Signed-in-as bar.
+src/routes/review.js — 2026-11-01: invites (create/list/cancel, public check, one-time use in access-request), /me returns headings + own email.
+src/routes/auth.js — 2026-11-01: POST /api/auth/refresh (per-request client, 60/h).
+src/utils/notifySeller.js — 2026-11-01: notifySellerListingReviewed (Needs change / Not approved email), siteUrl exported.
+database/migrations/020-review-invites.sql + database/scripts/020-rollback.sql — 2026-11-01 (NEW): review_invites table (run on UAT only).
+src/server.js — 2026-11-01: GET /review route. public/robots.txt: Disallow /review.
+MapIt_MVP_v1.html / public/index.html — 2026-11-01: reviewOutcome() + reason box + Edit & resubmit in My Listings; #my-listings link handler.
+public/admin.html — 2026-11-01: Pending tile → /review (old Pending section unreachable).
+src/config/reviewReasons.js — 2026-11-01: comment linking GROUP_HEADINGS to reviewOutcome().
+scripts/uat/review-queue.suite.js — 2026-11-01: F (refresh), E (emails), C (race), I (invites) → 64 checks.
+docs/uat/review-guide-approvers.html — 2026-11-01 (NEW): reviewer guide. docs/technical/review-page-mockup.html (NEW, approved D15).
+src/routes/review.js — 2026-10-31 (NEW): /api/review router — me, access-request, next (claim RPC, allowlisted card, first name for approvers), approve, needs-change, reject (shared `decideWithReason`), release, team, team/:userId (audit `staff_status_change`).
+src/middleware/auth.js — 2026-10-31: `requireReviewer` (admin email OR staff_members active; 403 with `access`).
+src/config/reviewReasons.js — 2026-10-31 (NEW): `REVIEW_REASONS` (group change/reject), `GROUP_HEADINGS`, `REVIEW_NOTE_MAX` 300.
+src/config/listingRules.js — 2026-10-31: `newExpiry()` moved here (shared by listings.js + review.js).
+src/routes/listings.js — 2026-10-31: seller edit clears `review_claimed_by/_until` (D6) ⚠️ needs 019 on prod first; imports `newExpiry`.
+src/utils/email.js — 2026-10-31: `sendEmail` skips `@example.com` (test accounts, no bounces).
+src/server.js — 2026-10-31: mounts `/api/review`.
+scripts/uat/review-queue.suite.js + package.json — 2026-10-31 (NEW): `npm run uat:review`, 42 checks, UAT only, FIFO-front test listings dated 2000-01-01, cleanup by ID.
+docs/business/listing-approval-process.html + docs/index.html — 2026-10-31 (NEW): Arun explainer.
+docs/technical/review-queue-plan.md — 2026-10-31: decisions D6–D11, section 6 routes, build log.
+Context.md — 2026-10-30: on `feat/session-9l-review-queue`, conflict resolved to uat copy (merge `e16317c`); checkpoints `27b4194` + this one.
+MapIt_MVP_v1.html + public/index.html — 2026-10-29: `WHOLE_CITY_KM=65` (radius menu, 5 `999` checks); `buildAutoDescription()` comma lines (`DESC_LINE_MAX`); Explore search moved into `#searchModeBox` (`exploring`/`searching` classes, `#exploreSearchBtn`, `openExploreSearch()`/`closeExploreSearch()`, List-view `setView`).
+public/user-guide.html + public/guide/{radius,explore}.webp + shots.js — 2026-10-29: Whole city (65 km) text; Explore steps move-the-map first, 🔍 optional; shots retaken.
+scripts/guide-shots.js — 2026-10-29: explore markers → `#smExplore`, `#exploreSearchBtn`, `#smPin`.
+docs/screenshots/feedback-03/ — 2026-10-29 (NEW): Release 3 before/after shots (phone 390/360 + laptop).
 MapIt_MVP_v1.html + public/index.html — 2026-10-28: Bangalore city tag; `.ld-desc` pre-wrap; `BHK_OPTIONS`; PG fields + `RENT_ONLY_SUBCATS` + `PHOTO_OPTIONAL_SUBCATS` + `required:true` fields (`missingRequiredField`, `syncPgFood`); expiry label/Renew hidden via `RUNTIME_CFG.listingExpiry`; Release 2 `TITLE_BUILDERS`, `buildAutoTitle/Description`, `suggestTitle`, `writeDescriptionForMe`, `.suggest-btn`.
 src/config/listingRules.js — 2026-10-28 (NEW): `LISTING_EXPIRY_ENABLED=false`, `RENT_ONLY_SUBCATEGORIES` + `enforceRentOnly()`, `REQUIRED_DETAILS` + `missingRequiredDetail()`.
 src/routes/listings.js — 2026-10-28: `cleanDescription()` on POST/PUT; `isLive` honours expiry switch; Cleanup stale empty when off; rent-only + required-detail checks on POST/PUT; approve → `waitUntil(notifySellerListingLive)`.
@@ -1932,6 +2074,45 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-11-14) `compare-schema-inventory.js` gives a false "match" on wrapped input** ("Copy as JSON" → `[{"schema_inventory":"…"}]`, or Markdown table) — it finds no sections and reports ✅. Small later fix: auto-unwrap, and fail if `tables` is missing. Until then: unwrap before comparing.
+- **🔴 (2026-11-14) Prod DB now has 019 + 020 but prod code is still pre-9L** — harmless (additive only), but finish the code release soon so the two don't drift.
+- **ℹ️ (2026-11-14) `main` has npm audit fix (`46c9e41`) that uat/9L lack** → merge main into 9L before the uat → main PR (proposed, awaiting go).
+- **💡 (2026-11-14) Idea (Nagesh): alert on a mistaken approval / rejection.** Wife 1's wrong decisions in UAT were deliberate (to test what happens) — guide stays as is. Options proposed: (A) seller "Ask for a second look" on rejection / needs-change → admin email; (B) daily admin digest of all review decisions with one-tap reopen; (C) spot-check: re-queue a random share of approvals for an admin second look (per-approver accuracy); (D) rule checks before Approve (phone/email/URL in text, price ₹1, photo count) → "Are you sure?". James recommends A + B first. Not in 9L scope — decide after the split.
+- **✅ (2026-11-14) UAT practice data cleaned** (`review-seed.js cleanup`: 12 listings + 2 fake sellers deleted).
+- **🔴 (2026-11-08) Do NOT open a uat → main PR until the 9L release:** `origin/uat` is 30 commits ahead of main incl. all 9L code; merging without 019 + 020 on prod breaks every seller edit / approver sign-up. **Prod hotfixes (incl. npm audit fix) branch from `main`.**
+- **✅ (2026-11-08 12:50) Uptime monitor RESOLVED** — Better Stack free, www /health, 3 min, email test alert received. Small leftovers (Nagesh): confirm ≥1 region ticked (Asia preferred) + grey example fields (Authorization header, proxy, metadata, body) are placeholders, not values; optional timeout 30 s → 10 s; invite Arun to the Better Stack team if free plan allows; delete the disabled Sentry monitor "MapIt prod /health" (id 10889098); check **Namecheap Auto-Renew ON** for mapit.co.in (domain expiry check is paid in Better Stack).
+- **✅ (2026-11-08 13:05) `npm audit` RESOLVED** — PR #32 merged; 1 moderate left (`uuid` ^10 in package.json but never imported — possible later tidy-up: remove the unused dependency). uat/9L branch still run the old lockfile until the 9L release merge (or merge main → uat earlier).
+- **ℹ️ (2026-11-08) `/health` is shallow** (no Supabase call) — uptime monitor catches app/deploy/DNS failures, not DB outages. Possible later: DB-aware health check.
+- **ℹ️ (2026-11-08) Stale entries below — RESOLVED (verified 2026-11-08):** 🔴 stored XSS (2026-10-08), 🔴 listings "Allow public read" (2026-10-09), 🔴 Share Feedback on iPhone (2026-10-16), 🟡 rotate bypass secret, 🟡 prod Supabase auto-pause, 🟡 main-page innerHTML audit. Still open from the 10-15 audit: Resend Full-access key swap, prod redirect URLs (exact www + bare), remove `SUPABASE_DB_PASSWORD` from Vercel → post-9L clean-up.
+- **ℹ️ (2026-11-08) Grievance Officer without a name** — accepted risk; with public outreach now, Arun to reconsider adding a name (IT Rules 2021 r.3(2)).
+- **ℹ️ (2026-11-08) Sentry alert mails → mapit.backend@gmail.com** — Gmail forwarding filter (from sentry.io → nagesh.aadi@) still not set.
+- **⚠️ (2026-11-08) Lesson: the 6 Nov invite links never worked** (no invite rows existed). Before sending any invite: check Team shows it OPEN + test the combined link in incognito. The "~13 Nov expiry" note below is obsolete; wife 2's code expires 7 days after it is created.
+- **ℹ️ (2026-11-08) 9L branch / uat still on the OLD lockfile** (npm audit fix only on main) — harmless; release merge is clean (uat never changed the lockfile).
+- **💡 (2026-11-08) Production user request: sellers want to see "number of views".** Finding: ALREADY BUILT and live since 2026-06-27 (`94054d1`) — `listings.views_count` + `POST /api/listings/:id/view` (called on every detail open); listing detail shows "👁 N views" to EVERYONE incl. the seller. Gaps: (a) not shown on My Listings cards (seller must open each listing); (b) counts every open incl. the seller's own + repeat opens; (c) read-then-write increment (lost updates under concurrency — fix = atomic RPC, needs a migration); (d) no per-IP limit beyond /api 1000. Proposed small build AFTER 9L release: 👁 on My Listings cards + skip the call when the viewer is the owner (frontend only, no migration). DECIDED (Nagesh, 2026-11-08): keep views PUBLIC. Reply to the user meanwhile: "open your listing — views show under the address".
+- **⏰ (2026-11-06) Invite codes expire ~13 Nov** (7 days) — if a wife hasn't signed up by then: cancel + new invite + new combined link. Vercel access cookie = 7 days from first open per browser (reopen link if a Vercel login appears).
+- **ℹ️ (2026-11-06) No notification on approver access requests** — Nagesh checks Team → Waiting (or James queries UAT `staff_members` status=requested). Possible small later feature: email admins on access-request.
+- **ℹ️ (2026-11-06) UAT Supabase is Free plan — may pause after ~1 week inactive**; if uat data stops loading, Supabase dashboard → Restore project.
+- **ℹ️ (2026-11-06) Nagesh must not decide the seeded listings himself** (admin sees the same queue).
+- **⚠️ (2026-11-06) Team panel "Share on WhatsApp" link has no `_vercel_share` token** → during UAT send the combined link by hand (`https://uat.mapit.co.in/review?invite=<CODE>&_vercel_share=<TOKEN>`); not an issue on prod (no Vercel protection).
+- **ℹ️ (2026-11-06) Both wives share one queue** — 12 listings split between them; run `seed 2` early if one sees All clear.
+- **ℹ️ (2026-11-06) Supabase Advisors also show 15 Warnings + 14 Info** — not reviewed; once after the 9L release. Screenshot project not named — Nagesh to confirm prod shows the same single Error.
+- **ℹ️ (2026-11-06) Wives guide copy lives in the scratchpad** (temp folder) — Nagesh copies it out before sending; rebuild = inline the repo guide again.
+- **✅ (2026-11-06) Resolved — Vercel Shareable Link on the `uat` branch** (created by Nagesh from deployment `0831a8a`; token NOT stored in git — Nagesh has it). James curl-tested with no Vercel login: link → 307 + `_vercel_jwt` cookie (Max-Age 604800 = **7 days**, per browser, per host uat.mapit.co.in); with the cookie `/`, `/review`, `/review?invite=…`, `/api/config` (UAT Supabase), `/api/review/invite/check`, `/user-guide.html` all 200 (`/api/listings` 401 = MapIt's own login, i.e. Vercel let it through). **Combined link works:** `https://uat.mapit.co.in/review?invite=<CODE>&_vercel_share=<TOKEN>` → 307 to `/review?invite=<CODE>` with cookie → 200. Send each wife that ONE link (solves WhatsApp in-app browser vs Chrome cookie split). **Revoke after UAT** (Deployment → Share → "Only people with access") — on the step 7 checklist.
+- **(superseded) ⏸ (2026-11-01) Wives can't open uat.mapit.co.in without a Vercel login** (Vercel Authentication, 302). Options for next session: (a) a Vercel shareable link for the uat deployment (no Vercel account needed; check how long it stays valid and that it covers /review + /api), (b) invite them as Vercel Viewer seats (Rule 11: confirm $0 first), (c) turn protection off only during the test (least preferred). Decide before step 6.
+- **⚠️ (2026-11-01) Release order now 019 AND 020 on prod before merging 9L** — without 020, every new approver sign-up fails (access-request reads review_invites); without 019, seller edits fail.
+- **ℹ️ (2026-11-01) Reviewer guide artifact is private** — Nagesh shares it from its Share menu; Team screenshots show his +approver1/2 test aliases (offer: blur). Guide says mapit.co.in/review (post-release address); during UAT use uat.mapit.co.in/review.
+- **ℹ️ (2026-11-01) UAT test approvers +approver1 ("Test Approver") and +approver2 ("Approver@2") are active on UAT** — keep or delete (Nagesh to decide).
+- **ℹ️ (2026-11-01) Admin page old Pending section (approve / hard-delete Remove) is unreachable but still in public/admin.html** — delete after the release settles.
+- **✅ (2026-11-01) Part 2 brief approved and built** (A refresh, B seller emails, C race checks; manual email check done).
+- **ℹ️ (2026-11-01) Review page must save the NEW refresh_token after every refresh** (Supabase rotates them; keeping the old one logs the approver out after ~2 h). Check in step 4.
+- **ℹ️ (2026-11-01) Windows PowerShell 5.1 shows any 4xx reply as a red error** — the first line is the server's JSON; use `try { … } catch { $_.Exception.Response.StatusCode.value__ ; $_.ErrorDetails.Message }` for clean output.
+- **ℹ️ (2026-10-31) Main app has no `#my-listings` link handler** — seller emails will link there; build the handler in step 5 (same release).
+- **ℹ️ (2026-10-31) Local server must be restarted after backend edits** (Node does not reload) — stale server caused one false FAIL (R31) today.
+- **ℹ️ (2026-10-31) Headless Chrome `--window-size` under ~500 px crops instead of resizing** — use DevTools `Emulation.setDeviceMetricsOverride` for real phone-width checks (as guide-shots does). Playwright is not installed.
+- **⚠️ (2026-10-31) Release order is now mandatory for 9L:** `PUT /api/listings/:id` writes `review_claimed_by`/`review_claimed_until` (019 columns). If 9L code reaches prod before 019 runs there, **every seller edit fails**. At release: 019 on prod → verify → then merge.
+- **ℹ️ (2026-10-31) Review claim keep-alive not built:** approve/reject only need `review_claimed_by = me`, so an expired-but-untaken claim still works; if someone else took it, 409 + reload. The plan's "Still reviewing? Tap to keep it" is optional for step 4.
+- **ℹ️ (2026-10-30) Python is not installed on the Windows laptop** (`python` opens the Microsoft Store alias) — use `node -e` for helper scripts. **✅ (2026-11-06) Resolved: Python 3.14.10 installed (user scope, winget); `python` / `py` work in new terminals.**
+- **ℹ️ (2026-10-30) File is `Context.md` in git, not `CONTEXT.md`** — Windows ignores case (`core.ignorecase=true`); keep scripts/docs consistent so they also work on Linux (Vercel).
 - **ℹ️ (2026-10-29) `GET /api/listings` has no result cap** — fine at today's volume; at thousands of listings a 65 km Whole city search needs a limit / "load more".
 - **ℹ️ (2026-10-28) Turning expiry back on needs a plan** — `expires_at` is still written, so flipping `LISTING_EXPIRY_ENABLED` to true would hide every listing older than 30 days at once; push dates forward first (with 9H).
 - **ℹ️ (2026-10-28) `RENT_ONLY_SUBCATS` (page) and `RENT_ONLY_SUBCATEGORIES` (server) are two lists** — comments in both; server is the real rule.
@@ -2136,6 +2317,41 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-14, Nagesh) Guide wording stays as is** — wife 1's wrong decisions were deliberate tests. Mistake-alert feature (A + B recommended) decided after the split.
+- **(2026-11-14, Nagesh) 019 + 020 ran on prod BEFORE the code merge** (code depends on them; additive, so safe to run first).
+- **(2026-11-14, James — proposed) Merge `main` into 9L before uat → main PR** so uat preview tests 9L + audit fix together and the PR holds only 9L.
+- **(2026-11-08, Nagesh) Listing preview before "Submit for review" is built AS PART OF the wizard** (screen ⑤), not earlier on the current form. Reuse the real listing-detail renderer (single source of truth); preview must not call the view counter.
+- **(2026-11-08, James — recommendation, pending Nagesh + Arun) Frontend split option 1 right after 9L, before the wizard** — file is ~5,900 lines / 345 KB / 251 functions; blocks parallel work; split at a quiet moment so the wizard is born in `js/post-wizard.js`. Vite stays v2.
+- **(2026-11-08, Nagesh) Wizard work today = design brief only, no code** — 9L UAT must finish first (same file, possible 9L fixes, Rule 2).
+- **(2026-11-08, Nagesh) Remote Control trial postponed.**
+- **(2026-11-08, Nagesh) Listing view count stays PUBLIC** (seller + buyers see "👁 N views"). Follow-up right after 9L release: 👁 on My Listings cards + don't count the owner's own opens; atomic increment with the next migration.
+- **(2026-11-08, Nagesh) Order: SPF → uptime monitor → npm audit fix → wives UAT.**
+- **(2026-11-08, Nagesh + James) SPF: merge into one record** (not delete the Resend/SES part) — zero breakage, reversible; Resend parts at root are redundant but harmless.
+- **(2026-11-08, Nagesh) Uptime monitor = Better Stack free** (not a Sentry paid seat — Rule 11; not UptimeRobot — free plan may be non-commercial only). Confirm free-plan limits at sign-up.
+- **(2026-11-06, Nagesh) Wives UAT starts tomorrow or the day after**; wives tell Nagesh on WhatsApp when they see "Thanks" (no build of an access-request notification now — scope).
+- **(2026-11-06, Nagesh + James) `spatial_ref_sys` Supabase alert = accepted risk until after 9L release** — PostGIS table, no user data, owned by supabase_admin (can't enable RLS); real fix = move PostGIS out of `public` (ask Supabase support, UAT first).
+- **(2026-11-06, James) Wives get uat via a Vercel Shareable Link (uat branch)** — free on Pro, no Vercel account, follows the branch, no expiry until revoked; not Viewer seats (cost check) or protection off (public uat).
+- **(2026-11-06, James) Practice data via a committed UAT script (`scripts/uat/review-seed.js`)**, not ad-hoc SQL — fake @example.com sellers (no emails), batches for multi-day tests, answer key via `status`, reusable for future approver training.
+- **(2026-11-06, James) Wives get a trimmed standalone guide** (no Team section, UAT "Next time" wording); repo guide stays the post-release version.
+- **(2026-11-01, Nagesh) Wives UAT on another day**; 9L pushed to uat now (fast-forward, no PR to main yet).
+- **(2026-11-01, James) Reviewer guide kept in the repo AND published as a private artifact** so the wives can open it on a phone; same content, theme-aware styling.
+- **(2026-11-01, Nagesh) D18: seller edit keeps `rejection_reason`** — My Listings shows it only while status is rejected; allows a later "Resubmitted, last time: …" hint for approvers.
+- **(2026-11-01, Nagesh) D16: /review sign-up needs a personal invite link** (admin creates in Team panel; one-time, 7 days); the invite does NOT activate — admin still taps Activate. New table `review_invites` (migration 020), not the archived `invite_codes` (Rule 9).
+- **(2026-11-01, Nagesh) D17: Sign out is a visible header button**, not in the ☰ menu; menu (Queue/Team) shows for admins only.
+- **(2026-11-01, Nagesh) D15: /review mockup approved** (`docs/technical/review-page-mockup.html`, screenshot `docs/screenshots/session-9l/mockup-review-page-v1.png`): Reject · ✏️ Change · Approve + Skip; "Still reviewing? Keep it" banner LEFT OUT; "about N left" kept; waiting screen promises "usually the same day".
+- **(2026-11-01, Nagesh) D12: refresh = backend route** (not supabase-js in the browser, not longer token life). Per-request Supabase client so the shared anon client never holds a user's session.
+- **(2026-11-01, Nagesh) D13: seller emails never name the approver**; reason text = `rejection_reason`, so the email and My Listings always agree.
+- **(2026-11-01, Nagesh) D14: keep automated race checks** (C1–C3) in `uat:review` — no manual tapping needed; a pass is strong evidence, the real guard is SKIP LOCKED + conditional update.
+- **(2026-10-31, Nagesh) D9 reversed: approved listings need no note** (removed from route + email; no "Note from MapIt" in My Listings).
+- **(2026-10-31, Nagesh) D10: no more posting on sellers' behalf** — real sellers post directly (friends & family forward the link); nobody reviews their own listing, admins included. (Admin 🔁 Transfer tab stays as is.)
+- **(2026-10-31, Nagesh) D11: third decision "Needs change"** (was "withdraw") — option A, no migration: status stays `rejected`, reason group (change/reject) sets the seller heading; button name "Needs change"; reasons added later from real feedback (code only).
+- **(2026-10-31, Nagesh) D6: approve/reject need "still pending AND claimed by me"**; seller edit clears the claim → approver gets 409 "This listing just changed, loading again" (no approving text never seen).
+- **(2026-10-31, Nagesh) D7: history row written after the status change** (not one transaction; failure logged with IDs only; no migration 020).
+- **(2026-10-31, Nagesh) D8: `uat:review` suite built in part 1**, extended in part 2.
+- **(2026-10-31, Nagesh) D9: "Approve with note" button** — note (max 300) saved in `listing_reviews.reason_note` and shown to the seller in the live email (James assumption: seller-visible; say if it should be internal). Button itself = step 4 (frontend).
+- **(2026-10-31, Nagesh) Roster table worth building now** (future staff), despite one 2–5 ms lookup per review request.
+- **(2026-10-30) Bring uat into 9L by merge, not rebase** — merge is non-destructive (no rewritten commits, backup branch stays meaningful); later 9L → uat merge will not re-conflict with Release 3.
+- **(2026-10-30) Context.md conflicts: run the superset check first** (lines only in the incoming copy); if all are older versions of entries the other copy updated, keep the newer file whole; otherwise combine by hand.
 - **(2026-10-29, Nagesh) Whole city radius = 65 km** (James: radius is measured from the user, so edge-to-edge needs more than 50 km — e.g. Electronic City → Airport ~45 km, Anekal → Devanahalli ~60–65 km; 65 km reaches the growth belts where plots come from, inside the 100 km map bounds). Listings beyond 65 km of the user only via Explore — accepted. No circle drawn.
 - **(2026-10-29, Nagesh) Explore = move the map first; search optional behind 🔍** (Option 2 of 4; rejected: always-open field (implies typing), field + map hint, "Search this area" button (changes Explore + sits on the map)). Add a first-time "drag the map" hint only if UAT testers still miss panning.
 - **(2026-10-29) Description lines by length, not field groups** — one rule for all types, no per-type layout to maintain.
@@ -2552,7 +2768,129 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
-**⬅ NOW (2026-10-29 18:30) — ordered:**
+**⬅ NOW (2026-11-14 14:43, after break) — ordered (resume with /resume):**
+1. Nagesh says go → merge `origin/main` into `feat/session-9l-review-queue` (stop if conflict) → `npm run uat:review` on UAT.
+2. Fast-forward `uat` to the 9L branch + push → Vercel preview → check uat.mapit.co.in/review.
+3. Open PR uat → main; Nagesh/Arun merge → `npm run smoke:prod` (+ check prod /review loads).
+4. Prod: invites for both wives (Team panel) → activate → revoke the uat Shareable Link.
+5. Nagesh: Better Stack check (Asia region, delete old Sentry monitor, Namecheap auto-renew).
+6. Frontend split option 1 on a new branch from clean main → views follow-up → posting wizard.
+7. Later: mistake-alert (A + B); fix `compare-schema-inventory.js` false match on wrapped input.
+
+**⬅ NOW (2026-11-08 14:18, end of day) — ordered (resume with /resume):**
+1. **Wife 2 sign-up** (tomorrow / day after): new invite in Team → combined link `https://uat.mapit.co.in/review?invite=<CODE>&_vercel_share=<TOKEN>` (token: uat deployment `0831a8a` → Share) → incognito test → send → Activate.
+2. **Wife 1 + 2 finish batch 1** (11 pending); ask wife 1 why "2BHK independent house" got Needs change. Then `seed 2` / `seed 3` → `status` → feedback → Nagesh + Arun sign-off → `cleanup`.
+3. Push the 9L branch (10 local docs commits) with the next 9L step; optionally merge `main` (npm audit fix) into 9L/uat first.
+4. **Step 7 release:** 019 + 020 on PROD first → schema diff → PR uat → main → `smoke:prod` → wives' invites on prod → revoke uat Shareable Link.
+5. Nagesh shares the wizard brief (PDF) with Arun → collect Q1, Q2, Q4 (+ confirm Q3 full preview).
+6. After 9L: views follow-up (👁 on My Listings, skip owner's own views) → frontend split option 1 (if agreed) → posting wizard with preview (phone mockups first).
+7. Nagesh's small leftovers: Better Stack regions/placeholders, delete Sentry monitor, Namecheap auto-renew. Post-9L clean-up list (Resend key, redirect URLs, `SUPABASE_DB_PASSWORD`, Sentry Gmail forward, Grievance Officer name).
+
+**⬅ (2026-11-08 ~14:00) — ordered (superseded):**
+1. **Wife 2 sign-up** — tomorrow or day after (festival today): new invite in Team → combined link (token from uat deployment `0831a8a` → Share) → incognito test → send → activate.
+2. Wife 1 continues batch 1 (11 pending); ask why "2BHK independent house" got Needs change. Then `seed 2` / `seed 3` → `status` → sign-off → step 7.
+3. **Logged (not started) — seller "views" request (production user, 2026-11-08):** see Open Issues. Small follow-up AFTER 9L release.
+4. **Posting wizard brief SAVED (2026-11-08):** `docs/business/posting-wizard-brief.html` (linked in docs/index.html) — Nagesh shares with Arun; 4 open questions (draft text-only?, photo required?, summary vs full preview, split file first?). James now recommends: after 9L → views follow-up → **frontend split option 1** (one session, before the wizard, may end the Two-File Rule) → wizard (phone mockups first). Design only, no code.
+5. **NEW build noted (Nagesh, 2026-11-08): listing PREVIEW before "Submit for review"** — seller sees the listing exactly as buyers will (photos, title, price, details, description, approximate area on map), with Edit links back to each part. Answers wizard brief Q3 (full preview, not summary card; Arun to confirm). Home = wizard screen ⑤; reuse the existing listing-detail renderer so preview = real view (no second layout to maintain). DECIDED (Nagesh, 2026-11-08): build inside the wizard.
+
+**⬅ (2026-11-08 11:18) — ordered:**
+1. ✅ **Uptime** — Better Stack live, test alert received (12:50). Leftovers in Open Issues (regions/placeholders check, delete Sentry monitor, Namecheap auto-renew).
+2. ✅ **npm audit fix** — PR #32 merged (`aef8443`), smoke:prod 14/14.
+3. **9L wives UAT** — 2026-11-06 list below (check sign-ups, activate, seed 2/3, sign-off, step 7 release).
+4. Post-9L clean-up: Resend key → Sending access; prod redirect URLs; remove `SUPABASE_DB_PASSWORD` from Vercel; Gmail forward for sentry.io; Arun: Grievance Officer name.
+
+**⬅ NOW (2026-11-06 18:17, end of day) — ordered (resume with /resume):**
+1. Wives sign up (they WhatsApp Nagesh) → Nagesh **Activates** each in Team → Waiting (or ask James "any requests?").
+2. They review batch 1 (12). Day 2: `node -r dotenv/config scripts/uat/review-seed.js seed 2`; day 3: `seed 3`. `status` = expected vs actual + who; collect their feedback.
+3. If not signed up by ~13 Nov: re-issue invites. If uat data fails: check UAT Supabase not paused.
+4. Nagesh + Arun sign-off → `cleanup`; decide +approver1/+approver2; push branch (`a895a39`+) to uat.
+5. **Step 7 release:** 019 + 020 on PROD first → verify + schema diff → PR uat → main → `smoke:prod` → wives invites on prod → **revoke the uat Shareable Link**.
+6. After release: delete admin old Pending section; Supabase Advisors 15 Warnings / 14 Info; ask Supabase re PostGIS out of `public`; tell the seller Releases 1–3 are live.
+7. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap; maybe admin email on access-request.
+
+**⬅ (superseded) NOW (2026-11-06 18:12) — ordered:**
+1. Commit `scripts/uat/review-seed.js` + `.gitignore` + Context.md to `feat/session-9l-review-queue` (Nagesh OK pending).
+2. Nagesh sends each wife the standalone guide (copy out of the scratchpad first), then creates her invite in Team and sends the combined link `…/review?invite=<CODE>&_vercel_share=<TOKEN>`.
+3. Wives sign up → Nagesh activates in Team → they review batch 1.
+4. Day 2: `node -r dotenv/config scripts/uat/review-seed.js seed 2`; day 3: `seed 3`. Check `status` (expected vs actual, who) + collect their feedback.
+5. Nagesh + Arun sign-off → `cleanup`; decide +approver1/+approver2 test accounts.
+6. **Step 7 release:** 019 + 020 on PROD first → verify + schema diff → PR uat → main → `smoke:prod` → wives invites on prod → **revoke the uat Shareable Link**.
+7. After release: delete admin old Pending section; review Supabase Advisors 15 Warnings / 14 Info; ask Supabase about moving PostGIS out of `public`; tell the seller Releases 1–3 are live.
+8. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap.
+
+**⬅ (superseded) NOW (2026-11-01 17:09, end of day) — ordered:**
+1. ✅ ~~**Wives' access to uat**~~ DONE 2026-11-06: Vercel Shareable Link (uat branch), curl-tested; send combined link `…/review?invite=<CODE>&_vercel_share=<TOKEN>`. Revoke after UAT.
+1b. ✅ **UAT practice listings (2026-11-06):** new `scripts/uat/review-seed.js` (UAT-only guard, fake @example.com sellers Ramesh Gowda / Priya Nair → no real emails, titles end "(TEST)", photo ROWS reuse existing UAT photo URLs, storage untouched). **Batch 1 seeded: 12 pending** (6 approve, 4 needs-change: contact info / price ₹1 / wrong category / photos mismatch, 2 reject: spam / ivory). Day 2: `node -r dotenv/config scripts/uat/review-seed.js seed 2` (6: duplicate, location-in-Mysuru, counterfeit, 3 approve); day 3: `seed 3` (5). `status` = expected vs actual per listing + who decided (answer key, not for approvers). After UAT: `cleanup`. State file `scripts/uat/.review-seed.json` (git-ignored) — don't delete before cleanup.
+2. **Step 6 UAT:** Nagesh/Arun create invite links in the Team panel on uat.mapit.co.in/review (Share on WhatsApp) + share the reviewer guide artifact → wives sign up → admin Activates → they review UAT listings (post a few test listings first) → Nagesh + Arun sign-off.
+3. Decide: keep/delete UAT test approvers +approver1/+approver2; blur aliases in guide screenshots if wanted.
+4. **Step 7 release:** 019 + 020 on PROD first (SQL Editor picker = jneoxwumccmjwaojfazh) → verify + schema diff → PR uat → main → `smoke:prod` → invites for the wives on prod → **revoke the uat Shareable Link**.
+5. After release: delete admin old Pending section; tell the seller Releases 1–3 are live.
+6. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap.
+7. ✅ ~~**🐍 Install Python on the Windows laptop**~~ DONE 2026-11-06: Python 3.14.10 via `winget install --id Python.Python.3.14 --scope user` (+ `py` launcher, pip 26.2.2), user PATH puts Python before WindowsApps (Store alias no longer wins). No packages installed yet — install per need (prefer a venv per tool).
+8. **Supabase "Action required" weekly alerts (2026-11-06):** 17 emails 31 May–31 Oct (`supabase_action_required_alerts R1.xlsx`), all `rls_disabled_in_public`. Same known item as 2026-07-08: PostGIS `spatial_ref_sys` (UAT check 31 PASS / 0 FAIL / 1 WARN = A-18). ✅ Nagesh confirmed in Advisors → Security (2026-11-06): 1 Error = `public.spatial_ref_sys` only (screenshot's project not named — confirm prod shows the same). **Decision: accepted risk until after 9L release**; real fix = move PostGIS out of `public` (ask Supabase support, UAT first). Same page shows **15 Warnings + 14 Info** — not reviewed yet; review once after the 9L release (out of scope now).
+
+**⬅ (superseded) NOW (2026-11-01 17:01) — ordered (resume with /resume):**
+1. **HTML guide for the approvers (wives)**: invite link → create account → wait → review (card, Change/Reject/Approve/Skip, what the seller sees); plus a Team-panel section for Nagesh/Arun (invite, activate, revoke). Real screenshots from session-9l.
+2. Decide: keep or delete UAT test approvers `+approver1`/`+approver2`.
+3. Step 6: push branch → uat → wives get invite links from the Team panel (uat.mapit.co.in/review) → test with UAT listings → Nagesh + Arun sign-off.
+4. Step 7 release: **019 + 020 on prod FIRST** → verify → PR uat → main → smoke:prod → invites for the wives on prod.
+5. After release: delete the unreachable admin Pending section; tell the seller Releases 1–3 are live.
+
+**⬅ (superseded) NOW (2026-11-01 15:27) — ordered (resume with /resume):**
+1. **Nagesh click-tests 4c** (Team: activate Approver@2, sign in as it and review a TEST listing; create + cancel an invite; Revoke + Activate again).
+2. **Cleanup UAT test data** when done: `node -r dotenv/config <scratchpad>/seed-4b.js cleanup` (or by title "(TEST)"), delete `+approver1`/`+approver2` accounts.
+3. Step 5: seller side (My Listings `rejection_reason` + Edit & resubmit + `#my-listings` handler; admin Pending → link) — before/after screenshots.
+4. HTML guide for the approvers (wives) — invite link → sign up → wait → review; Team panel guide for Nagesh/Arun.
+5. Step 6 UAT with both wives (invite links from the Team panel) → sign-off. Step 7 release: **019 + 020 on prod FIRST** → verify → PR → smoke.
+
+**⬅ (2026-11-01 13:23, superseded) — ordered:**
+1. ✅ ~~**9L step 3: phone mockup**~~ approved 2026-11-01 (D15). ~~of `public/review.html` (sign-up / sign-in / waiting / queue card with Reject · Needs change · Approve + Skip / reason sheet / Team panel) → Nagesh OK; before screenshots (Rule 12).
+2. Step 4: build `public/review.html` (uses `/api/auth/refresh`, saves the new refresh token) → localhost click-test at phone width.
+3. Step 5: seller side — My Listings shows `rejection_reason` + Edit & resubmit + `#my-listings` handler; admin Pending → link (MapIt_MVP_v1.html + sync public/index.html).
+4. **HTML guide for the approvers (wives)** — exact flow + how to operate the review page, step by step with screenshots of the real page (Nagesh request 2026-11-01). Build after step 4 so it shows the real screens; `docs/` + link from docs/index.html.
+5. Step 6: UAT with both wives → Nagesh + Arun sign-off. Step 7 release: **019 on prod FIRST** → verify → PR uat → main → `smoke:prod`.
+6. Nagesh shares `docs/business/listing-approval-process.html` with Arun; tells the seller Releases 1–3 are live.
+7. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap.
+
+**⬅ ✅ DONE (2026-11-01): items 1–2 below (part 2 approved + built).**
+
+**⬅ NOW (2026-10-31 19:52, end of day) — ordered (resume with /resume):**
+1. **Nagesh approves the 9L part 2 brief** (A `POST /api/auth/refresh`; B Needs change / Reject seller emails via `notifySellerListingReviewed`, button → `/#my-listings`; C suite: refresh + two-approver race; one manual email check to his UAT inbox).
+2. Build part 2 → restart local server → `npm run uat:review` + `uat:transfer` → commit (local).
+3. Nagesh shares `docs/business/listing-approval-process.html` with Arun; collect answers to its 3 questions.
+4. 9L steps 3–7: phone mockup (Reject / Needs change / Approve + Skip) → `public/review.html` → seller side (My Listings shows `rejection_reason` + Edit & resubmit + `#my-listings` handler; admin Pending → link) → UAT with both wives → release: **019 on prod FIRST**, then merge.
+5. Nagesh tells the seller Releases 1–3 are live.
+6. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H (incl. "Remove with reason" for live listings); listings result cap.
+
+**⬅ NOW (2026-10-31 19:05) — ordered:** *(superseded by 19:52 list below)* (D11 Needs change DONE)
+1. **9L step 2 part 2:** `POST /api/auth/refresh`, seller email for Needs change + Reject (`notifySeller.js`, heading by group), extend `uat:review` (refresh, emails, two approvers claiming at once).
+2. Commit part 1 + part 2 on the 9L branch (local).
+3. 9L steps 3–7 (phone mockup with Approve / Approve with note / Reject → `public/review.html` → seller side → UAT with both wives → release: **019 on prod FIRST**, then merge).
+4. Nagesh tells the seller Releases 1–3 are live.
+5. Later: wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap.
+
+**⬅ ✅ DONE (2026-10-31): item 1 below (9L step 2 part 1).**
+
+**⬅ NOW (2026-10-30 18:24, paused for urgent work) — ordered (resume with /resume):**
+1. **9L step 2 part 1:** Rule-1 design brief (Nagesh approves first) → `requireReviewer` in `auth.js` + `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve`, `/:id/reject`, `/:id/release`, `/team`).
+2. **9L step 2 part 2:** `POST /api/auth/refresh`, seller rejection email (`notifySeller.js`), `npm run uat:review` incl. two approvers claiming at once.
+3. 9L steps 3–7 (phone mockup → `public/review.html` → seller side → UAT with both wives → release, 019 on prod first).
+4. Nagesh tells the seller Releases 1–3 are live.
+5. Later: 5-screen wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap (when volume grows).
+
+**⬅ ✅ DONE (2026-10-30): item 1 below (uat merged into 9L, `e16317c`).**
+
+**⬅ (2026-10-29 18:47, end of day) — ordered (resume with /resume):**
+1. **Merge uat into `feat/session-9l-review-queue`** (local only; resolve Context.md by keeping uat's — it is the superset now).
+2. **9L step 2 part 1:** Rule-1 design brief → `requireReviewer` in `auth.js` + `src/routes/review.js` (`/me`, `/access-request`, `/next`, `/:id/approve`, `/:id/reject`, `/:id/release`, `/team`).
+3. **9L step 2 part 2:** `POST /api/auth/refresh`, seller rejection email (`notifySeller.js`), `npm run uat:review` incl. two approvers claiming at once.
+4. 9L steps 3–7 (phone mockup → `public/review.html` → seller side → UAT with both wives → release, 019 on prod first).
+5. Nagesh tells the seller Releases 1–3 are live.
+6. Later: 5-screen wizard + tips + chips; chat pop-up; admin "₹ ₹" fix; 9H; listings result cap (when volume grows).
+
+**⬅ ✅ DONE (2026-10-29 18:50): items 1–2 below (Release 3 live, PR #31). NOW: item 3 (9L backend), item 4 (tell the seller).**
+
+**⬅ (2026-10-29 18:30) — ordered:**
 1. **Release 3 to uat:** push `fix/feedback-03` → merge to uat → uat.mapit.co.in check by Nagesh + Arun (radius menu, Whole city, Write it for me, Explore + 🔍 on a phone).
 2. PR `uat → main` → `smoke:prod` → prod spot check.
 3. **9L step 2 — backend** (unchanged, list below). Rebase/merge uat into `feat/session-9l-review-queue` first so it carries Release 3.

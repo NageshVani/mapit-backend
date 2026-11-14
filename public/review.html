@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>MapIt Review</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- ============================================================
+     MapIt Review — listing review queue for approvers (Session 9L)
+     Mockup: docs/technical/review-page-mockup.html (approved D15).
+     Step 4a: sign in / create account / waiting + session refresh.
+     Every /api/review route is gated server-side (requireReviewer /
+     requireAdmin); the screens here are only a friendly front door.
+     ============================================================ -->
+<style>
+:root{
+  --ink:#F7F9FC;--deep:#EDF0F5;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
+  --orange:#F06030;--orange2:#FF7A50;
+  --blue:#3B82F6;--green:#22C55E;--gold:#F59E0B;--red:#EF4444;
+  --text:#111827;--muted:#6B7280;--muted2:#4B5563;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--text);font-size:15px;-webkit-tap-highlight-color:transparent}
+button,input{font-family:inherit;font-size:inherit}
+.hide{display:none !important}
+
+.app{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;background:var(--ink)}
+.hdr{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--border2);padding:12px 14px;display:flex;align-items:center;gap:8px}
+.logo{font-weight:700;font-size:17px}.logo b{color:var(--orange)}
+.pill{margin-left:auto;background:var(--card);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted2);font-weight:600}
+.menu-btn{margin-left:auto;background:none;border:0;font-size:22px;color:var(--muted2);padding:2px 6px;cursor:pointer}
+.out-btn{margin-left:auto;background:none;border:1.5px solid var(--border2);border-radius:9px;padding:5px 10px;font-weight:600;font-size:13px;color:var(--muted2);cursor:pointer}
+.pill + .out-btn,.out-btn + .menu-btn{margin-left:0}
+.dd{position:absolute;right:10px;top:50px;background:var(--panel);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);width:180px;overflow:hidden;z-index:6}
+.dd button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:13px 14px;font-weight:600;cursor:pointer}
+.dd button:last-child{border-bottom:0}
+.dd .danger{color:var(--red)}
+.view{flex:1;padding:18px 16px 28px}
+.who{background:#FFF7ED;border-bottom:1px solid #FED7AA;color:#9A3412;font-size:12.5px;font-weight:600;padding:6px 14px;overflow-wrap:anywhere}
+.center{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:70vh}
+
+.tabs{display:flex;background:var(--card);border-radius:10px;padding:3px;margin-bottom:16px}
+.tabs button{flex:1;padding:9px;border:0;border-radius:8px;font-weight:600;color:var(--muted);background:transparent;cursor:pointer}
+.tabs .on{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:12px 0 5px}
+.in{width:100%;background:var(--panel);border:1.5px solid var(--border2);border-radius:10px;padding:12px;font-size:16px;color:var(--text);outline:none}
+.in:focus{border-color:var(--orange)}
+.code-in{letter-spacing:.5em;text-align:center;font-size:22px;font-weight:700}
+.btn{display:block;width:100%;text-align:center;padding:14px;border-radius:12px;font-weight:700;font-size:15px;margin-top:18px;background:var(--orange);color:#fff;border:0;cursor:pointer}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.ghost{background:transparent;border:1.5px solid var(--border2);color:var(--text)}
+.btn.narrow{width:200px}
+.link{background:none;border:0;color:var(--muted2);text-decoration:underline;font-weight:600;cursor:pointer;padding:6px}
+.note{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:10px}
+.hint{background:#FFF7ED;border:1px solid #FDBA74;color:#9A3412;border-radius:10px;padding:10px;font-size:12.5px;line-height:1.4;margin-top:16px}
+.msg{font-size:13px;font-weight:600;margin-top:10px;line-height:1.4}
+.msg.err{color:var(--red)}.msg.ok{color:#15803D}
+.invite-ok{background:#F0FDF4;border:1px solid #86EFAC;color:#166534;border-radius:10px;padding:10px;font-size:13px;font-weight:600;line-height:1.4}
+/* card (screens 4–5) */
+#card{padding-bottom:130px}
+.photos{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;background:#1F2937;height:260px;scrollbar-width:none}
+.photos::-webkit-scrollbar{display:none}
+.photos img{flex:0 0 100%;width:100%;height:260px;object-fit:contain;scroll-snap-align:center;cursor:zoom-in}
+.ph-wrap{position:relative}
+.ctr{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;border-radius:12px;padding:3px 9px}
+.no-photo{height:120px;display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--muted);font-size:13px}
+.flag{margin:12px 14px 0;background:#FEF2F2;border:1px solid #FCA5A5;color:#991B1B;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600;line-height:1.4}
+.cbody{padding:12px 14px}
+.ttl{font-size:18px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.price{font-size:20px;font-weight:700;color:var(--orange);margin-top:4px}
+.meta{font-size:13px;color:var(--muted2);margin-top:6px;line-height:1.5}
+.desc{font-size:14.5px;line-height:1.55;margin-top:10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.specs div{background:var(--card);border-radius:8px;padding:6px 8px;font-size:12px;color:var(--muted2);overflow-wrap:anywhere}
+.specs b{display:block;font-size:13px;color:var(--text)}
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;background:var(--panel);border-top:1px solid var(--border2);padding:10px 10px calc(8px + env(safe-area-inset-bottom));z-index:4}
+.btns{display:flex;gap:7px}
+.b{flex:1;height:56px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer}
+.b.rej{border:2px solid var(--red);color:var(--red);background:#fff}
+.b.chg{border:2px solid var(--gold);color:#B45309;background:#FFFBEB}
+.b.ok{background:var(--green);color:#fff;border:0;flex:1.25}
+.b:disabled,.skip:disabled{opacity:.4;cursor:default}
+.skip{display:block;margin:0 auto;background:none;border:0;font-size:13.5px;color:var(--muted2);font-weight:600;padding:9px 12px 2px;text-decoration:underline;cursor:pointer}
+
+/* sheet (screens 6–7) */
+.dim{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:8}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;background:var(--panel);border-radius:18px 18px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom));z-index:9}
+.grab{width:40px;height:4px;background:var(--card2);border-radius:2px;margin:0 auto 10px}
+.sh{font-size:17px;font-weight:700}
+.ss{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1.5px solid var(--border2);border-radius:18px;padding:8px 12px;font-size:13px;font-weight:500;background:#fff;cursor:pointer;text-align:left}
+.chip.on{border-color:var(--orange);background:#FFF1EB;color:#C2410C;font-weight:700}
+.ta{width:100%;border:1.5px solid var(--border2);border-radius:10px;padding:10px;font-size:15px;min-height:70px;resize:vertical;outline:none;font-family:inherit}
+.ta:focus{border-color:var(--orange)}
+.cnt{text-align:right;font-size:11px;color:var(--muted);margin-top:3px}
+.prev{background:var(--card);border-radius:10px;padding:9px 10px;font-size:13px;line-height:1.45;margin-top:8px;overflow-wrap:anywhere}
+.prev b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.send{display:flex;gap:8px;margin-top:12px}
+.send button{flex:1;padding:14px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;border:0}
+.send .c{border:1.5px solid var(--border2);background:#fff}
+.send .s.change{background:var(--gold);color:#fff}
+.send .s.reject{background:var(--red);color:#fff}
+.send .s:disabled{opacity:.45;cursor:default}
+
+.toast{position:fixed;left:50%;top:62px;transform:translateX(-50%);background:#111827;color:#fff;border-radius:22px;padding:9px 16px;font-size:13.5px;font-weight:600;max-width:92%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:10}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:11;display:flex;align-items:center;justify-content:center}
+.viewer img{max-width:100%;max-height:100%;object-fit:contain}
+/* team (screen 10) */
+.sec{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px}
+.mem{background:var(--panel);border:1px solid var(--border2);border-radius:12px;padding:11px 12px;margin-bottom:8px}
+.mem .n{font-weight:700;font-size:14.5px;overflow-wrap:anywhere}
+.mem .e{font-size:12px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.acts{display:flex;gap:7px;margin-top:9px}
+.acts button,.acts a{flex:1;text-align:center;padding:9px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;font-family:inherit}
+.a-ok{background:var(--green);color:#fff;border:0}
+.a-no{background:#fff;border:1.5px solid var(--border2);color:var(--muted2)}
+.a-rv{background:#fff;border:1.5px solid var(--red);color:var(--red)}
+.a-wa{background:#25D366;color:#fff;border:0}
+.acts button:disabled{opacity:.5;cursor:default}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px;margin-left:6px;vertical-align:2px}
+.t-req,.t-open{background:#FEF3C7;color:#92400E}.t-act,.t-used{background:#DCFCE7;color:#166534}.t-rev,.t-expired,.t-cancelled{background:var(--card);color:var(--muted)}
+.link-box{margin-top:8px;background:var(--card);border-radius:9px;padding:9px 10px;font-size:13px;font-weight:600;overflow-wrap:anywhere;user-select:all}
+.empty{font-size:13px;color:var(--muted);padding:2px 2px 6px}
+.big-ico{font-size:56px}
+.big-t{font-size:20px;font-weight:700;margin-top:10px}
+.big-s{font-size:14px;color:var(--muted);line-height:1.5;max-width:280px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <div class="logo">Map<b>It</b> Review</div>
+    <div class="pill hide" id="countPill"></div>
+    <button class="out-btn hide" id="outBtn" onclick="signOut()">Sign out</button>
+    <!-- Menu only switches Queue / Team, so only admins see it -->
+    <button class="menu-btn hide" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">☰</button>
+    <div class="dd hide" id="menu">
+      <button onclick="menuGo('queue')">📋 Review queue</button>
+      <button onclick="menuGo('team')">👥 Team</button>
+    </div>
+  </div>
+  <!-- Who is reviewing — always visible, a phone may be shared at home -->
+  <div class="who hide" id="whoBar"></div>
+
+  <!-- 1 + 2: sign in / create account -->
+  <div class="view hide" id="v-auth">
+    <div class="tabs">
+      <button id="tabIn" class="on" onclick="setTab('in')">Sign in</button>
+      <button id="tabUp" onclick="setTab('up')">Create account</button>
+    </div>
+
+    <form id="f-in" onsubmit="signIn(event)">
+      <label for="inEmail">Email</label>
+      <input class="in" id="inEmail" type="email" autocomplete="email" required>
+      <label for="inPwd">Password</label>
+      <input class="in" id="inPwd" type="password" autocomplete="current-password" required>
+      <button class="btn" id="inBtn">Sign in</button>
+      <div style="text-align:center;margin-top:8px"><button type="button" class="link" onclick="forgotPassword()">Forgot password?</button></div>
+    </form>
+
+    <div class="hint hide" id="noInvite">To join the review team you need a personal invite link from the MapIt team. Already have an account? Use <b>Sign in</b>.</div>
+
+    <form id="f-up" class="hide" onsubmit="sendCode(event)">
+      <div class="invite-ok">✅ You have been invited to the MapIt review team.</div>
+      <label for="upEmail">Email</label>
+      <input class="in" id="upEmail" type="email" autocomplete="email" required>
+      <label for="upName">Your name</label>
+      <input class="in" id="upName" type="text" autocomplete="name" maxlength="40" placeholder="Shown to the MapIt team" required>
+      <label for="upPwd">Choose a password</label>
+      <input class="in" id="upPwd" type="password" autocomplete="new-password" required>
+      <div class="note" style="margin-top:6px">8+ characters, one capital letter, one symbol.</div>
+      <button class="btn" id="upBtn">Email me a code</button>
+      <div class="note">Already use MapIt with this email? This sets a new password for that account too.</div>
+    </form>
+
+    <form id="f-code" class="hide" onsubmit="verifyCode(event)">
+      <div class="note" style="margin-top:0">We emailed a 6-digit code to <b id="codeEmail"></b>. Check Spam if it doesn't arrive in a minute.</div>
+      <label for="codeIn">Code</label>
+      <input class="in code-in" id="codeIn" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required>
+      <button class="btn" id="codeBtn">Request access</button>
+      <div style="text-align:center;margin-top:8px"><button type="button" class="link" onclick="setTab('up')">Change email</button></div>
+    </form>
+
+    <div class="msg" id="authMsg"></div>
+    <div class="hint">This page is only for the MapIt review team. Buying or selling? Go to <b>www.mapit.co.in</b>.</div>
+  </div>
+
+  <!-- name form: signed in, but never asked for access (e.g. an existing buyer account) -->
+  <div class="view hide" id="v-request">
+    <div class="big-t" style="margin-top:20px">Join the review team</div>
+    <div class="big-s" style="max-width:none">Tell us your name and the MapIt team will activate your account.</div>
+    <div class="hint hide" id="reqNoInvite">You need a personal invite link from the MapIt team to join. Please ask them for one, then open it on this phone.</div>
+    <form id="f-req" onsubmit="requestAccess(event)">
+      <label for="reqName">Your name</label>
+      <input class="in" id="reqName" type="text" maxlength="40" required>
+      <button class="btn" id="reqBtn">Request access</button>
+    </form>
+    <div class="msg" id="reqMsg"></div>
+  </div>
+
+  <!-- 3: waiting -->
+  <div class="view hide" id="v-waiting">
+    <div class="center">
+      <div class="big-ico">⏳</div>
+      <div class="big-t" id="waitTitle">Thanks</div>
+      <div class="big-s">Your request has been sent. The MapIt team will activate your account, usually the same day.</div>
+      <button class="btn ghost narrow" onclick="route()">Check again</button>
+    </div>
+  </div>
+
+  <!-- revoked -->
+  <div class="view hide" id="v-revoked">
+    <div class="center">
+      <div class="big-ico">🔒</div>
+      <div class="big-t">Access turned off</div>
+      <div class="big-s">Your review access is not active. Please contact the MapIt team.</div>
+    </div>
+  </div>
+
+  <!-- 4–8: queue card -->
+  <div class="view hide" id="v-queue" style="padding:0">
+    <div id="card"></div>
+    <div class="bar" id="bar">
+      <div class="btns">
+        <button class="b rej" data-act onclick="openSheet('reject')">✕ Reject</button>
+        <button class="b chg" data-act onclick="openSheet('change')">✏️ Change</button>
+        <button class="b ok" data-act onclick="approve()">✓ Approve</button>
+      </div>
+      <button class="skip" data-act onclick="skip()">Skip for now</button>
+    </div>
+  </div>
+
+  <!-- 9: all clear -->
+  <div class="view hide" id="v-clear">
+    <div class="center">
+      <div class="big-ico" id="clearIco">🎉</div>
+      <div class="big-t" id="clearTitle">All clear</div>
+      <div class="big-s" id="clearText">No listings are waiting for review. Thank you!</div>
+      <button class="btn ghost narrow" onclick="checkAgain()">Check again</button>
+    </div>
+  </div>
+
+  <!-- 10: team (admins only — every /team and /invites route is requireAdmin) -->
+  <div class="view hide" id="v-team">
+    <div class="sec" style="margin-top:0">Invite someone</div>
+    <form class="mem" onsubmit="createInvite(event)">
+      <label for="invName" style="margin-top:0">Who is it for?</label>
+      <input class="in" id="invName" type="text" maxlength="40" placeholder="e.g. Priya" required>
+      <button class="btn" id="invBtn" style="margin-top:10px">Create invite link</button>
+      <div class="msg" id="invMsg"></div>
+      <div class="hide" id="invOut">
+        <div class="note" style="margin-top:10px">Personal link for <b id="invFor"></b>, works once, valid 7 days. It is shown only now, so copy or share it.</div>
+        <div class="link-box" id="invLink"></div>
+        <div class="acts">
+          <button type="button" class="a-no" onclick="copyInvite()">Copy link</button>
+          <a class="a-wa" id="invWa" target="_blank" rel="noopener">Share on WhatsApp</a>
+        </div>
+      </div>
+    </form>
+    <div id="teamLists"><div class="note">Loading…</div></div>
+  </div>
+
+  <div class="view" id="v-loading"><div class="center"><div class="big-s">Loading…</div></div></div>
+</div>
+
+<!-- 6 + 7: reason sheet (Change / Reject) -->
+<div class="dim hide" id="dim" onclick="closeSheet()"></div>
+<div class="sheet hide" id="sheet" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="sh" id="sheetTitle"></div>
+  <div class="ss" id="sheetSub"></div>
+  <div class="chips" id="chips"></div>
+  <label for="noteIn" id="noteLbl"></label>
+  <textarea class="ta" id="noteIn" rows="3" oninput="updateSheet()"></textarea>
+  <div class="cnt" id="noteCnt"></div>
+  <div class="prev" id="prev"><b>The seller will see</b><span id="prevText"></span></div>
+  <div class="msg" id="sheetMsg"></div>
+  <div class="send">
+    <button class="c" onclick="closeSheet()">Cancel</button>
+    <button class="s" id="sendBtn" onclick="sendDecision()"></button>
+  </div>
+</div>
+
+<div class="toast hide" id="toast"></div>
+<div class="viewer hide" id="viewer" onclick="this.classList.add('hide')"><img id="viewerImg" alt=""></div>
+
+<script>
+// ── Session (own key — never mixes with a buyer login in the same browser) ──
+const SESSION_KEY = 'mapit_review_session';
+const REFRESH_EARLY_MS = 5 * 60 * 1000;   // renew 5 min before the 1 h token ends
+let session = null;      // { access_token, refresh_token, expires_at (seconds) }
+let me = null;           // GET /api/review/me
+let refreshTimer = null;
+let refreshing = null;   // one refresh at a time (shared promise)
+
+function loadSession() {
+  try { session = JSON.parse(localStorage.getItem(SESSION_KEY)) || null; } catch { session = null; }
+}
+function saveSession(s) {
+  session = s ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at } : null;
+  try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(session)) : localStorage.removeItem(SESSION_KEY); } catch {}
+  scheduleRefresh();
+}
+
+// Supabase ROTATES refresh tokens: always save the new one (saveSession does).
+async function refreshSession() {
+  if (!session?.refresh_token) return false;
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    try {
+      const r = await fetch('/api/auth/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: session.refresh_token }) });
+      if (!r.ok) return false;
+      saveSession((await r.json()).session);
+      return true;
+    } catch { return false; }
+    finally { refreshing = null; }
+  })();
+  return refreshing;
+}
+
+function scheduleRefresh() {
+  clearTimeout(refreshTimer);
+  if (!session?.expires_at) return;
+  const wait = Math.max(session.expires_at * 1000 - Date.now() - REFRESH_EARLY_MS, 0);
+  refreshTimer = setTimeout(refreshSession, wait);
+}
+
+// Phones pause timers while the screen is off, so check again on return.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && session?.expires_at
+      && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) refreshSession();
+});
+
+// ── API helper: on 401, refresh once and retry; still 401 → sign-in screen ──
+async function api(method, url, body, retried) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (session?.access_token) headers.Authorization = 'Bearer ' + session.access_token;
+  let r;
+  try {
+    r = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  } catch {
+    throw new Error('No connection. Please check your internet and try again.');
+  }
+  const data = await r.json().catch(() => ({}));
+  if (r.status === 401 && session && !retried) {
+    if (await refreshSession()) return api(method, url, body, true);
+    saveSession(null);
+    show('auth');
+    throw new Error('Your session ended. Please sign in again.');
+  }
+  if (!r.ok) { const e = new Error(data.error || 'Something went wrong. Please try again.'); e.status = r.status; e.data = data; throw e; }
+  return data;
+}
+
+// ── Views ──
+const VIEWS = ['auth', 'request', 'waiting', 'revoked', 'queue', 'clear', 'team', 'loading'];
+function show(name) {
+  VIEWS.forEach(v => document.getElementById('v-' + v).classList.toggle('hide', v !== name));
+  const signedIn = !!session && name !== 'auth';
+  document.getElementById('outBtn').classList.toggle('hide', !signedIn);
+  const who = document.getElementById('whoBar');
+  const whoName = me?.display_name || me?.email;
+  who.textContent = whoName ? `👤 Signed in as ${whoName}${me.access === 'admin' ? ' (admin)' : ''}` : '';
+  who.classList.toggle('hide', !signedIn || !whoName);
+  document.getElementById('menuBtn').classList.toggle('hide', !signedIn || me?.access !== 'admin');
+  document.getElementById('menu').classList.add('hide');
+  document.getElementById('bar').classList.toggle('hide', name !== 'queue');
+  if (name !== 'queue' && name !== 'clear') document.getElementById('countPill').classList.add('hide');
+  window.scrollTo(0, 0);
+}
+function toggleMenu() { document.getElementById('menu').classList.toggle('hide'); }
+function menuGo(v) { v === 'queue' ? loadNext() : loadTeam(); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('#menu') && !e.target.closest('#menuBtn')) document.getElementById('menu').classList.add('hide');
+});
+
+function setMsg(id, text, kind = 'err') {
+  const el = document.getElementById(id);
+  el.textContent = text || '';
+  el.className = 'msg ' + kind;
+}
+function busy(btnId, on, label) {
+  const b = document.getElementById(btnId);
+  if (on) { b.dataset.label = b.textContent; b.textContent = label || 'Please wait…'; }
+  else if (b.dataset.label) b.textContent = b.dataset.label;
+  b.disabled = on;
+}
+
+// Decide the screen from the server's answer, never from local guesses
+async function route() {
+  if (!session) return show('auth');
+  show('loading');
+  try {
+    me = await api('GET', '/api/review/me');
+  } catch (e) {
+    if (!session) return;                 // api() already showed sign-in
+    document.getElementById('v-loading').querySelector('.big-s').textContent = e.message;
+    return;
+  }
+  if (me.access === 'admin' || me.access === 'active') return loadNext();
+  if (me.access === 'requested') {
+    document.getElementById('waitTitle').textContent = me.display_name ? `Thanks, ${me.display_name.split(' ')[0]}` : 'Thanks';
+    return show('waiting');
+  }
+  if (me.access === 'revoked') return show('revoked');
+  document.getElementById('f-req').classList.toggle('hide', !inviteValid);
+  document.getElementById('reqNoInvite').classList.toggle('hide', inviteValid);
+  if (invite && !inviteValid) setMsg('reqMsg', INVITE_BAD_MSG);
+  show('request');
+}
+
+// ── Personal invite link (D16): /review?invite=K7P2-QX9M ──
+// Kept for this tab only (sessionStorage), so a reload or the code email
+// doesn't lose it. The server checks it again on access-request.
+const INVITE_KEY = 'mapit_review_invite';
+let invite = null;        // the code from the link
+let inviteValid = false;  // GET /api/review/invite/check
+
+function loadInvite() {
+  const fromUrl = new URLSearchParams(location.search).get('invite');
+  try {
+    if (fromUrl) sessionStorage.setItem(INVITE_KEY, fromUrl);
+    invite = fromUrl || sessionStorage.getItem(INVITE_KEY);
+  } catch { invite = fromUrl; }
+}
+function clearInvite() {
+  invite = null; inviteValid = false;
+  try { sessionStorage.removeItem(INVITE_KEY); } catch {}
+  if (location.search) history.replaceState(null, '', location.pathname);
+}
+async function checkInvite() {
+  if (!invite) return;
+  try { inviteValid = (await api('GET', '/api/review/invite/check?code=' + encodeURIComponent(invite))).valid === true; }
+  catch { inviteValid = false; }
+}
+const INVITE_BAD_MSG = 'This invite link is not valid, already used or expired. Please ask the MapIt team for a new one.';
+
+// ── Sign in ──
+function setTab(t) {
+  document.getElementById('tabIn').classList.toggle('on', t === 'in');
+  document.getElementById('tabUp').classList.toggle('on', t !== 'in');
+  document.getElementById('f-in').classList.toggle('hide', t !== 'in');
+  document.getElementById('f-up').classList.toggle('hide', t !== 'up' || !inviteValid);
+  document.getElementById('noInvite').classList.toggle('hide', t !== 'up' || inviteValid);
+  document.getElementById('f-code').classList.toggle('hide', t !== 'code');
+  setMsg('authMsg', '');
+}
+
+async function signIn(e) {
+  e.preventDefault();
+  setMsg('authMsg', '');
+  busy('inBtn', true, 'Signing in…');
+  try {
+    const data = await api('POST', '/api/auth/signin', {
+      email: document.getElementById('inEmail').value, password: document.getElementById('inPwd').value });
+    saveSession(data.session);
+    document.getElementById('inPwd').value = '';
+    await route();
+  } catch (err) {
+    setMsg('authMsg', /invalid login/i.test(err.message) ? 'Email or password is not right.' : err.message);
+  } finally { busy('inBtn', false); }
+}
+
+// Reset link opens the MapIt app, which sets the new password; then come back here.
+async function forgotPassword() {
+  const email = document.getElementById('inEmail').value.trim();
+  if (!email) return setMsg('authMsg', 'Type your email above first, then tap Forgot password.');
+  try {
+    await api('POST', '/api/auth/reset-password', { email, redirectTo: location.origin + '/' });
+    setMsg('authMsg', 'Reset link sent. It opens MapIt to set a new password; then come back to this page and sign in.', 'ok');
+  } catch (err) { setMsg('authMsg', err.message); }
+}
+
+// ── Create account: details → code → password → sign in again → request access ──
+let pending = null;   // { email, name, password } until the code is verified (never stored)
+
+async function sendCode(e) {
+  e.preventDefault();
+  setMsg('authMsg', '');
+  const email = document.getElementById('upEmail').value.trim().toLowerCase();
+  const name = document.getElementById('upName').value.trim().replace(/\s+/g, ' ');
+  const password = document.getElementById('upPwd').value;
+  if (name.length < 2) return setMsg('authMsg', 'Please enter your name (2–40 characters).');
+  busy('upBtn', true, 'Sending code…');
+  try {
+    await api('POST', '/api/auth/signup', { email, password });
+    pending = { email, name, password };
+    document.getElementById('codeEmail').textContent = email;
+    document.getElementById('codeIn').value = '';
+    setTab('code');
+    document.getElementById('codeIn').focus();
+  } catch (err) { setMsg('authMsg', err.message); }
+  finally { busy('upBtn', false); }
+}
+
+async function verifyCode(e) {
+  e.preventDefault();
+  if (!pending) return setTab('up');
+  setMsg('authMsg', '');
+  busy('codeBtn', true, 'Checking…');
+  try {
+    const v = await api('POST', '/api/auth/verify-otp', { email: pending.email, token: document.getElementById('codeIn').value.trim() });
+    saveSession(v.session);
+    await api('PUT', '/api/auth/password', { password: pending.password });
+    // Setting a password ends the session it was set with (Session 9a finding),
+    // so sign in again with the new password before going on.
+    const s = await api('POST', '/api/auth/signin', { email: pending.email, password: pending.password });
+    saveSession(s.session);
+    await api('POST', '/api/review/access-request', { display_name: pending.name, invite });
+    pending = null;
+    clearInvite();
+    document.getElementById('upPwd').value = '';
+    await route();
+  } catch (err) {
+    setMsg('authMsg', /expired|invalid/i.test(err.message) ? 'That code is not right or has expired. Check it, or go back and send a new one.' : err.message);
+  } finally { busy('codeBtn', false); }
+}
+
+// Signed in, but never requested access (e.g. signed in with a buyer account)
+async function requestAccess(e) {
+  e.preventDefault();
+  setMsg('reqMsg', '');
+  busy('reqBtn', true, 'Sending…');
+  try {
+    await api('POST', '/api/review/access-request', { display_name: document.getElementById('reqName').value, invite });
+    clearInvite();
+    await route();
+  } catch (err) { setMsg('reqMsg', err.message); }
+  finally { busy('reqBtn', false); }
+}
+
+async function signOut() {
+  // Hand back the listing I hold, so nobody waits 5 min for the claim to run out
+  if (current) { try { await api('POST', `/api/review/${current.id}/release`); } catch {} }
+  current = null; skipped = [];
+  try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
+  saveSession(null);
+  me = null;
+  setTab('in');
+  show('auth');
+}
+
+// ── Queue (screens 4–9) ──
+// The server hands each approver a different listing for 5 minutes (claim).
+// skipped = listings skipped in this visit, so Next doesn't return them again.
+const SKIP_MAX = 50;          // = server SKIP_MAX
+const NEW_CARD_PAUSE_MS = 800; // a double tap can't decide the NEXT card by accident
+const CAT_LABEL = { re: 'Real Estate', veh: 'Vehicles', hh: 'Household' };
+const HIDE_DETAILS = new Set(['total_price', 'transaction_type']);
+let current = null;   // the listing on screen
+let skipped = [];
+let busyQueue = false;
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+// Exact amount, Indian grouping — approvers must spot an unrealistic price
+function priceText(l) {
+  if (!(l.price > 0)) return 'Price on request';
+  const rent = l.category === 're' && (l.details?.transaction_type === 'Rent' || /per\s*month|\/\s*month|monthly/i.test(l.price_label || ''));
+  return '₹' + Number(l.price).toLocaleString('en-IN') + (rent ? ' /month' : '');
+}
+function ago(iso) {
+  const m = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (m < 60) return `${m} min`;
+  const h = Math.round(m / 60);
+  return h < 48 ? `${h} h` : `${Math.round(h / 24)} days`;
+}
+const label = k => k.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+
+function setCount(remaining) {
+  const pill = document.getElementById('countPill');
+  pill.textContent = remaining > 0 ? `about ${remaining} left` : '0 left';
+  pill.classList.remove('hide');
+}
+
+function toast(text, ms = 1800) {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.remove('hide');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.add('hide'), ms);
+}
+
+function setActions(on) {
+  document.querySelectorAll('[data-act]').forEach(b => { b.disabled = !on; });
+}
+
+async function loadNext() {
+  if (busyQueue) return;
+  busyQueue = true;
+  setActions(false);
+  try {
+    const data = await api('POST', '/api/review/next', { skip: skipped.slice(-SKIP_MAX) });
+    setCount(data.remaining);
+    current = data.listing;
+    if (!current) {
+      const onlySkipped = skipped.length > 0;
+      document.getElementById('clearIco').textContent = onlySkipped ? '👍' : '🎉';
+      document.getElementById('clearTitle').textContent = onlySkipped ? 'Nothing more for now' : 'All clear';
+      document.getElementById('clearText').textContent = onlySkipped
+        ? 'You have skipped the rest for now. Tap Check again to see them.'
+        : 'No listings are waiting for review. Thank you!';
+      return show('clear');
+    }
+    renderCard(current);
+    show('queue');
+    setTimeout(() => setActions(true), NEW_CARD_PAUSE_MS);
+  } catch (err) {
+    if (err.status === 403) return route();   // access changed (e.g. revoked)
+    if (session) toast(err.message, 3500);
+  } finally { busyQueue = false; }
+}
+
+function checkAgain() { skipped = []; loadNext(); }
+
+function renderCard(l) {
+  const photos = (l.photos || []).filter(u => /^https:\/\//.test(u));
+  const photoHtml = photos.length
+    ? `<div class="ph-wrap"><div class="photos" id="photos">${photos.map(u => `<img src="${esc(u)}" alt="" loading="lazy" onclick="openPhoto(this.src)">`).join('')}</div>
+       <div class="ctr" id="photoCtr">1 / ${photos.length}</div></div>`
+    : '<div class="no-photo">No photos</div>';
+  const details = Object.entries(l.details || {})
+    .filter(([k, v]) => !HIDE_DETAILS.has(k) && v !== null && v !== '' && typeof v !== 'object')
+    .map(([k, v]) => `<div>${esc(label(k))}<b>${esc(v)}</b></div>`).join('');
+  document.getElementById('card').innerHTML = `
+    ${photoHtml}
+    ${l.flagged ? `<div class="flag">🚩 Flagged by the automatic check${l.flag_reason ? ': ' + esc(l.flag_reason) : ''}</div>` : ''}
+    <div class="cbody">
+      <div class="ttl">${esc(l.title)}</div>
+      <div class="price">${esc(priceText(l))}</div>
+      <div class="meta">${esc(CAT_LABEL[l.category] || l.category)} · ${esc(l.subcategory || '')} · ${esc(l.address || '')}<br>
+        Seller: ${esc(l.seller_name || '—')} · waiting ${esc(ago(l.created_at))}${l.reference_code ? ' · ' + esc(l.reference_code) : ''}</div>
+      <div class="desc">${esc(l.description || '')}</div>
+      ${details ? `<div class="specs">${details}</div>` : ''}
+    </div>`;
+  const strip = document.getElementById('photos');
+  if (strip) strip.addEventListener('scroll', () => {
+    const i = Math.round(strip.scrollLeft / strip.clientWidth) + 1;
+    document.getElementById('photoCtr').textContent = `${i} / ${photos.length}`;
+  }, { passive: true });
+}
+
+function openPhoto(src) {
+  document.getElementById('viewerImg').src = src;
+  document.getElementById('viewer').classList.remove('hide');
+}
+
+// After any decision: a 409 means someone else decided, the claim was taken
+// over, or the seller just edited it — never an error for the approver.
+async function decided(promise, okText) {
+  setActions(false);
+  try {
+    await promise;
+    current = null;
+    toast(okText);
+  } catch (err) {
+    if (err.status === 409) { current = null; toast(err.message, 3000); }
+    else if (err.status === 403) return route();
+    else { toast(err.message, 3500); setActions(true); return; }
+  }
+  loadNext();
+}
+
+function approve() {
+  if (!current) return;
+  decided(api('POST', `/api/review/${current.id}/approve`), '✓ Approved. Seller emailed.');
+}
+
+async function skip() {
+  if (!current) return;
+  setActions(false);
+  skipped.push(current.id);
+  try { await api('POST', `/api/review/${current.id}/release`); } catch {}
+  current = null;
+  loadNext();
+}
+
+// ── Reason sheet: Change (group 'change') / Reject (group 'reject') ──
+const SHEET = {
+  change: { title: '✏️ What needs to change?', sub: 'The seller can edit and send it again.', send: 'Send back', ok: '✏️ Sent back to the seller.' },
+  reject: { title: '✕ Why can\'t this go live?', sub: 'The seller is told the reason. You are never named.', send: 'Reject', ok: '✕ Rejected. Seller told why.' },
+};
+let sheetGroup = null, sheetReason = null;
+
+function openSheet(group) {
+  if (!current) return;
+  sheetGroup = group; sheetReason = null;
+  const s = SHEET[group];
+  document.getElementById('sheetTitle').textContent = s.title;
+  document.getElementById('sheetSub').textContent = s.sub;
+  const chips = document.getElementById('chips');
+  chips.innerHTML = '';
+  me.reasons.filter(r => r.group === group).forEach(r => {
+    const c = document.createElement('button');
+    c.className = 'chip';
+    c.textContent = r.label;
+    c.onclick = () => { sheetReason = r; chips.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === c)); updateSheet(); };
+    chips.appendChild(c);
+  });
+  document.getElementById('noteIn').value = '';
+  document.getElementById('noteIn').maxLength = me.note_max || 300;
+  const send = document.getElementById('sendBtn');
+  send.textContent = s.send;
+  send.className = 's ' + group;
+  setMsg('sheetMsg', '');
+  updateSheet();
+  document.getElementById('dim').classList.remove('hide');
+  document.getElementById('sheet').classList.remove('hide');
+}
+
+function closeSheet() {
+  document.getElementById('dim').classList.add('hide');
+  document.getElementById('sheet').classList.add('hide');
+}
+
+// Same sentence the server stores in rejection_reason (review.js decideWithReason)
+function updateSheet() {
+  const note = document.getElementById('noteIn').value.trim();
+  const max = me.note_max || 300;
+  const needNote = !!sheetReason?.noteRequired;
+  document.getElementById('noteLbl').textContent = needNote ? 'Note for the seller (needed for "Other")' : 'Note for the seller (optional)';
+  document.getElementById('noteCnt').textContent = `${note.length} / ${max}`;
+  const detail = !sheetReason ? '' : needNote ? note : (note ? `${sheetReason.label}: ${note}` : sheetReason.label);
+  const heading = me.headings?.[sheetGroup] || '';
+  document.getElementById('prevText').textContent = sheetReason ? `${heading}: ${detail || '…'}` : 'Choose a reason above.';
+  document.getElementById('sendBtn').disabled = !sheetReason || (needNote && !note) || note.length > max;
+}
+
+function sendDecision() {
+  if (!current || !sheetReason) return;
+  const action = sheetGroup === 'change' ? 'needs-change' : 'reject';
+  const body = { reason_code: sheetReason.code, note: document.getElementById('noteIn').value.trim() || undefined };
+  const ok = SHEET[sheetGroup].ok;
+  closeSheet();
+  decided(api('POST', `/api/review/${current.id}/${action}`, body), ok);
+}
+
+// ── Team (screen 10, admins) ──
+async function loadTeam() {
+  // Leaving the queue: hand back the listing I hold, so nobody waits 5 min
+  if (current) { const id = current.id; current = null; try { await api('POST', `/api/review/${id}/release`); } catch {} }
+  show('team');
+  document.getElementById('invOut').classList.add('hide');
+  setMsg('invMsg', '');
+  const box = document.getElementById('teamLists');
+  try {
+    const [{ team }, { invites }] = await Promise.all([api('GET', '/api/review/team'), api('GET', '/api/review/invites')]);
+    box.innerHTML = renderTeam(team) + renderInvites(invites);
+  } catch (err) {
+    if (err.status === 403) return route();
+    box.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  }
+}
+
+const shortDate = iso => new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+function renderTeam(team) {
+  const groups = [
+    ['requested', 'Waiting', 't-req', m => `<button class="a-ok" data-member="${esc(m.user_id)}" data-status="active">Activate</button><button class="a-no" data-member="${esc(m.user_id)}" data-status="revoked">Ignore</button>`],
+    ['active', 'Active', 't-act', m => `<button class="a-rv" data-member="${esc(m.user_id)}" data-status="revoked" data-confirm="${esc(m.display_name)}">Revoke</button>`],
+    ['revoked', 'Revoked', 't-rev', m => `<button class="a-ok" data-member="${esc(m.user_id)}" data-status="active">Activate again</button>`],
+  ];
+  return groups.map(([status, title, cls, buttons]) => {
+    const rows = team.filter(m => m.status === status);
+    const when = m => status === 'requested' ? `asked ${ago(m.requested_at)} ago` : `since ${shortDate(m.decided_at || m.requested_at)}`;
+    return `<div class="sec">${title} (${rows.length})</div>` + (rows.length
+      ? rows.map(m => `<div class="mem"><div class="n">${esc(m.display_name)}<span class="tag ${cls}">${status === 'requested' ? 'requested' : status}</span></div>
+          <div class="e">${esc(m.email || '—')} · ${esc(when(m))}</div><div class="acts">${buttons(m)}</div></div>`).join('')
+      : '<div class="empty">Nobody here.</div>');
+  }).join('');
+}
+
+function renderInvites(invites) {
+  const label = { open: 'open', used: 'used', expired: 'expired', cancelled: 'cancelled' };
+  return `<div class="sec">Invites (${invites.length})</div>` + (invites.length
+    ? invites.map(i => {
+        const info = i.status === 'used' ? `used by ${esc(i.used_by_name || 'a deleted account')} · ${esc(shortDate(i.used_at))}`
+          : i.status === 'open' ? `valid until ${esc(shortDate(i.expires_at))}`
+          : i.status === 'expired' ? `expired ${esc(shortDate(i.expires_at))}` : `cancelled ${esc(shortDate(i.cancelled_at))}`;
+        return `<div class="mem"><div class="n">For ${esc(i.display_name)}<span class="tag t-${i.status}">${label[i.status]}</span></div>
+          <div class="e">${info}</div>${i.status === 'open' ? `<div class="acts"><button class="a-no" data-cancel="${esc(i.id)}">Cancel invite</button></div>` : ''}</div>`;
+      }).join('')
+    : '<div class="empty">No invites yet.</div>');
+}
+
+// One click handler for every Team button (event delegation)
+document.getElementById('teamLists').addEventListener('click', async e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.confirm && !confirm(`Revoke ${b.dataset.confirm}? They lose access on their next tap.`)) return;
+  b.disabled = true;
+  try {
+    if (b.dataset.member) {
+      await api('POST', `/api/review/team/${b.dataset.member}`, { status: b.dataset.status });
+      toast(b.dataset.status === 'active' ? '✓ Activated' : 'Done');
+    } else if (b.dataset.cancel) {
+      await api('POST', `/api/review/invites/${b.dataset.cancel}/cancel`);
+      toast('Invite cancelled');
+    }
+  } catch (err) { toast(err.message, 3500); }
+  loadTeamLists();
+});
+
+async function createInvite(e) {
+  e.preventDefault();
+  setMsg('invMsg', '');
+  busy('invBtn', true, 'Creating…');
+  try {
+    const name = document.getElementById('invName').value.trim();
+    const data = await api('POST', '/api/review/invites', { display_name: name });
+    document.getElementById('invFor').textContent = data.invite.display_name;
+    document.getElementById('invLink').textContent = data.link;
+    const msg = `Hi ${data.invite.display_name}, you are invited to join the MapIt review team. `
+      + `Open this link on your phone to create your account (works once, valid 7 days):\n${data.link}`;
+    document.getElementById('invWa').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    document.getElementById('invOut').classList.remove('hide');
+    document.getElementById('invName').value = '';
+    loadTeamLists();
+  } catch (err) { setMsg('invMsg', err.message); }
+  finally { busy('invBtn', false); }
+}
+// Refresh the lists only — keeps the new link on screen
+async function loadTeamLists() {
+  try {
+    const [{ team }, { invites }] = await Promise.all([api('GET', '/api/review/team'), api('GET', '/api/review/invites')]);
+    document.getElementById('teamLists').innerHTML = renderTeam(team) + renderInvites(invites);
+  } catch {}
+}
+
+async function copyInvite() {
+  const text = document.getElementById('invLink').textContent;
+  try { await navigator.clipboard.writeText(text); toast('Link copied'); }
+  catch {
+    // Older phones / http: select the text so a long-press copies it
+    const r = document.createRange(); r.selectNodeContents(document.getElementById('invLink'));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    toast('Press and hold to copy', 2500);
+  }
+}
+
+// ── Start ──
+loadSession();
+loadInvite();
+(async () => {
+  if (session?.expires_at && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) await refreshSession();
+  scheduleRefresh();
+  await checkInvite();
+  // Opened from an invite link → straight to Create account
+  setTab(inviteValid ? 'up' : 'in');
+  if (invite && !inviteValid) setMsg('authMsg', INVITE_BAD_MSG);
+  route();
+})();
+</script>
+</body>
+</html>

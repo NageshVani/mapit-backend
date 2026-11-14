@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Review Page Mockup</title>
+<!-- Session 9L step 3 (2026-11-01): static mockup of public/review.html for Nagesh's OK.
+     Fake data only. Palette + font copied from public/admin.html. -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#F7F9FC;--deep:#EDF0F5;--panel:#FFFFFF;--card:#F0F3F8;--card2:#E3E8F0;
+  --orange:#F06030;--orange2:#FF7A50;
+  --blue:#3B82F6;--green:#22C55E;--gold:#F59E0B;--red:#EF4444;
+  --text:#111827;--muted:#6B7280;--muted2:#4B5563;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#DDE3EC;color:var(--text);padding:24px 16px 48px}
+.intro{max-width:1100px;margin:0 auto 20px}
+.intro h1{font-size:22px;margin-bottom:6px}
+.intro p{color:var(--muted2);font-size:14px;line-height:1.5}
+.grid{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.shot{width:360px}
+.label{font-weight:700;font-size:14px;margin-bottom:4px}
+.label span{display:inline-block;background:var(--orange);color:#fff;border-radius:50%;width:22px;height:22px;text-align:center;line-height:22px;font-size:12px;margin-right:6px}
+.cap{font-size:12.5px;color:var(--muted2);margin-bottom:10px;min-height:34px;line-height:1.4}
+
+/* phone */
+.phone{width:360px;height:740px;background:var(--ink);border-radius:28px;border:8px solid #1F2937;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+.hdr{background:var(--panel);border-bottom:1px solid var(--border2);padding:12px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo{font-weight:700;font-size:17px}.logo b{color:var(--orange)}
+.pill{margin-left:auto;background:var(--card);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted2);font-weight:600}
+.menu{font-size:20px;color:var(--muted2);padding:0 2px}
+.body{flex:1;overflow:hidden;padding:16px;position:relative}
+.center{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100%}
+
+/* forms */
+.tabs{display:flex;background:var(--card);border-radius:10px;padding:3px;margin-bottom:16px}
+.tabs div{flex:1;text-align:center;padding:8px;border-radius:8px;font-weight:600;font-size:14px;color:var(--muted)}
+.tabs .on{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.fl{font-size:12.5px;font-weight:600;color:var(--muted2);margin:12px 0 5px}
+.in{background:var(--panel);border:1.5px solid var(--border2);border-radius:10px;padding:12px;font-size:15px;color:var(--muted)}
+.in.filled{color:var(--text)}
+.otp{display:flex;gap:8px;justify-content:center;margin:6px 0}
+.otp div{width:40px;height:48px;border:1.5px solid var(--border2);border-radius:10px;background:var(--panel);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.btn{display:block;width:100%;text-align:center;padding:14px;border-radius:12px;font-weight:700;font-size:15px;margin-top:18px;background:var(--orange);color:#fff}
+.btn.ghost{background:transparent;border:1.5px solid var(--border2);color:var(--text)}
+.note{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:12px}
+.hint{background:#FFF7ED;border:1px solid #FDBA74;color:#9A3412;border-radius:10px;padding:10px;font-size:12.5px;line-height:1.4;margin-top:14px}
+
+/* card */
+.scroll{position:absolute;inset:0;bottom:118px;overflow:hidden}
+.photo{height:230px;background:linear-gradient(135deg,#C7B299,#8B6F4E);display:flex;align-items:center;justify-content:center;font-size:84px;position:relative}
+.ctr{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;border-radius:12px;padding:3px 9px}
+.dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55)}.dots i.on{background:#fff}
+.flag{margin:12px 14px 0;background:#FEF2F2;border:1px solid #FCA5A5;color:#991B1B;border-radius:10px;padding:8px 10px;font-size:12.5px;font-weight:600}
+.cbody{padding:12px 14px}
+.ttl{font-size:18px;font-weight:700;line-height:1.25}
+.price{font-size:20px;font-weight:700;color:var(--orange);margin-top:4px}
+.meta{font-size:13px;color:var(--muted2);margin-top:6px;line-height:1.5}
+.desc{font-size:14px;line-height:1.5;margin-top:10px}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.specs div{background:var(--card);border-radius:8px;padding:6px 8px;font-size:12px}.specs b{display:block;font-size:13px}
+.bar{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--border2);padding:10px 10px 8px}
+.btns{display:flex;gap:7px}
+.b{flex:1;height:56px;border-radius:12px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:4px}
+.b.rej{border:2px solid var(--red);color:var(--red);background:#fff}
+.b.chg{border:2px solid var(--gold);color:#B45309;background:#FFFBEB}
+.b.ok{background:var(--green);color:#fff;flex:1.25}
+.b.dis{opacity:.4}
+.skip{text-align:center;font-size:13.5px;color:var(--muted2);font-weight:600;padding:9px 0 2px;text-decoration:underline}
+
+/* sheet */
+.dim{position:absolute;inset:0;background:rgba(17,24,39,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-radius:18px 18px 0 0;padding:10px 16px 16px}
+.grab{width:40px;height:4px;background:var(--card2);border-radius:2px;margin:0 auto 10px}
+.sh{font-size:17px;font-weight:700}
+.ss{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1.5px solid var(--border2);border-radius:18px;padding:7px 11px;font-size:12.5px;font-weight:500}
+.chip.on{border-color:var(--orange);background:#FFF1EB;color:#C2410C;font-weight:700}
+.ta{border:1.5px solid var(--border2);border-radius:10px;padding:10px;font-size:13px;min-height:62px;margin-top:6px;color:var(--text);line-height:1.4}
+.ta.err{border-color:var(--red)}
+.cnt{text-align:right;font-size:11px;color:var(--muted);margin-top:3px}
+.err-t{font-size:12px;color:var(--red);font-weight:600;margin-top:3px}
+.prev{background:var(--card);border-radius:10px;padding:9px 10px;font-size:12.5px;line-height:1.45;margin-top:10px}
+.prev b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.send{display:flex;gap:8px;margin-top:12px}
+.send div{flex:1;text-align:center;padding:13px;border-radius:12px;font-weight:700;font-size:14.5px}
+.send .c{border:1.5px solid var(--border2)}
+.send .s1{background:var(--gold);color:#fff}
+.send .s2{background:var(--red);color:#fff}
+
+/* toast, team */
+.toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:#111827;color:#fff;border-radius:22px;padding:9px 16px;font-size:13.5px;font-weight:600;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.keep{position:absolute;left:12px;right:12px;bottom:128px;background:#EFF6FF;border:1.5px solid var(--blue);border-radius:12px;padding:10px 12px;font-size:13px;color:#1E40AF;font-weight:600;display:flex;align-items:center;gap:8px}
+.keep span{margin-left:auto;background:var(--blue);color:#fff;border-radius:8px;padding:6px 10px;font-size:12.5px}
+.dd{position:absolute;right:10px;top:50px;background:var(--panel);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);width:170px;overflow:hidden;z-index:2}
+.dd div{padding:12px 14px;font-size:14px;font-weight:600;border-bottom:1px solid var(--border)}
+.sec{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
+.mem{background:var(--panel);border:1px solid var(--border2);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.mem .n{font-weight:700;font-size:14.5px}
+.mem .e{font-size:12px;color:var(--muted);margin-top:1px}
+.mem .acts{display:flex;gap:7px;margin-top:8px}
+.mem .acts div{flex:1;text-align:center;padding:8px;border-radius:9px;font-weight:700;font-size:13px}
+.a-ok{background:var(--green);color:#fff}.a-no{border:1.5px solid var(--border2);color:var(--muted2)}.a-rv{border:1.5px solid var(--red);color:var(--red)}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px;margin-left:6px;vertical-align:2px}
+.t-req{background:#FEF3C7;color:#92400E}.t-act{background:#DCFCE7;color:#166534}.t-rev{background:var(--card);color:var(--muted)}
+
+.qs{max-width:1100px;margin:32px auto 0;background:#fff;border-radius:14px;padding:18px 20px}
+.qs h2{font-size:17px;margin-bottom:8px}
+.qs ol{padding-left:20px;font-size:14px;line-height:1.6;color:var(--muted2)}
+.qs b{color:var(--text)}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>MapIt Review page: phone mockup (Session 9L step 3)</h1>
+  <p>Static picture of <code>/review</code> for approval before building. Fake data only. 360 px wide (a typical Android phone). Same colours and font as the admin page. Questions for Nagesh at the bottom.</p>
+</div>
+
+<div class="grid">
+
+<!-- 1 Sign in -->
+<div class="shot">
+  <div class="label"><span>1</span>Sign in</div>
+  <div class="cap">Separate from the buyer app: its own saved login, so a buyer account in the same browser is never mixed up.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div></div>
+    <div class="body">
+      <div class="tabs"><div class="on">Sign in</div><div>Create account</div></div>
+      <div class="fl">Email</div><div class="in filled">priya@gmail.com</div>
+      <div class="fl">Password</div><div class="in filled">••••••••••</div>
+      <div class="btn">Sign in</div>
+      <div class="note" style="text-align:center">Forgot password? Use the same reset as the MapIt app.</div>
+      <div class="hint">This page is only for the MapIt review team. Buying or selling? Go to <b>www.mapit.co.in</b>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 Create account -->
+<div class="shot">
+  <div class="label"><span>2</span>Create account</div>
+  <div class="cap">Email → 6-digit code → name. The name is what Nagesh/Arun see in the Team list.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div></div>
+    <div class="body">
+      <div class="tabs"><div>Sign in</div><div class="on">Create account</div></div>
+      <div class="note" style="margin-top:0">We emailed a 6-digit code to <b>priya@gmail.com</b>.</div>
+      <div class="otp"><div>4</div><div>8</div><div>1</div><div>0</div><div>9</div><div>3</div></div>
+      <div class="fl">Your name</div><div class="in filled">Priya T</div>
+      <div class="fl">Choose a password</div><div class="in filled">••••••••••</div>
+      <div class="note" style="margin-top:6px">8+ characters, one capital letter, one symbol.</div>
+      <div class="btn">Request access</div>
+      <div class="note">Already use MapIt with this email? This sets a new password for that account too.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 Waiting -->
+<div class="shot">
+  <div class="label"><span>3</span>Waiting for approval</div>
+  <div class="cap">Signing up gives no access. Nagesh or Arun taps Activate in the Team list (screen 10).</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div><div class="menu" style="margin-left:auto">☰</div></div>
+    <div class="body center">
+      <div style="font-size:56px">⏳</div>
+      <div style="font-size:20px;font-weight:700;margin-top:10px">Thanks, Priya</div>
+      <div class="note" style="font-size:14px;max-width:260px">Your request has been sent. Nagesh or Arun will activate your account, usually the same day.</div>
+      <div class="btn ghost" style="width:200px">Check again</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 Queue card -->
+<div class="shot">
+  <div class="label"><span>4</span>The listing card</div>
+  <div class="cap">One listing at a time, oldest first. Buttons in the thumb zone. Skip = look at it later.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div><div class="pill">about 12 left</div><div class="menu">☰</div></div>
+    <div class="body" style="padding:0">
+      <div class="scroll">
+        <div class="photo">🪑<div class="dots"><i class="on"></i><i></i><i></i></div><div class="ctr">1 / 3</div></div>
+        <div class="cbody">
+          <div class="ttl">Teak wood dining table, 6 seater</div>
+          <div class="price">₹18,500</div>
+          <div class="meta">Household · Furniture · Koramangala 4th Block<br>Seller: Suresh · waiting 2 h · MI-HH-0142</div>
+          <div class="desc">Solid teak, 5 years old, minor scratches on one leg. Chairs included. Pickup only.</div>
+          <div class="specs"><div>Condition<b>Good</b></div><div>Age<b>5 years</b></div></div>
+        </div>
+      </div>
+      <div class="bar">
+        <div class="btns"><div class="b rej">✕ Reject</div><div class="b chg">✏️ Change</div><div class="b ok">✓ Approve</div></div>
+        <div class="skip">Skip for now</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5 Flagged card -->
+<div class="shot">
+  <div class="label"><span>5</span>Flagged by the AI check</div>
+  <div class="cap">Red banner when the automatic check found something. The approver still decides.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div><div class="pill">about 11 left</div><div class="menu">☰</div></div>
+    <div class="body" style="padding:0">
+      <div class="scroll">
+        <div class="photo" style="background:linear-gradient(135deg,#9CA3AF,#4B5563)">🛵<div class="dots"><i class="on"></i><i></i></div><div class="ctr">1 / 2</div></div>
+        <div class="flag">🚩 Flagged: phone number in the description</div>
+        <div class="cbody">
+          <div class="ttl">Honda Activa 2019, single owner</div>
+          <div class="price">₹42,000</div>
+          <div class="meta">Vehicles · Two-wheeler · Indiranagar<br>Seller: Ramesh · waiting 35 min · MI-VEH-0088</div>
+          <div class="desc">Well maintained, new tyres. Call 98xxxxxx21 for test ride.</div>
+        </div>
+      </div>
+      <div class="bar">
+        <div class="btns"><div class="b rej">✕ Reject</div><div class="b chg">✏️ Change</div><div class="b ok">✓ Approve</div></div>
+        <div class="skip">Skip for now</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6 Needs change sheet -->
+<div class="shot">
+  <div class="label"><span>6</span>Needs change</div>
+  <div class="cap">Fixable problems. Pick one reason, add a note if helpful. The preview shows exactly what the seller reads.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div><div class="pill">about 11 left</div><div class="menu">☰</div></div>
+    <div class="body" style="padding:0">
+      <div class="photo" style="background:linear-gradient(135deg,#9CA3AF,#4B5563)">🛵</div>
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sh">✏️ What needs to change?</div>
+        <div class="ss">The seller can edit and send it again.</div>
+        <div class="chips">
+          <div class="chip">Photos don't match the item</div><div class="chip">Wrong category</div>
+          <div class="chip">Price missing or unrealistic</div><div class="chip">Location looks wrong</div>
+          <div class="chip on">Phone number, email or links in the text</div>
+          <div class="chip">Details incomplete or misleading</div><div class="chip">Other</div>
+        </div>
+        <div class="fl">Note for the seller (optional)</div>
+        <div class="ta">Buyers contact you through MapIt chat, please remove the number.</div>
+        <div class="cnt">67 / 300</div>
+        <div class="prev"><b>The seller will see</b>Needs a small change: Phone number, email or links in the title or description: Buyers contact you through MapIt chat, please remove the number.</div>
+        <div class="send"><div class="c">Cancel</div><div class="s1">Send back</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 Reject sheet -->
+<div class="shot">
+  <div class="label"><span>7</span>Reject</div>
+  <div class="cap">Not acceptable on MapIt. "Other" needs a note; the Reject button stays off until there is one.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div><div class="pill">about 11 left</div><div class="menu">☰</div></div>
+    <div class="body" style="padding:0">
+      <div class="photo">🪑</div>
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sh">✕ Why can't this go live?</div>
+        <div class="ss">The seller is told the reason. You are never named.</div>
+        <div class="chips">
+          <div class="chip">This item is not allowed on MapIt</div><div class="chip">Duplicate of another listing</div>
+          <div class="chip">Looks like spam or a fake listing</div><div class="chip on">Other</div>
+        </div>
+        <div class="fl">Note for the seller (needed for "Other")</div>
+        <div class="ta err" style="color:var(--muted)">Type the reason…</div>
+        <div class="err-t">Please add a note for "Other".</div>
+        <div class="send"><div class="c">Cancel</div><div class="s2" style="opacity:.45">Reject</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 8 After decision + keep alive -->
+<div class="shot">
+  <div class="label"><span>8</span>After a decision</div>
+  <div class="cap">Toast, then the next card. Buttons are off for 0.8 s on a new card, so a double tap can't approve the next one.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div><div class="pill">about 10 left</div><div class="menu">☰</div></div>
+    <div class="body" style="padding:0">
+      <div class="scroll">
+        <div class="photo" style="background:linear-gradient(135deg,#93C5FD,#1D4ED8)">📺</div>
+        <div class="cbody">
+          <div class="ttl">Samsung 43" Smart TV</div>
+          <div class="price">₹14,000</div>
+          <div class="meta">Household · Electronics · HSR Layout<br>Seller: Anita · waiting 1 h · MI-HH-0143</div>
+        </div>
+      </div>
+      <div class="toast">✓ Approved. Seller emailed.</div>
+      <div class="bar">
+        <div class="btns"><div class="b rej dis">✕ Reject</div><div class="b chg dis">✏️ Change</div><div class="b ok dis">✓ Approve</div></div>
+        <div class="skip">Skip for now</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 9 All clear -->
+<div class="shot">
+  <div class="label"><span>9</span>All clear · ☰ menu open</div>
+  <div class="cap">Nothing waiting (also when only your own listings are left). The ☰ menu: Team shows for Nagesh + Arun only.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div><div class="pill">0 left</div><div class="menu">☰</div></div>
+    <div class="dd"><div>📋 Review queue</div><div>👥 Team</div><div style="color:var(--red);border:0">Sign out</div></div>
+    <div class="body center">
+      <div style="font-size:60px">🎉</div>
+      <div style="font-size:21px;font-weight:700;margin-top:10px">All clear</div>
+      <div class="note" style="font-size:14px;max-width:250px">No listings are waiting for review. Thank you!</div>
+      <div class="btn ghost" style="width:200px">Check again</div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 Team -->
+<div class="shot">
+  <div class="label"><span>10</span>Team (Nagesh + Arun only)</div>
+  <div class="cap">From the ☰ menu. Activate a request, Ignore a stranger, Revoke someone at once.</div>
+  <div class="phone">
+    <div class="hdr"><div class="logo">Map<b>It</b> Review</div><div class="pill">Team</div><div class="menu">☰</div></div>
+    <div class="body">
+      <div class="sec" style="margin-top:0">Waiting (1)</div>
+      <div class="mem"><div class="n">Priya T<span class="tag t-req">requested</span></div><div class="e">priya@gmail.com · 2 h ago</div>
+        <div class="acts"><div class="a-ok">Activate</div><div class="a-no">Ignore</div></div></div>
+      <div class="sec">Active (1)</div>
+      <div class="mem"><div class="n">Lakshmi N<span class="tag t-act">active</span></div><div class="e">lakshmi@gmail.com · since 30 Oct</div>
+        <div class="acts"><div class="a-rv">Revoke</div></div></div>
+      <div class="sec">Revoked (1)</div>
+      <div class="mem"><div class="n">Test Person<span class="tag t-rev">revoked</span></div><div class="e">someone@example.com · 28 Oct</div>
+        <div class="acts"><div class="a-ok">Activate again</div></div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="qs">
+  <h2>Decisions (Nagesh, 2026-11-01) — mockup APPROVED</h2>
+  <ol>
+    <li><b>Button order</b>: Reject · Change · Approve ✅</li>
+    <li><b>Middle button label</b>: "✏️ Change" ✅</li>
+    <li><b>"Still reviewing? Keep it" banner</b>: left out ❌ (deciding after 5 min still works if nobody else took the listing; otherwise 409 + next card)</li>
+    <li><b>Queue count</b> "about 12 left" in the header: keep ✅</li>
+    <li><b>Waiting screen</b> "usually the same day": OK to promise ✅</li>
+  </ol>
+</div>
+
+</body>
+</html>

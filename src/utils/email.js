@@ -14,6 +14,9 @@ async function sendEmail({ to, subject, html }) {
     console.warn('RESEND_API_KEY not set — email skipped:', subject);
     return;
   }
+  // Test accounts (UAT suites) use example.com, reserved by RFC 2606 — it can
+  // never receive mail, and every bounce hurts our Resend sender reputation.
+  if (/@example\.com$/i.test(String(to))) return;
 
   const res = await fetch(RESEND_API_URL, {
     method: 'POST',

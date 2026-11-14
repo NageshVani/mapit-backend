@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>MapIt Reviewer Guide</title>
+<!-- Session 9L (2026-11-01): guide for MapIt listing reviewers (approvers).
+     Screenshots: docs/screenshots/session-9l/ (UAT, phone width, test data). -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one reading column of white "sheets" on MapIt's cool grey, phone screenshots framed like the real phone. */
+:root{
+  --bg:#F3F5F9;--sheet:#FFFFFF;--soft:#EEF1F6;--line:rgba(17,24,39,.12);
+  --fg:#111827;--muted:#5B6474;
+  --accent:#F06030;--accent-soft:#FFF1EB;--accent-fg:#C2410C;
+  --ok:#15803D;--ok-soft:#ECFDF3;--ok-line:#22C55E;
+  --chg:#92400E;--chg-soft:#FFFBEB;--chg-line:#F59E0B;
+  --rej:#991B1B;--rej-soft:#FEF2F2;--rej-line:#EF4444;
+  --info:#1E40AF;--info-soft:#EFF6FF;--info-line:#BFDBFE;
+  --warn:#9A3412;--warn-soft:#FFF7ED;--warn-line:#FDBA74;
+  --frame:#1F2937;
+  --font:'Outfit',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F131A;--sheet:#171C25;--soft:#202734;--line:rgba(255,255,255,.12);
+  --fg:#E8ECF2;--muted:#A3ACBB;
+  --accent:#FF7A50;--accent-soft:#3A2018;--accent-fg:#FFB199;
+  --ok:#6EE7A0;--ok-soft:#10261A;--ok-line:#22C55E;
+  --chg:#FCD34D;--chg-soft:#2A2110;--chg-line:#F59E0B;
+  --rej:#FCA5A5;--rej-soft:#2C1416;--rej-line:#EF4444;
+  --info:#BFDBFE;--info-soft:#14203A;--info-line:#2C4A80;
+  --warn:#FDBA74;--warn-soft:#2B1B10;--warn-line:#9A5A26;
+  --frame:#3A4352;color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0F131A;--sheet:#171C25;--soft:#202734;--line:rgba(255,255,255,.12);
+  --fg:#E8ECF2;--muted:#A3ACBB;
+  --accent:#FF7A50;--accent-soft:#3A2018;--accent-fg:#FFB199;
+  --ok:#6EE7A0;--ok-soft:#10261A;--ok-line:#22C55E;
+  --chg:#FCD34D;--chg-soft:#2A2110;--chg-line:#F59E0B;
+  --rej:#FCA5A5;--rej-soft:#2C1416;--rej-line:#EF4444;
+  --info:#BFDBFE;--info-soft:#14203A;--info-line:#2C4A80;
+  --warn:#FDBA74;--warn-soft:#2B1B10;--warn-line:#9A5A26;
+  --frame:#3A4352;color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--fg);font-size:16px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-block:24px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+header,section{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}
+.logo{font-weight:700;font-size:20px}.logo b{color:var(--accent)}
+h1{font-size:26px;line-height:1.25;margin:6px 0 8px;text-wrap:balance}
+h2{font-size:20px;line-height:1.3;margin-bottom:10px;display:flex;align-items:center;gap:10px;text-wrap:balance}
+h3{font-size:16.5px;margin:16px 0 6px}
+.lead{color:var(--muted)}
+nav{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+nav a{font-size:13.5px;font-weight:600;color:var(--accent-fg);background:var(--accent-soft);border-radius:20px;padding:5px 12px;text-decoration:none}
+nav a:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2 .n{background:var(--accent);color:#fff;border-radius:50%;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+p{margin:8px 0;max-width:65ch}
+ol,ul{padding-left:22px;margin:8px 0}
+li{margin:5px 0}
+.shot{display:block;max-width:min(300px,100%);width:100%;height:auto;margin:14px auto;border-radius:18px;border:6px solid var(--frame);box-shadow:0 8px 24px rgba(0,0,0,.16)}
+.shots{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:6px}
+.shots figure{flex:0 1 260px;min-width:0;text-align:center}
+.shots .shot{margin:0 auto}
+figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.tip,.warn{border-radius:12px;padding:12px 14px;margin:12px 0;font-size:15px}
+.tip{background:var(--info-soft);border:1px solid var(--info-line)}
+.warn{background:var(--warn-soft);border:1px solid var(--warn-line)}
+.choices{display:grid;gap:10px;margin-top:10px}
+.choice{border-radius:12px;padding:12px 14px;border:2px solid}
+.choice b{font-size:16.5px}
+.c-ok{border-color:var(--ok-line);background:var(--ok-soft)}
+.c-chg{border-color:var(--chg-line);background:var(--chg-soft)}
+.c-rej{border-color:var(--rej-line);background:var(--rej-soft)}
+.c-skip{border-color:var(--line);background:var(--soft)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14.5px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.pill{display:inline-block;border-radius:8px;padding:1px 8px;font-weight:700;font-size:13px;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)}.p-chg{background:var(--chg-soft);color:var(--chg)}.p-rej{background:var(--rej-soft);color:var(--rej)}.p-skip{background:var(--soft);color:var(--fg)}
+.check{list-style:none;padding-left:0}
+.check li{padding-left:28px;position:relative}
+.check li::before{content:"✔";position:absolute;left:4px;color:var(--ok);font-weight:700}
+.note-small{font-size:14px;color:var(--muted)}
+.admin{border:2px dashed var(--line)}
+footer{text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">Map<b>It</b> Review</div>
+  <h1>How to review listings on MapIt</h1>
+  <p class="lead">A short guide for the MapIt review team. Before a new listing appears on the MapIt map, one of us checks it. Most listings take less than a minute. You only need your phone.</p>
+  <nav>
+    <a href="#start">1 · Get started</a>
+    <a href="#card">2 · The listing</a>
+    <a href="#choices">3 · Your 4 choices</a>
+    <a href="#which">4 · Which to choose</a>
+    <a href="#good">5 · Good to know</a>
+    <a href="#team">For Nagesh &amp; Arun</a>
+  </nav>
+</header>
+
+<section id="start">
+  <h2><span class="n">1</span>Get started (only once)</h2>
+  <ol>
+    <li>The MapIt team sends you a <b>personal invite link</b> on WhatsApp. Open it on your phone. It works once and is valid for 7 days.</li>
+    <li>You see <b>Create account</b> with a green "You have been invited" note. Fill in your <b>email</b>, your <b>name</b> and a <b>password</b> (8+ characters, one capital letter, one symbol), then tap <b>Email me a code</b>.</li>
+    <li>Open your email, find the <b>6-digit code</b> (check Spam if it doesn't arrive in a minute), type it in and tap <b>Request access</b>.</li>
+    <li>You see <b>"Thanks"</b>: the MapIt team now activates your account, usually the same day. Tap <b>Check again</b> later, and the listings appear.</li>
+  </ol>
+  <div class="shots">
+    <figure><img class="shot" src="../screenshots/session-9l/after-review-invite-valid.png" alt="Create account screen opened from an invite link"><figcaption>Opened from your invite link</figcaption></figure>
+    <figure><img class="shot" src="../screenshots/session-9l/after-review-signin.png" alt="Sign in screen"><figcaption>Next time: just Sign in</figcaption></figure>
+  </div>
+  <div class="tip">💡 <b>Next time</b>, open <b>mapit.co.in/review</b> and sign in with your email and password. Add it to your home screen: in Chrome tap ⋮ → <i>Add to Home screen</i>; on iPhone tap Share → <i>Add to Home Screen</i>.</div>
+  <div class="warn">⚠️ Already use MapIt with the same email to buy or sell? Creating your review account sets a <b>new password</b> for that MapIt account too. Use the new password in both places.</div>
+  <p>If the link says <b>"not valid, already used or expired"</b>, ask the MapIt team for a new one.</p>
+</section>
+
+<section id="card">
+  <h2><span class="n">2</span>Look at the listing</h2>
+  <p>You see one listing at a time, oldest first. Nobody else on the team gets the same listing while you have it open.</p>
+  <img class="shot" src="../screenshots/session-9l/after-review-card-2.png" alt="A listing card with photos, flag, price, details and the buttons">
+  <p><b>What you see, top to bottom:</b> the photos (swipe sideways, tap one to see it big), the title and price, the category and area, the seller's first name and how long the listing has waited, the description, and the details.</p>
+  <h3>Check these things</h3>
+  <ul class="check">
+    <li>The <b>photos</b> show the item that is being sold, in the right category.</li>
+    <li>The <b>category</b> is right (a scooter is under 2 Wheelers, not Cars).</li>
+    <li>The <b>price</b> is filled in and looks realistic.</li>
+    <li>The <b>area</b> makes sense for the listing.</li>
+    <li>There is <b>no phone number, email or web link</b> in the title or description. Buyers contact sellers through MapIt chat.</li>
+    <li>The description is honest and complete enough for a buyer.</li>
+  </ul>
+  <div class="tip">🚩 A <b>red "Flagged" note</b> means our automatic check noticed something, like a phone number in the text. Look extra carefully, but <b>you decide</b>: the flag is a hint, not a verdict.</div>
+  <p class="note-small">(These screenshots use test listings, so some photos don't match the title. On a real listing, that is exactly when you would tap <b>Change</b>.)</p>
+</section>
+
+<section id="choices">
+  <h2><span class="n">3</span>Your 4 choices</h2>
+  <p>The buttons are at the bottom of the screen. They stay grey for a moment when a new listing appears, so a quick double tap can never decide the next one by mistake.</p>
+  <div class="choices">
+    <div class="choice c-ok"><b>✓ Approve</b>: everything looks fine. The listing goes live on the map straight away, and the seller gets an email that it's live.</div>
+    <div class="choice c-chg"><b>✏️ Change</b>: something small needs fixing (wrong photo, phone number in the text, missing price…). Pick a reason, add a short note if it helps, and tap <b>Send back</b>. The seller fixes it and sends it again; it comes back to the queue.</div>
+    <div class="choice c-rej"><b>✕ Reject</b>: the listing can't be on MapIt (not allowed, a duplicate, spam or fake). Pick a reason and tap <b>Reject</b>.</div>
+    <div class="choice c-skip"><b>Skip for now</b>: not sure? Skip it. It goes back to the queue for you or someone else later. Nothing is sent to the seller.</div>
+  </div>
+  <div class="shots">
+    <figure><img class="shot" src="../screenshots/session-9l/after-review-sheet-change.png" alt="Change sheet with reasons, note and preview"><figcaption>✏️ Change: reason, note, preview</figcaption></figure>
+    <figure><img class="shot" src="../screenshots/session-9l/after-review-sheet-reject-other.png" alt="Reject sheet with Other chosen and the button grey"><figcaption>✕ Reject: "Other" needs a note</figcaption></figure>
+  </div>
+  <h3>"The seller will see"</h3>
+  <p>Before you send, the grey box shows <b>exactly</b> what the seller reads in the email and in their My Listings. Write the note kindly, as if you were helping a neighbour. <b>Your name is never shown to the seller.</b></p>
+</section>
+
+<section id="which">
+  <h2><span class="n">4</span>Which one should I choose?</h2>
+  <div class="table-wrap"><table>
+    <tr><th>You notice…</th><th>Choose</th></tr>
+    <tr><td>Everything looks fine</td><td><span class="pill p-ok">✓ Approve</span></td></tr>
+    <tr><td>A car photo on a scooter listing</td><td><span class="pill p-chg">✏️ Change</span> Photos don't match</td></tr>
+    <tr><td>"Call 98xxxxxx21" in the description</td><td><span class="pill p-chg">✏️ Change</span> Phone number, email or links</td></tr>
+    <tr><td>A sofa listed under Vehicles</td><td><span class="pill p-chg">✏️ Change</span> Wrong category</td></tr>
+    <tr><td>Price is ₹1, or a flat for ₹500</td><td><span class="pill p-chg">✏️ Change</span> Price missing or unrealistic</td></tr>
+    <tr><td>The area is far from what the description says</td><td><span class="pill p-chg">✏️ Change</span> Location looks wrong</td></tr>
+    <tr><td>Very little information, or it seems misleading</td><td><span class="pill p-chg">✏️ Change</span> Details incomplete or misleading</td></tr>
+    <tr><td>The same item posted twice by the same seller</td><td><span class="pill p-rej">✕ Reject</span> Duplicate</td></tr>
+    <tr><td>Something that can't be sold on MapIt</td><td><span class="pill p-rej">✕ Reject</span> Not allowed on MapIt</td></tr>
+    <tr><td>Looks like a scam, fake or advertising</td><td><span class="pill p-rej">✕ Reject</span> Spam or fake</td></tr>
+    <tr><td>You're not sure</td><td><span class="pill p-skip">Skip for now</span> and ask the MapIt team</td></tr>
+  </table></div>
+  <div class="tip">💡 <b>When in doubt between Change and Reject, choose Change.</b> The seller gets a chance to fix it. Reject is for listings that can never be on MapIt.</div>
+</section>
+
+<section id="good">
+  <h2><span class="n">5</span>Good to know</h2>
+  <ul>
+    <li><b>Who am I signed in as?</b> The orange line under the header says <i>"Signed in as …"</i>. Check it if the phone is shared.</li>
+    <li><b>"about 12 left"</b> at the top is how many listings are waiting for the whole team, not only for you. There is no rush.</li>
+    <li>If you leave a listing open for <b>more than 5 minutes</b>, it may go back to the queue for someone else. That's fine: just continue.</li>
+    <li><b>"This listing just changed or was already reviewed"</b> is normal. The seller edited it, or someone else decided first. The next listing loads by itself.</li>
+    <li><b>🎉 All clear</b> means nothing is waiting. <b>👍 Nothing more for now</b> means only the ones you skipped are left: tap <b>Check again</b> to see them.</li>
+    <li>You never see your <b>own</b> listings in the queue. Someone else reviews those.</li>
+    <li>You only see the seller's first name and the area, never their phone, email or exact location. Please keep anything you see private.</li>
+    <li>On a shared phone, tap <b>Sign out</b> at the top when you finish.</li>
+  </ul>
+  <div class="shots">
+    <figure><img class="shot" src="../screenshots/session-9l/after-review-signed-in-as.png" alt="All clear screen with Signed in as line"><figcaption>"Signed in as" and All clear</figcaption></figure>
+  </div>
+</section>
+
+<section id="team" class="admin">
+  <h2>👥 For Nagesh &amp; Arun: the Team panel</h2>
+  <p>Only admins see the <b>☰</b> menu at the top right. Tap ☰ → <b>Team</b>.</p>
+  <ol>
+    <li><b>Invite someone:</b> type their name and tap <b>Create invite link</b>. Tap <b>Share on WhatsApp</b> (or <b>Copy link</b>). The link is shown only once; if it gets lost, cancel it and create a new one.</li>
+    <li>When they have signed up, they appear under <b>Waiting</b>. Tap <b>Activate</b> (or <b>Ignore</b> if you don't know them).</li>
+    <li><b>Revoke</b> under Active turns access off on their next tap. <b>Activate again</b> under Revoked brings them back.</li>
+    <li>The <b>Invites</b> list shows each link as open, used (and by whom), expired or cancelled. Cancel an open link you no longer need.</li>
+  </ol>
+  <div class="shots">
+    <figure><img class="shot" src="../screenshots/session-9l/after-review-invite-created.png" alt="Team panel with a new invite link"><figcaption>A new invite link</figcaption></figure>
+    <figure><img class="shot" src="../screenshots/session-9l/after-review-team.png" alt="Team panel lists"><figcaption>Waiting, Active, Revoked, Invites</figcaption></figure>
+  </div>
+  <p>The admin page's <b>Pending Listings</b> tile now opens this review queue.</p>
+</section>
+
+<footer>Questions? Ask the MapIt team on WhatsApp. · MapIt Reviewer Guide · November 2026</footer>
+</div>
+</body>
+</html>
