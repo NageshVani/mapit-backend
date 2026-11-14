@@ -1,7 +1,7 @@
 // ============================================================
 // Photo privacy suite — server-side EXIF/GPS stripping (fix/photo-exif, 2026-11-14)
-// Run:  npm start (PORT 3001, .env = UAT) in one terminal, then
-//       npm run uat:photos
+// Run:  PORT=3001 MAX_PHOTOS_PER_LISTING=5 node -r dotenv/config src/server.js, then
+//       MAX_PHOTOS_PER_LISTING=5 npm run uat:photos   (or PHOTOS_BASE=<preview url> for Vercel)
 // UAT ONLY. Creates one throwaway @example.com seller + one pending listing,
 // uploads generated test photos to localhost, checks the STORED files
 // (downloaded back from Storage), then deletes everything it made —
@@ -12,7 +12,11 @@ const sharp = require('sharp');
 const exifr = (() => { try { return require('exifr'); } catch { return null; } })();
 const { createClient } = require('@supabase/supabase-js');
 
-const BASE = 'http://localhost:3001';
+// PHOTOS_BASE = a Vercel preview URL to test the real Linux build of sharp
+// (sends the Vercel bypass header from .env); default = localhost.
+const BASE = process.env.PHOTOS_BASE || 'http://localhost:3001';
+const VH = process.env.PHOTOS_BASE && process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+  ? { 'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET } : {};
 const UAT_REF = 'xesekrkxbtybbxpsvxuz';
 if (!(process.env.SUPABASE_URL || '').includes(UAT_REF)) {
   console.error('STOP: .env is not the UAT project — this suite only runs against UAT.');
@@ -43,7 +47,7 @@ const garbage = () => Buffer.from('this is not an image ' + crypto.randomBytes(6
 async function upload(token, listingId, files) {
   const fd = new FormData();
   for (const f of files) fd.append('photos', new Blob([f.buf], { type: f.type }), f.name);
-  const r = await fetch(`${BASE}/api/uploads/listing/${listingId}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+  const r = await fetch(`${BASE}/api/uploads/listing/${listingId}`, { method: 'POST', headers: { ...VH, Authorization: `Bearer ${token}` }, body: fd });
   const data = await r.json().catch(() => ({}));
   for (const p of data.photos || []) created.paths.push(p.storage_path);
   return { status: r.status, data };
@@ -125,7 +129,7 @@ async function hasGps(buf) {
 
     // P7/P8 need an empty listing — remove the 5 photos via the API
     const { data: rows } = await supabaseAdmin.from('listing_photos').select('id').eq('listing_id', L.id);
-    for (const row of rows) await fetch(`${BASE}/api/uploads/photo/${row.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    for (const row of rows) await fetch(`${BASE}/api/uploads/photo/${row.id}`, { method: 'DELETE', headers: { ...VH, Authorization: `Bearer ${token}` } });
 
     // P7 — only unreadable → 400 with the friendly message, nothing stored
     r = await upload(token, L.id, [{ buf: garbage(), type: 'image/heic', name: 'phone.heic' }]);
