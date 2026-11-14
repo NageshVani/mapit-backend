@@ -140,6 +140,13 @@ async function get(url, opts = {}) {
     [401, 403].includes(lst.status),
     `HTTP ${lst.status} · ${Array.isArray(lst.json) ? '⚠ OPEN: table readable' : JSON.stringify(lst.json)?.slice(0, 120)}`);
 
+  // S-15 · the UAT / LOCAL TEST watermark (public/env-badge.js) can never show on
+  // production: prod config must say 'production'; uat must say 'preview'.
+  // (Added 2026-11-14; fails until the watermark release is deployed to both.)
+  check('S-15', "Watermark guard: prod environment='production', uat='preview'",
+    cfg.json?.environment === 'production' && ucfg.json?.environment === 'preview',
+    `prod=${cfg.json?.environment ?? '(missing)'} · uat=${ucfg.json?.environment ?? '(missing)'}`);
+
   const pass = results.filter(r => r.pass).length;
   console.log(`\n${pass}/${results.length} PASS — read-only, nothing written to production.`);
   process.exit(pass === results.length ? 0 : 1);

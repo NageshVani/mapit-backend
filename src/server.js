@@ -184,6 +184,9 @@ app.get('/api/config', (req, res) => {
     cartoApiKey:      process.env.CARTO_API_KEY || '',
     mapboxToken:      process.env.MAPBOX_ACCESS_TOKEN || '',
     listingExpiry:    LISTING_EXPIRY_ENABLED,
+    // 'production' | 'preview' (uat + branch previews) | 'local' — drives the
+    // UAT / LOCAL TEST watermark (public/env-badge.js). Not a secret.
+    environment:      process.env.VERCEL_ENV || 'local',
   });
 });
 
