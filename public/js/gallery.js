@@ -11,6 +11,9 @@ function openPhotoGallery(photos, idx){
   if(!_pgPhotos.length) return;
   _pgIdx = idx || 0;
   document.getElementById('pgOverlay').classList.remove('hide');
+  // Release 10A: the viewer gets its own browser-history entry (same URL), so the phone/browser
+  // Back button closes the photo instead of leaving MapIt. Not pushed twice (e.g. after a reload).
+  if(!history.state?.mapitPg) history.pushState({ mapitPg: true }, '');
   pgRender();
 }
 function pgRender(){
@@ -25,7 +28,15 @@ function pgNav(dir){
 }
 function pgGoto(i){ _pgIdx=i; pgRender(); }
 function pgBgClick(e){ if(e.target===e.currentTarget) closePhotoGallery(); }
-function closePhotoGallery(){ document.getElementById('pgOverlay').classList.add('hide'); }
+function hidePhotoGallery(){ document.getElementById('pgOverlay').classList.add('hide'); }
+// ✕ / background tap: step back over the viewer's history entry; the popstate handler hides it.
+function closePhotoGallery(){
+  if(history.state?.mapitPg) history.back();
+  else hidePhotoGallery();
+}
+window.addEventListener('popstate', () => {
+  if(!history.state?.mapitPg) hidePhotoGallery();
+});
 
 function closeSplash(){
   // Mark welcomed per-user so the onboarding splash doesn't repeat on future logins
