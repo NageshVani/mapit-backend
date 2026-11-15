@@ -314,6 +314,7 @@ function loadSession() {
   try { session = JSON.parse(localStorage.getItem(SESSION_KEY)) || null; } catch { session = null; }
 }
 function saveSession(s) {
+  borrowed = false;
   session = s ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at } : null;
   try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(session)) : localStorage.removeItem(SESSION_KEY); } catch {}
   scheduleRefresh();
@@ -321,6 +322,11 @@ function saveSession(s) {
 
 // Supabase ROTATES refresh tokens: always save the new one (saveSession does).
 async function refreshSession() {
+  if (borrowed) {
+    const s = mapItSession();
+    if (s && s.access_token !== session?.access_token) { session = s; return true; }
+    return false;
+  }
   if (!session?.refresh_token) return false;
   if (refreshing) return refreshing;
   refreshing = (async () => {
@@ -334,6 +340,32 @@ async function refreshSession() {
     finally { refreshing = null; }
   })();
   return refreshing;
+}
+
+// ── Borrowed admin session (Release 10A, Nagesh 2026-11-15) ──
+// "Review queue" on the Admin page opens /review?from=admin. An admin who is
+// signed in to MapIt in this browser is then signed in here too, by BORROWING the
+// session MapIt saved (same mapit_sessions store and "latest login" pick as
+// admin.html). Borrowed = memory only: never saved under SESSION_KEY, never
+// refreshed here (refresh tokens rotate; renewing MapIt's chain from a second
+// page could get the whole MapIt session revoked). A reviewer's own saved
+// session on this device is never touched. When the borrowed token expires we
+// re-read MapIt's latest one, else fall back to the normal sign-in.
+let borrowed = false;
+function jwtExp(t) {
+  try { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).exp || 0; } catch { return 0; }
+}
+function mapItSession() {
+  let all = {};
+  try { all = JSON.parse(localStorage.getItem('mapit_sessions') || '{}'); } catch {}
+  const latest = Object.values(all).sort((a, b) => new Date(b.last_login || 0) - new Date(a.last_login || 0))[0];
+  const t = latest?.session?.access_token;
+  return t && jwtExp(t) * 1000 > Date.now() + 30000 ? { access_token: t } : null;
+}
+function endBorrowed() {          // back to this page's own sign-in (or none)
+  borrowed = false;
+  try { history.replaceState(null, '', location.pathname); } catch {}
+  loadSession();
 }
 
 function scheduleRefresh() {
@@ -362,7 +394,7 @@ async function api(method, url, body, retried) {
   const data = await r.json().catch(() => ({}));
   if (r.status === 401 && session && !retried) {
     if (await refreshSession()) return api(method, url, body, true);
-    saveSession(null);
+    if (borrowed) { endBorrowed(); session = null; } else saveSession(null);
     show('auth');
     throw new Error('Your session ended. Please sign in again.');
   }
@@ -412,8 +444,7 @@ async function route() {
     document.getElementById('v-loading').querySelector('.big-s').textContent = e.message;
     return;
   }
-  // /review#team (Admin page link 'Reviewers & invites', Release 10A): admins land on Team
-  if (me.access === 'admin' && location.hash === '#team') return loadTeam('reviewers');
+  if (borrowed && me.access !== 'admin') { endBorrowed(); me = null; return route(); }
   if (me.access === 'admin' || me.access === 'active') return loadNext();
   if (me.access === 'requested') {
     document.getElementById('waitTitle').textContent = me.display_name ? `Thanks, ${me.display_name.split(' ')[0]}` : 'Thanks';
@@ -550,6 +581,7 @@ async function signOut() {
   // Hand back the listing I hold, so nobody waits 5 min for the claim to run out
   if (current) { try { await api('POST', `/api/review/${current.id}/release`); } catch {} }
   current = null; skipped = [];
+  if (borrowed) { endBorrowed(); session = null; me = null; setTab('in'); return show('auth'); }
   try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
   saveSession(null);
   me = null;
@@ -865,8 +897,12 @@ async function copyInvite() {
 loadSession();
 loadInvite();
 (async () => {
-  if (session?.expires_at && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) await refreshSession();
-  scheduleRefresh();
+  if (new URLSearchParams(location.search).get('from') === 'admin') {
+    const s = mapItSession();
+    if (s) { session = s; borrowed = true; }
+  }
+  if (!borrowed && session?.expires_at && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) await refreshSession();
+  if (!borrowed) scheduleRefresh();
   await checkInvite();
   // Opened from an invite link → straight to Create account
   setTab(inviteValid ? 'up' : 'in');
