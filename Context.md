@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-15 13:14 (UAE), CHECKPOINT (**2026-11-15: CLAUDE.md v5 live (PR #36); frontend split RELEASED (PR #37); Release 10A built + on uat (`0c76fcd`), uat:9c 35/35. Next (placeholders): family check on uat → PR uat → main + smoke:prod → 10B views (migration 021).**)
+- **Last updated:** 2026-11-15 16:18 (UAE), checkpoint (**Release 10A family-check checklist built + published (private artifact https://claude.ai/artifact/3LcnBC1aBDc6Xe33enzfXa, copy `docs/uat/release-10a-family-check.html`, not committed). Nagesh on a break (household chores); returns after the family check is done.**)
+- **Last updated (previous):** 2026-11-15 13:14 (UAE), CHECKPOINT (**2026-11-15: CLAUDE.md v5 live (PR #36); frontend split RELEASED (PR #37); Release 10A built + on uat (`0c76fcd`), uat:9c 35/35. Next (placeholders): family check on uat → PR uat → main + smoke:prod → 10B views (migration 021).**)
 - **Last updated (previous):** 2026-11-15 13:11 (UAE), checkpoint (**Release 10A ON UAT (`0c76fcd`): Nagesh localhost click-tests all passed; uat serves 12/12 css/js + index/admin/review identical; uat:9c 35/35. Next: family check on uat → PR uat → main → smoke:prod. Then 10B (views, migration 021).**)
 - **Last updated (previous):** 2026-11-15 11:51 (UAE), checkpoint (**Frontend split RELEASED (PR #37, smoke:prod 16/16, S-16 12/12). Release 10A BUILT on `feat/release-10a-ux-fixes` (Back closes photo viewer, admin nav links, vehicle year field); awaiting Nagesh localhost click-test. 10B/10C decisions recorded in backlog.**)
 - **Last updated (previous):** 2026-11-15 11:14 (UAE), checkpoint (**Frontend split ON UAT: Nagesh localhost click-test PASSED (only DevTools source-map CSP note + signed-out 401, both pre-existing/expected); `uat` fast-forwarded to `885d63d`, Vercel deploy success; uat.mapit.co.in serves all 12 css/js = commit, env preview, UAT Supabase; uat:9c 35/35. Next: family click-test on uat → Nagesh/Arun sign-off → PR uat → main → smoke:prod (S-16 12/12).**)
@@ -152,6 +153,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-15 16:18) — Family check of Release 10A on uat in progress (Nagesh, offline on a break).** Checklist page built: 6 checks (1–3 everyone: photo Back, Enter sign-in, vehicle year; 4–6 admin login with Nagesh: Admin menu, Review queue without 2nd sign-in, Back to MapIt as admin); Pass/Fail per check, results kept on the tester's phone (localStorage) and sent to Nagesh as WhatsApp text via "Copy results". After results: James reviews → Nagesh/Arun sign-off → PR uat → main → smoke:prod → 10B.
 
 **NOW (2026-11-15 13:14) — Goal: release 10A to production, then start 10B (view counts).** 10A is on uat (`0c76fcd`, all Nagesh localhost click-tests passed). Waiting for the family check on uat → Nagesh/Arun sign-off → PR uat → main → smoke:prod. Then 10B (migration 021, UAT first).
 
@@ -685,6 +688,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-15 16:18) Release 10A family checklist** built + published as a private artifact (https://claude.ai/artifact/3LcnBC1aBDc6Xe33enzfXa); repo copy `docs/uat/release-10a-family-check.html` (uncommitted). Verified `origin/uat` = `0c76fcd`; uat.mapit.co.in still 302 → Vercel login (protection on).
 - ✅ **(2026-11-15) CLAUDE.md v5.0 + `docs/technical/backlog.md`** approved by Nagesh, PR #36 merged (`21cf1ef`); change note at top of CLAUDE.md; Rule 6 acronyms expanded; Vercel "Instant Rollback" wording confirmed; Vercel + Supabase Pro confirmed taken.
 - ✅ **(2026-11-15) Frontend split option 1 RELEASED** (PR #37, `df04cd5`): `public/index.html` + `css/app.css` + 11 `js/*.js`; `MapIt_MVP_v1.html` deleted; golden-master check; 1 declared relocation (collapsed-sidebar restore → main.js); smoke:prod 16/16, new S-16 12/12.
 - ✅ **(2026-11-15) Release 10A built** on `feat/release-10a-ux-fixes` (10 feature commits), every item click-tested OK by Nagesh on localhost:
@@ -1486,7 +1490,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Release 10A — quick UX fixes** | 🔄 on uat (`0c76fcd`), awaiting family check + sign-off | `public/js/{gallery,post,config,listings,auth}.js`, `public/css/app.css`, `public/index.html`, `public/admin.html`, `public/review.html`, `src/config/listingRules.js`, `src/routes/listings.js` | Next: PR uat → main + smoke:prod |
+| **Release 10A — quick UX fixes** | 🔄 on uat (`0c76fcd`); family checklist published 16:18, family check running (Nagesh) → sign-off | `public/js/{gallery,post,config,listings,auth}.js`, `public/css/app.css`, `public/index.html`, `public/admin.html`, `public/review.html`, `src/config/listingRules.js`, `src/routes/listings.js` | Next: PR uat → main + smoke:prod |
 | **Frontend split (option 1)** | ✅ live 2026-11-15 (PR #37) | `public/index.html`, `public/css/`, `public/js/`, `scripts/frontend/split.js`, `scripts/smoke/prod-readonly.js` | S-16 12/12 |
 | **Release 10B — view counts** | ⏳ placeholder, starts after 10A release | migration 021 (RPC), listings route, My Listings + listing detail | Sellers exact from 1, buyers from 10+; skip owner's own views |
 | **Release 10C — close reasons** | ⏳ placeholder | migration 022 (table) | Lists approved; required-or-optional still open |
@@ -1701,6 +1705,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+docs/uat/release-10a-family-check.html — NEW 2026-11-15: phone checklist for the 10A family check (6 checks, Pass/Fail, Copy results for WhatsApp); published as private artifact; not committed yet.
 public/index.html — 2026-11-15: HTML only after the split; ?v= tags per file; Review-queue menu item added then removed again (10A).
 public/css/app.css, public/js/*.js (11) — NEW 2026-11-15 (split); 10A edits in gallery.js (Back closes viewer, /?from=admin), post.js (year field), config.js (yearIssue/isOldVehicleYear), listings.js (buyer year note), auth.js (Enter signs in).
 MapIt_MVP_v1.html — DELETED 2026-11-15 (Nagesh approved); Two-File Rule ended.
@@ -2145,6 +2150,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **⏳ (2026-11-15 16:18) uat Shareable Link may be tied to the 1 Nov deployment (`0831a8a`)** → Nagesh tests it in incognito against today's build before sending; if it fails, create a new one from the uat deployment's Share menu. Do NOT revoke it until the family check is done.
+- **ℹ️ (2026-11-15) Family checklist artifact is private** → Nagesh shares it from its Share menu (public link is easiest for family; no secrets on the page). The uat test link is sent separately, never put in the page.
 - **ℹ️ (2026-11-15) MapIt never renews its sign-in token (~1 h)** → after an hour "Who's using MapIt?" and Back to MapIt ask for the password again. Backlog small fix: renew in ONE place; keep /review's borrowed session read-only.
 - **ℹ️ (2026-11-15) Transfer server route `/api/admin/handover/*` + `uat:transfer` suite now unused** (UI removed in 10A) → remove in a later clean-up.
 - **ℹ️ (2026-11-15) DevTools-only CSP message** for `leaflet.markercluster.js.map` (connect-src) — pre-existing, users never see it; not fixing (would loosen CSP).
@@ -2401,6 +2408,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-15, James) Family checklist = no-login page + WhatsApp results** (ticks in the tester's own browser, "Copy results" text) instead of a shared database — family members need no claude.ai account; admin checks 4–6 done with Nagesh because admin emails are hard-coded.
 - **(2026-11-15, Nagesh) Delete MapIt_MVP_v1.html; 11 js files**; `public/` is the only frontend source. Split = pure move (golden master), only one declared relocation.
 - **(2026-11-15, Nagesh) Vehicle year:** filters as you type, suggestions after 3 digits, nothing after this year, >15 years allowed with "15+ years old" note.
 - **(2026-11-15, Nagesh) Close reasons:** proposed Sold/Delete lists approved (expandable, keep in one config place). **Views:** sellers exact from 1, buyers only from 10+.
@@ -2866,6 +2874,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-15 16:18) — Nagesh on a break; resume with /resume after the family check:**
+1. ⏳ Nagesh: test the uat Shareable Link in incognito (new one if needed) → share the checklist artifact → send both links to family → do checks 4–6 with the admin login.
+2. ⏳ Paste the WhatsApp results to James → review any Fail notes (fix on `feat/release-10a-ux-fixes` → uat if needed).
+3. ⏳ Nagesh/Arun sign-off → commit checklist + CONTEXT → PR uat → main → `npm run smoke:prod` (S-16 12/12) → check www.
+4. Then Release 10B (view counts, migration 021, UAT first).
 
 **⬅ NOW (2026-11-15 13:14) — placeholders agreed with Nagesh (resume with /resume):**
 1. ⏳ **[PLACEHOLDER] Family check of Release 10A on uat.mapit.co.in** (phones: photo Back, year, Enter sign-in, Admin left nav, Review queue + Back to MapIt without second sign-in; UAT admin account).
