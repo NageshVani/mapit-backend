@@ -5,7 +5,7 @@ operating rules live here. Order inside each section = rough priority.
 Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 manual (dashboard / person)
 
 ## 1. Planned releases (agreed order)
-1. 🔜 **Frontend split (option 1)**: split the single HTML file into modules. Approved 14 Nov by Nagesh and Arun.
+1. 🔄 **Frontend split (option 1)**: IN PROGRESS on `feat/frontend-split` (2026-11-15). Split the single HTML file into modules. Approved 14 Nov by Nagesh and Arun.
    New branch from a clean main, with no other frontend branch running at the same time. Vite comes later (v2).
    Replaces the Two-File Rule once it lands.
 2. 🔜 **Views follow-up**: show 👁 views on My Listings, and stop counting the owner's own views.
