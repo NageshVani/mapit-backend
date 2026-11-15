@@ -407,6 +407,8 @@ async function route() {
     document.getElementById('v-loading').querySelector('.big-s').textContent = e.message;
     return;
   }
+  // /review#team (Admin page link 'Reviewers & invites', Release 10A): admins land on Team
+  if (me.access === 'admin' && location.hash === '#team') return loadTeam();
   if (me.access === 'admin' || me.access === 'active') return loadNext();
   if (me.access === 'requested') {
     document.getElementById('waitTitle').textContent = me.display_name ? `Thanks, ${me.display_name.split(' ')[0]}` : 'Thanks';

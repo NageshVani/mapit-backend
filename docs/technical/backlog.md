@@ -54,7 +54,9 @@ Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 m
 - 🧹 `compare-schema-inventory.js` reports a false "match" on wrapped input. Make it auto-unwrap, and fail if `tables` is missing.
 - 🧹 Remove the unused `uuid` dependency (the last moderate `npm audit` finding).
 - 🧹 Rename `Context.md` → `CONTEXT.md` in git (two-step via a temp name on Windows).
-- 🧹 Delete the old admin "Pending" section (replaced by the 9L review queue).
+- ✅ Old admin "Pending" section deleted in Release 10A (orphaned-photos clean-up moved to Cleanup).
+- 🧹 Transfer removed from the Admin page in 10A (Nagesh: no listings posted on behalf of others). Its server route
+  `/api/admin/handover/*` and `uat:transfer` suite are now unused; remove them in a later clean-up.
 - 🧹 Review Supabase Advisors: 15 Warnings / 14 Info.
 
 ## 4. Security / ops clean-up (post-9L)
