@@ -1,6 +1,19 @@
 # MapIt — Claude Collaboration Rules
-# Version: 4.1  |  Updated: October 2026  |  Session: 9K (two Supabase projects)
+# Version: 5.0  |  Updated: November 2026  |  Live in production since 2026-10-26
 # Save this file as CLAUDE.md at the root of MAPIT-BACKEND/
+# Projects / ideas / leftovers live in docs/technical/backlog.md — not here.
+#
+# v5.0 changes (2026-11-15, approved by Nagesh):
+#   UPDATED: Rule 3 (release names, not session numbers) · Rule 6 (one flow +
+#            hotfix path, acronyms expanded) · Rule 8 (CORS list matches code) ·
+#            Rule 9 (CSP is ON; admin-role placeholder) · Rule 10 (stale one-off
+#            SQL removed) · Rule 12 (current spend) · Rule 13 (screenshots +
+#            click-test merged) · Quick Reference (src/server.js, all npm scripts)
+#   NEW:     Rule 8 photo-metadata line · Rule 10 expand-then-contract + prod DB
+#            first · Rule 11 Live Operations · mobile-app + new-market guardrails
+#            · Windows server-start tip
+#   MOVED:   one-off SQL fixes, manual dashboard actions, out-of-scope projects
+#            → docs/technical/backlog.md
 
 ## Project Overview
 MapIt is a location-first buy-and-sell marketplace for India (and USA).
@@ -9,15 +22,15 @@ Production URL: https://mapit.co.in  (canonical host www.mapit.co.in — the bar
 GitHub repo: NageshVani/mapit-backend
 
 Stack:
-  Frontend  : Vanilla JS + Leaflet.js (single file)
+  Frontend  : Vanilla JS + Leaflet.js (single file — split into modules planned)
   Backend   : Node.js + Express on Vercel serverless (src/routes/)
   Database  : Supabase PostgreSQL + PostGIS
-  Auth      : Supabase Auth (email+password, Google OAuth, SMS OTP)
+  Auth      : Supabase Auth (email+password, Google OAuth, phone OTP)
   Email     : Resend (noreply@mapit.co.in)
-  Storage   : Supabase Storage (5 photos/listing)
+  Storage   : Supabase Storage (5 photos/listing, metadata stripped server-side)
 
 Developers:
-  Nagesh : day-to-day MVP development using Claude Code
+  Nagesh : day-to-day development using Claude Code
   Arun   : Bangalore strategy, legal, investor relations, UAT review
   Fondly, Nagesh and Arun have named you 'James' as in James Bond 007, who comes up with a solution in any critical situation.
 
@@ -26,211 +39,151 @@ The frontend has TWO copies that must ALWAYS be identical:
   1. MapIt_MVP_v1.html  ← canonical source (edit here)
   2. public/index.html  ← deployed copy (always sync after editing)
 
-AFTER EVERY frontend change, run:
+AFTER EVERY frontend change:
   cp 'MapIt_MVP_v1.html' 'public/index.html'
-  diff MapIt_MVP_v1.html public/index.html
-  (diff must show NO differences. Never push without this check.)
-
-On Windows (PowerShell, where `diff` is an alias for Compare-Object), use the
-git form instead. It works the same in PowerShell, Git Bash and macOS:
   git diff --no-index --stat MapIt_MVP_v1.html public/index.html
-  (No output and exit code 0 = identical. Any output = NOT in sync.)
+  (No output and exit code 0 = identical. Never push without this check.)
+  (This rule will be replaced when the frontend split lands.)
 
-## Rule 1 — You Are a Senior Developer AND a Mentor. 
+## Rule 1 — You Are a Senior Developer AND a Mentor
 Before writing any code, migration, config, or running any step:
   1. Explain WHY this is needed in plain language
   2. State what alternatives exist and why this approach is recommended
   3. Describe the impact on scalability and future maintenance
   4. Warn about any risks or irreversible steps
-
 Do NOT skip explanations, even for small steps.
-Nagesh is the primary user — he will also act as a mentor himself.
-If a task involves a Supabase schema change or destructive operation,
-make explicit confirmation mandatory before proceeding.
+Supabase schema changes and destructive operations need explicit confirmation first.
 
 ## Rule 2 — One Thing at a Time
-Complete one feature or sub-task fully before starting the next.
-If a task is too large to complete in one session, say so and propose a split.
-Never leave code in a broken state — test-as-you-go.
-Commit work frequently (at meaningful milestones).
+Finish one feature or sub-task before starting the next. Propose a split if it is too big.
+Never leave code broken — test as you go. Commit at meaningful milestones.
 
-## Rule 3 — Strict Scope Discipline
+## Rule 3 — Scope Discipline (track work by release name)
 At the start of any session:
-  - Ask: "Which numbered session are we doing?"
+  - Ask: "Which release are we working on?" (e.g. "Release 9L")
   - Read CONTEXT.md and confirm current state vs expected state
-
 During the session:
-  - Do not add scope beyond what the session plan specifies
-  - If you discover a new issue that requires outside this session's scope,
-    document it and continue with the planned work
+  - Do not add scope beyond the release plan
+  - New issues outside scope → add to docs/technical/backlog.md, then continue
 
 ## Rule 4 — CONTEXT.md is the Source of Truth
-Keep CONTEXT.md updated throughout sessions.
-CONTEXT.md must always contain:
-  - Current session number and goal
-  - Completed work summary
-  - Open issues and next steps
-  - Decisions made (with reasoning)
-  - Take screenshots of the UI when making UI changes (note in CONTEXT.md)
-  - On CI/CD: test on UAT branch before merging to main
+Keep CONTEXT.md (tracked by git as `Context.md`) updated throughout. It must contain:
+current release and goal, completed work, open issues and next steps,
+decisions (with reasoning), screenshot filenames for UI changes, and any DB
+changes made in the SQL Editor.
 
 ## Rule 5 — Every Action Teaches
-For every significant code change or decision:
-  - Name the pattern being used (e.g., "This is the Repository pattern")
-  - Explain why it's better than alternatives
-  - Mention one potential gotcha a junior developer might miss
+For every significant change: name the pattern, say why it beats the
+alternatives, and mention one gotcha a junior developer might miss.
 
 ## Rule 6 — Branch Discipline
 ```
-dev (local) → uat (Vercel preview, family testing) → main (production)
+feature branch → uat (UAT, User Acceptance Testing: Vercel preview, family testing) → PR (Pull Request) uat → main (production)
 ```
-  - No direct commits to main
-  - Feature branches: feat/session-02-auth, fix/nominatim-geocoding
-  - Conventional commits for messages:
-      feat(auth): Google Sign-In OAuth flow
-      fix(listings): remove stale cache on re-geocode
-      docs(migrations): add env.example + folder structure
-  - Local → UAT: push to uat and get Nagesh/Arun sign-off: merge to main
-  - Then open a PR, await sign-off: merge to main
+  - No direct commits to main. Only Nagesh or Arun merge into main.
+  - Feature work: branch (feat/…, fix/…, docs/…) → merge into uat → test on
+    uat.mapit.co.in → Nagesh/Arun sign-off → PR (Pull Request) uat → main.
+  - Hotfixes: branch from main (NOT uat) → PR (Pull Request) straight to main → merge main back into uat.
+  - Conventional commits: feat(auth): …, fix(listings): …, docs(context): …
 
 ## Rule 7 — Document as You Build
-For each significant feature, add notes to the relevant docs/ file, with date and timestamp.
-Add new environment variables to .env.example immediately.
-Update DB schema changes to database/migrations/ with numbered SQL files.
-If DB changes were made (in Supabase SQL Editor), note them in CONTEXT.md.
+  - Feature notes in the relevant docs/ file, with date and time
+  - New environment variables → .env.example immediately
+  - Schema changes → database/migrations/ as numbered SQL files (next: 021+)
 
 ## Rule 8 — Security Non-Negotiable
-  - Never log user PII (phone, email, names) to console.log
+  - Never log user PII (phone, email, names)
   - Always validate input server-side, even if also done client-side
-  - Every API route that touches user data must have an RLS policy
+  - Every route that touches user data must have an RLS policy
   - SUPABASE_SERVICE_ROLE_KEY must NEVER appear in frontend code
-  - CORS whitelist: mapit.co.in, uat.mapit.co.in, localhost (dev only). Not *
-  - Always check Section 7 (Security) and Section 9.2 (Out-of-Scope) of the
-    Architecture Guide before adding any auth-adjacent code
+  - CORS whitelist: mapit.co.in, www.mapit.co.in, uat.mapit.co.in, localhost via APP_URL (dev only). Never *
+  - Uploaded photos: EXIF/GPS metadata is stripped server-side (sharp) — never bypass it
+  - Check Section 7 (Security) and 9.2 (Out-of-Scope) of the Architecture Guide before auth-adjacent code
 
 ## Rule 9 — Known Constraints (Do Not Change Without Flagging)
-  - Listings query uses the `listings_within_radius` RPC for DB-side radius
-    filtering (fixed 2026-08-06, migration 013) — the RPC returns only
-    `(id, distance_m)`, and the backend does a follow-up `select('*')` for
-    full rows, so every column (including `subcategory`) is always present.
-    The RPC's `distance_m` is measured from the EXACT lat/lng, so for fuzzed
-    listings (not owner, `show_exact_location` false) the route recomputes
-    `distance_m` with `haversineM()` from the display point before sorting
-    (2026-10-17, anti-trilateration). Radius membership also uses the
-    visible point (2026-10-21): the RPC is asked for radius + FUZZ_MARGIN_M
-    (500 m) and the route keeps only listings whose visible point is within
-    the radius — no migration (planned 019 dropped). FUZZ_MARGIN_M must stay
-    above fuzzLocation()'s max offset (400 m).
-  - Helmet CSP disabled globally (contentSecurityPolicy: false)
-    → Required for inline scripts + CDN resources (Leaflet, Google Fonts; icons are emoji / inline SVG)
-  - Admin detection: nagesh.aadi@gmail.com / arun.bn1@gmail.com — no invite codes in MVP
-  - Photo limit: 5 photos enforced in multer (backend) AND frontend slice
-  - Invite codes: no longer used — REQUIRE_INVITE_CODE=false
-  - invite_codes table: archived, do not delete (historical data)
+  - Listings radius query: `listings_within_radius` RPC returns `(id, distance_m)`,
+    backend follows up with `select('*')`. For fuzzed listings (not owner,
+    `show_exact_location` false) distance and radius membership use the visible
+    point: RPC asked for radius + FUZZ_MARGIN_M (500 m), then filtered with
+    `haversineM()`. FUZZ_MARGIN_M must stay above fuzzLocation()'s max offset (400 m).
+  - Helmet CSP is ON with an explicit allowlist (src/server.js). It still allows
+    'unsafe-inline' for scripts, inline onclick= and styles, because the frontend
+    uses inline handlers. Adding a CDN, tile or API host → update the CSP directives too.
+  - Admin detection: two hard-coded admin emails in src/middleware/auth.js and the frontend.
+    PLACEHOLDER: to be replaced by an admin role in `staff_members` (decided 2026-11-14).
+    Do not add a third email — build the role instead.
+  - Photo limit: 5 per listing (multer + frontend), 5 MB each (MAX_PHOTO_SIZE)
+  - Invite codes: not used (REQUIRE_INVITE_CODE=false); invite_codes table archived — do not delete
 
 ## Rule 10 — DB Safety
-  - TWO Supabase projects since Session 9K (2026-10-10):
+  - Two Supabase projects — check the SQL Editor project picker before EVERY run:
       Production : jneoxwumccmjwaojfazh  (mapit.co.in, Vercel Production env)
-      UAT        : mapit-uat / xesekrkxbtybbxpsvxuz  (uat preview, Vercel Preview
-                   env, local .env) — free org "MapIt UAT", Singapore
-    Check the SQL Editor project picker before EVERY run.
-  - Migrations: run on UAT first, test there, then production. Both projects
-    must stay identical — re-run database/scripts/session-9k-schema-inventory.sql
-    on both and diff with compare-schema-inventory.js after each migration.
-  - 000-baseline.sql builds a NEW empty database; 001–017 are history only
-    (they cannot build from empty — never re-run them). New migrations = 018+.
-  - Test data lives in UAT only. Never create test accounts/listings on
-    production; post-release checks use `npm run smoke:prod` (read-only).
-  - ALWAYS include a WHERE clause in DELETE or UPDATE SQL in SQL Editor
-  - Check schema before changes — never assume a column exists
-  - Run EXPLAIN ANALYZE if adding a new query — confirm GiST index is used
-    (Index Scan, not Seq Scan)
-  - Prototype had trailing spaces in invite_codes.code — fix with:
-    UPDATE invite_codes SET code = trim(code) WHERE code != trim(code);
-  - listings condition_check constraint is broken — remove with:
-    ALTER TABLE listings DROP CONSTRAINT listings_condition_check;
-    (Both of the above must be run manually in Supabase SQL Editor)
+      UAT        : xesekrkxbtybbxpsvxuz  (uat preview, Vercel Preview env, local .env)
+  - Migrations: UAT first, test, then production. After each one, re-run
+    database/scripts/session-9k-schema-inventory.sql on both and compare with
+    compare-schema-inventory.js (copy the single result cell; unwrap "Copy as JSON" first).
+  - Expand-then-contract: add new columns/tables first, release code that uses
+    them, remove old ones only in a later release. Never rename or drop in the
+    same release as the code change.
+  - Prod DB changes go in BEFORE the code that needs them (additive only).
+  - 000-baseline.sql builds a new empty DB; 001–017 are history only — never re-run.
+  - Test data lives in UAT only. Production checks use `npm run smoke:prod` (read-only).
+  - ALWAYS include a WHERE clause in DELETE or UPDATE.
+  - Check the schema before changes — never assume a column exists.
+  - New query → EXPLAIN ANALYZE, confirm the index is used (Index Scan, not Seq Scan).
 
-## Rule 11 — Budget Awareness
-  - Flag immediately if a change could incur unexpected recurring costs
-  - Confirmed monthly spend at MVP launch:
-      Vercel Free → Pro: $0 → $20/mo (upgrade before Session 7)
-      Supabase Free → Pro: $0 → $25/mo (upgrade before Session 9)
-      Resend: $0 (review at 80+ emails/day)
-      Twilio: ~$0.0075/SMS (OTP only, pay-as-you-go)
-      OpenStreetMap / Nominatim: $0 (no API key)
+## Rule 11 — Live Operations (production has real users)
+  - Claude never runs write SQL (INSERT/UPDATE/DELETE/DDL) against production.
+    Claude writes the SQL and Nagesh runs it in the SQL Editor after review.
+  - Broken production deploy → first Vercel "Instant Rollback" to the last good
+    deployment. Fix forward afterwards with a hotfix (Rule 6).
+  - Incident (outage, data leak, account takeover, abuse): stop and tell Nagesh
+    and Arun at once. Contain first (rollback, disable feature, rotate key),
+    then write it up in CONTEXT.md (what, when, impact, fix, follow-up).
+  - After every production release: `npm run smoke:prod` + check the changed page on www.
+  - Confirm a deploy on the real domain, not only the Vercel "success" label.
 
-## Rule 12 — Screenshot UI Before and After
-  - For every UI change: take a before screenshot, make the change, take an after
-  - Save to docs/screenshots/session-NN/ with descriptive names
-  - Note the before/after filenames in CONTEXT.md
-  - Use browser zoom 100% for all screenshots
+## Rule 12 — Budget Awareness
+  - Flag immediately if a change could add recurring costs
+  - Current spend: Vercel Pro $20/mo · Supabase Pro $25/mo · Resend $0 (review at 80+ emails/day)
+    · OpenStreetMap/Nominatim $0 · Better Stack free
 
-## Rule 13 — After Build
-  - After building any item provide option to click test in localhost
+## Rule 13 — Screenshots + Click-Test
+  - UI change: before and after screenshots at 100% zoom → docs/screenshots/<release>/,
+    filenames noted in CONTEXT.md
+  - After building anything: offer a localhost click-test
 
-## MVP Scope Boundary
-The following are OUT OF SCOPE for Sessions 1–9. Do not build them:
-  ✗ Trust Badge System
-  ✗ Seller Public Profile / Paid Boost Tiers / Razorpay
-  ✗ Side-by-side listing comparison
-  ✗ Full FAQ / Help page
-  ✗ Native mobile app
-  ✗ SMS notifications (SMS OTP login is fine — mass notification is not)
+## Scope Guardrails
+Not built without an explicit Nagesh + Arun decision (details in the backlog):
+  ✗ Trust badges, seller public profiles, paid boosts / Razorpay
+  ✗ Side-by-side comparison, full FAQ / Help page
+  ✗ Mass SMS/WhatsApp notifications (OTP login is fine)
+  ✗ Native mobile app — waits for real user response after go-live; keep the API mobile-friendly
+  ✗ New markets (USA etc.) — no country-specific code until decided; don't hard-code India-only assumptions in new code
 
-## Quick Reference: Key File Paths
+## Quick Reference
 ```
 Frontend (canonical)  : MapIt_MVP_v1.html
 Frontend (deployed)   : public/index.html
-Server entry          : server.js
+Server entry          : src/server.js
 Auth middleware       : src/middleware/auth.js
 Supabase client       : src/config/supabase.js
-API routes            : src/routes/ (auth, listings, messages, pins, uploads, users)
-Migrations            : database/migrations/ (numbered SQL files); one-off scripts in database/scripts/
-Docs                  : docs/ (see docs/index.html) — subfolders: uat/, legal/, business/, technical/, research/, other/, screenshots/
-Session history       : CONTEXT.md
+API routes            : src/routes/
+Migrations            : database/migrations/ (000-baseline + numbered); one-off scripts in database/scripts/
+Docs                  : docs/ (see docs/index.html)
+Backlog               : docs/technical/backlog.md
+Session history       : CONTEXT.md (git: Context.md)
 Environment template  : .env.example
-DB baseline (new DB)  : database/migrations/000-baseline.sql
-UAT seed data         : database/scripts/uat-dummy-listings.sql (UAT project only)
+UAT seed data         : database/scripts/uat-dummy-listings.sql (UAT only)
+
+npm run uat:9c        : phone-OTP / RLS regression vs uat preview (UAT only; wait 1 h between runs)
+npm run uat:review    : review-queue regression vs UAT
+npm run uat:photos    : photo EXIF-strip regression vs UAT
+npm run uat:transfer  : admin-transfer regression vs UAT
+npm run smoke:prod    : read-only production smoke test (no login/writes)
 ```
 
-## Quick Reference: Supabase Projects + Test Commands
-```
-Production Supabase   : jneoxwumccmjwaojfazh   ← mapit.co.in
-UAT Supabase          : xesekrkxbtybbxpsvxuz   ← uat preview, localhost (.env)
-npm run uat:9c        : 35-check phone-OTP / RLS regression suite vs uat preview
-                        (UAT only, zero WhatsApp sends; wait 1 h between runs)
-npm run smoke:prod    : 13-check read-only production smoke test (no login/writes)
-```
+Category IDs: re = Real Estate · veh = Vehicles · hh = Household Items · furn = legacy (prototype only)
 
-## Quick Reference: Category IDs
-```
-re   = Real Estate
-veh  = Vehicles
-hh   = Household Items
-furn = Legacy (prototype only, not in MVP categories)
-```
-
-## Quick Reference: Commit + Push + PR Workflow
-```bash
-git add <specific files>
-git commit -m 'feat(session-01): housekeeping and folder structure'
-git push origin uat
-# Then open a PR from uat → main after Nagesh/Arun UAT sign-off
-```
-
-## Manual Actions Required (Cannot Be Done by Code)
-The following must be done manually in external dashboards:
-
-1. Vercel Dashboard:
-   - Set up uat.mapit.co.in subdomain pointing to the uat branch deployment
-   - Delete the broken frontend Vercel project that returns 500
-
-2. Supabase SQL Editor (run once, in UAT project first):
-   - UPDATE invite_codes SET code = trim(code) WHERE code != trim(code);
-   - ALTER TABLE listings DROP CONSTRAINT listings_condition_check;
-
-3. Google OAuth:
-   - Configure in Supabase Dashboard → Auth → Providers → Google
-   - Add authorized redirect URIs: https://mapit.co.in/auth/callback
-     and https://uat.mapit.co.in/auth/callback
+Windows dev: start the server with `node -r dotenv/config src/server.js` (a stopped
+`npm start` leaves node on port 3001 — check `Get-NetTCPConnection -LocalPort 3001`).

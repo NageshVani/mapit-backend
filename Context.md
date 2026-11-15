@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-14 14:43 (UAE), checkpoint before break (**019 + 020 LIVE on prod DB; schema prod = UAT re-confirmed with Nagesh's clean `rev1` inventories; 9L branch pushed (`ed98a98`). Paused for a break. Next: on Nagesh's go — merge `main` (npm audit fix) into 9L → `uat:review` → ff uat → PR uat → main → smoke:prod.**)
+- **Last updated:** 2026-11-15 10:05 (UAE), checkpoint (**CLAUDE.md v5.0 approved by Nagesh + new docs/technical/backlog.md (5 sections) — committed on `docs/claude-md-v5`, PR to main.**)
+- **Last updated (previous):** 2026-11-14 18:21 (UAE), END OF DAY checkpoint (**3 prod releases today: PR #33 9L, PR #34 photo EXIF strip, PR #35 UAT/LOCAL watermark — smoke:prod 15/15; photo limits verified. Local server stopped. Tomorrow (/resume): CLAUDE.md v5.0 + backlog on `docs/claude-md-v5` → 9L prod invites + revoke uat Shareable Link → frontend split.**)
 - **Last updated (previous):** 2026-11-14 14:35 (UAE), checkpoint (**9L step 7 started: migrations 019 + 020 RUN ON PRODUCTION by Nagesh (no errors; all 3 tables exist); schema inventory prod vs UAT = identical (only Postgres 17.6 vs 17.11). Earlier the same day 019-rollback.sql was run on prod by mistake BEFORE 019 — no-op (all IF EXISTS; check showed all 3 tables NULL). Next: push 9L → uat → PR uat → main → smoke:prod.**)
 - **Last updated (previous):** 2026-11-14 (UAE), checkpoint (**9L UAT: wife 1 decided all 12 batch-1 listings (6/12 right action group); wife 2 never started — UAT has NO invite for her (only the 8 Nov one, used by wife 1). Wizard brief: all 4 answers in (text-only draft; ≥1 photo required except plots; full preview; split NOW, option 1). Better Stack monitor live since 8 Nov (per records; James cannot see the account).**)
 - **Last updated (previous):** 2026-11-08 14:18 (UAE), end-of-day checkpoint (**Wife 1 signed up + reviewing on phone (6 Nov links had no valid invite — new one made); wife 2 tomorrow/day after (Diwali). Seller "views" already live → stays PUBLIC; follow-up after 9L. Posting wizard brief saved for Arun (`docs/business/posting-wizard-brief.html`); listing PREVIEW before Submit = part of the wizard (screen ⑤). James recommends frontend split before the wizard. Branch 9L: 10 local commits, docs only, not pushed.**)
@@ -146,6 +147,12 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-15 10:05) — CLAUDE.md v5.0 APPROVED (Nagesh).** Lean rules file + new `docs/technical/backlog.md` (1 planned releases · 2 ideas · 3 small fixes · 4 security/ops clean-up · 5 manual leftovers + history). Updated: Rule 3 release names; Rule 6 single flow + hotfix path, acronyms expanded (PR (Pull Request), UAT (User Acceptance Testing)) per Nagesh; Rule 8 CORS list = code; Rule 9 CSP is ON + admin-role placeholder; Rule 10 stale one-off SQL removed; Rule 12 current spend (Vercel Pro + Supabase Pro confirmed taken); Rule 13 screenshots + click-test merged; Quick Reference fixed. New: photo-metadata rule; expand-then-contract + prod DB first; Rule 11 Live Operations (no prod write SQL by Claude, Vercel "Instant Rollback" — wording confirmed by Nagesh, incident steps, smoke:prod after release); mobile/new-market guardrails; Windows server-start tip. Change note kept at the top of CLAUDE.md. Next: 9L prod invites (Nagesh) → frontend split option 1.
+
+**NOW (2026-11-14 18:08) — Goal: CLAUDE.md v5.0 (lean operating rules) + separate backlog doc**, on branch `docs/claude-md-v5` (from main `1c5bb7b`). Nagesh's decisions: (1) split = lean rules file + backlog; (2) EXIF fix — DONE (PR #34); (3) admin emails → admin role later, add a placeholder now; (4) Rule 3 → track work by release name ("Release 9L"). Source: Nagesh's "MapIt CLAUDE.md — Suggested Updates" (stale fixes, live-ops rules, mobile-app + new-market guardrails). Draft as a diff for review; no commit to CLAUDE.md until approved.
+
+**NOW (2026-11-14 ~17:15) — 9L RELEASED to production.** Merged `origin/main` (npm audit fix) into 9L (`ec3c062`, lockfile only, no conflict) → `npm ci` → `uat:review` 64/64 (localhost vs UAT) → 9L branch + `uat` fast-forwarded + pushed → uat Preview deploy success, endpoints 200, unbypassed 302 → Nagesh uat click-test ✅ (All clear) → `smoke:prod` baseline 14/14 → **PR #33 uat → main opened by James, merged by Nagesh (`5efbe07`)** → prod deploy success → `smoke:prod` 14/14 → prod `/review` 200 ("MapIt Review"), `/api/review/me` 401 without login. Prod DB and code back in step. Better Stack: all 4 regions ticked (Europe, N. America, Asia, Australia), no maintenance window. Remaining 9L: prod invites for both wives → activate → revoke uat Shareable Link. Then split (option 1) from clean main.
 
 **NOW (2026-11-14 14:43, break) — Goal: finish 9L step 7 release (code part).** DB part done on prod. Waiting for Nagesh's go on: merge `origin/main` into `feat/session-9l-review-queue` (brings npm audit fix `46c9e41`, lockfile only) so uat tests exactly what prod gets → `npm run uat:review` → fast-forward `uat` + push → check uat.mapit.co.in/review → PR uat → main (Nagesh/Arun merge) → `smoke:prod` → prod invites for both wives → revoke uat Shareable Link. Then split (option 1) from clean main.
 - **Schema re-check (14:41):** Nagesh re-ran the inventory → `schema-prod-2026-11-14 rev1.json` + `schema-uat-2026-11-14 rev1.json` (both "Copy as JSON" wrapper `[{"schema_inventory":"…"}]`). ⚠️ Comparing the wrapped files directly says "match" trivially (no sections found) — must unwrap first. Unwrapped: ✅ identical, only Postgres 17.6 vs 17.11.
@@ -663,6 +670,16 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-14 18:21) End of day:** photo limits verified (Production default 5, MAX_PHOTO_SIZE 5 MB, local .env 5); local server on 3001 stopped (port free); branch `docs/claude-md-v5` pushed (`d6b9a9c` + this checkpoint).
+- ✅ **(2026-11-14 ~18:05) PR #35 UAT / LOCAL TEST watermark RELEASED** (`1c5bb7b`): `/api/config` returns `environment` (VERCEL_ENV or `local`); shared `public/env-badge.js` (index, review, admin) draws a diagonal red "UAT · TEST DATA" / grey "LOCAL TEST" (opacity .28, white outline, pointer-events none) + [UAT]/[LOCAL] tab title; prod: script exits on www/bare host + fail-safe. New smoke **S-15** (prod=production, uat=preview). smoke:prod **15/15**; prod screenshot clean. Nagesh: "exactly how I wanted".
+- ✅ **(2026-11-14 ~17:45) PR #34 photo EXIF/GPS strip RELEASED** (`befb186`): server re-encodes every photo with sharp 0.35.5 (rotate, ≤1600 px, JPEG, no metadata); unreadable/HEIC → 400 friendly message; non-image → 400 (was 500); toast shows server reason. `npm run uat:photos` 13/13 on localhost AND on the Vercel preview (Linux sharp). smoke:prod 14/14. Nagesh local click-test OK.
+- ✅ **(2026-11-14 ~17:30) Read-only EXIF scan:** prod 6/6 and UAT 24/24 photos have NO GPS (scanner proven with a GPS control photo) → no backfill needed.
+- ✅ **(2026-11-14) Nagesh's CLAUDE.md suggestions reviewed** against the code (CSP actually ON with unsafe-inline; CORS already has www; admin emails also in public HTML; Sentry/uptime/rate-limit exist; no CI/tags/CHANGELOG/v1/account-delete). 4 decisions taken (see Current Goal).
+- ✅ **(2026-11-14) uat kept level with main** after each release (ff to `befb186`, then to the watermark branch → PR #35).
+- ✅ **(2026-11-14 ~17:10) 9L RELEASED to production:** PR #33 uat → main (opened by James, merged by Nagesh, `5efbe07`); Vercel prod deploy success; `smoke:prod` 14/14; prod `/review` 200, `/api/review/me` 401 unauthenticated.
+- ✅ **(2026-11-14 ~16:55) Pre-release:** merged `origin/main` (npm audit fix) into 9L (`ec3c062`, lockfile only) → `npm ci` → `uat:review` 64/64 → 9L + `uat` fast-forwarded + pushed → uat preview success, endpoints 200 → Nagesh uat click-test ✅ (All clear) → `smoke:prod` baseline 14/14.
+- ✅ **(2026-11-14) Better Stack regions confirmed:** Europe, North America, Asia, Australia all ticked; no maintenance window (correct).
+- ✅ **(2026-11-14 17:14) CONTEXT updated** (`99589c5`, pushed on 9L branch) + this checkpoint.
 - ✅ **(2026-11-14 14:41) Schema re-confirmed with clean `rev1` inventories** (prod = UAT after unwrapping). 9L branch pushed to origin (`ed98a98`, CONTEXT note).
 - ✅ **(2026-11-14) Lost chat recovered** from the Claude Code transcript (`f61c60fe…`); 019/020 opened in VS Code.
 - ✅ **(2026-11-14 14:35) PRODUCTION DB: migrations 019 (review queue) + 020 (review invites) run on `jneoxwumccmjwaojfazh` by Nagesh** — both "No rows returned", no error (verify blocks passed); prod vs UAT schema inventory ✅ identical (only Postgres version differs). Earlier mistaken `019-rollback.sql` on prod was a no-op (019 not yet run; all IF EXISTS).
@@ -1444,7 +1461,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **9L step 7 — production release** | 🔄 2026-11-14: DB ✅ (019 + 020 on prod, schema = UAT); branch pushed `ed98a98`; code release waiting for Nagesh's go | `Context.md`; prod DB (SQL Editor) | Next: merge main → 9L, `uat:review`, ff uat, PR uat → main, smoke:prod, wives' prod invites, revoke Shareable Link |
+| **9L step 7 — production release** | ✅ code + DB live 2026-11-14 (PR #33 `5efbe07`, smoke:prod 14/14); 🔄 remaining: prod invites for both wives, revoke uat Shareable Link | `package-lock.json` (merge), `Context.md`; GitHub PR #33 | Next: Team → invite → incognito test → send → Activate |
+| **CLAUDE.md v5.0 + backlog doc** | ✅ Approved + committed 2026-11-15 on `docs/claude-md-v5` | `CLAUDE.md`, new backlog doc | Lean rules + backlog; admin-role placeholder; release names; diff for Nagesh review first |
+| **Photo EXIF strip (PR #34)** | ✅ live 2026-11-14 | `src/routes/uploads.js`, `MapIt_MVP_v1.html`, `public/index.html`, `package*.json`, `scripts/uat/photo-exif.suite.js` | smoke 14/14 |
+| **UAT / LOCAL watermark (PR #35)** | ✅ live 2026-11-14 | `public/env-badge.js`, `src/server.js`, 3 HTML pages, `scripts/smoke/prod-readonly.js`, `docs/screenshots/uat-badge/` | smoke 15/15 |
 | **Prod watch-outs before outreach (2026-11-08)** | ✅ SPF ✅; uptime monitor ✅ (Better Stack, test alert received 12:50); npm audit fix ✅ (PR #32 `aef8443`, smoke:prod 14/14) | Namecheap DNS; `package-lock.json` (main); Context.md | Sentry uptime refused: "not enough budget to create new seat" — delete the disabled Sentry monitor |
 | **Posting wizard + listing preview (design)** | 📝 Brief saved, waiting for Arun's answers (Q1 draft, Q2 photos, Q4 split; Q3 = full preview, Nagesh) | `docs/business/posting-wizard-brief.html`, `docs/index.html` | Build after 9L (+ split); phone mockups first |
 | **9L step 6 — wives UAT** | 🔄 2026-11-08: wife 1 (V***) signed up via new invite + share link, activated, reviewing on phone (approve/reject/change work); wife 2 invite pending. (6 Nov links never had a valid invite — no invite rows existed.) | `scripts/uat/review-seed.js`, `.gitignore`, `Context.md` (`a895a39`, local) | Shareable Link revoke at step 7; `seed 2`/`seed 3` day 2/3; `cleanup` after |
@@ -1652,6 +1672,17 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+src/routes/uploads.js — 2026-11-14 (PR #34): sharp cleanPhoto() strips all metadata, rotate + resize + JPEG; unsupported → friendly 400.
+scripts/uat/photo-exif.suite.js — NEW (PR #34): `npm run uat:photos`, 13 checks, UAT only, PHOTOS_BASE for Vercel previews.
+package.json / package-lock.json — sharp ^0.35.5 (dep), exifr ^7.1.3 (dev), script uat:photos.
+public/env-badge.js — NEW (PR #35): diagonal UAT / LOCAL TEST watermark + tab-title prefix.
+src/server.js — /api/config `environment` (PR #35).
+MapIt_MVP_v1.html = public/index.html — photo-error toast (PR #34), env-badge script tag (PR #35). public/review.html, public/admin.html — env-badge script tag.
+scripts/smoke/prod-readonly.js — S-15 watermark guard (PR #35).
+docs/screenshots/uat-badge/ — before/after local, signed-in, uat, prod.
+package-lock.json — 2026-11-14: npm audit fix from main merged into 9L (`ec3c062`); now on main via PR #33.
+Context.md — 2026-11-14 17:14: 9L release record, new Next Steps, 2 🔴 issues marked resolved (`99589c5` + this checkpoint).
+(2026-11-14) GitHub — PR #33 uat → main merged (`5efbe07`); branches `uat` + `feat/session-9l-review-queue` at `ec3c062`+.
 Context.md — 2026-11-14: 019/020 prod run, mistaken no-op rollback, schema check, release next steps (`ed98a98` + this checkpoint).
 (2026-11-14) Production DB — migrations 019 + 020 applied in SQL Editor (no repo file changed).
 docs/business/posting-wizard-brief.html — 2026-11-08 (NEW): wizard design brief for Arun (5 screens, preview before Submit, one-file vs split, 4 questions).
@@ -2074,12 +2105,20 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **✅ RESOLVED 2026-11-14 18:20 — photo limits:** Vercel Production has no MAX_PHOTOS_PER_LISTING → code default 5 ✅; MAX_PHOTO_SIZE=5242880 (5 MB) ✅; local .env set to 5 by Nagesh. Note: Vercel caps any request body at ~4.5 MB anyway; browser shrinking keeps photos well below.
+- **ℹ️ (2026-11-14) Multer middleware errors return 500** (file > 5 MB, > 5 files in one request → "Unexpected field") — the route's catch never sees them. Pre-existing; small later fix: error-mapping middleware → friendly 400.
+- **ℹ️ (2026-11-14) Admin emails hard-coded in `src/middleware/auth.js` AND in the public HTML** (visible in page source) → move to admin role in `staff_members` later (decided); placeholder in CLAUDE.md v5.
+- **ℹ️ (2026-11-14) Windows: stopping a background `npm start` leaves the child `node` on port 3001** → start the server with `node -r dotenv/config src/server.js` directly; check `Get-NetTCPConnection -LocalPort 3001`.
+- **ℹ️ (2026-11-14) Deploy check gotcha:** the same commit deployed for a feature branch AND uat → "deploy success" may be the other one; always confirm on the real domain (e.g. `/api/config` field).
+- **ℹ️ (2026-11-14) HEIC photos:** sharp prebuilt cannot decode HEVC-HEIC → rejected with friendly message (decided). iPhone Safari converts to JPEG itself; Android Chrome may not.
+- **ℹ️ (2026-11-14) Git tracks the file as `Context.md`, while the docs and skills call it `CONTEXT.md`** — fine on Windows, but `git add CONTEXT.md` misses it, and a case-sensitive system (Linux/macOS) won't find a `CONTEXT.md` reference. Fix later: `git mv Context.md CONTEXT.md` (two-step via a temp name on Windows).
+- **ℹ️ (2026-11-14) Wives' UAT accounts do not exist on prod** (separate DBs) — both sign up fresh via prod invites.
 - **ℹ️ (2026-11-14) `compare-schema-inventory.js` gives a false "match" on wrapped input** ("Copy as JSON" → `[{"schema_inventory":"…"}]`, or Markdown table) — it finds no sections and reports ✅. Small later fix: auto-unwrap, and fail if `tables` is missing. Until then: unwrap before comparing.
-- **🔴 (2026-11-14) Prod DB now has 019 + 020 but prod code is still pre-9L** — harmless (additive only), but finish the code release soon so the two don't drift.
+- **✅ RESOLVED 2026-11-14 ~17:15 (PR #33 merged, `5efbe07`) — was: 🔴 (2026-11-14) Prod DB now has 019 + 020 but prod code is still pre-9L** — harmless (additive only), but finish the code release soon so the two don't drift.
 - **ℹ️ (2026-11-14) `main` has npm audit fix (`46c9e41`) that uat/9L lack** → merge main into 9L before the uat → main PR (proposed, awaiting go).
 - **💡 (2026-11-14) Idea (Nagesh): alert on a mistaken approval / rejection.** Wife 1's wrong decisions in UAT were deliberate (to test what happens) — guide stays as is. Options proposed: (A) seller "Ask for a second look" on rejection / needs-change → admin email; (B) daily admin digest of all review decisions with one-tap reopen; (C) spot-check: re-queue a random share of approvals for an admin second look (per-approver accuracy); (D) rule checks before Approve (phone/email/URL in text, price ₹1, photo count) → "Are you sure?". James recommends A + B first. Not in 9L scope — decide after the split.
 - **✅ (2026-11-14) UAT practice data cleaned** (`review-seed.js cleanup`: 12 listings + 2 fake sellers deleted).
-- **🔴 (2026-11-08) Do NOT open a uat → main PR until the 9L release:** `origin/uat` is 30 commits ahead of main incl. all 9L code; merging without 019 + 020 on prod breaks every seller edit / approver sign-up. **Prod hotfixes (incl. npm audit fix) branch from `main`.**
+- **✅ RESOLVED 2026-11-14 (9L released via PR #33) — was: 🔴 (2026-11-08) Do NOT open a uat → main PR until the 9L release:** `origin/uat` is 30 commits ahead of main incl. all 9L code; merging without 019 + 020 on prod breaks every seller edit / approver sign-up. **Prod hotfixes (incl. npm audit fix) branch from `main`.**
 - **✅ (2026-11-08 12:50) Uptime monitor RESOLVED** — Better Stack free, www /health, 3 min, email test alert received. Small leftovers (Nagesh): confirm ≥1 region ticked (Asia preferred) + grey example fields (Authorization header, proxy, metadata, body) are placeholders, not values; optional timeout 30 s → 10 s; invite Arun to the Better Stack team if free plan allows; delete the disabled Sentry monitor "MapIt prod /health" (id 10889098); check **Namecheap Auto-Renew ON** for mapit.co.in (domain expiry check is paid in Better Stack).
 - **✅ (2026-11-08 13:05) `npm audit` RESOLVED** — PR #32 merged; 1 moderate left (`uuid` ^10 in package.json but never imported — possible later tidy-up: remove the unused dependency). uat/9L branch still run the old lockfile until the 9L release merge (or merge main → uat earlier).
 - **ℹ️ (2026-11-08) `/health` is shallow** (no Supabase call) — uptime monitor catches app/deploy/DNS failures, not DB outages. Possible later: DB-aware health check.
@@ -2317,6 +2356,14 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-14, Nagesh) CLAUDE.md → lean rules file + separate backlog**; admin emails → admin role later (placeholder now); Rule 3 → track work by release name ("Release 9L").
+- **(2026-11-14, Nagesh) Unreadable photos (HEIC) are rejected with a friendly message**, never stored.
+- **(2026-11-14) EXIF stripped server-side with sharp** (trust boundary; covers web, API, future app) — not browser-only, not a JPEG-only EXIF remover. sharp 0.35.5 (0.34.x had high advisories on libvips/libheif).
+- **(2026-11-14, Nagesh) Watermark = diagonal transparent text over the whole page** (not a corner pill / full-width bar); environment from VERCEL_ENV via /api/config, not hostname; prod guarded twice + S-15.
+- **(2026-11-14) Hotfix path used for PR #34:** fix branch from main → Vercel branch preview test → PR to main; normal path (uat → main) for UI features (PR #35).
+- **(2026-11-14) Merged `main` into 9L (not rebase / cherry-pick)** before the release PR so uat tested exactly what prod got; rebase would rewrite a pushed branch, cherry-pick would duplicate the commit.
+- **(2026-11-14) PR #33 merged with a merge commit** (same as earlier releases); prod invites need no `_vercel_share` token.
+- **(2026-11-14, Nagesh) Next discussion: revise CLAUDE.md for the live-product phase** before starting the split.
 - **(2026-11-14, Nagesh) Guide wording stays as is** — wife 1's wrong decisions were deliberate tests. Mistake-alert feature (A + B recommended) decided after the split.
 - **(2026-11-14, Nagesh) 019 + 020 ran on prod BEFORE the code merge** (code depends on them; additive, so safe to run first).
 - **(2026-11-14, James — proposed) Merge `main` into 9L before uat → main PR** so uat preview tests 9L + audit fix together and the PR holds only 9L.
@@ -2767,6 +2814,21 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-14 18:21, end of day — tomorrow, resume with /resume; Nagesh: do steps 1, 2, 4 tomorrow):**
+1. **CLAUDE.md v5.0 + backlog doc** on `docs/claude-md-v5`: draft → show diff → Nagesh/Arun approve → commit → PR. Include: stale fixes (CSP actually on; Rule 6 wording; finished one-offs → history; MVP/sessions → release names), live-ops rules (hotfix + Vercel rollback, incidents, no prod write SQL by Claude, expand-then-contract, photo metadata stripped server-side), admin-role placeholder, one-line mobile/market guardrails; projects → backlog.
+2. 9L leftovers: prod invites for both wives (Team → invite → incognito test → send → Activate); revoke uat Shareable Link.
+3. ✅ Photo limits checked (Production default 5, MAX_PHOTO_SIZE 5 MB, local .env 5).
+4. Then frontend split option 1 → views follow-up → posting wizard.
+
+**⬅ (2026-11-14 17:14) — superseded:**
+0. Discuss CLAUDE.md changes (done → decisions above).
+1. Prod: Team panel at https://www.mapit.co.in/review → invite both wives (check invite shows OPEN + test link in incognito before sending; no `_vercel_share` needed on prod) → they sign up → Activate.
+2. Revoke the uat Vercel Shareable Link (Deployment → Share → "Only people with access").
+3. Post-release: delete admin old Pending section; Supabase Advisors 15 Warnings / 14 Info review; tell the seller Releases 1–3 are live.
+4. Nagesh leftovers: delete old Sentry monitor (10889098), Namecheap auto-renew (Better Stack regions ✅ done).
+5. Frontend split option 1 on a new branch from clean main → views follow-up → posting wizard.
+6. Later: mistake-alert (A + B); fix `compare-schema-inventory.js` false match on wrapped input; remove unused `uuid` dependency.
 
 **⬅ NOW (2026-11-14 14:43, after break) — ordered (resume with /resume):**
 1. Nagesh says go → merge `origin/main` into `feat/session-9l-review-queue` (stop if conflict) → `npm run uat:review` on UAT.
