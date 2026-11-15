@@ -43,4 +43,19 @@ function missingRequiredDetail(category, subcategory, details) {
   return id ? req[id] : null;
 }
 
-module.exports = { LISTING_EXPIRY_ENABLED, newExpiry,RENT_ONLY_SUBCATEGORIES, enforceRentOnly, missingRequiredDetail };
+// Vehicle year (Release 10A, Nagesh 2026-11-15): if given, 4 digits from YEAR_MIN to
+// this year. Older than 15 years is allowed (the page shows a note). Same rules as
+// yearIssue() in public/js/config.js. Returns an error message, or null.
+const YEAR_MIN = 1900;
+function invalidVehicleYear(category, details) {
+  if (category !== 'veh') return null;
+  const v = String((details && typeof details === 'object' ? details.year : '') ?? '').trim();
+  if (!v) return null;
+  if (!/^\d{4}$/.test(v)) return 'Enter the year as 4 digits, e.g. 2019.';
+  const y = Number(v), now = new Date().getFullYear();
+  if (y > now) return `Year can't be later than ${now}.`;
+  if (y < YEAR_MIN) return `Year can't be earlier than ${YEAR_MIN}.`;
+  return null;
+}
+
+module.exports = { LISTING_EXPIRY_ENABLED, newExpiry,RENT_ONLY_SUBCATEGORIES, enforceRentOnly, missingRequiredDetail, invalidVehicleYear };

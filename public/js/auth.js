@@ -125,6 +125,18 @@ function togglePwd(){
   inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
+// Enter in any sign-in / create-account field presses the main button (Nagesh UAT,
+// 2026-11-15). One listener on the box (event delegation); a disabled button stays disabled.
+document.getElementById('authModal').addEventListener('keydown', e => {
+  if(e.key !== 'Enter' || e.isComposing || e.target.tagName !== 'INPUT') return;
+  const pwd = document.getElementById('authPassword');
+  if(e.target.id === 'authEmail' && !pwd.value){ e.preventDefault(); pwd.focus(); return; }   // email first, then password
+  const btn = document.getElementById('authSubmitBtn');
+  if(btn.disabled || btn.offsetParent === null) return;
+  e.preventDefault();
+  btn.click();
+});
+
 async function submitAuth(){
   const email    = document.getElementById('authEmail').value.trim().toLowerCase();
   const password = document.getElementById('authPassword').value;

@@ -36,12 +36,18 @@ button,input{font-family:inherit;font-size:inherit}
 .pill{margin-left:auto;background:var(--card);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted2);font-weight:600}
 .menu-btn{margin-left:auto;background:none;border:0;font-size:22px;color:var(--muted2);padding:2px 6px;cursor:pointer}
 .out-btn{margin-left:auto;background:none;border:1.5px solid var(--border2);border-radius:9px;padding:5px 10px;font-weight:600;font-size:13px;color:var(--muted2);cursor:pointer}
-.pill + .out-btn,.out-btn + .menu-btn{margin-left:0}
+.pill + .out-btn{margin-left:0}
+.pill.hide + .out-btn{margin-left:auto}  /* pill hidden (Team / Invite): Sign out still goes right */
 .dd{position:absolute;right:10px;top:50px;background:var(--panel);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);width:180px;overflow:hidden;z-index:6}
-.dd button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:13px 14px;font-weight:600;cursor:pointer}
-.dd button:last-child{border-bottom:0}
+.dd button,.dd a{display:block;width:100%;box-sizing:border-box;text-decoration:none;color:inherit;font-size:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:13px 14px;font-weight:600;cursor:pointer}
+.dd > :last-child{border-bottom:0}
 .dd .danger{color:var(--red)}
 .view{flex:1;padding:18px 16px 28px}
+/* Admin button row (Release 10A, Nagesh UAT 2026-11-15): replaces the ☰ menu */
+.abar{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--border2);scrollbar-width:none}
+.abar::-webkit-scrollbar{display:none}
+.abar button,.abar a{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:18px;border:1.5px solid var(--border2);background:var(--card);color:var(--text);font-weight:600;font-size:12.5px;text-decoration:none;white-space:nowrap;cursor:pointer}
+.abar .on{background:var(--orange);border-color:var(--orange);color:#fff}
 .who{background:#FFF7ED;border-bottom:1px solid #FED7AA;color:#9A3412;font-size:12.5px;font-weight:600;padding:6px 14px;overflow-wrap:anywhere}
 .center{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:70vh}
 
@@ -139,13 +145,15 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
     <div class="logo">Map<b>It</b> Review</div>
     <div class="pill hide" id="countPill"></div>
     <button class="out-btn hide" id="outBtn" onclick="signOut()">Sign out</button>
-    <!-- Menu only switches Queue / Team, so only admins see it -->
-    <button class="menu-btn hide" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">☰</button>
-    <div class="dd hide" id="menu">
-      <button onclick="menuGo('queue')">📋 Review queue</button>
-      <button onclick="menuGo('team')">👥 Team</button>
-    </div>
   </div>
+  <!-- Admins only (every /team and /invites route is requireAdmin anyway) -->
+  <nav class="abar hide" id="adminBar" aria-label="Admin">
+    <button id="abQueue" onclick="loadNext()">📋 Queue</button>
+    <button id="abReviewers" onclick="loadTeam('reviewers')">👥 Reviewers</button>
+    <button id="abInvite" onclick="loadTeam('invite')">✉️ Send invite</button>
+    <a href="/admin">🔐 Admin</a>
+    <a href="/" id="abMapIt">🗺️ MapIt</a>
+  </nav>
   <!-- Who is reviewing — always visible, a phone may be shared at home -->
   <div class="who hide" id="whoBar"></div>
 
@@ -249,6 +257,7 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
 
   <!-- 10: team (admins only — every /team and /invites route is requireAdmin) -->
   <div class="view hide" id="v-team">
+    <div id="invSection">
     <div class="sec" style="margin-top:0">Invite someone</div>
     <form class="mem" onsubmit="createInvite(event)">
       <label for="invName" style="margin-top:0">Who is it for?</label>
@@ -264,6 +273,7 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
         </div>
       </div>
     </form>
+    </div>
     <div id="teamLists"><div class="note">Loading…</div></div>
   </div>
 
@@ -304,6 +314,7 @@ function loadSession() {
   try { session = JSON.parse(localStorage.getItem(SESSION_KEY)) || null; } catch { session = null; }
 }
 function saveSession(s) {
+  borrowed = false;
   session = s ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at } : null;
   try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(session)) : localStorage.removeItem(SESSION_KEY); } catch {}
   scheduleRefresh();
@@ -311,6 +322,11 @@ function saveSession(s) {
 
 // Supabase ROTATES refresh tokens: always save the new one (saveSession does).
 async function refreshSession() {
+  if (borrowed) {
+    const s = mapItSession();
+    if (s && s.access_token !== session?.access_token) { session = s; return true; }
+    return false;
+  }
   if (!session?.refresh_token) return false;
   if (refreshing) return refreshing;
   refreshing = (async () => {
@@ -324,6 +340,32 @@ async function refreshSession() {
     finally { refreshing = null; }
   })();
   return refreshing;
+}
+
+// ── Borrowed admin session (Release 10A, Nagesh 2026-11-15) ──
+// "Review queue" on the Admin page opens /review?from=admin. An admin who is
+// signed in to MapIt in this browser is then signed in here too, by BORROWING the
+// session MapIt saved (same mapit_sessions store and "latest login" pick as
+// admin.html). Borrowed = memory only: never saved under SESSION_KEY, never
+// refreshed here (refresh tokens rotate; renewing MapIt's chain from a second
+// page could get the whole MapIt session revoked). A reviewer's own saved
+// session on this device is never touched. When the borrowed token expires we
+// re-read MapIt's latest one, else fall back to the normal sign-in.
+let borrowed = false;
+function jwtExp(t) {
+  try { return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).exp || 0; } catch { return 0; }
+}
+function mapItSession() {
+  let all = {};
+  try { all = JSON.parse(localStorage.getItem('mapit_sessions') || '{}'); } catch {}
+  const latest = Object.values(all).sort((a, b) => new Date(b.last_login || 0) - new Date(a.last_login || 0))[0];
+  const t = latest?.session?.access_token;
+  return t && jwtExp(t) * 1000 > Date.now() + 30000 ? { access_token: t } : null;
+}
+function endBorrowed() {          // back to this page's own sign-in (or none)
+  borrowed = false;
+  try { history.replaceState(null, '', location.pathname); } catch {}
+  loadSession();
 }
 
 function scheduleRefresh() {
@@ -352,7 +394,7 @@ async function api(method, url, body, retried) {
   const data = await r.json().catch(() => ({}));
   if (r.status === 401 && session && !retried) {
     if (await refreshSession()) return api(method, url, body, true);
-    saveSession(null);
+    if (borrowed) { endBorrowed(); session = null; } else saveSession(null);
     show('auth');
     throw new Error('Your session ended. Please sign in again.');
   }
@@ -370,17 +412,16 @@ function show(name) {
   const whoName = me?.display_name || me?.email;
   who.textContent = whoName ? `👤 Signed in as ${whoName}${me.access === 'admin' ? ' (admin)' : ''}` : '';
   who.classList.toggle('hide', !signedIn || !whoName);
-  document.getElementById('menuBtn').classList.toggle('hide', !signedIn || me?.access !== 'admin');
-  document.getElementById('menu').classList.add('hide');
+  const isAdminView = signedIn && me?.access === 'admin' && ['queue', 'clear', 'team'].includes(name);
+  document.getElementById('adminBar').classList.toggle('hide', !isAdminView);
+  // borrowed from MapIt → go back into MapIt as that admin, skipping Who's using MapIt?
+  document.getElementById('abMapIt').href = borrowed ? '/?from=admin' : '/';
+  document.getElementById('abQueue').classList.toggle('on', name === 'queue' || name === 'clear');
+  ['abReviewers', 'abInvite'].forEach(id => document.getElementById(id).classList.remove('on'));
   document.getElementById('bar').classList.toggle('hide', name !== 'queue');
   if (name !== 'queue' && name !== 'clear') document.getElementById('countPill').classList.add('hide');
   window.scrollTo(0, 0);
 }
-function toggleMenu() { document.getElementById('menu').classList.toggle('hide'); }
-function menuGo(v) { v === 'queue' ? loadNext() : loadTeam(); }
-document.addEventListener('click', e => {
-  if (!e.target.closest('#menu') && !e.target.closest('#menuBtn')) document.getElementById('menu').classList.add('hide');
-});
 
 function setMsg(id, text, kind = 'err') {
   const el = document.getElementById(id);
@@ -405,6 +446,7 @@ async function route() {
     document.getElementById('v-loading').querySelector('.big-s').textContent = e.message;
     return;
   }
+  if (borrowed && me.access !== 'admin') { endBorrowed(); me = null; return route(); }
   if (me.access === 'admin' || me.access === 'active') return loadNext();
   if (me.access === 'requested') {
     document.getElementById('waitTitle').textContent = me.display_name ? `Thanks, ${me.display_name.split(' ')[0]}` : 'Thanks';
@@ -541,6 +583,7 @@ async function signOut() {
   // Hand back the listing I hold, so nobody waits 5 min for the claim to run out
   if (current) { try { await api('POST', `/api/review/${current.id}/release`); } catch {} }
   current = null; skipped = [];
+  if (borrowed) { endBorrowed(); session = null; me = null; setTab('in'); return show('auth'); }
   try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
   saveSession(null);
   me = null;
@@ -745,16 +788,19 @@ function sendDecision() {
 }
 
 // ── Team (screen 10, admins) ──
-async function loadTeam() {
+async function loadTeam(mode = 'reviewers') {
   // Leaving the queue: hand back the listing I hold, so nobody waits 5 min
   if (current) { const id = current.id; current = null; try { await api('POST', `/api/review/${id}/release`); } catch {} }
   show('team');
+  document.getElementById(mode === 'invite' ? 'abInvite' : 'abReviewers').classList.add('on');
+  document.getElementById('invSection').classList.toggle('hide', mode !== 'invite');
+  if (mode === 'invite') document.getElementById('invName').focus();
   document.getElementById('invOut').classList.add('hide');
   setMsg('invMsg', '');
   const box = document.getElementById('teamLists');
   try {
     const [{ team }, { invites }] = await Promise.all([api('GET', '/api/review/team'), api('GET', '/api/review/invites')]);
-    box.innerHTML = renderTeam(team) + renderInvites(invites);
+    box.innerHTML = (mode === 'invite' ? '' : renderTeam(team)) + renderInvites(invites);
   } catch (err) {
     if (err.status === 403) return route();
     box.innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
@@ -832,7 +878,9 @@ async function createInvite(e) {
 async function loadTeamLists() {
   try {
     const [{ team }, { invites }] = await Promise.all([api('GET', '/api/review/team'), api('GET', '/api/review/invites')]);
-    document.getElementById('teamLists').innerHTML = renderTeam(team) + renderInvites(invites);
+    // same split as loadTeam(): the invite screen lists only open invites
+    const inviteMode = !document.getElementById('invSection').classList.contains('hide');
+    document.getElementById('teamLists').innerHTML = (inviteMode ? '' : renderTeam(team)) + renderInvites(invites);
   } catch {}
 }
 
@@ -851,8 +899,12 @@ async function copyInvite() {
 loadSession();
 loadInvite();
 (async () => {
-  if (session?.expires_at && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) await refreshSession();
-  scheduleRefresh();
+  if (new URLSearchParams(location.search).get('from') === 'admin') {
+    const s = mapItSession();
+    if (s) { session = s; borrowed = true; }
+  }
+  if (!borrowed && session?.expires_at && session.expires_at * 1000 - Date.now() < REFRESH_EARLY_MS) await refreshSession();
+  if (!borrowed) scheduleRefresh();
   await checkInvite();
   // Opened from an invite link → straight to Create account
   setTab(inviteValid ? 'up' : 'in');

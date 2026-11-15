@@ -347,6 +347,7 @@ async function editListing(id){
   });
   updatePriceWords();
   syncPgFood();
+  document.querySelectorAll('#dynamicFields input[data-year]').forEach(updateYearNote);
 
   // Populate title and description
   document.getElementById('postTitle').value = l.title || '';
@@ -424,18 +425,65 @@ function renderDynamicFields(){
     fields.map(f => {
       const inp = f.type === 'select'
         ? `<select class="form-input form-select" id="pf_${f.id}">${f.required?`<option value="" disabled selected>— Select —</option>`:''}${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`
+        : f.type === 'year' ? yearInputHtml(f)
         : `<input class="form-input" id="pf_${f.id}" type="${f.type === 'number' ? 'number' : 'text'}" min="${f.type==='number'?'0':''}"${f.placeholder?` placeholder="${f.placeholder}"`:''}${f.default!=null?` value="${f.default}"`:''}/>`;
-      const words = f.id === 'total_price' ? `<div class="price-words" id="pfw_total_price"></div>` : '';
+      const words = f.id === 'total_price' ? `<div class="price-words" id="pfw_total_price"></div>`
+        : f.type === 'year' ? `<div class="year-note" id="pfn_${f.id}"></div>` : '';
       return `<div class="form-group"><label class="form-label">${f.label}${f.required?' <span style="color:var(--red);">*</span>':''}</label>${inp}${words}</div>`;
     }).join('');
   const tp = document.getElementById('pf_total_price');
   if(tp) tp.addEventListener('input', updatePriceWords);
   const meals = document.getElementById('pf_meals');
   if(meals){ meals.addEventListener('change', syncPgFood); syncPgFood(); }
+  container.querySelectorAll('input[data-year]').forEach(el => el.addEventListener('input', onYearInput));
   // Release 2: title follows the details (property handlers, so re-renders don't stack listeners)
   container.oninput = container.onchange = () => suggestTitle(false);
   document.querySelectorAll('input[name="txType"]').forEach(r => r.onchange = () => suggestTitle(false));
   suggestTitle(false);
+}
+// ── Vehicle year input (Release 10A) ──
+// Digits only, max 4, number keypad on phones. Suggestions appear only after
+// 3 digits (Nagesh, 2026-11-15): "201" → 2019…2010, newest first, never more than 10.
+// We fill the datalist ourselves (same result in every browser).
+// Older than 15 years is allowed; the note under the field says "15+ years old".
+function yearInputHtml(f){
+  return `<input class="form-input" id="pf_${f.id}" data-year type="text" inputmode="numeric" maxlength="4" autocomplete="off"`
+    + ` list="pfl_${f.id}" placeholder="e.g. ${new Date().getFullYear() - 3}"/><datalist id="pfl_${f.id}"></datalist>`;
+}
+function yearSuggestions(digits){
+  if(digits.length < 3) return [];
+  const now = new Date().getFullYear(), out = [];
+  for(let y = now; y >= YEAR_MIN; y--) if(String(y).startsWith(digits)) out.push(y);
+  return out;
+}
+// Prefix mask (Nagesh UAT, 2026-11-15): a digit is refused when no valid year
+// (YEAR_MIN..this year) starts with what has been typed, so "2036" can't be entered
+// by mistake ("203" is already refused). Works for pasted text too.
+function yearPrefixOk(d){
+  const now = new Date().getFullYear();
+  for(let y = now; y >= YEAR_MIN; y--) if(String(y).startsWith(d)) return true;
+  return false;
+}
+function onYearInput(e){
+  const el = e.target;
+  let digits = el.value.replace(/\D/g, '').slice(0, 4), refused = '';
+  while(digits && !yearPrefixOk(digits)){
+    refused = Number(digits.padEnd(4, '0')) > new Date().getFullYear()
+      ? `Year can't be later than ${new Date().getFullYear()}.` : `Year can't be earlier than ${YEAR_MIN}.`;
+    digits = digits.slice(0, -1);
+  }
+  if(el.value !== digits) el.value = digits;
+  const list = document.getElementById(el.getAttribute('list'));
+  // 4 digits typed = done, so no list (it would only repeat the same year)
+  if(list) list.innerHTML = digits.length === 3 ? yearSuggestions(digits).map(y => `<option value="${y}">`).join('') : '';
+  updateYearNote(el, refused);
+}
+function updateYearNote(el, refused = ''){
+  const note = document.getElementById(el.id.replace(/^pf_/, 'pfn_'));
+  if(!note) return;
+  const v = el.value.trim(), issue = refused || (v.length === 4 ? yearIssue(v) : '');
+  note.className = 'year-note' + (issue ? ' bad' : '');
+  note.textContent = issue || (isOldVehicleYear(v) ? `ℹ️ ${OLD_VEHICLE_YEARS}+ years old: buyers will see this on the listing.` : '');
 }
 // PG (FB-04): no meals → Food Type is 'Not applicable' and locked
 function syncPgFood(){
@@ -655,6 +703,8 @@ async function submitListing(){
   if(fields.length && !price){ toast('Please enter a price in the listing details.'); return; }
   const missing = missingRequiredField(category, subcategory);
   if(missing){ toast(`Please fill in "${missing.label}".`); document.getElementById(`pf_${missing.id}`)?.focus(); return; }
+  const badYear = fields.find(f => f.type === 'year' && yearIssue(details[f.id]));
+  if(badYear){ toast(yearIssue(details[badYear.id])); document.getElementById(`pf_${badYear.id}`)?.focus(); return; }
   // Session 9G (Arun): an empty plot often has nothing worth photographing,
   // so Plots (and PG, 2026-10-28) may be posted without a photo. Every other type still needs one.
   const newPhotoCount  = _newPhotos.length;

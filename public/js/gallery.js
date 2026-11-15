@@ -11,6 +11,9 @@ function openPhotoGallery(photos, idx){
   if(!_pgPhotos.length) return;
   _pgIdx = idx || 0;
   document.getElementById('pgOverlay').classList.remove('hide');
+  // Release 10A: the viewer gets its own browser-history entry (same URL), so the phone/browser
+  // Back button closes the photo instead of leaving MapIt. Not pushed twice (e.g. after a reload).
+  if(!history.state?.mapitPg) history.pushState({ mapitPg: true }, '');
   pgRender();
 }
 function pgRender(){
@@ -25,7 +28,15 @@ function pgNav(dir){
 }
 function pgGoto(i){ _pgIdx=i; pgRender(); }
 function pgBgClick(e){ if(e.target===e.currentTarget) closePhotoGallery(); }
-function closePhotoGallery(){ document.getElementById('pgOverlay').classList.add('hide'); }
+function hidePhotoGallery(){ document.getElementById('pgOverlay').classList.add('hide'); }
+// ✕ / background tap: step back over the viewer's history entry; the popstate handler hides it.
+function closePhotoGallery(){
+  if(history.state?.mapitPg) history.back();
+  else hidePhotoGallery();
+}
+window.addEventListener('popstate', () => {
+  if(!history.state?.mapitPg) hidePhotoGallery();
+});
 
 function closeSplash(){
   // Mark welcomed per-user so the onboarding splash doesn't repeat on future logins
@@ -142,10 +153,31 @@ async function initApp(){
   }
 }
 
+// "Back to MapIt" from the Admin / Review pages opens /?from=admin (Release 10A,
+// Nagesh 2026-11-15): skip "Who's using MapIt?" and continue as the admin, but
+// ONLY if the latest login in this browser is an admin, as the SERVER says
+// (/api/auth/me is_admin; same latest-login pick as admin.html). Anything
+// else → the normal Who's-using screen, so a family member is never opened by mistake.
+async function continueAsAdminFromAdminPage(sessions){
+  if(new URLSearchParams(location.search).get('from') !== 'admin') return false;
+  try { history.replaceState(null, '', location.pathname + location.hash); } catch(_){}
+  const [userId, latest] = Object.entries(sessions)
+    .sort((a, b) => new Date(b[1].last_login || 0) - new Date(a[1].last_login || 0))[0] || [];
+  const token = latest?.session?.access_token;
+  if(!token) return false;
+  try {
+    const r = await fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    if(!r.ok || !(await r.json()).is_admin) return false;
+  } catch(_){ return false; }
+  await continueAs(userId);
+  return true;
+}
+
 async function init(){
   // Handle Google OAuth redirect callback (hash contains access_token)
   if(await handleOAuthCallback()) return;
   const sessions = getMultiSessions();
+  if(await continueAsAdminFromAdminPage(sessions)) return;
   if(Object.keys(sessions).length > 0){
     renderWhoamiScreen();
     document.getElementById('whoamiScreen').classList.remove('hide');

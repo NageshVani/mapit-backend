@@ -486,6 +486,8 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:12px;font-weight:600;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
 .price-words{font-size:12.5px;font-weight:700;color:var(--orange);margin-top:5px;min-height:16px;}
+.year-note{font-size:12px;font-weight:600;color:var(--muted2);margin-top:5px;}
+.year-note.bad{color:var(--red);}
 /* Feedback Release 2 — label + ✨ button on one row (title / description) */
 .form-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;}
 .form-label-row .form-label{margin-bottom:0;}

@@ -256,7 +256,7 @@ const LISTING_FIELDS = {
     'Cars':               [
       { id:'brand',       label:'Brand',                     type:'text',   starred:true,  placeholder:'e.g. Maruti, Hyundai, Honda, Tata' },
       { id:'model',       label:'Model',                     type:'text',   starred:true,  placeholder:'e.g. Swift, i20, City, Nexon' },
-      { id:'year',        label:'Year',                      type:'number', starred:true  },
+      { id:'year',        label:'Year',                      type:'year',   starred:true  },
       { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
       { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true,  default:1 },
       { id:'fuel',        label:'Fuel Type / Electric?',     type:'select', options:['Petrol','Diesel','CNG','Electric','Hybrid'], starred:true },
@@ -265,7 +265,7 @@ const LISTING_FIELDS = {
     '2 Wheelers':         [
       { id:'brand',       label:'Brand',                     type:'text',   starred:true,  placeholder:'e.g. Honda, TVS, Hero, Royal Enfield, Bajaj' },
       { id:'model',       label:'Model',                     type:'text',   starred:true,  placeholder:'e.g. Activa, Apache, Splendor, Bullet' },
-      { id:'year',        label:'Year',                      type:'number', starred:true  },
+      { id:'year',        label:'Year',                      type:'year',   starred:true  },
       { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
       { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true,  default:1 },
       { id:'fuel',        label:'Fuel / Electric?',          type:'select', options:['Petrol','Electric'], starred:true },
@@ -274,13 +274,13 @@ const LISTING_FIELDS = {
     'Cycles':             [
       { id:'brand',       label:'Brand',                     type:'text',   starred:true,  placeholder:'e.g. Hero, BSA, Trek, Firefox' },
       { id:'model',       label:'Model',                     type:'text',   starred:true,  placeholder:'e.g. Sprint, Merlin, Ranger' },
-      { id:'year',        label:'Year',                      type:'number' },
+      { id:'year',        label:'Year',                      type:'year'   },
       { id:'total_price', label:'Price (₹)',                  type:'number', starred:true  },
     ],
     'Trucks & Commercial':[
       { id:'brand',       label:'Brand',                     type:'text',   starred:true,  placeholder:'e.g. Tata, Mahindra, Ashok Leyland' },
       { id:'model',       label:'Model',                     type:'text',   starred:true,  placeholder:'e.g. Ace, Bolero, Dost, Eicher' },
-      { id:'year',        label:'Year',                      type:'number', starred:true  },
+      { id:'year',        label:'Year',                      type:'year',   starred:true  },
       { id:'kms',         label:'Kms Driven',                type:'number', starred:true  },
       { id:'owners',      label:'No. of Previous Owners',    type:'number', starred:true,  default:1 },
       { id:'fuel',        label:'Fuel Type / Electric?',     type:'select', options:['Diesel','Petrol','CNG','Electric'], starred:true },
@@ -316,7 +316,24 @@ const LISTING_FIELDS = {
 const _inr = n => Number(n).toLocaleString('en-IN');
 // Format by the field's unit (from its label), never every number: a Year
 // must stay "2019", not "2,019".
+// ── Vehicle year (Release 10A, Nagesh 2026-11-15) ──
+// 4 digits, YEAR_MIN..this year. Older than OLD_VEHICLE_YEARS is allowed but
+// shown with a "15+ years old" note. Same rules on the server (src/config/listingRules.js).
+const YEAR_MIN = 1900, OLD_VEHICLE_YEARS = 15;
+function yearIssue(v){
+  v = String(v ?? '').trim();
+  if(!v) return '';
+  if(!/^\d{4}$/.test(v)) return 'Enter the year as 4 digits, e.g. 2019.';
+  const y = Number(v), now = new Date().getFullYear();
+  if(y > now) return `Year can't be later than ${now}.`;
+  if(y < YEAR_MIN) return `Year can't be earlier than ${YEAR_MIN}.`;
+  return '';
+}
+function isOldVehicleYear(v){
+  return /^\d{4}$/.test(String(v ?? '').trim()) && !yearIssue(v) && new Date().getFullYear() - Number(v) > OLD_VEHICLE_YEARS;
+}
 function fmtDetailValue(f, v){
+  if(f.type === 'year') return isOldVehicleYear(v) ? `${v} (${OLD_VEHICLE_YEARS}+ years old)` : v;
   const n = Number(v), isNum = f.type === 'number' && v !== '' && isFinite(n);
   if(!isNum) return v;
   if(/\(sq ft\)/.test(f.label)) return `${_inr(n)} sq ft`;

@@ -1,0 +1,186 @@
+<title>MapIt 10A Family Check</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap">
+<style>
+/* Layout: one narrow phone column of test cards, sticky progress header, results box at the end */
+:root{
+  --bg:#f6f7f5; --surface:#ffffff; --sunk:#eef0ec; --fg:#1d2420; --muted:#5f6b64; --line:#dde2dc;
+  --accent:#e8641c; --accent-ink:#ffffff; --pass:#1f8a4c; --pass-bg:#e5f4ea; --fail:#c2352b; --fail-bg:#fbe9e7;
+  --info-bg:#fff3e8; --info-line:#f2c39d;
+  --f-display:'Space Grotesk',system-ui,sans-serif; --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#121614; --surface:#1b201d; --sunk:#232925; --fg:#e7ece8; --muted:#9aa69f; --line:#2e3631;
+  --accent:#f07a36; --accent-ink:#1b1206; --pass:#4cc27a; --pass-bg:#173323; --fail:#f0776c; --fail-bg:#3a1d1a;
+  --info-bg:#2a2017; --info-line:#5c4128; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#121614; --surface:#1b201d; --sunk:#232925; --fg:#e7ece8; --muted:#9aa69f; --line:#2e3631;
+  --accent:#f07a36; --accent-ink:#1b1206; --pass:#4cc27a; --pass-bg:#173323; --fail:#f0776c; --fail-bg:#3a1d1a;
+  --info-bg:#2a2017; --info-line:#5c4128; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:grid;gap:16px}
+header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+header.bar .in{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;display:flex;align-items:center;gap:12px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:17px;white-space:nowrap}
+.brand b{color:var(--accent)}
+.prog{flex:1;min-width:0}
+.prog-track{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.prog-fill{height:100%;width:0;background:var(--pass);transition:width .3s}
+.prog-txt{font-size:12px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+h1{font-family:var(--f-display);font-size:26px;line-height:1.2;margin:4px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:0}
+.note{background:var(--info-bg);border:1px solid var(--info-line);border-radius:10px;padding:12px 14px;font-size:14px}
+.note strong{display:block;margin-bottom:2px}
+.note ul{margin:6px 0 0;padding-left:18px}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.who{grid-template-columns:1fr}}
+label.fld{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input[type=text],textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+textarea{min-height:64px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h2.sec{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:12px 0 0;font-weight:600}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:10px}
+.card.pass{border-color:var(--pass);background:var(--pass-bg)}
+.card.fail{border-color:var(--fail);background:var(--fail-bg)}
+.card-hd{display:flex;gap:10px;align-items:baseline}
+.num{font-family:var(--f-display);font-weight:700;color:var(--accent);min-width:1.4em}
+.card h3{margin:0;font-size:16px;line-height:1.3;flex:1;min-width:0}
+.tag{font-size:11px;font-weight:600;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--muted);white-space:nowrap}
+.card ol{margin:0;padding-left:20px;display:grid;gap:4px}
+.expect{font-size:14px;border-left:3px solid var(--pass);padding:2px 0 2px 10px}
+.expect b{color:var(--pass)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-weight:600;font-size:14px;border-radius:8px;padding:9px 16px;cursor:pointer;border:1px solid var(--line);background:var(--sunk);color:var(--fg)}
+button.p[aria-pressed=true]{background:var(--pass);border-color:var(--pass);color:#fff}
+button.f[aria-pressed=true]{background:var(--fail);border-color:var(--fail);color:#fff}
+button.main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.card textarea{display:none}
+.card.fail textarea,.card textarea.has{display:block}
+pre#out{white-space:pre-wrap;word-break:break-word;background:var(--sunk);border-radius:8px;padding:12px;font-size:13px;margin:0;font-family:ui-monospace,Menlo,Consolas,monospace}
+.small{font-size:13px;color:var(--muted)}
+#copied{color:var(--pass);font-weight:600;font-size:14px}
+@media (prefers-reduced-motion:reduce){.prog-fill{transition:none}}
+</style>
+
+<header class="bar"><div class="in">
+  <div class="brand">Map<b>It</b> · 10A</div>
+  <div class="prog"><div class="prog-track"><div class="prog-fill" id="fill"></div></div><div class="prog-txt" id="ptxt">0 of 6 checked</div></div>
+</div></header>
+
+<main class="wrap">
+  <div>
+    <h1>Release 10A family check</h1>
+    <p class="lede">Six short checks on your phone, about 10 minutes. Tap Pass or Fail after each one. At the end, copy your results and send them to Nagesh on WhatsApp.</p>
+  </div>
+
+  <div class="note">
+    <strong>Before you start</strong>
+    <ul>
+      <li>Open MapIt with the <b>test link Nagesh sends you</b>, not mapit.co.in. The test site shows a <b>UAT</b> label, so you know you are not on the real site.</li>
+      <li>Nothing you do here reaches real buyers or sellers. It is all practice data.</li>
+      <li>Checks 4 to 6 need the admin login. Nagesh will do those with you, or on his own phone.</li>
+    </ul>
+  </div>
+
+  <div class="who">
+    <label class="fld" for="tester">Your name<input type="text" id="tester" autocomplete="off" placeholder="e.g. Asha"></label>
+    <label class="fld" for="phone">Your phone<input type="text" id="phone" autocomplete="off" placeholder="e.g. iPhone 13, Safari"></label>
+  </div>
+
+  <h2 class="sec">Everyone</h2>
+  <div id="tests-a" style="display:grid;gap:12px"></div>
+
+  <h2 class="sec">Admin login (with Nagesh)</h2>
+  <div id="tests-b" style="display:grid;gap:12px"></div>
+
+  <h2 class="sec">Send your results</h2>
+  <div class="card">
+    <label class="fld" for="general">Anything else you noticed? (optional)<textarea id="general" placeholder="Slow pages, confusing words, anything that looked odd"></textarea></label>
+    <pre id="out"></pre>
+    <div class="btns"><button class="main" id="copy" type="button">Copy results</button><span id="copied" hidden>Copied. Paste it into WhatsApp.</span></div>
+    <p class="small" style="margin:0">If Copy does not work, press and hold the grey box, choose Select All, then Copy. Your ticks stay on this phone only.</p>
+  </div>
+</main>
+
+<script>
+const TESTS = [
+  {id:'photo', grp:'a', title:'Back closes the photo viewer', tag:'Photos',
+   steps:['Open any listing that has photos.','Tap a photo so it opens full screen.','Press your phone\'s Back (Android: Back button or swipe; iPhone: swipe from the left edge).'],
+   expect:'The photo closes and you are still on MapIt with the same listing open. MapIt does not close or go to another site.'},
+  {id:'enter', grp:'a', title:'Enter key signs you in', tag:'Sign in',
+   steps:['If you are signed in, sign out first (menu, then Sign Out).','Tap Sign In and type your email.','Press Enter or Go on the keyboard.','Type your password and press Enter or Go again.'],
+   expect:'After the email, the cursor jumps to the password box. After the password, you are signed in without tapping the Sign In button.'},
+  {id:'year', grp:'a', title:'Vehicle year field', tag:'Post',
+   steps:['Tap Post a listing and choose Vehicles. Go to the Year box.','Check that a number keypad opens and letters cannot be typed.','Type 201 and look at the suggestions.','Clear it and type 2027.','Clear it and type 2008.','You don\'t need to post. Close the form when done.'],
+   expect:'After "201" the suggestions show 2019 down to 2010. "2027" can\'t be typed, and a red note says the year can\'t be later than 2026. "2008" is accepted with a note: 15+ years old.'},
+  {id:'adminnav', grp:'b', title:'Admin page menu', tag:'Admin',
+   steps:['Signed in as admin, open the Admin page.','On a phone the menu is a strip across the top; swipe it sideways.','Tap each item once: Overview, Reports, Feedback, Grievances, Cleanup, Cost.'],
+   expect:'Each item opens its own section. There is no Transfer item and no old Pending section. The orphaned-photos button is under Cleanup.'},
+  {id:'reviewq', grp:'b', title:'Review queue opens without a second sign-in', tag:'Admin',
+   steps:['On the Admin page, tap Review queue.'],
+   expect:'The review page opens already signed in as the admin, with no sign-in screen. Its top row shows Queue, Reviewers, Send invite, Admin and MapIt buttons.'},
+  {id:'backmapit', grp:'b', title:'Back to MapIt continues as the admin', tag:'Admin',
+   steps:['From the Admin page, tap Back to MapIt.','Open Admin again, go to Review queue, then tap MapIt there.'],
+   expect:'Both times MapIt opens straight away as the admin. The "Who\'s using MapIt?" screen does not appear. (If you signed in more than an hour ago it may ask again. That is a known issue for later.)'}
+];
+const KEY = 'mapit-10a-family-check';
+let st = {res:{}, notes:{}, tester:'', phone:'', general:''};
+try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) st = Object.assign(st, s); } catch(_){}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(_){} };
+const $ = id => document.getElementById(id);
+
+function card(t, i){
+  const el = document.createElement('section');
+  el.className = 'card'; el.id = 'c-' + t.id;
+  el.innerHTML = `<div class="card-hd"><span class="num">${i+1}</span><h3></h3><span class="tag"></span></div>
+    <ol>${t.steps.map(()=>'<li></li>').join('')}</ol>
+    <div class="expect"><b>Expected:</b> <span></span></div>
+    <div class="btns"><button type="button" class="p" aria-pressed="false">Pass</button><button type="button" class="f" aria-pressed="false">Fail</button></div>
+    <textarea id="n-${t.id}" placeholder="What happened instead? (needed for Fail)"></textarea>`;
+  el.querySelector('h3').textContent = t.title;
+  el.querySelector('.tag').textContent = t.tag;
+  el.querySelectorAll('li').forEach((li, k) => li.textContent = t.steps[k]);
+  el.querySelector('.expect span').textContent = t.expect;
+  const [p, f] = el.querySelectorAll('button'), ta = el.querySelector('textarea');
+  ta.value = st.notes[t.id] || '';
+  const set = v => { st.res[t.id] = st.res[t.id] === v ? undefined : v; save(); render(); };
+  p.onclick = () => set('PASS'); f.onclick = () => set('FAIL');
+  ta.oninput = () => { st.notes[t.id] = ta.value; save(); render(); };
+  return el;
+}
+TESTS.forEach((t, i) => $('tests-' + t.grp).appendChild(card(t, i)));
+['tester','phone','general'].forEach(k => { $(k).value = st[k] || ''; $(k).oninput = e => { st[k] = e.target.value; save(); render(); }; });
+
+function report(){
+  const L = [`MapIt Release 10A family check`, `Tester: ${st.tester || '-'}`, `Phone: ${st.phone || '-'}`, ''];
+  TESTS.forEach((t, i) => {
+    L.push(`${i+1}. ${t.title}: ${st.res[t.id] || 'not done'}`);
+    const n = (st.notes[t.id] || '').trim(); if (n) L.push(`   Note: ${n}`);
+  });
+  const g = (st.general || '').trim(); if (g) L.push('', `Other: ${g}`);
+  return L.join('\n');
+}
+function render(){
+  let done = 0;
+  TESTS.forEach(t => {
+    const el = $('c-' + t.id), r = st.res[t.id];
+    if (r) done++;
+    el.classList.toggle('pass', r === 'PASS'); el.classList.toggle('fail', r === 'FAIL');
+    el.querySelector('.p').setAttribute('aria-pressed', r === 'PASS');
+    el.querySelector('.f').setAttribute('aria-pressed', r === 'FAIL');
+    const ta = el.querySelector('textarea'); ta.classList.toggle('has', !!ta.value.trim());
+  });
+  $('fill').style.width = (done / TESTS.length * 100) + '%';
+  $('ptxt').textContent = `${done} of ${TESTS.length} checked`;
+  $('out').textContent = report();
+}
+$('copy').onclick = () => {
+  const txt = report(), ok = () => { $('copied').hidden = false; setTimeout(() => $('copied').hidden = true, 3000); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($('out')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+  try { navigator.clipboard.writeText(txt).then(ok, fallback); } catch(_) { fallback(); }
+};
+render();
+</script>
