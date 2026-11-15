@@ -5,9 +5,8 @@ operating rules live here. Order inside each section = rough priority.
 Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 manual (dashboard / person)
 
 ## 1. Planned releases (agreed order)
-1. 🔄 **Frontend split (option 1)**: uat sign-off by Nagesh on 2026-11-15; PR #37 (uat → main) waiting for merge.
-   Then run `smoke:prod` (S-16 should be 12/12).
-2. 🔜 **Release 10A, quick UX fixes** (from Nagesh's UAT observations, 2026-11-15). Frontend only, no DB:
+1. ✅ **Frontend split (option 1)**: LIVE 2026-11-15 (PR #37, `df04cd5`); smoke:prod 16/16, S-16 12/12.
+2. 🔄 **Release 10A, quick UX fixes** (IN PROGRESS on `feat/release-10a-ux-fixes`) (from Nagesh's UAT observations, 2026-11-15). Frontend only, no DB:
    - **Back button closes the photo viewer** (obs. 1): opening the viewer adds a browser-history entry,
      so Back closes it and stays in MapIt. Recommended over a new window (popup blockers; a new tab
      loses the listing context on phones). Same fix later for other full-screen modals.
@@ -28,15 +27,13 @@ Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 m
 5. 🔜 **Posting wizard with listing preview**: text-only draft; at least 1 photo required (except plots); full preview.
    Phone mockups first. New code goes in its own `public/js/` file.
 
-### Decisions needed for 10A–10C (Nagesh + Arun)
-- **Vehicle year limit:** block anything older than 15 years, or allow older years with a "15+ years old"
-  warning? A hard block stops genuine sellers of older cars and bikes in Karnataka (the 15-year rule applies to Delhi NCR).
-  Cycles: no limit?
-- **Close reasons, proposed:** Sold: "Sold on MapIt" / "Sold elsewhere" / "Sold offline (friends, family)".
-  Delete: "No longer selling" / "Posted by mistake" / "Wrong details, will re-post" / "Too many calls / spam" / "Other".
-  Required, or optional with "Prefer not to say"?
-- **Views for buyers:** show the exact number ("👁 23 views") or only from a threshold (e.g. 10+)?
-  New listings with "1 view" can look unpopular.
+### Decisions for 10A–10C (Nagesh, 2026-11-15)
+- **Vehicle year:** the field filters the suggested years as the user types. Years older than 15 are ALLOWED,
+  and the listing shows a "15+ years old" note.
+- **Close reasons:** the proposed lists are approved (Sold: Sold on MapIt / Sold elsewhere / Sold offline;
+  Delete: No longer selling / Posted by mistake / Wrong details, will re-post / Too many calls or spam / Other).
+  More reasons may be added later, so keep the list in one config place. Still open: required, or optional?
+- **Views:** sellers see the exact count from 1; buyers see it only from 10 views.
 
 ## 2. Ideas waiting for a decision
 - 💡 **Alert on a mistaken review decision**: (A) seller "Ask for a second look" button → admin email;
