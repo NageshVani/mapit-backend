@@ -26,7 +26,7 @@ const { moderateAndAlert } = require('../utils/notifyListings');
 const { notifySellerListingLive } = require('../utils/notifySeller');
 const { needsPhoneVerification } = require('../utils/phoneGate');
 const { waitUntil } = require('@vercel/functions');
-const { LISTING_EXPIRY_ENABLED, newExpiry, enforceRentOnly, missingRequiredDetail } = require('../config/listingRules');
+const { LISTING_EXPIRY_ENABLED, newExpiry, enforceRentOnly, missingRequiredDetail, invalidVehicleYear } = require('../config/listingRules');
 
 const router = express.Router();
 
@@ -634,6 +634,8 @@ router.post('/', requireAuth, async (req, res, next) => {
     if (price && parseFloat(price) < 0) return next(createError('Price cannot be negative.'));
     const missingDetail = missingRequiredDetail(category, subcategory, details);
     if (missingDetail) return next(createError(`Please fill in "${missingDetail}".`));
+    const yearError = invalidVehicleYear(category, details);
+    if (yearError) return next(createError(yearError));
 
     // Session 9C: new accounts must verify their phone before posting. The
     // frontend pre-checks via /api/auth/otp/phone/status; this is the real gate.
@@ -753,6 +755,11 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     // Required details (PG): checked on the listing as it will be saved
     const missingDetail = missingRequiredDetail(finalCat, finalSub, updates.details ?? existing.details);
     if (missingDetail) return next(createError(`Please fill in "${missingDetail}".`));
+    // Year is checked only when this edit sends details, so old free-text years don't block a renew / sold.
+    if (updates.details !== undefined) {
+      const yearError = invalidVehicleYear(finalCat, updates.details);
+      if (yearError) return next(createError(yearError));
+    }
 
     if (updates.show_exact_location !== undefined) {
       updates.show_exact_location = updates.show_exact_location === true || updates.show_exact_location === 'true';

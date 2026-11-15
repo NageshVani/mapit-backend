@@ -273,7 +273,7 @@ function renderSidebar(){
         const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
         const items = subFields.filter(f=>det[f.id]!=null && det[f.id]!=='');
         if(!items.length) return '';
-        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${escHtml(f.id==='total_price' ? (fmtINRWords(det[f.id]) || det[f.id]) : det[f.id])}</div></div>`).join('')}</div>`;
+        return `<div class="ld-specs-grid">${items.map(f=>`<div class="ld-spec-item"><div class="ld-spec-lbl">${f.label}</div><div class="ld-spec-val">${escHtml(f.id==='total_price' ? (fmtINRWords(det[f.id]) || det[f.id]) : f.type==='year' ? fmtDetailValue(f, det[f.id]) : det[f.id])}</div></div>`).join('')}</div>`;
       })()}
       ${(l.details?.transaction_type ? `<div class="ld-specs"><div class="ld-spec">${escHtml(l.details.transaction_type)}</div></div>` : '')}
       ${(()=>{
