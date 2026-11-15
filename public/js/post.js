@@ -442,18 +442,26 @@ function renderDynamicFields(){
   suggestTitle(false);
 }
 // ── Vehicle year input (Release 10A) ──
-// Digits only, max 4, number keypad on phones. The datalist suggests the last
-// OLD_VEHICLE_YEARS+1 years and the browser filters it as the user types ("20" → 2026…2010).
-// Older years are allowed; the note under the field says "15+ years old".
+// Digits only, max 4, number keypad on phones. Suggestions appear only after
+// 3 digits (Nagesh, 2026-11-15): "201" → 2019…2010, newest first, never more than 10.
+// We fill the datalist ourselves (same result in every browser).
+// Older than 15 years is allowed; the note under the field says "15+ years old".
 function yearInputHtml(f){
-  const now = new Date().getFullYear();
-  const years = Array.from({ length: OLD_VEHICLE_YEARS + 1 }, (_, i) => `<option value="${now - i}">`).join('');
   return `<input class="form-input" id="pf_${f.id}" data-year type="text" inputmode="numeric" maxlength="4" autocomplete="off"`
-    + ` list="pfl_${f.id}" placeholder="e.g. ${now - 3}"/><datalist id="pfl_${f.id}">${years}</datalist>`;
+    + ` list="pfl_${f.id}" placeholder="e.g. ${new Date().getFullYear() - 3}"/><datalist id="pfl_${f.id}"></datalist>`;
+}
+function yearSuggestions(digits){
+  if(digits.length < 3) return [];
+  const now = new Date().getFullYear(), out = [];
+  for(let y = now; y >= YEAR_MIN; y--) if(String(y).startsWith(digits)) out.push(y);
+  return out;
 }
 function onYearInput(e){
   const el = e.target, digits = el.value.replace(/\D/g, '').slice(0, 4);
   if(el.value !== digits) el.value = digits;
+  const list = document.getElementById(el.getAttribute('list'));
+  // 4 digits typed = done, so no list (it would only repeat the same year)
+  if(list) list.innerHTML = digits.length === 3 ? yearSuggestions(digits).map(y => `<option value="${y}">`).join('') : '';
   updateYearNote(el);
 }
 function updateYearNote(el){
