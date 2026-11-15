@@ -50,6 +50,9 @@ Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 m
   side-by-side comparison, full FAQ / Help page, mass SMS/WhatsApp notifications.
 
 ## 3. Small fixes (🧹)
+- 🧹 **MapIt never renews its sign-in token** (about 1 hour), so after an hour "Who's using MapIt?" and
+  "Back to MapIt" from Admin ask for the password again. Fix: renew with the refresh token in ONE place
+  (and keep /review's borrowed session read-only). Found 2026-11-15 in 10A.
 - 🧹 Multer errors (file over 5 MB, more than 5 files) return 500. Add error-mapping middleware that returns a friendly 400.
 - 🧹 `compare-schema-inventory.js` reports a false "match" on wrapped input. Make it auto-unwrap, and fail if `tables` is missing.
 - 🧹 Remove the unused `uuid` dependency (the last moderate `npm audit` finding).
