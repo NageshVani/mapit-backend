@@ -456,18 +456,32 @@ function yearSuggestions(digits){
   for(let y = now; y >= YEAR_MIN; y--) if(String(y).startsWith(digits)) out.push(y);
   return out;
 }
+// Prefix mask (Nagesh UAT, 2026-11-15): a digit is refused when no valid year
+// (YEAR_MIN..this year) starts with what has been typed, so "2036" can't be entered
+// by mistake ("203" is already refused). Works for pasted text too.
+function yearPrefixOk(d){
+  const now = new Date().getFullYear();
+  for(let y = now; y >= YEAR_MIN; y--) if(String(y).startsWith(d)) return true;
+  return false;
+}
 function onYearInput(e){
-  const el = e.target, digits = el.value.replace(/\D/g, '').slice(0, 4);
+  const el = e.target;
+  let digits = el.value.replace(/\D/g, '').slice(0, 4), refused = '';
+  while(digits && !yearPrefixOk(digits)){
+    refused = Number(digits.padEnd(4, '0')) > new Date().getFullYear()
+      ? `Year can't be later than ${new Date().getFullYear()}.` : `Year can't be earlier than ${YEAR_MIN}.`;
+    digits = digits.slice(0, -1);
+  }
   if(el.value !== digits) el.value = digits;
   const list = document.getElementById(el.getAttribute('list'));
   // 4 digits typed = done, so no list (it would only repeat the same year)
   if(list) list.innerHTML = digits.length === 3 ? yearSuggestions(digits).map(y => `<option value="${y}">`).join('') : '';
-  updateYearNote(el);
+  updateYearNote(el, refused);
 }
-function updateYearNote(el){
+function updateYearNote(el, refused = ''){
   const note = document.getElementById(el.id.replace(/^pf_/, 'pfn_'));
   if(!note) return;
-  const v = el.value.trim(), issue = v.length === 4 ? yearIssue(v) : '';
+  const v = el.value.trim(), issue = refused || (v.length === 4 ? yearIssue(v) : '');
   note.className = 'year-note' + (issue ? ' bad' : '');
   note.textContent = issue || (isOldVehicleYear(v) ? `ℹ️ ${OLD_VEHICLE_YEARS}+ years old: buyers will see this on the listing.` : '');
 }
