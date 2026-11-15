@@ -38,8 +38,8 @@ button,input{font-family:inherit;font-size:inherit}
 .out-btn{margin-left:auto;background:none;border:1.5px solid var(--border2);border-radius:9px;padding:5px 10px;font-weight:600;font-size:13px;color:var(--muted2);cursor:pointer}
 .pill + .out-btn,.out-btn + .menu-btn{margin-left:0}
 .dd{position:absolute;right:10px;top:50px;background:var(--panel);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);width:180px;overflow:hidden;z-index:6}
-.dd button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:13px 14px;font-weight:600;cursor:pointer}
-.dd button:last-child{border-bottom:0}
+.dd button,.dd a{display:block;width:100%;box-sizing:border-box;text-decoration:none;color:inherit;font-size:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:13px 14px;font-weight:600;cursor:pointer}
+.dd > :last-child{border-bottom:0}
 .dd .danger{color:var(--red)}
 .view{flex:1;padding:18px 16px 28px}
 .who{background:#FFF7ED;border-bottom:1px solid #FED7AA;color:#9A3412;font-size:12.5px;font-weight:600;padding:6px 14px;overflow-wrap:anywhere}
@@ -144,6 +144,8 @@ label{display:block;font-size:12.5px;font-weight:600;color:var(--muted2);margin:
     <div class="dd hide" id="menu">
       <button onclick="menuGo('queue')">📋 Review queue</button>
       <button onclick="menuGo('team')">👥 Team</button>
+      <a href="/admin">🔐 Admin dashboard</a>
+      <a href="/">🗺️ Back to MapIt</a>
     </div>
   </div>
   <!-- Who is reviewing — always visible, a phone may be shared at home -->

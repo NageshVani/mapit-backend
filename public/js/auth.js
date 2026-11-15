@@ -718,6 +718,7 @@ async function logout(){
   localStorage.removeItem('mapit_invite');
   localStorage.removeItem('mapit_created_for');
   document.getElementById('adminMenuItem').classList.add('hide');
+  document.getElementById('reviewMenuItem').classList.add('hide');
   ST.session = null; ST.user = null; ST.profile = null;
   ST.inviteCode = ''; ST.createdFor = ''; ST.authProvider = null;
   ST.userPins = []; ST.activePin = null;

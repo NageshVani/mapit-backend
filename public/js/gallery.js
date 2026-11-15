@@ -69,6 +69,7 @@ async function initApp(){
   const _email = (ST.user?.email || '').toLowerCase().trim();
   const isAdmin = ADMIN_EMAILS.includes(_email);
   document.getElementById('adminMenuItem').classList.toggle('hide', !isAdmin);
+  document.getElementById('reviewMenuItem').classList.toggle('hide', !isAdmin);
 
   // Clear any stale pin state before loading fresh data for this user
   ST.userPins = []; ST.activePin = null;
@@ -266,6 +267,7 @@ async function continueAs(userId){
   document.getElementById('whoamiScreen').classList.add('hide');
   // Immediately hide admin items so they never bleed from a previous user's session
   document.getElementById('adminMenuItem').classList.add('hide');
+  document.getElementById('reviewMenuItem').classList.add('hide');
   const stored = getMultiSessions()[userId];
   if(!stored?.session){
     document.getElementById('splashScreen').classList.add('hide');
