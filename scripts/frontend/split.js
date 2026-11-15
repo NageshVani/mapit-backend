@@ -27,6 +27,15 @@ const JS = [
   ['gallery.js', 5195], ['account.js', 5505], ['main.js', 5850],
 ];
 
+// The ONE deliberate relocation (found by the load-time scan, 2026-11-15): restoring the collapsed
+// side panel runs while auth.js loads and calls updateKwPill() from main.js, which is not loaded yet.
+// It moves to main.js just before init(), which keeps the original order (after all code, before init).
+const RELOCATE_LINE = 2954; // original line, inside the auth.js slice
+const RELOCATE_NOTE =
+  '// Restore the collapsed side panel. Moved here from auth.js in the frontend split: it calls\n' +
+  '// updateKwPill() (this file), so it must run after every file has loaded, before init().\n';
+const KICK_OFF = '// Kick off\ninit();\n';
+
 const header = (file, a, b) =>
   `// MapIt frontend: ${file}. Split from MapIt_MVP_v1.html lines ${a}-${b} on 2026-11-15. ` +
   `Load order is set in public/index.html. Functions are global on purpose (inline onclick=).\n`;
@@ -50,12 +59,21 @@ function split() {
   fs.mkdirSync(path.join(PUB, 'js'), { recursive: true });
   fs.writeFileSync(path.join(PUB, 'css', 'app.css'), cssHeader + slice(STYLE.open + 1, STYLE.close - 1));
 
+  const moved = line(RELOCATE_LINE);
+  if (!moved.startsWith("try { if(localStorage.getItem(SB_COLLAPSED_KEY) === '1') setSidebarCollapsed(true, false);"))
+    throw new Error('relocation line moved');
   const tags = [];
   JS.forEach(([file, a], i) => {
     const b = (JS[i + 1] ? JS[i + 1][1] : SCRIPT.close) - 1;
     const first = line(a);
     if (i > 0 && !first.startsWith('// ═')) throw new Error(`${file}: line ${a} is not a section banner`);
-    fs.writeFileSync(path.join(PUB, 'js', file), header(file, a, b) + slice(a, b));
+    let body = slice(a, b);
+    if (RELOCATE_LINE >= a && RELOCATE_LINE <= b) body = slice(a, RELOCATE_LINE - 1) + slice(RELOCATE_LINE + 1, b);
+    if (file === 'main.js') {
+      if (!body.endsWith(KICK_OFF)) throw new Error('main.js does not end with init()');
+      body = body.slice(0, -KICK_OFF.length) + RELOCATE_NOTE + moved + '\n\n' + KICK_OFF;
+    }
+    fs.writeFileSync(path.join(PUB, 'js', file), header(file, a, b) + body);
     tags.push(`<script src="/js/${file}?v=${VERSION}"></script>`);
   });
 
@@ -74,12 +92,20 @@ function check() {
   let html = fs.readFileSync(path.join(PUB, 'index.html'), 'utf8');
   const css = strip(fs.readFileSync(path.join(PUB, 'css', 'app.css'), 'utf8'));
   html = html.replace(`<link rel="stylesheet" href="/css/app.css?v=${VERSION}">\n`, `<style>\n${css}</style>\n`);
-  const js = JS.map(([f]) => strip(fs.readFileSync(path.join(PUB, 'js', f), 'utf8'))).join('');
+  const parts = Object.fromEntries(JS.map(([f]) => [f, strip(fs.readFileSync(path.join(PUB, 'js', f), 'utf8'))]));
+  // undo the one declared relocation, then everything must match the original exactly
+  const L = original().split('\n'), moved = L[RELOCATE_LINE - 1], before = L[RELOCATE_LINE - 2] + '\n';
+  const block = RELOCATE_NOTE + moved + '\n\n' + KICK_OFF;
+  if (!parts['main.js'].endsWith(block)) { console.error('✗ relocated block missing at the end of main.js'); process.exit(1); }
+  parts['main.js'] = parts['main.js'].slice(0, -block.length) + KICK_OFF;
+  if (parts['auth.js'].split(before).length !== 2) { console.error('✗ relocation anchor not unique in auth.js'); process.exit(1); }
+  parts['auth.js'] = parts['auth.js'].replace(before, before + moved + '\n');
+  const js = JS.map(([f]) => parts[f]).join('');
   const tags = JS.map(([f]) => `<script src="/js/${f}?v=${VERSION}"></script>\n`).join('');
   if (!html.includes(tags)) { console.error('✗ script tags missing or out of order in index.html'); process.exit(1); }
   html = html.replace(tags, `<script>\n${js}</script>\n`);
   const ok = html === original();
-  console.log(ok ? `✓ pure move: rebuilt file is byte-identical to MapIt_MVP_v1.html @ ${BASE_COMMIT}`
+  console.log(ok ? `✓ pure move (+1 declared relocation): rebuilt file is byte-identical to MapIt_MVP_v1.html @ ${BASE_COMMIT}`
                  : '✗ NOT identical: something other than a move changed');
   process.exit(ok ? 0 : 1);
 }
