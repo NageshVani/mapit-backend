@@ -154,6 +154,8 @@
 
 ## 🎯 Current Goal
 
+**NOW (2026-11-15 19:20) — Release 10A SIGNED OFF (Nagesh + Arun); PR uat → main opened.** Family check on uat (Vani + Nagesh, phone): 6/6 PASS (photo Back, Enter sign-in, vehicle year, Admin menu, Review queue without 2nd sign-in, Back to MapIt as admin). Observation: map preview card half off-screen on phones → pre-existing (map.js placement has no left-edge check), NOT a 10A regression → Nagesh chose option 1: ship 10A as tested, then **Release 10A.1** (clamp card inside map, shared helper) from main before 10B. Side note: UAT listing MP-BLR-UAT003 shows 1 BHK + /mo though seeded as 4BHK sell → probably edited during earlier testing (UAT data, not a bug; unverified).
+
 **NOW (2026-11-15 16:18) — Family check of Release 10A on uat in progress (Nagesh, offline on a break).** Checklist page built: 6 checks (1–3 everyone: photo Back, Enter sign-in, vehicle year; 4–6 admin login with Nagesh: Admin menu, Review queue without 2nd sign-in, Back to MapIt as admin); Pass/Fail per check, results kept on the tester's phone (localStorage) and sent to Nagesh as WhatsApp text via "Copy results". After results: James reviews → Nagesh/Arun sign-off → PR uat → main → smoke:prod → 10B.
 
 **NOW (2026-11-15 13:14) — Goal: release 10A to production, then start 10B (view counts).** 10A is on uat (`0c76fcd`, all Nagesh localhost click-tests passed). Waiting for the family check on uat → Nagesh/Arun sign-off → PR uat → main → smoke:prod. Then 10B (migration 021, UAT first).
@@ -2874,6 +2876,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-15 19:20) — 10A release in progress:**
+1. ⏳ Nagesh/Arun merge the PR uat → main → James: `npm run smoke:prod` (S-16 12/12) + check www on a phone → Vercel "Instant Rollback" if anything breaks.
+2. ⏳ Release 10A.1 (map preview card clamp) — branch `fix/…` from main → uat → phone check → PR → main.
+3. Then Release 10B (view counts, migration 021, UAT first). Revoke the uat Shareable Link when no longer needed (Nagesh).
 
 **⬅ NOW (2026-11-15 16:18) — Nagesh on a break; resume with /resume after the family check:**
 1. ⏳ Nagesh: test the uat Shareable Link in incognito (new one if needed) → share the checklist artifact → send both links to family → do checks 4–6 with the admin login.

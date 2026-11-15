@@ -6,7 +6,12 @@ Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 m
 
 ## 1. Planned releases (agreed order)
 1. ✅ **Frontend split (option 1)**: LIVE 2026-11-15 (PR #37, `df04cd5`); smoke:prod 16/16, S-16 12/12.
-2. 🔄 **Release 10A, quick UX fixes** (IN PROGRESS on `feat/release-10a-ux-fixes`) (from Nagesh's UAT observations, 2026-11-15). Frontend only, no DB:
+2a. 🔜 **Release 10A.1, map preview card cut off on phones** (found in the 10A family check, 2026-11-15;
+   pre-existing on prod, not a 10A regression). `showHoverCard` / `showStackHoverCard` / `showClusterHoverCard`
+   in `public/js/map.js` flip the card to the left of the pin with no left-edge check → negative `left` on a
+   ~390 px map. Fix: one shared helper that clamps the card inside the map (both sides + top/bottom) using
+   its real width. Frontend only. Branch from main after 10A ships → uat → phone check → main. Before 10B.
+2. 🔄 **Release 10A, quick UX fixes** (SIGNED OFF 2026-11-15 by Nagesh + Arun; family check 6/6 PASS; PR uat → main) (from Nagesh's UAT observations, 2026-11-15). Frontend only, no DB:
    - **Back button closes the photo viewer** (obs. 1): opening the viewer adds a browser-history entry,
      so Back closes it and stays in MapIt. Recommended over a new window (popup blockers; a new tab
      loses the listing context on phones). Same fix later for other full-screen modals.
