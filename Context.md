@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-15 13:11 (UAE), checkpoint (**Release 10A ON UAT (`0c76fcd`): Nagesh localhost click-tests all passed; uat serves 12/12 css/js + index/admin/review identical; uat:9c 35/35. Next: family check on uat → PR uat → main → smoke:prod. Then 10B (views, migration 021).**)
+- **Last updated:** 2026-11-15 13:14 (UAE), CHECKPOINT (**2026-11-15: CLAUDE.md v5 live (PR #36); frontend split RELEASED (PR #37); Release 10A built + on uat (`0c76fcd`), uat:9c 35/35. Next (placeholders): family check on uat → PR uat → main + smoke:prod → 10B views (migration 021).**)
+- **Last updated (previous):** 2026-11-15 13:11 (UAE), checkpoint (**Release 10A ON UAT (`0c76fcd`): Nagesh localhost click-tests all passed; uat serves 12/12 css/js + index/admin/review identical; uat:9c 35/35. Next: family check on uat → PR uat → main → smoke:prod. Then 10B (views, migration 021).**)
 - **Last updated (previous):** 2026-11-15 11:51 (UAE), checkpoint (**Frontend split RELEASED (PR #37, smoke:prod 16/16, S-16 12/12). Release 10A BUILT on `feat/release-10a-ux-fixes` (Back closes photo viewer, admin nav links, vehicle year field); awaiting Nagesh localhost click-test. 10B/10C decisions recorded in backlog.**)
 - **Last updated (previous):** 2026-11-15 11:14 (UAE), checkpoint (**Frontend split ON UAT: Nagesh localhost click-test PASSED (only DevTools source-map CSP note + signed-out 401, both pre-existing/expected); `uat` fast-forwarded to `885d63d`, Vercel deploy success; uat.mapit.co.in serves all 12 css/js = commit, env preview, UAT Supabase; uat:9c 35/35. Next: family click-test on uat → Nagesh/Arun sign-off → PR uat → main → smoke:prod (S-16 12/12).**)
 - **Last updated (previous):** 2026-11-15 10:51 (UAE), checkpoint (**Frontend split option 1 BUILT on `feat/frontend-split` (steps 1-4 committed); waiting for Nagesh's localhost click-test (step 5). Not pushed yet.**)
@@ -151,6 +152,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-15 13:14) — Goal: release 10A to production, then start 10B (view counts).** 10A is on uat (`0c76fcd`, all Nagesh localhost click-tests passed). Waiting for the family check on uat → Nagesh/Arun sign-off → PR uat → main → smoke:prod. Then 10B (migration 021, UAT first).
 
 **NOW (2026-11-15 13:11) — Release 10A on UAT, awaiting family check.** Built from Nagesh's UAT rounds (all click-tested OK on localhost): photo viewer closes on Back; vehicle year field (digits only, suggestions after 3 digits, prefix mask refuses years after this year, >15 years allowed with note, server check `invalidVehicleYear`); Admin page left nav (Overview home, Reports, Feedback, Grievances, Cleanup, Cost, Review queue, Back to MapIt; phone strip) — Transfer + old Pending removed (orphaned-photos button moved to Cleanup; Transfer server route → backlog); /review admin button row (Queue, Reviewers, Send invite, Admin, MapIt) replaces ☰; `/review?from=admin` BORROWS MapIt's admin session (memory only, never saved/refreshed — refresh-token rotation; reviewer's own session untouched); Back to MapIt → `/?from=admin` skips Who's-using only if server says latest login is admin; Enter signs in (email → password → Sign In). MapIt menu: Review queue item removed again. Found: MapIt never renews its 1-hour token → backlog. Pushed `feat/release-10a-ux-fixes` + fast-forwarded `uat` to `0c76fcd`; Vercel success; uat.mapit.co.in: 12/12 css/js + index/admin/review identical to commit, env preview, UAT DB; uat:9c 35/35. Next: family check on uat → Nagesh/Arun sign-off → PR uat → main → smoke:prod → 10B.
 
@@ -682,6 +685,16 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-15) CLAUDE.md v5.0 + `docs/technical/backlog.md`** approved by Nagesh, PR #36 merged (`21cf1ef`); change note at top of CLAUDE.md; Rule 6 acronyms expanded; Vercel "Instant Rollback" wording confirmed; Vercel + Supabase Pro confirmed taken.
+- ✅ **(2026-11-15) Frontend split option 1 RELEASED** (PR #37, `df04cd5`): `public/index.html` + `css/app.css` + 11 `js/*.js`; `MapIt_MVP_v1.html` deleted; golden-master check; 1 declared relocation (collapsed-sidebar restore → main.js); smoke:prod 16/16, new S-16 12/12.
+- ✅ **(2026-11-15) Release 10A built** on `feat/release-10a-ux-fixes` (10 feature commits), every item click-tested OK by Nagesh on localhost:
+- ✅   Back closes the photo viewer (history entry + popstate).
+- ✅   Vehicle year: type 'year', digits only, suggestions after 3 digits, prefix mask (no year after this year), >15 years allowed with "15+ years old" note (seller + buyer + auto description), server `invalidVehicleYear`.
+- ✅   Admin page left nav (Overview home; Reports, Feedback, Grievances, Cleanup, Cost; Review queue; Back to MapIt; phone strip + "← MapIt"); Transfer + old Pending removed; Orphaned Photos button moved to Cleanup.
+- ✅   /review admin button row (Queue, Reviewers, Send invite, Admin, MapIt) replaces ☰; Sign-out alignment bug fixed.
+- ✅   `/review?from=admin` borrows MapIt's admin session (memory only); Back to MapIt `/?from=admin` skips Who's-using when the server says latest login is admin.
+- ✅   Sign-in box: Enter → email moves to password → Sign In.
+- ✅ **(2026-11-15) 10A pushed:** `uat` fast-forwarded to `0c76fcd`; uat serves 12/12 css/js + index/admin/review identical; env preview + UAT DB; uat:9c 35/35, uat:review 64/64, uat:photos 13/13.
 - ✅ **(2026-11-14 18:21) End of day:** photo limits verified (Production default 5, MAX_PHOTO_SIZE 5 MB, local .env 5); local server on 3001 stopped (port free); branch `docs/claude-md-v5` pushed (`d6b9a9c` + this checkpoint).
 - ✅ **(2026-11-14 ~18:05) PR #35 UAT / LOCAL TEST watermark RELEASED** (`1c5bb7b`): `/api/config` returns `environment` (VERCEL_ENV or `local`); shared `public/env-badge.js` (index, review, admin) draws a diagonal red "UAT · TEST DATA" / grey "LOCAL TEST" (opacity .28, white outline, pointer-events none) + [UAT]/[LOCAL] tab title; prod: script exits on www/bare host + fail-safe. New smoke **S-15** (prod=production, uat=preview). smoke:prod **15/15**; prod screenshot clean. Nagesh: "exactly how I wanted".
 - ✅ **(2026-11-14 ~17:45) PR #34 photo EXIF/GPS strip RELEASED** (`befb186`): server re-encodes every photo with sharp 0.35.5 (rotate, ≤1600 px, JPEG, no metadata); unreadable/HEIC → 400 friendly message; non-image → 400 (was 500); toast shows server reason. `npm run uat:photos` 13/13 on localhost AND on the Vercel preview (Linux sharp). smoke:prod 14/14. Nagesh local click-test OK.
@@ -1473,6 +1486,10 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
+| **Release 10A — quick UX fixes** | 🔄 on uat (`0c76fcd`), awaiting family check + sign-off | `public/js/{gallery,post,config,listings,auth}.js`, `public/css/app.css`, `public/index.html`, `public/admin.html`, `public/review.html`, `src/config/listingRules.js`, `src/routes/listings.js` | Next: PR uat → main + smoke:prod |
+| **Frontend split (option 1)** | ✅ live 2026-11-15 (PR #37) | `public/index.html`, `public/css/`, `public/js/`, `scripts/frontend/split.js`, `scripts/smoke/prod-readonly.js` | S-16 12/12 |
+| **Release 10B — view counts** | ⏳ placeholder, starts after 10A release | migration 021 (RPC), listings route, My Listings + listing detail | Sellers exact from 1, buyers from 10+; skip owner's own views |
+| **Release 10C — close reasons** | ⏳ placeholder | migration 022 (table) | Lists approved; required-or-optional still open |
 | **9L step 7 — production release** | ✅ code + DB live 2026-11-14 (PR #33 `5efbe07`, smoke:prod 14/14); 🔄 remaining: prod invites for both wives, revoke uat Shareable Link | `package-lock.json` (merge), `Context.md`; GitHub PR #33 | Next: Team → invite → incognito test → send → Activate |
 | **CLAUDE.md v5.0 + backlog doc** | ✅ Approved + committed 2026-11-15 on `docs/claude-md-v5` | `CLAUDE.md`, new backlog doc | Lean rules + backlog; admin-role placeholder; release names; diff for Nagesh review first |
 | **Photo EXIF strip (PR #34)** | ✅ live 2026-11-14 | `src/routes/uploads.js`, `MapIt_MVP_v1.html`, `public/index.html`, `package*.json`, `scripts/uat/photo-exif.suite.js` | smoke 14/14 |
@@ -1684,6 +1701,17 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+public/index.html — 2026-11-15: HTML only after the split; ?v= tags per file; Review-queue menu item added then removed again (10A).
+public/css/app.css, public/js/*.js (11) — NEW 2026-11-15 (split); 10A edits in gallery.js (Back closes viewer, /?from=admin), post.js (year field), config.js (yearIssue/isOldVehicleYear), listings.js (buyer year note), auth.js (Enter signs in).
+MapIt_MVP_v1.html — DELETED 2026-11-15 (Nagesh approved); Two-File Rule ended.
+scripts/frontend/split.js — NEW: one-off splitter + golden-master `--check` (vs 21cf1ef).
+scripts/smoke/prod-readonly.js — S-16: every css/js referenced by index.html served exactly as on origin/main.
+public/admin.html — 10A: left nav, Transfer + Pending removed, Orphaned Photos → Cleanup, MapIt links /?from=admin.
+public/review.html — 10A: admin button row, Team split into Reviewers / Send invite, borrowed admin session (?from=admin), Sign-out alignment fix.
+src/config/listingRules.js, src/routes/listings.js — 10A: invalidVehicleYear (POST always; PUT only when details sent).
+CLAUDE.md — v5.0 (2026-11-15) + "Frontend Files" rule replacing the Two-File Rule.
+docs/technical/backlog.md — NEW (2026-11-15): planned releases 10A–10C, decisions, small fixes, ops clean-up, manual leftovers.
+docs/technical/frontend-split-plan.md — NEW (2026-11-15). docs/screenshots/frontend-split/, docs/screenshots/release-10a/ — before/after screenshots.
 src/routes/uploads.js — 2026-11-14 (PR #34): sharp cleanPhoto() strips all metadata, rotate + resize + JPEG; unsupported → friendly 400.
 scripts/uat/photo-exif.suite.js — NEW (PR #34): `npm run uat:photos`, 13 checks, UAT only, PHOTOS_BASE for Vercel previews.
 package.json / package-lock.json — sharp ^0.35.5 (dep), exifr ^7.1.3 (dev), script uat:photos.
@@ -2117,6 +2145,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-11-15) MapIt never renews its sign-in token (~1 h)** → after an hour "Who's using MapIt?" and Back to MapIt ask for the password again. Backlog small fix: renew in ONE place; keep /review's borrowed session read-only.
+- **ℹ️ (2026-11-15) Transfer server route `/api/admin/handover/*` + `uat:transfer` suite now unused** (UI removed in 10A) → remove in a later clean-up.
+- **ℹ️ (2026-11-15) DevTools-only CSP message** for `leaflet.markercluster.js.map` (connect-src) — pre-existing, users never see it; not fixing (would loosen CSP).
+- **ℹ️ (2026-11-15) Vercel preview pages get a toolbar `<script>` appended after `</html>`** → compare uat pages up to `</html>`; prod is unaffected (S-01 passes).
+- **ℹ️ (2026-11-15) Headless tests: typing into hidden elements does nothing** — make the modal visible first (cost one false alarm in the year test).
 - **✅ RESOLVED 2026-11-14 18:20 — photo limits:** Vercel Production has no MAX_PHOTOS_PER_LISTING → code default 5 ✅; MAX_PHOTO_SIZE=5242880 (5 MB) ✅; local .env set to 5 by Nagesh. Note: Vercel caps any request body at ~4.5 MB anyway; browser shrinking keeps photos well below.
 - **ℹ️ (2026-11-14) Multer middleware errors return 500** (file > 5 MB, > 5 files in one request → "Unexpected field") — the route's catch never sees them. Pre-existing; small later fix: error-mapping middleware → friendly 400.
 - **ℹ️ (2026-11-14) Admin emails hard-coded in `src/middleware/auth.js` AND in the public HTML** (visible in page source) → move to admin role in `staff_members` later (decided); placeholder in CLAUDE.md v5.
@@ -2368,6 +2401,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-15, Nagesh) Delete MapIt_MVP_v1.html; 11 js files**; `public/` is the only frontend source. Split = pure move (golden master), only one declared relocation.
+- **(2026-11-15, Nagesh) Vehicle year:** filters as you type, suggestions after 3 digits, nothing after this year, >15 years allowed with "15+ years old" note.
+- **(2026-11-15, Nagesh) Close reasons:** proposed Sold/Delete lists approved (expandable, keep in one config place). **Views:** sellers exact from 1, buyers only from 10+.
+- **(2026-11-15) Back closes photo viewer via history entry** (not a new window: popup blockers, lost context on phones).
+- **(2026-11-15, Nagesh) Admin UX:** left nav with one "Review queue" entry; Transfer + Pending removed; /review gets admin buttons; Review queue + Back to MapIt keep the admin signed in.
+- **(2026-11-15) /review borrows MapIt's admin session read-only** (memory only, never saved/refreshed) — copying + refreshing would rotate MapIt's refresh token and could revoke it. Admin check for /?from=admin done by the server (`is_admin`), no third hard-coded email list.
+- **(2026-11-15) 10A edits re-validate the year only when an edit sends details** — old free-text years must not block renew / sold.
 - **(2026-11-14, Nagesh) CLAUDE.md → lean rules file + separate backlog**; admin emails → admin role later (placeholder now); Rule 3 → track work by release name ("Release 9L").
 - **(2026-11-14, Nagesh) Unreadable photos (HEIC) are rejected with a friendly message**, never stored.
 - **(2026-11-14) EXIF stripped server-side with sharp** (trust boundary; covers web, API, future app) — not browser-only, not a JPEG-only EXIF remover. sharp 0.35.5 (0.34.x had high advisories on libvips/libheif).
@@ -2826,6 +2866,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-15 13:14) — placeholders agreed with Nagesh (resume with /resume):**
+1. ⏳ **[PLACEHOLDER] Family check of Release 10A on uat.mapit.co.in** (phones: photo Back, year, Enter sign-in, Admin left nav, Review queue + Back to MapIt without second sign-in; UAT admin account).
+2. ⏳ **[PLACEHOLDER] After Nagesh/Arun sign-off: PR uat → main** (Nagesh/Arun merge) → `npm run smoke:prod` (S-16 must be 12/12) → Vercel "Instant Rollback" if anything breaks. Push the local CONTEXT commits with it.
+3. ⏳ **[PLACEHOLDER] Release 10B — view counts** with **migration 021** (atomic increment RPC): James writes + explains the SQL → Nagesh runs on UAT first → schema inventory compare → explicit confirmation before production. Sellers exact from 1, buyers from 10+, skip owner's own views.
+4. Later: 10C close reasons (migration 022; decide required vs optional) → posting wizard → 9L prod invites for both wives + revoke uat Shareable Link (Nagesh) → backlog small fixes (token renewal, Transfer route removal).
 
 **⬅ NOW (2026-11-14 18:21, end of day — tomorrow, resume with /resume; Nagesh: do steps 1, 2, 4 tomorrow):**
 1. **CLAUDE.md v5.0 + backlog doc** on `docs/claude-md-v5`: draft → show diff → Nagesh/Arun approve → commit → PR. Include: stale fixes (CSP actually on; Rule 6 wording; finished one-offs → history; MVP/sessions → release names), live-ops rules (hotfix + Vercel rollback, incidents, no prod write SQL by Claude, expand-then-contract, photo metadata stripped server-side), admin-role placeholder, one-line mobile/market guardrails; projects → backlog.
