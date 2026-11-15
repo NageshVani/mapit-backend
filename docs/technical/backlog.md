@@ -5,12 +5,38 @@ operating rules live here. Order inside each section = rough priority.
 Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 manual (dashboard / person)
 
 ## 1. Planned releases (agreed order)
-1. 🔄 **Frontend split (option 1)**: IN PROGRESS on `feat/frontend-split` (2026-11-15). Split the single HTML file into modules. Approved 14 Nov by Nagesh and Arun.
-   New branch from a clean main, with no other frontend branch running at the same time. Vite comes later (v2).
-   Replaces the Two-File Rule once it lands.
-2. 🔜 **Views follow-up**: show 👁 views on My Listings, and stop counting the owner's own views.
-3. 🔜 **Posting wizard with listing preview**: text-only draft; at least 1 photo required (except plots); full preview.
-   Phone mockups first.
+1. 🔄 **Frontend split (option 1)**: uat sign-off by Nagesh on 2026-11-15; PR #37 (uat → main) waiting for merge.
+   Then run `smoke:prod` (S-16 should be 12/12).
+2. 🔜 **Release 10A, quick UX fixes** (from Nagesh's UAT observations, 2026-11-15). Frontend only, no DB:
+   - **Back button closes the photo viewer** (obs. 1): opening the viewer adds a browser-history entry,
+     so Back closes it and stays in MapIt. Recommended over a new window (popup blockers; a new tab
+     loses the listing context on phones). Same fix later for other full-screen modals.
+   - **Admin navigation** (obs. 4): a small top bar on /review and /admin with "MapIt map · Admin ·
+     Review", so no page needs the browser Back button.
+   - **Vehicle year** (obs. 3): a year dropdown (newest first) instead of a number box, which removes the
+     need for 4-digit checks and input masks. Server-side check too (Rule 8). Lower limit TBD (decision below).
+     The posting wizard reuses the same field config, so this work is not lost.
+3. 🔜 **Release 10B, view counts** (obs. 5, extends the planned "views follow-up"). `views_count` already exists
+   and goes up on every open, but is never shown:
+   - show 👁 count to the seller (My Listings) and to buyers (listing detail)
+   - stop counting the owner's own views
+   - make the counter safe for two visitors at once (one atomic DB update instead of read-then-write):
+     needs migration 021 (a small RPC), UAT first
+4. 🔜 **Release 10C, reason when closing a listing** (obs. 2): dropdown on "Mark as sold" and "Delete".
+   Delete removes the row today, so reasons need their own small table (migration 022, RLS deny-by-default).
+   The "sold on MapIt vs elsewhere" answer is the most useful business number here. Reason list TBD (decision below).
+5. 🔜 **Posting wizard with listing preview**: text-only draft; at least 1 photo required (except plots); full preview.
+   Phone mockups first. New code goes in its own `public/js/` file.
+
+### Decisions needed for 10A–10C (Nagesh + Arun)
+- **Vehicle year limit:** block anything older than 15 years, or allow older years with a "15+ years old"
+  warning? A hard block stops genuine sellers of older cars and bikes in Karnataka (the 15-year rule applies to Delhi NCR).
+  Cycles: no limit?
+- **Close reasons, proposed:** Sold: "Sold on MapIt" / "Sold elsewhere" / "Sold offline (friends, family)".
+  Delete: "No longer selling" / "Posted by mistake" / "Wrong details, will re-post" / "Too many calls / spam" / "Other".
+  Required, or optional with "Prefer not to say"?
+- **Views for buyers:** show the exact number ("👁 23 views") or only from a threshold (e.g. 10+)?
+  New listings with "1 view" can look unpopular.
 
 ## 2. Ideas waiting for a decision
 - 💡 **Alert on a mistaken review decision**: (A) seller "Ask for a second look" button → admin email;
