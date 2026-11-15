@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-15 16:18 (UAE), checkpoint (**Release 10A family-check checklist built + published (private artifact https://claude.ai/artifact/3LcnBC1aBDc6Xe33enzfXa, copy `docs/uat/release-10a-family-check.html`, not committed). Nagesh on a break (household chores); returns after the family check is done.**)
+- **Last updated:** 2026-11-15 21:26 (UAE), CHECKPOINT end of day (**Release 10A LIVE on production: PR #38 merged by Nagesh (`a392d9e`), smoke:prod 16/16, S-16 12/12; Nagesh checked vehicle year + admin left nav on www. Tomorrow: Nagesh phone check on www → Release 10A.1 (map card clamp) → 10B.**)
+- **Last updated (previous):** 2026-11-15 16:18 (UAE), checkpoint (**Release 10A family-check checklist built + published (private artifact https://claude.ai/artifact/3LcnBC1aBDc6Xe33enzfXa, copy `docs/uat/release-10a-family-check.html`, not committed). Nagesh on a break (household chores); returns after the family check is done.**)
 - **Last updated (previous):** 2026-11-15 13:14 (UAE), CHECKPOINT (**2026-11-15: CLAUDE.md v5 live (PR #36); frontend split RELEASED (PR #37); Release 10A built + on uat (`0c76fcd`), uat:9c 35/35. Next (placeholders): family check on uat → PR uat → main + smoke:prod → 10B views (migration 021).**)
 - **Last updated (previous):** 2026-11-15 13:11 (UAE), checkpoint (**Release 10A ON UAT (`0c76fcd`): Nagesh localhost click-tests all passed; uat serves 12/12 css/js + index/admin/review identical; uat:9c 35/35. Next: family check on uat → PR uat → main → smoke:prod. Then 10B (views, migration 021).**)
 - **Last updated (previous):** 2026-11-15 11:51 (UAE), checkpoint (**Frontend split RELEASED (PR #37, smoke:prod 16/16, S-16 12/12). Release 10A BUILT on `feat/release-10a-ux-fixes` (Back closes photo viewer, admin nav links, vehicle year field); awaiting Nagesh localhost click-test. 10B/10C decisions recorded in backlog.**)
@@ -153,6 +154,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-15 21:26, end of day) — Release 10A LIVE on production; tomorrow: Nagesh's phone check on www, then Release 10A.1 (map preview card stays on screen on phones), then 10B (view counts).** PR #38 uat → main merged by Nagesh (`a392d9e`, 16:23 UTC); Vercel prod deploy success; www serves `?v=10a` files; smoke:prod 16/16 (S-16 12/12); /review 200. Nagesh confirmed on www: vehicle year field + admin page left nav work. Still open: photo Back + Review queue/Back to MapIt on a phone.
 
 **NOW (2026-11-15 19:20) — Release 10A SIGNED OFF (Nagesh + Arun); PR uat → main opened.** Family check on uat (Vani + Nagesh, phone): 6/6 PASS (photo Back, Enter sign-in, vehicle year, Admin menu, Review queue without 2nd sign-in, Back to MapIt as admin). Observation: map preview card half off-screen on phones → pre-existing (map.js placement has no left-edge check), NOT a 10A regression → Nagesh chose option 1: ship 10A as tested, then **Release 10A.1** (clamp card inside map, shared helper) from main before 10B. Side note: UAT listing MP-BLR-UAT003 shows 1 BHK + /mo though seeded as 4BHK sell → probably edited during earlier testing (UAT data, not a bug; unverified).
 
@@ -690,6 +693,11 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-15 ~21:00) Nagesh checked www after release:** vehicle year field ✅, admin page + left nav ✅ (phone check of the rest tomorrow).
+- ✅ **(2026-11-15 ~20:25) Release 10A RELEASED to production:** PR #38 uat → main (opened by James, merged by Nagesh, `a392d9e`); Vercel prod deploy success; www serves `?v=10a` css/js; `smoke:prod` 16/16 (S-16 12/12 identical); www /review 200.
+- ✅ **(2026-11-15 19:20) Pre-release:** sign-off notes committed (`7695493`: CONTEXT + backlog 10A.1); 10A branch pushed; `uat` fast-forwarded (docs only, code = `0c76fcd`); `smoke:prod` baseline 16/16.
+- ✅ **(2026-11-15 ~19:10) Family check of 10A on uat: 6/6 PASS** (Vani + Nagesh, phone; via new Shareable Link on uat.mapit.co.in). Nagesh + Arun signed off. Observation: map preview card half off-screen on phones → pre-existing → Release 10A.1.
+- ✅ **(2026-11-15) Explained how to make a Vercel Shareable Link** (deployment → Share → Anyone with the link → put the `_vercel_share` token on uat.mapit.co.in, not the vercel.app URL, so Supabase/OAuth redirects work).
 - ✅ **(2026-11-15 16:18) Release 10A family checklist** built + published as a private artifact (https://claude.ai/artifact/3LcnBC1aBDc6Xe33enzfXa); repo copy `docs/uat/release-10a-family-check.html` (uncommitted). Verified `origin/uat` = `0c76fcd`; uat.mapit.co.in still 302 → Vercel login (protection on).
 - ✅ **(2026-11-15) CLAUDE.md v5.0 + `docs/technical/backlog.md`** approved by Nagesh, PR #36 merged (`21cf1ef`); change note at top of CLAUDE.md; Rule 6 acronyms expanded; Vercel "Instant Rollback" wording confirmed; Vercel + Supabase Pro confirmed taken.
 - ✅ **(2026-11-15) Frontend split option 1 RELEASED** (PR #37, `df04cd5`): `public/index.html` + `css/app.css` + 11 `js/*.js`; `MapIt_MVP_v1.html` deleted; golden-master check; 1 declared relocation (collapsed-sidebar restore → main.js); smoke:prod 16/16, new S-16 12/12.
@@ -1492,7 +1500,8 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 
 | Task | Status | File(s) Touched | Notes |
 |------|--------|-----------------|-------|
-| **Release 10A — quick UX fixes** | 🔄 on uat (`0c76fcd`); family checklist published 16:18, family check running (Nagesh) → sign-off | `public/js/{gallery,post,config,listings,auth}.js`, `public/css/app.css`, `public/index.html`, `public/admin.html`, `public/review.html`, `src/config/listingRules.js`, `src/routes/listings.js` | Next: PR uat → main + smoke:prod |
+| **Release 10A — quick UX fixes** | ✅ LIVE 2026-11-15 (PR #38 `a392d9e`, smoke:prod 16/16); family check 6/6; ⏳ Nagesh phone check on www tomorrow | `public/js/{gallery,post,config,listings,auth}.js`, `public/css/app.css`, `public/index.html`, `public/admin.html`, `public/review.html`, `src/config/listingRules.js`, `src/routes/listings.js` | Next: PR uat → main + smoke:prod |
+| **Release 10A.1 — map preview card clamp** | ⏳ next (after phone check); branch `fix/…` from main | `public/js/map.js` (3 card placers → one shared clamp helper), `index.html` ?v= | Pre-existing prod bug: card flips left with no left-edge check → negative `left` on ~390 px phones |
 | **Frontend split (option 1)** | ✅ live 2026-11-15 (PR #37) | `public/index.html`, `public/css/`, `public/js/`, `scripts/frontend/split.js`, `scripts/smoke/prod-readonly.js` | S-16 12/12 |
 | **Release 10B — view counts** | ⏳ placeholder, starts after 10A release | migration 021 (RPC), listings route, My Listings + listing detail | Sellers exact from 1, buyers from 10+; skip owner's own views |
 | **Release 10C — close reasons** | ⏳ placeholder | migration 022 (table) | Lists approved; required-or-optional still open |
@@ -1717,6 +1726,8 @@ public/admin.html — 10A: left nav, Transfer + Pending removed, Orphaned Photos
 public/review.html — 10A: admin button row, Team split into Reviewers / Send invite, borrowed admin session (?from=admin), Sign-out alignment fix.
 src/config/listingRules.js, src/routes/listings.js — 10A: invalidVehicleYear (POST always; PUT only when details sent).
 CLAUDE.md — v5.0 (2026-11-15) + "Frontend Files" rule replacing the Two-File Rule.
+docs/technical/backlog.md — 2026-11-15 21:26: 10A signed off + new 10A.1 (map card clamp) entry.
+docs/uat/release-10a-family-check.html — NEW: 10A family checklist (6 checks, copy results for WhatsApp); committed `eddcf2d`.
 docs/technical/backlog.md — NEW (2026-11-15): planned releases 10A–10C, decisions, small fixes, ops clean-up, manual leftovers.
 docs/technical/frontend-split-plan.md — NEW (2026-11-15). docs/screenshots/frontend-split/, docs/screenshots/release-10a/ — before/after screenshots.
 src/routes/uploads.js — 2026-11-14 (PR #34): sharp cleanPhoto() strips all metadata, rotate + resize + JPEG; unsupported → friendly 400.
@@ -2152,7 +2163,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **⏳ (2026-11-15 16:18) uat Shareable Link may be tied to the 1 Nov deployment (`0831a8a`)** → Nagesh tests it in incognito against today's build before sending; if it fails, create a new one from the uat deployment's Share menu. Do NOT revoke it until the family check is done.
+- **🐛 (2026-11-15) Map preview card half off-screen on phones** (prod, pre-existing): `showHoverCard` / `showStackHoverCard` / `showClusterHoverCard` in `public/js/map.js` place the card at `pt.x-255` with no left-edge check. Desktop never shows it. → Release 10A.1.
+- **ℹ️ (2026-11-15) UAT listing MP-BLR-UAT003** (seeded 4BHK *sell*) now shows 1 BHK + ₹1.25Cr/mo → probably edited to Rent in earlier testing. UAT data, unverified; optional read-only UAT query.
+- **⏳ (2026-11-15) uat Shareable Link is ON (Anyone with the link)** → revoke (Only people with access) when no more family testing is planned (Nagesh).
+- **✅ RESOLVED 2026-11-15 (new link used for the family check) — was: ⏳ (2026-11-15 16:18) uat Shareable Link may be tied to the 1 Nov deployment (`0831a8a`)** → Nagesh tests it in incognito against today's build before sending; if it fails, create a new one from the uat deployment's Share menu. Do NOT revoke it until the family check is done.
 - **ℹ️ (2026-11-15) Family checklist artifact is private** → Nagesh shares it from its Share menu (public link is easiest for family; no secrets on the page). The uat test link is sent separately, never put in the page.
 - **ℹ️ (2026-11-15) MapIt never renews its sign-in token (~1 h)** → after an hour "Who's using MapIt?" and Back to MapIt ask for the password again. Backlog small fix: renew in ONE place; keep /review's borrowed session read-only.
 - **ℹ️ (2026-11-15) Transfer server route `/api/admin/handover/*` + `uat:transfer` suite now unused** (UI removed in 10A) → remove in a later clean-up.
@@ -2413,6 +2427,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **(2026-11-15, James) Family checklist = no-login page + WhatsApp results** (ticks in the tester's own browser, "Copy results" text) instead of a shared database — family members need no claude.ai account; admin checks 4–6 done with Nagesh because admin emails are hard-coded.
 - **(2026-11-15, Nagesh) Delete MapIt_MVP_v1.html; 11 js files**; `public/` is the only frontend source. Split = pure move (golden master), only one declared relocation.
 - **(2026-11-15, Nagesh) Vehicle year:** filters as you type, suggestions after 3 digits, nothing after this year, >15 years allowed with "15+ years old" note.
+- **(2026-11-15, Nagesh) Ship 10A as tested; fix the map card in a separate Release 10A.1 from main, before 10B** (option 1) — don't reopen a fully passed release; the bug hits phone users on prod today so it shouldn't wait for 10B's migration.
+- **(2026-11-15) 10A.1 approach (proposed, explain before coding):** one shared helper clamps the card inside the map on all sides using its real width (`hc.offsetWidth`), replacing 3 copies of the placement code.
+- **(2026-11-15) Shareable Link token goes on uat.mapit.co.in, not the vercel.app URL** — Supabase/Google OAuth redirects are set up for the uat domain.
+- **(2026-11-15) Family results with phone numbers are never copied into repo files** (Rule 8, no PII).
 - **(2026-11-15, Nagesh) Close reasons:** proposed Sold/Delete lists approved (expandable, keep in one config place). **Views:** sellers exact from 1, buyers only from 10+.
 - **(2026-11-15) Back closes photo viewer via history entry** (not a new window: popup blockers, lost context on phones).
 - **(2026-11-15, Nagesh) Admin UX:** left nav with one "Review queue" entry; Transfer + Pending removed; /review gets admin buttons; Review queue + Back to MapIt keep the admin signed in.
@@ -2876,6 +2894,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-15 21:26, end of day — tomorrow, resume with /resume):**
+1. ⏳ Nagesh: phone check on www.mapit.co.in (real prod login, no test listings): photo viewer closes on Back; Enter in sign-in; Review queue from Admin without 2nd sign-in; Back to MapIt as admin. Any fail → Vercel Instant Rollback first.
+2. ⏳ Release 10A.1 (map preview card clamp): James explains approach (Rule 1) → branch `fix/release-10a1-map-card` from main → localhost phone-width test → uat → phone check → PR → main → smoke:prod. Before/after screenshots → docs/screenshots/10A.1/.
+3. Release 10B — view counts (migration 021, UAT first; Nagesh runs SQL; explicit confirmation before prod).
+4. Later: revoke uat Shareable Link; 10C close reasons; posting wizard; 9L prod invites for both wives; backlog small fixes (token renewal, Transfer route removal).
+5. Note: this checkpoint is committed on branch `docs/context-10a-live` (main takes no direct commits) — goes into main with 10A.1.
 
 **⬅ NOW (2026-11-15 19:20) — 10A release in progress:**
 1. ⏳ Nagesh/Arun merge the PR uat → main → James: `npm run smoke:prod` (S-16 12/12) + check www on a phone → Vercel "Instant Rollback" if anything breaks.
