@@ -3,7 +3,7 @@
 ## Stack
 | Layer | Technology | Notes |
 |---|---|---|
-| Frontend | Vanilla JS + Leaflet.js | Single file — `MapIt_MVP_v1.html`. Always sync to `public/index.html`. |
+| Frontend | Vanilla JS + Leaflet.js | `public/index.html` + `public/css/app.css` + 11 `public/js/*.js` files (plain script tags, no build tool). Split 2026-11-15, see `frontend-split-plan.md`. |
 | Backend | Node.js + Express | Vercel serverless functions in `src/routes/` |
 | Database | Supabase PostgreSQL + PostGIS | `jneoxwumccmjwaojfazh.supabase.co` |
 | Auth | Supabase Auth | Email+password, Google OAuth, SMS OTP (MVP) |

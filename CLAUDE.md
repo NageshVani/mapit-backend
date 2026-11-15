@@ -12,6 +12,7 @@
 #   NEW:     Rule 8 photo-metadata line · Rule 10 expand-then-contract + prod DB
 #            first · Rule 11 Live Operations · mobile-app + new-market guardrails
 #            · Windows server-start tip
+#   2026-11-15 (frontend split): Two-File Rule → "Frontend Files" rule; Stack + Quick Reference updated
 #   MOVED:   one-off SQL fixes, manual dashboard actions, out-of-scope projects
 #            → docs/technical/backlog.md
 
@@ -22,7 +23,7 @@ Production URL: https://mapit.co.in  (canonical host www.mapit.co.in — the bar
 GitHub repo: NageshVani/mapit-backend
 
 Stack:
-  Frontend  : Vanilla JS + Leaflet.js (single file — split into modules planned)
+  Frontend  : Vanilla JS + Leaflet.js (public/index.html + css/app.css + js/*.js, no build tool)
   Backend   : Node.js + Express on Vercel serverless (src/routes/)
   Database  : Supabase PostgreSQL + PostGIS
   Auth      : Supabase Auth (email+password, Google OAuth, phone OTP)
@@ -34,16 +35,17 @@ Developers:
   Arun   : Bangalore strategy, legal, investor relations, UAT review
   Fondly, Nagesh and Arun have named you 'James' as in James Bond 007, who comes up with a solution in any critical situation.
 
-## CRITICAL: Two-File Rule
-The frontend has TWO copies that must ALWAYS be identical:
-  1. MapIt_MVP_v1.html  ← canonical source (edit here)
-  2. public/index.html  ← deployed copy (always sync after editing)
-
-AFTER EVERY frontend change:
-  cp 'MapIt_MVP_v1.html' 'public/index.html'
-  git diff --no-index --stat MapIt_MVP_v1.html public/index.html
-  (No output and exit code 0 = identical. Never push without this check.)
-  (This rule will be replaced when the frontend split lands.)
+## CRITICAL: Frontend Files (since the frontend split, 2026-11-15)
+The main page lives ONLY in public/ (MapIt_MVP_v1.html is gone; the Two-File Rule ended):
+  public/index.html   ← HTML only
+  public/css/app.css  ← all styles
+  public/js/*.js      ← 11 plain scripts, loaded IN ORDER by index.html:
+                        config → core → auth → map → listings → chat → post →
+                        controls → gallery → account → main (init() stays last)
+  - Functions stay global (inline onclick=). Never use type="module" — it breaks every onclick.
+  - Code that runs while a file loads must not call anything from a LATER file.
+  - New feature → new js file, script tag in the right place in index.html.
+  - Changed any css/js file → bump its ?v= tag in index.html (cache-busting).
 
 ## Rule 1 — You Are a Senior Developer AND a Mentor
 Before writing any code, migration, config, or running any step:
@@ -163,8 +165,7 @@ Not built without an explicit Nagesh + Arun decision (details in the backlog):
 
 ## Quick Reference
 ```
-Frontend (canonical)  : MapIt_MVP_v1.html
-Frontend (deployed)   : public/index.html
+Frontend              : public/index.html + public/css/app.css + public/js/*.js
 Server entry          : src/server.js
 Auth middleware       : src/middleware/auth.js
 Supabase client       : src/config/supabase.js
@@ -180,7 +181,7 @@ npm run uat:9c        : phone-OTP / RLS regression vs uat preview (UAT only; wai
 npm run uat:review    : review-queue regression vs UAT
 npm run uat:photos    : photo EXIF-strip regression vs UAT
 npm run uat:transfer  : admin-transfer regression vs UAT
-npm run smoke:prod    : read-only production smoke test (no login/writes)
+npm run smoke:prod    : read-only production smoke test (no login/writes; S-16 checks every css/js file)
 ```
 
 Category IDs: re = Real Estate · veh = Vehicles · hh = Household Items · furn = legacy (prototype only)

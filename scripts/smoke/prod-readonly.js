@@ -47,6 +47,20 @@ async function get(url, opts = {}) {
     home.status === 200 && mainHtml && norm(home.text) === norm(mainHtml),
     `HTTP ${home.status} · ${home.ms} ms · served ${sha(norm(home.text))} vs main ${mainHtml ? sha(norm(mainHtml)) : 'n/a'}`);
 
+  // S-16 · since the frontend split (2026-11-15) the page is index.html + /css + /js files:
+  // every one that main's index.html references must be served exactly as committed on main.
+  const assets = [...mainHtml.matchAll(/(?:src|href)="(\/(?:js|css)\/[^"?]+)(\?[^"]*)?"/g)].map(m => [m[1], m[2] || '']);
+  const assetDiffs = [];
+  for (const [p, q] of assets) {
+    const r = await get(PROD + p + q);
+    let want = '';
+    try { want = execSync(`git show origin/main:public${p}`, { encoding: 'utf8', maxBuffer: 50e6 }); } catch { /* missing */ }
+    if (r.status !== 200 || !want || norm(r.text) !== norm(want)) assetDiffs.push(`${p} (HTTP ${r.status})`);
+  }
+  check('S-16', 'Every /css and /js file referenced by index.html is served exactly as on origin/main',
+    mainHtml && assetDiffs.length === 0,
+    assets.length ? `${assets.length - assetDiffs.length}/${assets.length} identical${assetDiffs.length ? " · differ: " + assetDiffs.join(', ') : ''}` : 'no split assets on main yet');
+
   // S-02 · bare domain and http:// end up on https://www
   const apex = await get('https://mapit.co.in/');
   const http = await get('http://mapit.co.in/');
