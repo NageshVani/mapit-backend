@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-16 17:39 (UAE), checkpoint (**Arun could not open uat (Vercel login page) — cause: Vercel Authentication + his 7-day share-link pass expired / new device, NOT the 10A builds. DECIDED (Nagesh + Arun): keep the uat Shareable Link permanently; Arun reopens it when needed. Next: Nagesh phone check on www → Release 10A.1.**)
+- **Last updated:** 2026-11-16 (UAE), checkpoint (**Release 10A.1 LIVE: PR #39 merged by Nagesh (`7962967`); www serves map.js?v=10a1 identical to main; smoke:prod 16/16, S-16 12/12. Next: Release 10B (view counts, migration 021, UAT first).**)
+- **Last updated (previous):** 2026-11-16 17:39 (UAE), checkpoint (**Arun could not open uat (Vercel login page) — cause: Vercel Authentication + his 7-day share-link pass expired / new device, NOT the 10A builds. DECIDED (Nagesh + Arun): keep the uat Shareable Link permanently; Arun reopens it when needed. Next: Nagesh phone check on www → Release 10A.1.**)
 - **Last updated (previous):** 2026-11-15 21:26 (UAE), CHECKPOINT end of day (**Release 10A LIVE on production: PR #38 merged by Nagesh (`a392d9e`), smoke:prod 16/16, S-16 12/12; Nagesh checked vehicle year + admin left nav on www. Tomorrow: Nagesh phone check on www → Release 10A.1 (map card clamp) → 10B.**)
 - **Last updated (previous):** 2026-11-15 16:18 (UAE), checkpoint (**Release 10A family-check checklist built + published (private artifact https://claude.ai/artifact/3LcnBC1aBDc6Xe33enzfXa, copy `docs/uat/release-10a-family-check.html`, not committed). Nagesh on a break (household chores); returns after the family check is done.**)
 - **Last updated (previous):** 2026-11-15 13:14 (UAE), CHECKPOINT (**2026-11-15: CLAUDE.md v5 live (PR #36); frontend split RELEASED (PR #37); Release 10A built + on uat (`0c76fcd`), uat:9c 35/35. Next (placeholders): family check on uat → PR uat → main + smoke:prod → 10B views (migration 021).**)
@@ -155,6 +156,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-16) — Release 10A.1 LIVE on production; next: Release 10B (view counts).** Card clamp fix: uat phone check 3/3 (Nagesh) → PR #39 uat → main (opened by James, merged by Nagesh, `7962967`) → www serves `map.js?v=10a1` byte-identical to main → smoke:prod 16/16 (S-16 12/12). Note: James could not verify the uat deploy himself (auto-mode permission check blocked reading the bypass secret from .env); Nagesh's real-phone check on uat covered it.
 
 **NOW (2026-11-16 17:39) — Arun's uat access settled; next: Nagesh's phone check on www, then Release 10A.1.** Arun could not demo uat to the digital marketing team (Vercel login page). Cause: uat is behind Vercel Authentication since 15 Oct; Arun only ever got in via the Shareable Link, whose browser pass lasts 7 days per device/host — not caused by the 10A builds (uat.mapit.co.in still 302 → Vercel SSO, as designed). Options given: free Vercel Pro Viewer seat (recommended, permanent), access requests, Password Protection (~$20/project/mo, rejected), own password page (rejected). **Decision: keep the Shareable Link** (see Decisions).
 
@@ -696,6 +699,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-16) Release 10A.1 RELEASED:** uat (`8182842`) real-phone check 3/3 (Nagesh) → smoke:prod baseline 16/16 → PR #39 uat → main (James opened, Nagesh merged, `7962967`) → www `map.js?v=10a1` identical to main → smoke:prod 16/16, S-16 12/12.
 - ✅ **(2026-11-16) Release 10A.1 built** on `fix/release-10a1-map-card`: shared `placeHoverCard()` in `public/js/map.js` (fill → measure at 0,0 → right / left / centred above / below → clamp 8 px inside #mapc) replaces 3 copied placers (single, stack, cluster); `map.js?v=10a1`. Headless measurement 42/42 inside, pin never covered; desktop centre unchanged (511 px); phone was −60 px → 82 px. Nagesh localhost click-test 5/5 PASS. Screenshots `docs/screenshots/10A.1/` before-phone-390.png, before-desktop-1366.png, after-phone-390.png, after-desktop-1366.png.
 - ✅ **(2026-11-16) Nagesh phone check on www (prod, real admin login): 4/4 PASS** — photo viewer closes on Back; Enter in sign-in; Review queue from Admin without 2nd sign-in; Back to MapIt as admin without Who's-using. Release 10A fully confirmed on production.
 - ✅ **(2026-11-16) Arun uat access diagnosed + decided** (keep Shareable Link; Viewer seat = fallback).
@@ -2169,7 +2173,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
-- **🐛 (2026-11-15) Map preview card half off-screen on phones** (prod, pre-existing): `showHoverCard` / `showStackHoverCard` / `showClusterHoverCard` in `public/js/map.js` place the card at `pt.x-255` with no left-edge check. Desktop never shows it. → Release 10A.1.
+- **✅ RESOLVED 2026-11-16 (Release 10A.1, PR #39) — was: 🐛 (2026-11-15) Map preview card half off-screen on phones** (prod, pre-existing): `showHoverCard` / `showStackHoverCard` / `showClusterHoverCard` in `public/js/map.js` place the card at `pt.x-255` with no left-edge check. Desktop never shows it. → Release 10A.1.
 - **ℹ️ (2026-11-15) UAT listing MP-BLR-UAT003** (seeded 4BHK *sell*) now shows 1 BHK + ₹1.25Cr/mo → probably edited to Rent in earlier testing. UAT data, unverified; optional read-only UAT query.
 - **ℹ️ (2026-11-16) uat Shareable Link stays ON permanently** (decision 2026-11-16, Arun's demos) — do NOT revoke. Arun reopens the saved link (uat.mapit.co.in host) on the demo device a day before each demo; new link only if revoked or it stops working after a new uat build (make it from the latest uat deployment → Share). Ask Arun not to forward it. (Was: ⏳ 2026-11-15 revoke when family testing ends.)
 - **✅ RESOLVED 2026-11-15 (new link used for the family check) — was: ⏳ (2026-11-15 16:18) uat Shareable Link may be tied to the 1 Nov deployment (`0831a8a`)** → Nagesh tests it in incognito against today's build before sending; if it fails, create a new one from the uat deployment's Share menu. Do NOT revoke it until the family check is done.
@@ -2182,6 +2186,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 - **✅ RESOLVED 2026-11-14 18:20 — photo limits:** Vercel Production has no MAX_PHOTOS_PER_LISTING → code default 5 ✅; MAX_PHOTO_SIZE=5242880 (5 MB) ✅; local .env set to 5 by Nagesh. Note: Vercel caps any request body at ~4.5 MB anyway; browser shrinking keeps photos well below.
 - **ℹ️ (2026-11-14) Multer middleware errors return 500** (file > 5 MB, > 5 files in one request → "Unexpected field") — the route's catch never sees them. Pre-existing; small later fix: error-mapping middleware → friendly 400.
 - **ℹ️ (2026-11-14) Admin emails hard-coded in `src/middleware/auth.js` AND in the public HTML** (visible in page source) → move to admin role in `staff_members` later (decided); placeholder in CLAUDE.md v5.
+- **ℹ️ (2026-11-16) Auto-mode permission check blocks James from reading the Vercel bypass secret out of .env** (uat deploy checks via curl) and from stopping the local server → Nagesh checks the uat deployment in Vercel / on the phone, or adds a Bash permission rule. `npm run smoke:prod` still runs fine.
 - **ℹ️ (2026-11-14) Windows: stopping a background `npm start` leaves the child `node` on port 3001** → start the server with `node -r dotenv/config src/server.js` directly; check `Get-NetTCPConnection -LocalPort 3001`.
 - **ℹ️ (2026-11-14) Deploy check gotcha:** the same commit deployed for a feature branch AND uat → "deploy success" may be the other one; always confirm on the real domain (e.g. `/api/config` field).
 - **ℹ️ (2026-11-14) HEIC photos:** sharp prebuilt cannot decode HEVC-HEIC → rejected with friendly message (decided). iPhone Safari converts to JPEG itself; Android Chrome may not.
@@ -2904,7 +2909,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 **⬅ NOW (2026-11-15 21:26, end of day — tomorrow, resume with /resume):**
 1. ✅ (2026-11-16, 4/4 PASS) Nagesh: phone check on www.mapit.co.in (real prod login, no test listings): photo viewer closes on Back; Enter in sign-in; Review queue from Admin without 2nd sign-in; Back to MapIt as admin. Any fail → Vercel Instant Rollback first.
-2. 🔄 (2026-11-16: built, localhost 5/5 PASS → uat next) Release 10A.1 (map preview card clamp): James explains approach (Rule 1) → branch `fix/release-10a1-map-card` from main → localhost phone-width test → uat → phone check → PR → main → smoke:prod. Before/after screenshots → docs/screenshots/10A.1/.
+2. ✅ (2026-11-16 LIVE, PR #39 `7962967`) Release 10A.1 (map preview card clamp): James explains approach (Rule 1) → branch `fix/release-10a1-map-card` from main → localhost phone-width test → uat → phone check → PR → main → smoke:prod. Before/after screenshots → docs/screenshots/10A.1/.
 3. Release 10B — view counts (migration 021, UAT first; Nagesh runs SQL; explicit confirmation before prod).
 4. Later: 10C close reasons; posting wizard; 9L prod invites for both wives; backlog small fixes (token renewal, Transfer route removal).
 5. Note: this checkpoint is committed on branch `docs/context-10a-live` (main takes no direct commits) — goes into main with 10A.1.
