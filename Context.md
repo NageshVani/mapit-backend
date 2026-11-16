@@ -696,6 +696,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-16) Release 10A.1 built** on `fix/release-10a1-map-card`: shared `placeHoverCard()` in `public/js/map.js` (fill → measure at 0,0 → right / left / centred above / below → clamp 8 px inside #mapc) replaces 3 copied placers (single, stack, cluster); `map.js?v=10a1`. Headless measurement 42/42 inside, pin never covered; desktop centre unchanged (511 px); phone was −60 px → 82 px. Nagesh localhost click-test 5/5 PASS. Screenshots `docs/screenshots/10A.1/` before-phone-390.png, before-desktop-1366.png, after-phone-390.png, after-desktop-1366.png.
 - ✅ **(2026-11-16) Nagesh phone check on www (prod, real admin login): 4/4 PASS** — photo viewer closes on Back; Enter in sign-in; Review queue from Admin without 2nd sign-in; Back to MapIt as admin without Who's-using. Release 10A fully confirmed on production.
 - ✅ **(2026-11-16) Arun uat access diagnosed + decided** (keep Shareable Link; Viewer seat = fallback).
 - ✅ **(2026-11-15 ~21:00) Nagesh checked www after release:** vehicle year field ✅, admin page + left nav ✅ (phone check of the rest tomorrow).
@@ -2903,7 +2904,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 **⬅ NOW (2026-11-15 21:26, end of day — tomorrow, resume with /resume):**
 1. ✅ (2026-11-16, 4/4 PASS) Nagesh: phone check on www.mapit.co.in (real prod login, no test listings): photo viewer closes on Back; Enter in sign-in; Review queue from Admin without 2nd sign-in; Back to MapIt as admin. Any fail → Vercel Instant Rollback first.
-2. ⏳ Release 10A.1 (map preview card clamp): James explains approach (Rule 1) → branch `fix/release-10a1-map-card` from main → localhost phone-width test → uat → phone check → PR → main → smoke:prod. Before/after screenshots → docs/screenshots/10A.1/.
+2. 🔄 (2026-11-16: built, localhost 5/5 PASS → uat next) Release 10A.1 (map preview card clamp): James explains approach (Rule 1) → branch `fix/release-10a1-map-card` from main → localhost phone-width test → uat → phone check → PR → main → smoke:prod. Before/after screenshots → docs/screenshots/10A.1/.
 3. Release 10B — view counts (migration 021, UAT first; Nagesh runs SQL; explicit confirmation before prod).
 4. Later: 10C close reasons; posting wizard; 9L prod invites for both wives; backlog small fixes (token renewal, Transfer route removal).
 5. Note: this checkpoint is committed on branch `docs/context-10a-live` (main takes no direct commits) — goes into main with 10A.1.
