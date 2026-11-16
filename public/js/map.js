@@ -220,14 +220,10 @@ function showStackHoverCard(group){
   clearTimeout(hoverTO);
   const pt = map.latLngToContainerPoint([group[0].lat,group[0].lng]);
   const hc = document.getElementById('hoverCard');
-  const mw = document.getElementById('mapc').offsetWidth;
-  let left = pt.x + 18, top = pt.y - 60;
-  if(left+250>mw) left = pt.x-255;
-  if(top<8) top = pt.y+18;
-  hc.style.left = left+'px'; hc.style.top = top+'px';
   document.getElementById('hcInner').innerHTML = `
     <div class="hc-title">📍 ${group.length} listings here</div>
     <div class="hc-tip">Click pin to see the full list →</div>`;
+  placeHoverCard(hc, pt, 60);
   hc.classList.add('show');
 }
 
@@ -241,11 +237,6 @@ function showClusterHoverCard(latlng, listings){
   clearTimeout(hoverTO);
   const pt = map.latLngToContainerPoint(latlng);
   const hc = document.getElementById('hoverCard');
-  const mw = document.getElementById('mapc').offsetWidth;
-  let left = pt.x + 18, top = pt.y - 60;
-  if(left+250>mw) left = pt.x-255;
-  if(top<8) top = pt.y+18;
-  hc.style.left = left+'px'; hc.style.top = top+'px';
   const shown = listings.slice(0, CLUSTER_HOVER_MAX_LINES);
   const rows = shown.map(l=>`<div class="hc-row"><span>${listingEmoji(l)} ${escHtml(l.subcategory||l.category)}</span></div>`).join('');
   const more = listings.length > CLUSTER_HOVER_MAX_LINES
@@ -254,6 +245,7 @@ function showClusterHoverCard(latlng, listings){
     <div class="hc-title">📍 ${listings.length} listings here</div>
     ${rows}${more}
     <div class="hc-tip">Click to zoom in →</div>`;
+  placeHoverCard(hc, pt, 60);
   hc.classList.add('show');
 }
 
@@ -288,6 +280,33 @@ function updateCircle(){
 // ═══════════════════════════════════════════════
 // HOVER CARD
 // ═══════════════════════════════════════════════
+// Shared placement for every map preview card (single listing, stack, cluster)
+// — Release 10A.1. Call it AFTER filling the card: it measures the real size.
+// Order: right of the pin → left of it → (narrow phones, neither side fits)
+// centred above the pin → below it. Finally clamped inside #mapc so no edge is
+// ever cut off. liftY = how far above the pin a side-placed card starts.
+const HC_GAP = 18, HC_EDGE = 8;
+function placeHoverCard(hc, pt, liftY){
+  const mapEl = document.getElementById('mapc');
+  const mw = mapEl.offsetWidth, mh = mapEl.offsetHeight;
+  // Measure at the top-left corner: an absolute box near the right edge
+  // shrinks to its min-width, which would under-report the real width.
+  hc.style.left = '0px'; hc.style.top = '0px';
+  const w = hc.offsetWidth, h = hc.offsetHeight;
+  let left, top;
+  if(pt.x + HC_GAP + w <= mw - HC_EDGE){            // fits on the right
+    left = pt.x + HC_GAP; top = pt.y - liftY;
+  } else if(pt.x - HC_GAP - w >= HC_EDGE){          // fits on the left
+    left = pt.x - HC_GAP - w; top = pt.y - liftY;
+  } else {                                          // narrow map: above / below
+    left = pt.x - w/2; top = pt.y - HC_GAP - h;
+  }
+  if(top < HC_EDGE) top = pt.y + HC_GAP;            // no room above → below the pin
+  left = Math.max(HC_EDGE, Math.min(left, mw - w - HC_EDGE));
+  top  = Math.max(HC_EDGE, Math.min(top,  mh - h - HC_EDGE));
+  hc.style.left = left+'px'; hc.style.top = top+'px';
+}
+
 function showHoverCard(l, isFav, tapMode){
   clearTimeout(hoverTO);
   const loc = activeLoc();
@@ -295,11 +314,6 @@ function showHoverCard(l, isFav, tapMode){
   const col = catCol(l.category||l.cat);
   const pt = map.latLngToContainerPoint([l.lat,l.lng]);
   const hc = document.getElementById('hoverCard');
-  const mw = document.getElementById('mapc').offsetWidth;
-  let left = pt.x + 18, top = pt.y - 110;
-  if(left+250>mw) left = pt.x-255;
-  if(top<8) top = pt.y+18;
-  hc.style.left = left+'px'; hc.style.top = top+'px';
   const details = l.details || {};
   const subFields = (LISTING_FIELDS[l.category||l.cat]||{})[l.subcategory||l.sub] || [];
   const starredHtml = subFields.filter(f=>f.starred && details[f.id] != null && details[f.id] !== '')
@@ -321,6 +335,7 @@ function showHoverCard(l, isFav, tapMode){
     </div>
     ${tipHtml}`;
   hc.classList.toggle('tap-mode', !!tapMode);
+  placeHoverCard(hc, pt, 110);
   hc.classList.add('show');
 }
 function hideHoverCard(){
