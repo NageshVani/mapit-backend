@@ -6,12 +6,12 @@ Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 m
 
 ## 1. Planned releases (agreed order)
 1. ✅ **Frontend split (option 1)**: LIVE 2026-11-15 (PR #37, `df04cd5`); smoke:prod 16/16, S-16 12/12.
-2a. 🔜 **Release 10A.1, map preview card cut off on phones** (found in the 10A family check, 2026-11-15;
+2a. ✅ **Release 10A.1, map preview card cut off on phones**: LIVE 2026-11-16 (PR #39, `7962967`; smoke:prod 16/16). (found in the 10A family check, 2026-11-15;
    pre-existing on prod, not a 10A regression). `showHoverCard` / `showStackHoverCard` / `showClusterHoverCard`
    in `public/js/map.js` flip the card to the left of the pin with no left-edge check → negative `left` on a
    ~390 px map. Fix: one shared helper that clamps the card inside the map (both sides + top/bottom) using
    its real width. Frontend only. Branch from main after 10A ships → uat → phone check → main. Before 10B.
-2. 🔄 **Release 10A, quick UX fixes** (SIGNED OFF 2026-11-15 by Nagesh + Arun; family check 6/6 PASS; PR uat → main) (from Nagesh's UAT observations, 2026-11-15). Frontend only, no DB:
+2. ✅ **Release 10A, quick UX fixes**: LIVE 2026-11-15 (PR #38, `a392d9e`); Nagesh phone check on www 4/4 2026-11-16 (from Nagesh's UAT observations, 2026-11-15). Frontend only, no DB:
    - **Back button closes the photo viewer** (obs. 1): opening the viewer adds a browser-history entry,
      so Back closes it and stays in MapIt. Recommended over a new window (popup blockers; a new tab
      loses the listing context on phones). Same fix later for other full-screen modals.
@@ -29,6 +29,16 @@ Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 m
 4. 🔜 **Release 10C, reason when closing a listing** (obs. 2): dropdown on "Mark as sold" and "Delete".
    Delete removes the row today, so reasons need their own small table (migration 022, RLS deny-by-default).
    The "sold on MapIt vs elsewhere" answer is the most useful business number here. Reason list TBD (decision below).
+5a. ⏳ **[PLACEHOLDER] Release 10D, price filter in the left panel** (production user feedback, 2026-11-16).
+   Request: a "Price" filter in the left panel for ALL categories (Real Estate, Vehicles, Household).
+   Not designed yet. Questions to settle first (James explains options, Rule 1):
+   - rent (per month) vs sale (total) prices are not comparable → one range per category / sub-mode?
+   - input style: min/max boxes, preset ranges (e.g. under ₹10K / ₹10K–50K / …), or a slider
+   - ₹ units: K / L / Cr presets for Real Estate; keep currency-neutral code (new-market guardrail)
+   - server-side filter (min_price / max_price on the listings query, validated — Rule 8) vs client-side only;
+     EXPLAIN ANALYZE if it touches the query (Rule 10)
+   - how the filter shows on the map pins + list count, and on phones (left panel is a separate view)
+   Order vs 10C / posting wizard: Nagesh + Arun to decide.
 5. 🔜 **Posting wizard with listing preview**: text-only draft; at least 1 photo required (except plots); full preview.
    Phone mockups first. New code goes in its own `public/js/` file.
 
