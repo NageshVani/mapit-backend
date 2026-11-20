@@ -375,7 +375,25 @@ async function selListing(id, keepTab=false){
       if(ST.selId===id) renderSidebar();
     }
   } catch(_){}
+  countViewOnce(id);
+}
+
+// Release 10B (Nagesh, 2026-11-20): one person re-opening the same listing
+// counts once per device. The IDs already counted are remembered in this
+// browser only (no DB rows, no new personal data on the server), keyed by
+// user so family members sharing a phone each count. Signed-in users only —
+// the server ignores logged-out calls too. Capped so storage stays small.
+const VIEWED_MAX = 500;
+function countViewOnce(id){
+  if(!ST.user?.id) return;
+  const key = `mapit_viewed_${ST.user.id}`;
+  let seen = [];
+  try { seen = JSON.parse(localStorage.getItem(key) || '[]'); } catch(_){ seen = []; }
+  if(!Array.isArray(seen)) seen = [];
+  if(seen.includes(id)) return;
   apiPost(`/api/listings/${id}/view`,{}).catch(()=>{});
+  seen.push(id);
+  try { localStorage.setItem(key, JSON.stringify(seen.slice(-VIEWED_MAX))); } catch(_){}
 }
 
 function closeDetail(){

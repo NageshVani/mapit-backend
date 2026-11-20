@@ -976,12 +976,15 @@ router.post('/:id/save', requireAuth, async (req, res, next) => {
 });
 
 // ── Increment view count (Release 10B) ────────────────────────
-// POST /api/listings/:id/view  (auth optional — logged-out visitors count too)
+// POST /api/listings/:id/view  (counts SIGNED-IN viewers only)
 // Atomic +1 in the DB (migration 021 increment_listing_view) instead of
 // read-then-write in Node, which lost views when two visitors arrived at once.
 // The function skips the seller's own views and non-active listings.
-// A sign-in token, if sent, is only used to recognise the owner; a missing,
-// bad or expired token just means an anonymous view (never a 401 here).
+// Logged-out calls are not counted (every listing route needs sign-in, so
+// only scripts call this without a token); a missing, bad or expired token
+// gets { ok: true } and nothing is counted (never a 401 here).
+// Repeat opens by the same person are filtered in the browser (countViewOnce
+// in public/js/listings.js, Nagesh 2026-11-20).
 // Best-effort: counting must never break opening a listing, so errors are
 // logged (no PII) and the response is always { ok: true }.
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -996,6 +999,7 @@ router.post('/:id/view', async (req, res) => {
       const { data, error } = await supabaseAdmin.auth.getUser(authHeader.slice(7));
       if (!error && data?.user) viewerId = data.user.id;
     }
+    if (!viewerId) return res.json({ ok: true }); // signed-in viewers only
 
     const { error } = await supabaseAdmin.rpc('increment_listing_view', {
       p_listing_id: id,
