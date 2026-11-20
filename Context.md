@@ -158,6 +158,8 @@
 
 ## 🎯 Current Goal
 
+**NOW (2026-11-20 ~21:15) — Release 10B (view counts) built + localhost click-test 4/4 PASS; next: CONTEXT commit → merge into uat → phone check → prod DB 021 first → PR uat → main.** Branch `feat/release-10b-view-counts` (`65e76f0`, `5ca0896`). Migration 021 `increment_listing_view()` run on **UAT only** (Nagesh): test 216→217 visitor / NULL owner; EXPLAIN = Index Scan using listings_pkey; inventory UAT vs prod (14 Nov) = only EXTRA function (after unwrapping — the raw compare gave a FALSE "match"). Nagesh's UI feedback added: views on the right of every browse row, My Listings views top-right + buttons in one row, 2-line browse titles.
+
 **NOW (2026-11-16 21:16, end of day) — Tomorrow: Release 10B (view counts).** Start with James's Rule 1 explanation of migration 021 (atomic increment RPC, alternatives, risks) → Nagesh approves → SQL on UAT first. Today: 10A phone check 4/4 on www, Release 10A.1 LIVE (PR #39), Arun keeps the uat Shareable Link (write-up given), and a production user asked for a **price filter in the left panel for all categories** → placeholder **Release 10D** in `docs/technical/backlog.md` (not designed; order vs 10C/wizard for Nagesh + Arun).
 
 **NOW (2026-11-16) — Release 10A.1 LIVE on production; next: Release 10B (view counts).** Card clamp fix: uat phone check 3/3 (Nagesh) → PR #39 uat → main (opened by James, merged by Nagesh, `7962967`) → www serves `map.js?v=10a1` byte-identical to main → smoke:prod 16/16 (S-16 12/12). Note: James could not verify the uat deploy himself (auto-mode permission check blocked reading the bypass secret from .env); Nagesh's real-phone check on uat covered it.
@@ -702,6 +704,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-20) Release 10B built + localhost click-test 4/4 PASS (Nagesh)** on `feat/release-10b-view-counts`: migration 021 `increment_listing_view(p_listing_id, p_viewer_id)` (one atomic UPDATE; active only; skips seller; SECURITY INVOKER, service_role only; verify block) + `database/scripts/021-rollback.sql`; `POST /:id/view` uses optional token to recognise the owner, UUID check, best-effort; `viewsText()`/`isOwnListing()` in `core.js` (buyers from 10, owner exact from 1) used by browse rows, My Listings, detail; My Listings card `my-card`/`my-views`/`my-actions`; `.lr-title` 2-line clamp. Tags core.js?v=10b, listings.js?v=10b3, app.css?v=10b3. Phone width OK (Nagesh). Screenshots `docs/screenshots/10B/`: before-browse-list.png, interim-my-listings-stacked-buttons.png, interim-detail-views-small.png, interim-browse-views-one-line-title.png, after-browse-list.png, after-my-listings.png.
+- ✅ **(2026-11-20) DB, SQL Editor, UAT `xesekrkxbtybbxpsvxuz` only:** migration 021 run by Nagesh (first attempt ran the test before the migration → "function does not exist"; then migration OK). Production NOT yet.
+- ✅ **(2026-11-20) Backlog:** legacy unused `listings.view_count` column (drop later), `listings_updated_at` trigger bumps updated_at on every view, per-day view dedupe idea.
 - ✅ **(2026-11-16 ~21:00) Price-filter feedback logged:** placeholder Release 10D in `docs/technical/backlog.md` §1 (open questions: rent vs sale ranges, input style, ₹ units, server-side min/max + validation, phone layout); backlog 10A/10A.1 marked LIVE.
 - ✅ **(2026-11-16) Arun uat-access write-up** (WhatsApp text: save the Shareable Link, reopen every 7 days / new device, open the day before a demo, don't forward, prefer www for outside demos). Link token left for Nagesh to paste — never in git.
 - ✅ **(2026-11-16) CONTEXT 10A.1-live note** committed on `docs/context-10a1-live` (`a9136fa`, pushed).
@@ -1519,7 +1524,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | **Release 10A — quick UX fixes** | ✅ LIVE 2026-11-15 (PR #38 `a392d9e`, smoke:prod 16/16); family check 6/6; ⏳ Nagesh phone check on www tomorrow | `public/js/{gallery,post,config,listings,auth}.js`, `public/css/app.css`, `public/index.html`, `public/admin.html`, `public/review.html`, `src/config/listingRules.js`, `src/routes/listings.js` | Next: PR uat → main + smoke:prod |
 | **Release 10A.1 — map preview card clamp** | ✅ LIVE 2026-11-16 (PR #39 `7962967`; smoke:prod 16/16, S-16 12/12) | `public/js/map.js`, `public/index.html`, `docs/screenshots/10A.1/` | Shared `placeHoverCard()`; localhost 5/5, uat phone 3/3 |
 | **Frontend split (option 1)** | ✅ live 2026-11-15 (PR #37) | `public/index.html`, `public/css/`, `public/js/`, `scripts/frontend/split.js`, `scripts/smoke/prod-readonly.js` | S-16 12/12 |
-| **Release 10B — view counts** | ⏳ NEXT (2026-11-17) — Rule 1 explanation first | migration 021 (RPC), listings route, My Listings + listing detail | Sellers exact from 1, buyers from 10+; skip owner's own views |
+| **Release 10B — view counts** | 🔨 built 2026-11-20, localhost 4/4 PASS; 021 on UAT only; ⏳ uat → prod DB → PR | `database/migrations/021-*`, `database/scripts/021-rollback.sql`, `src/routes/listings.js`, `public/js/{core,listings}.js`, `public/css/app.css`, `public/index.html`, `docs/screenshots/10B/` | Sellers exact from 1, buyers from 10+; owner views skipped |
 | **Release 10D — price filter (left panel, all categories)** | ⏳ placeholder (production user feedback 2026-11-16) | `docs/technical/backlog.md` | Not designed; order TBD by Nagesh + Arun |
 | **Release 10C — close reasons** | ⏳ placeholder | migration 022 (table) | Lists approved; required-or-optional still open |
 | **9L step 7 — production release** | ✅ code + DB live 2026-11-14 (PR #33 `5efbe07`, smoke:prod 14/14); 🔄 remaining: prod invites for both wives, revoke uat Shareable Link | `package-lock.json` (merge), `Context.md`; GitHub PR #33 | Next: Team → invite → incognito test → send → Activate |
@@ -2446,6 +2451,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-20) View counter = one atomic UPDATE in a DB function (021)**, not read-then-write in Node (lost views under concurrency) and not a per-view table (deferred; backlog). SECURITY INVOKER like 019 (service_role only), not SECURITY DEFINER — nothing needs elevated rights.
+- **(2026-11-20) `/view` is best-effort:** always `{ok:true}`, logs errors without PII; a missing/bad token = anonymous view, never 401. Consequence: prod DB 021 MUST go in before the code (a missing function fails silently).
+- **(2026-11-20, Nagesh) Views shown on the right of every browse row** (buyers from 10), not only in the detail's 10 px line (too small to find); My Listings buttons in one row; browse titles wrap to 2 lines.
+- **(2026-11-20) Schema compare files must be unwrapped first** — the "Copy as JSON" wrapper made compare-schema-inventory.js report a false match (backlog item already open).
 - **(2026-11-16, Nagesh) Price filter (user feedback) = placeholder Release 10D only** — no design or code until 10B is done and Nagesh + Arun set the order.
 - **(2026-11-16, Nagesh) Release 10B moved to 2026-11-17.**
 - **(2026-11-16, James) 10A.1 card placement order:** right → left → centred above → below, then clamp 8 px — above/below on phones so the card never covers the tapped pin (clamp-only would).
@@ -2921,6 +2930,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 
 ## 🔜 Next Steps (Queued)
 
+**⬅ NOW (2026-11-20 ~21:15) — Release 10B:**
+1. ⏳ Commit CONTEXT + after screenshots → push `feat/release-10b-view-counts` → merge into `uat` → Nagesh phone check on uat.mapit.co.in (browse views, My Listings layout, owner views not counted).
+2. ⏳ PROD DB FIRST: Nagesh runs 021 on `jneoxwumccmjwaojfazh` after explicit go → fresh inventory on BOTH (unwrap before compare) → must be identical.
+3. ⏳ PR uat → main (Nagesh/Arun merge) → `npm run smoke:prod` → check www (views on rows, a listing open counts).
+4. Then: order of 10C close reasons · 10D price filter · posting wizard (Nagesh + Arun).
 **⬅ NOW (2026-11-16 21:16, end of day — tomorrow, resume with /resume):**
 1. ⏳ Release 10B — view counts: James explains migration 021 (atomic increment RPC; skip owner's own views; sellers exact from 1, buyers from 10+) per Rule 1 → Nagesh approves → branch from main → SQL on UAT (Nagesh runs) → schema inventory compare → code → localhost click-test → uat → prod DB first (explicit confirmation) → PR → smoke:prod.
 2. ⏳ Nagesh: send Arun the uat write-up with the current Shareable Link (test it in incognito first).
