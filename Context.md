@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-16 21:16 (UAE), END OF DAY checkpoint (**Release 10A.1 LIVE (PR #39); Arun uat access settled (keep Shareable Link) + WhatsApp write-up for Arun; production user feedback → placeholder Release 10D price filter (all categories) in backlog. Tomorrow (/resume): Release 10B view counts (migration 021, UAT first).**)
+- **Last updated:** 2026-11-20 22:30 (UAE), END OF DAY checkpoint (**Release 10B LIVE (PR #40 `3bf6cde`): view counts on browse rows + My Listings, owner/inactive/logged-out not counted, once per person per device; 021 on prod first; schemas identical; smoke:prod 16/16. Next (/resume): decide 10C / 10D / wizard order with Arun.**)
+- **Last updated (previous):** 2026-11-16 21:16 (UAE), END OF DAY checkpoint (**Release 10A.1 LIVE (PR #39); Arun uat access settled (keep Shareable Link) + WhatsApp write-up for Arun; production user feedback → placeholder Release 10D price filter (all categories) in backlog. Tomorrow (/resume): Release 10B view counts (migration 021, UAT first).**)
 - **Last updated (previous):** 2026-11-16 (UAE), checkpoint (**Release 10A.1 LIVE: PR #39 merged by Nagesh (`7962967`); www serves map.js?v=10a1 identical to main; smoke:prod 16/16, S-16 12/12. Next: Release 10B (view counts, migration 021, UAT first).**)
 - **Last updated (previous):** 2026-11-16 17:39 (UAE), checkpoint (**Arun could not open uat (Vercel login page) — cause: Vercel Authentication + his 7-day share-link pass expired / new device, NOT the 10A builds. DECIDED (Nagesh + Arun): keep the uat Shareable Link permanently; Arun reopens it when needed. Next: Nagesh phone check on www → Release 10A.1.**)
 - **Last updated (previous):** 2026-11-15 21:26 (UAE), CHECKPOINT end of day (**Release 10A LIVE on production: PR #38 merged by Nagesh (`a392d9e`), smoke:prod 16/16, S-16 12/12; Nagesh checked vehicle year + admin left nav on www. Tomorrow: Nagesh phone check on www → Release 10A.1 (map card clamp) → 10B.**)
@@ -157,6 +158,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-20 22:30, end of day) — Release 10B LIVE on production; next: Nagesh + Arun decide the order of 10C close reasons · 10D price filter · posting wizard.** PR #40 uat → main merged by Nagesh (`3bf6cde`, 18:11 UTC) after his uat phone check PASS; www serves core.js?v=10b, listings.js?v=10b4, app.css?v=10b4; `npm run smoke:prod` 16/16. Local server stopped.
 
 **NOW (2026-11-20 ~22:15) — Release 10B: prod DB 021 DONE, schemas identical; PR uat → main next.** Nagesh asked for repeat opens by one person not to count → option 1 chosen: browser remembers counted listing IDs per user (`countViewOnce`, localStorage, cap 500) + server counts signed-in viewers only (`00167a6`); localhost click-test PASS; merged into uat (`a31fa08`). 021 run on PRODUCTION by Nagesh (function present, anon/authenticated cannot execute). Fresh inventories 2026-11-20 prod vs UAT: ✅ identical after unwrapping (17.6 vs 17.11 note only). Exact unique count (migration 022 `listing_views` table) NOT built — later, if counts look gamed (~1–1.5 h; privacy note for Arun).
 
@@ -706,6 +709,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-20 22:30) Release 10B RELEASED:** Nagesh uat phone check PASS → PR #40 uat → main (James opened, Nagesh merged, `3bf6cde`) → www serves the 10B tags → smoke:prod 16/16 PASS (read-only). Local dev server stopped.
 - ✅ **(2026-11-20) DB, SQL Editor, PRODUCTION `jneoxwumccmjwaojfazh`:** migration 021 run by Nagesh. Inventory `schema-prod-2026-11-20.json` vs `schema-uat-2026-11-20.json` (C:devmapitjson files) identical (unwrapped; first UAT save was 0 bytes, redone).
 - ✅ **(2026-11-20) 10B once-per-device views** (`00167a6`): `countViewOnce()` in listings.js (per-user localStorage key `mapit_viewed_<userId>`), `/view` ignores logged-out calls; listings.js?v=10b4; localhost PASS; uat `a31fa08`.
 - ✅ **(2026-11-20) 10B uat merges:** `10b3f9b` (views + layout + 2-line titles, incl. 16 Nov checkpoint branch), `a31fa08` (once per device).
@@ -1529,7 +1533,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | **Release 10A — quick UX fixes** | ✅ LIVE 2026-11-15 (PR #38 `a392d9e`, smoke:prod 16/16); family check 6/6; ⏳ Nagesh phone check on www tomorrow | `public/js/{gallery,post,config,listings,auth}.js`, `public/css/app.css`, `public/index.html`, `public/admin.html`, `public/review.html`, `src/config/listingRules.js`, `src/routes/listings.js` | Next: PR uat → main + smoke:prod |
 | **Release 10A.1 — map preview card clamp** | ✅ LIVE 2026-11-16 (PR #39 `7962967`; smoke:prod 16/16, S-16 12/12) | `public/js/map.js`, `public/index.html`, `docs/screenshots/10A.1/` | Shared `placeHoverCard()`; localhost 5/5, uat phone 3/3 |
 | **Frontend split (option 1)** | ✅ live 2026-11-15 (PR #37) | `public/index.html`, `public/css/`, `public/js/`, `scripts/frontend/split.js`, `scripts/smoke/prod-readonly.js` | S-16 12/12 |
-| **Release 10B — view counts** | 🔨 built 2026-11-20, localhost 4/4 PASS; 021 on UAT only; ⏳ uat → prod DB → PR | `database/migrations/021-*`, `database/scripts/021-rollback.sql`, `src/routes/listings.js`, `public/js/{core,listings}.js`, `public/css/app.css`, `public/index.html`, `docs/screenshots/10B/` | Sellers exact from 1, buyers from 10+; owner views skipped |
+| **Release 10B — view counts** | ✅ LIVE 2026-11-20 (PR #40 `3bf6cde`; smoke:prod 16/16) | `database/migrations/021-*`, `database/scripts/021-rollback.sql`, `src/routes/listings.js`, `public/js/{core,listings}.js`, `public/css/app.css`, `public/index.html`, `docs/screenshots/10B/` | Buyers from 10, seller exact; owner/inactive/logged-out not counted; once per person per device |
 | **Release 10D — price filter (left panel, all categories)** | ⏳ placeholder (production user feedback 2026-11-16) | `docs/technical/backlog.md` | Not designed; order TBD by Nagesh + Arun |
 | **Release 10C — close reasons** | ⏳ placeholder | migration 022 (table) | Lists approved; required-or-optional still open |
 | **9L step 7 — production release** | ✅ code + DB live 2026-11-14 (PR #33 `5efbe07`, smoke:prod 14/14); 🔄 remaining: prod invites for both wives, revoke uat Shareable Link | `package-lock.json` (merge), `Context.md`; GitHub PR #33 | Next: Team → invite → incognito test → send → Activate |
@@ -1743,6 +1747,15 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+database/migrations/021-increment-listing-view.sql — NEW 2026-11-20 (10B): increment_listing_view() atomic +1, active only, skips seller, service_role only, verify block. Run on UAT + PROD.
+database/scripts/021-rollback.sql — NEW 2026-11-20: DROP FUNCTION + check (only after code rollback).
+src/routes/listings.js — 2026-11-20 (10B): POST /:id/view → UUID check, owner from token, signed-in only, RPC, best-effort {ok:true}.
+public/js/core.js — 2026-11-20 (10B): BUYER_VIEWS_MIN=10, isOwnListing(), viewsText(); listingRow() shows .lr-views on the right.
+public/js/listings.js — 2026-11-20 (10B): My Listings my-card/my-views/my-actions; detail uses viewsText(); countViewOnce() (localStorage mapit_viewed_<userId>, cap 500).
+public/css/app.css — 2026-11-20 (10B): .lr-views, .my-card/.my-views/.my-actions, .lr-title + .fav-ttl 2-line clamp.
+public/index.html — 2026-11-20: core.js?v=10b, listings.js?v=10b4, app.css?v=10b4.
+docs/screenshots/10B/ — NEW 2026-11-20: before-browse-list, interim-* (3), after-browse-list, after-my-listings (.png).
+docs/technical/backlog.md — 2026-11-20: legacy view_count column, updated_at bump on views, per-day/unique view dedupe idea.
 public/js/map.js — 2026-11-16 (10A.1): new shared placeHoverCard() (measure → right/left/above/below → clamp inside #mapc); single/stack/cluster cards use it.
 public/index.html — 2026-11-16: map.js?v=10a1.
 docs/screenshots/10A.1/ — NEW 2026-11-16: before/after-phone-390.png, before/after-desktop-1366.png.
@@ -2194,6 +2207,10 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-11-20) `git add CONTEXT.md` stages nothing on Windows** — git tracks `Context.md`; always `git add Context.md` (cost one empty docs commit `c2cd59e`). Backlog rename item still open.
+- **ℹ️ (2026-11-20) Schema JSON from "Copy as JSON" must be unwrapped before compare** — raw compare gave a FALSE match; also check the saved file is not 0 bytes (UAT save failed once). Backlog: make the script auto-unwrap + fail on missing `tables`.
+- **ℹ️ (2026-11-20) View counts before 10B include repeat opens** (no history to clean); unique-per-device only from 2026-11-20. Browser-side dedupe is bypassable (new device, cleared data, direct API calls) — exact count = future migration `listing_views` (~1–1.5 h, privacy note for Arun).
+- **ℹ️ (2026-11-20) Git Bash on Windows:** `taskkill /PID` becomes a path → use `taskkill //PID n //F`; `Get-NetTCPConnection` is PowerShell-only (Bash: `netstat -ano | grep :3001`).
 - **✅ RESOLVED 2026-11-16 (Release 10A.1, PR #39) — was: 🐛 (2026-11-15) Map preview card half off-screen on phones** (prod, pre-existing): `showHoverCard` / `showStackHoverCard` / `showClusterHoverCard` in `public/js/map.js` place the card at `pt.x-255` with no left-edge check. Desktop never shows it. → Release 10A.1.
 - **ℹ️ (2026-11-15) UAT listing MP-BLR-UAT003** (seeded 4BHK *sell*) now shows 1 BHK + ₹1.25Cr/mo → probably edited to Rent in earlier testing. UAT data, unverified; optional read-only UAT query.
 - **ℹ️ (2026-11-16) uat Shareable Link stays ON permanently** (decision 2026-11-16, Arun's demos) — do NOT revoke. Arun reopens the saved link (uat.mapit.co.in host) on the demo device a day before each demo; new link only if revoked or it stops working after a new uat build (make it from the latest uat deployment → Share). Ask Arun not to forward it. (Was: ⏳ 2026-11-15 revoke when family testing ends.)
@@ -2935,6 +2952,12 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-20 22:30, end of day — next session, resume with /resume):**
+1. ⏳ Nagesh: quick look at www on the phone over the next days — do view counts move as expected (only first open per person counts)?
+2. ⏳ Nagesh + Arun: decide the order of 10C close reasons (migration 022, design settled; still open: reason required or optional?) · 10D price filter (needs a design session: rent vs sale ranges, input style, ₹ units, server-side filter) · posting wizard. James suggests 10C first.
+3. ⏳ Nagesh: send Arun the uat write-up with the current Shareable Link (still open from 16 Nov); tell Arun views now count once per person per device.
+4. Later: 9L prod invites for both wives; backlog small fixes (token renewal, Transfer route removal, compare-script auto-unwrap, Context.md rename, legacy view_count column).
 
 **⬅ NOW (2026-11-20 ~22:15) — Release 10B:**
 1. ⏳ Nagesh: phone check on uat.mapit.co.in (browse views right, My Listings layout, repeat opens not counted).
