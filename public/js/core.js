@@ -54,6 +54,7 @@ function listingRow(l){
   const loc = activeLoc();
   const d   = l.d != null ? l.d : dist(loc.lat,loc.lng,l.lat,l.lng);
   const sel = l.id === ST.selId;
+  const views = viewsText(l, isOwnListing(l));
   return `<div class="lr-row ${sel?'sel':''}" onclick="selListing('${l.id}', ST.tab==='fav'||ST.tab==='mine')">
     <div class="lr-ico">${l.cover_photo?`<img src="${escHtml(l.cover_photo)}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}</div>
     <div class="lr-info">
@@ -61,7 +62,20 @@ function listingRow(l){
       <div class="lr-price">${priceText(l)}</div>
       <div class="lr-meta">📍 ${fmtD(d)} · ${escHtml(l.subcategory)} · ${timeAgo(l.created_at)}</div>
     </div>
+    ${views ? `<div class="lr-views">${views}</div>` : ''}
   </div>`;
+}
+
+// View counts (Release 10B, decision 2026-11-15): the seller sees the exact
+// count from 1; everyone else only from BUYER_VIEWS_MIN, so a new listing
+// never advertises "2 views". The server never counts the seller's own views.
+// Used by listingRow() above and by listings.js (My Listings, listing detail).
+const BUYER_VIEWS_MIN = 10;
+function isOwnListing(l){ return !!ST.user && l.seller_id === ST.user.id; }
+function viewsText(l, isOwner){
+  const n = Number(l.views_count) || 0;
+  if(n < (isOwner ? 1 : BUYER_VIEWS_MIN)) return '';
+  return `👁 ${n} view${n!==1?'s':''}`;
 }
 
 // ═══════════════════════════════════════════════

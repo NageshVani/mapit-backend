@@ -975,24 +975,41 @@ router.post('/:id/save', requireAuth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ── Increment view count ──────────────────────────────────────
-// POST /api/listings/:id/view  (no auth required — views counted for all visitors)
-router.post('/:id/view', async (req, res, next) => {
+// ── Increment view count (Release 10B) ────────────────────────
+// POST /api/listings/:id/view  (counts SIGNED-IN viewers only)
+// Atomic +1 in the DB (migration 021 increment_listing_view) instead of
+// read-then-write in Node, which lost views when two visitors arrived at once.
+// The function skips the seller's own views and non-active listings.
+// Logged-out calls are not counted (every listing route needs sign-in, so
+// only scripts call this without a token); a missing, bad or expired token
+// gets { ok: true } and nothing is counted (never a 401 here).
+// Repeat opens by the same person are filtered in the browser (countViewOnce
+// in public/js/listings.js, Nagesh 2026-11-20).
+// Best-effort: counting must never break opening a listing, so errors are
+// logged (no PII) and the response is always { ok: true }.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+router.post('/:id/view', async (req, res) => {
   try {
     const { id } = req.params;
-    const { data } = await supabaseAdmin
-      .from('listings')
-      .select('views_count')
-      .eq('id', id)
-      .single();
-    if (data) {
-      await supabaseAdmin
-        .from('listings')
-        .update({ views_count: (data.views_count || 0) + 1 })
-        .eq('id', id);
+    if (!UUID_RE.test(id)) return res.json({ ok: true }); // server-side validation (Rule 8)
+
+    let viewerId = null;
+    const authHeader = req.headers.authorization || '';
+    if (authHeader.startsWith('Bearer ')) {
+      const { data, error } = await supabaseAdmin.auth.getUser(authHeader.slice(7));
+      if (!error && data?.user) viewerId = data.user.id;
     }
-    res.json({ ok: true });
-  } catch (err) { next(err); }
+    if (!viewerId) return res.json({ ok: true }); // signed-in viewers only
+
+    const { error } = await supabaseAdmin.rpc('increment_listing_view', {
+      p_listing_id: id,
+      p_viewer_id:  viewerId,
+    });
+    if (error) console.error('increment_listing_view failed:', error.message);
+  } catch (err) {
+    console.error('POST /view failed:', err.message);
+  }
+  res.json({ ok: true });
 });
 
 // ── Report a listing ────────────────────────────────────────────
