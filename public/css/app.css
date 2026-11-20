@@ -213,9 +213,13 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .fav-thumb{width:54px;height:54px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden;background:var(--card2);}
 .fav-thumb img{width:100%;height:100%;object-fit:cover;}
 .fav-info{flex:1;min-width:0;}
-.fav-ttl{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+.fav-ttl{font-size:14px;font-weight:600;line-height:1.3;margin-bottom:2px;overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;} /* 10B: wrap to 2 lines, then "…" (My Listings + Saved) */
 .fav-price{font-size:14.5px;font-weight:700;color:var(--orange);margin-bottom:2px;}
 .fav-dist{font-size:11.5px;color:var(--muted);}
+/* My Listings card (Release 10B): views top-right, action buttons in one row below */
+.my-card{flex-wrap:wrap;}
+.my-views{flex-shrink:0;align-self:flex-start;font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap;}
+.my-actions{flex-basis:100%;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;}
 /* Session 9L — reviewer's reason on a sent-back listing (My Listings) */
 .rev-reason{margin-top:5px;padding:6px 8px;border-radius:7px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.35);font-size:12px;line-height:1.4;color:var(--text);overflow-wrap:anywhere;}
 .rev-reason.no{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.35);}
@@ -574,9 +578,11 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .lr-ico{width:40px;height:40px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--card2);}
 .lr-ico img{width:100%;height:100%;object-fit:cover;}
 .lr-info{flex:1;min-width:0;}
-.lr-title{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;}
+.lr-title{font-size:13.5px;font-weight:600;line-height:1.3;margin-bottom:2px;overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;} /* 10B: wrap to 2 lines, then "…" */
 .lr-price{font-size:14.5px;font-weight:700;color:var(--orange);font-family:'JetBrains Mono',monospace;letter-spacing:-.2px;}
 .lr-meta{font-size:11px;color:var(--muted);}
+/* Browse row view count (Release 10B): right side, level with the title; buyers see it from 10 views */
+.lr-views{flex-shrink:0;align-self:flex-start;margin-top:1px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;}
 
 /* ── FEEDBACK ── */
 .feedback-strip{padding:7px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
