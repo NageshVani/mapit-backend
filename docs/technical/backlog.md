@@ -66,6 +66,14 @@ Status: 🔜 planned · 💡 idea (needs a decision) · 🧹 small fix · 👤 m
 - 🧹 Transfer removed from the Admin page in 10A (Nagesh: no listings posted on behalf of others). Its server route
   `/api/admin/handover/*` and `uat:transfer` suite are now unused; remove them in a later clean-up.
 - 🧹 Review Supabase Advisors: 15 Warnings / 14 Info.
+- 🧹 (found in 10B, 2026-11-20) `listings` has two view columns: `views_count` (used) and `view_count`
+  (never used, 000-baseline). Drop `view_count` in a later clean-up release (contract step; never in the
+  same release as a code change). Check nothing reads it first.
+- 🧹 (found in 10B, 2026-11-20) The `listings_updated_at` trigger bumps `updated_at` on every counted view,
+  so `updated_at` means "last touched", not "last edited". Nothing reads it today. Fix before anything
+  sorts or shows by it (e.g. `WHEN` clause on the trigger that ignores views_count-only updates).
+- 💡 (10B follow-up) Count each viewer once per day (a `listing_views` table, viewer or IP hash + day) if
+  inflated counts appear. Today `/view` is only limited by the `/api/` rate limiter.
 
 ## 4. Security / ops clean-up (post-9L)
 - 🔜 Swap the Resend full-access key for a sending-only key.
