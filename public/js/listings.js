@@ -91,16 +91,6 @@ function reviewOutcome(l){
   return { kind:'other', label:'Not live', color:'var(--muted)', reason: full };
 }
 
-// View counts (Release 10B, decision 2026-11-15): the seller sees the exact
-// count from 1; everyone else only from BUYER_VIEWS_MIN, so a new listing
-// never advertises "2 views". The server never counts the seller's own views.
-const BUYER_VIEWS_MIN = 10;
-function viewsText(l, isOwner){
-  const n = Number(l.views_count) || 0;
-  if(n < (isOwner ? 1 : BUYER_VIEWS_MIN)) return '';
-  return `👁 ${n} view${n!==1?'s':''}`;
-}
-
 async function renderMyAds(el){
   el.innerHTML = `<div class="sb-empty"><div class="loading-spin"></div><div class="sb-empty-sub">Loading your listings…</div></div>`;
   try {
@@ -138,7 +128,7 @@ async function renderMyAds(el){
         })();
         const ttlArg = jsArg(l.title);
         return `
-        <div class="fav-card" onclick="selListing('${l.id}',true)">
+        <div class="fav-card my-card" onclick="selListing('${l.id}',true)">
           <div class="fav-thumb" style="background:linear-gradient(135deg,var(--card),var(--card2))">
             ${l.cover_photo?`<img src="${escHtml(l.cover_photo)}" alt="" loading="lazy" decoding="async"/>`:`<span>${listingEmoji(l)}</span>`}
           </div>
@@ -150,12 +140,12 @@ async function renderMyAds(el){
                  ${review.reason ? `<div class="rev-reason${review.kind==='reject'?' no':''}">${escHtml(review.reason)}</div>` : ''}`
               : `<div class="fav-dist" style="color:${STATUS_COLOR[shownStatus]||'var(--muted)'};">● ${shownStatus.charAt(0).toUpperCase()+shownStatus.slice(1)}</div>`}
             ${expiryHtml}
-            ${l.views_count >= 1 ? `<div class="fav-dist" style="color:var(--muted);">${viewsText(l, true)}</div>` : ''}
           </div>
-          <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;">
+          ${l.views_count >= 1 ? `<div class="my-views" title="Views by other people (your own views are not counted)">${viewsText(l, true)}</div>` : ''}
+          <div class="my-actions">
             ${canRenew?`<button class="renew-btn" onclick="event.stopPropagation();renewListing('${l.id}')">🔄 Renew</button>`:''}
             ${review
-              ? `<button class="edit-btn resubmit" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit &amp;<br>resubmit</button>`
+              ? `<button class="edit-btn resubmit" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit &amp; resubmit</button>`
               : `<button class="edit-btn" onclick="event.stopPropagation();editListing('${l.id}')">✏️ Edit</button>`}
             ${(l.status==='active'||l.status==='pending')?`<button class="sold-btn" onclick="event.stopPropagation();markAsSold('${l.id}',${ttlArg})">✅ Sold</button>`:''}
             <button class="del-btn" onclick="event.stopPropagation();deleteListing('${l.id}',${ttlArg})">🗑️ Del</button>
@@ -233,7 +223,7 @@ function renderSidebar(){
   const prev = idx>0 ? fl[idx-1].id : null;
   const next = idx<fl.length-1 ? fl[idx+1].id : null;
   const col = catCol(l.category||l.cat);
-  const views = viewsText(l, !!ST.user && l.seller_id===ST.user.id);
+  const views = viewsText(l, isOwnListing(l));
 
   const photoUrls = (l.photos||[]).map(p=>p.public_url||p.url).filter(Boolean);
   el.innerHTML = `
