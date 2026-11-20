@@ -158,6 +158,8 @@
 
 ## 🎯 Current Goal
 
+**NOW (2026-11-20 ~22:15) — Release 10B: prod DB 021 DONE, schemas identical; PR uat → main next.** Nagesh asked for repeat opens by one person not to count → option 1 chosen: browser remembers counted listing IDs per user (`countViewOnce`, localStorage, cap 500) + server counts signed-in viewers only (`00167a6`); localhost click-test PASS; merged into uat (`a31fa08`). 021 run on PRODUCTION by Nagesh (function present, anon/authenticated cannot execute). Fresh inventories 2026-11-20 prod vs UAT: ✅ identical after unwrapping (17.6 vs 17.11 note only). Exact unique count (migration 022 `listing_views` table) NOT built — later, if counts look gamed (~1–1.5 h; privacy note for Arun).
+
 **NOW (2026-11-20 ~21:15) — Release 10B (view counts) built + localhost click-test 4/4 PASS; next: CONTEXT commit → merge into uat → phone check → prod DB 021 first → PR uat → main.** Branch `feat/release-10b-view-counts` (`65e76f0`, `5ca0896`). Migration 021 `increment_listing_view()` run on **UAT only** (Nagesh): test 216→217 visitor / NULL owner; EXPLAIN = Index Scan using listings_pkey; inventory UAT vs prod (14 Nov) = only EXTRA function (after unwrapping — the raw compare gave a FALSE "match"). Nagesh's UI feedback added: views on the right of every browse row, My Listings views top-right + buttons in one row, 2-line browse titles.
 
 **NOW (2026-11-16 21:16, end of day) — Tomorrow: Release 10B (view counts).** Start with James's Rule 1 explanation of migration 021 (atomic increment RPC, alternatives, risks) → Nagesh approves → SQL on UAT first. Today: 10A phone check 4/4 on www, Release 10A.1 LIVE (PR #39), Arun keeps the uat Shareable Link (write-up given), and a production user asked for a **price filter in the left panel for all categories** → placeholder **Release 10D** in `docs/technical/backlog.md` (not designed; order vs 10C/wizard for Nagesh + Arun).
@@ -704,6 +706,9 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-20) DB, SQL Editor, PRODUCTION `jneoxwumccmjwaojfazh`:** migration 021 run by Nagesh. Inventory `schema-prod-2026-11-20.json` vs `schema-uat-2026-11-20.json` (C:devmapitjson files) identical (unwrapped; first UAT save was 0 bytes, redone).
+- ✅ **(2026-11-20) 10B once-per-device views** (`00167a6`): `countViewOnce()` in listings.js (per-user localStorage key `mapit_viewed_<userId>`), `/view` ignores logged-out calls; listings.js?v=10b4; localhost PASS; uat `a31fa08`.
+- ✅ **(2026-11-20) 10B uat merges:** `10b3f9b` (views + layout + 2-line titles, incl. 16 Nov checkpoint branch), `a31fa08` (once per device).
 - ✅ **(2026-11-20) Release 10B built + localhost click-test 4/4 PASS (Nagesh)** on `feat/release-10b-view-counts`: migration 021 `increment_listing_view(p_listing_id, p_viewer_id)` (one atomic UPDATE; active only; skips seller; SECURITY INVOKER, service_role only; verify block) + `database/scripts/021-rollback.sql`; `POST /:id/view` uses optional token to recognise the owner, UUID check, best-effort; `viewsText()`/`isOwnListing()` in `core.js` (buyers from 10, owner exact from 1) used by browse rows, My Listings, detail; My Listings card `my-card`/`my-views`/`my-actions`; `.lr-title` 2-line clamp. Tags core.js?v=10b, listings.js?v=10b3, app.css?v=10b3. Phone width OK (Nagesh). Screenshots `docs/screenshots/10B/`: before-browse-list.png, interim-my-listings-stacked-buttons.png, interim-detail-views-small.png, interim-browse-views-one-line-title.png, after-browse-list.png, after-my-listings.png.
 - ✅ **(2026-11-20) DB, SQL Editor, UAT `xesekrkxbtybbxpsvxuz` only:** migration 021 run by Nagesh (first attempt ran the test before the migration → "function does not exist"; then migration OK). Production NOT yet.
 - ✅ **(2026-11-20) Backlog:** legacy unused `listings.view_count` column (drop later), `listings_updated_at` trigger bumps updated_at on every view, per-day view dedupe idea.
@@ -2451,6 +2456,7 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-20, Nagesh) Repeat opens: once per person per device** (browser list, no DB rows, no new personal data) + signed-in only. Rejected for now: `listing_views` table (exact, stores viewing history → privacy-policy note for Arun) and once-per-day table + nightly cron. Revisit if counts look gamed.
 - **(2026-11-20) View counter = one atomic UPDATE in a DB function (021)**, not read-then-write in Node (lost views under concurrency) and not a per-view table (deferred; backlog). SECURITY INVOKER like 019 (service_role only), not SECURITY DEFINER — nothing needs elevated rights.
 - **(2026-11-20) `/view` is best-effort:** always `{ok:true}`, logs errors without PII; a missing/bad token = anonymous view, never 401. Consequence: prod DB 021 MUST go in before the code (a missing function fails silently).
 - **(2026-11-20, Nagesh) Views shown on the right of every browse row** (buyers from 10), not only in the detail's 10 px line (too small to find); My Listings buttons in one row; browse titles wrap to 2 lines.
@@ -2929,6 +2935,11 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-20 ~22:15) — Release 10B:**
+1. ⏳ Nagesh: phone check on uat.mapit.co.in (browse views right, My Listings layout, repeat opens not counted).
+2. ⏳ PR uat → main (James opens; Nagesh/Arun merge) → `npm run smoke:prod` → check www.
+3. Then: order of 10C close reasons (migration 022 stays free for 10C) · 10D price filter · posting wizard.
 
 **⬅ NOW (2026-11-20 ~21:15) — Release 10B:**
 1. ⏳ Commit CONTEXT + after screenshots → push `feat/release-10b-view-counts` → merge into `uat` → Nagesh phone check on uat.mapit.co.in (browse views, My Listings layout, owner views not counted).
