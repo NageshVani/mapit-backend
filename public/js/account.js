@@ -2,14 +2,33 @@
 // ═══════════════════════════════════════════════
 // MARK AS SOLD
 // ═══════════════════════════════════════════════
+// Release 10C: a close reason is required for Sold and Delete. The lists come
+// from GET /api/config (src/config/closeReasons.js) — one place, no copy here.
+// group: 'sold' | 'deleted'. Returns [{ value, label }], or null if the config
+// has not loaded (then the caller stops with a toast instead of closing
+// without a reason).
+async function closeReasonOptions(group){
+  const cfg = RUNTIME_CFG || await runtimeCfgPromise;
+  const list = cfg && cfg.closeReasons && cfg.closeReasons[group];
+  if(!Array.isArray(list) || !list.length){
+    toast('Could not load the reasons. Check your connection and try again.');
+    return null;
+  }
+  return list.map(r => ({ value: r.code, label: r.label }));
+}
+
 async function markAsSold(id, title){
-  if(!(await mapitDialog({
+  const options = await closeReasonOptions('sold');
+  if(!options) return;
+  const reason = await mapitDialog({
     title: 'Mark as sold?',
-    message: `"${title}" will be removed from the public map.`,
+    message: `"${title}" will be removed from the public map.\nHow was it sold?`,
+    select: { options, placeholder: 'Choose how it was sold…', required: true },
     okText: 'Mark as Sold',
-  }))) return;
+  });
+  if(!reason) return;
   try {
-    await apiPut(`/api/listings/${id}/sold`, {});
+    await apiPut(`/api/listings/${id}/sold`, { reason });
     toast('✅ Listing marked as sold and removed from the map.');
     renderMyAds(document.getElementById('sb-content'));
   } catch(e){ toast('Error: '+e.message); }
@@ -29,14 +48,18 @@ async function renewListing(id){
 }
 
 async function deleteListing(id, title){
-  if(!(await mapitDialog({
+  const options = await closeReasonOptions('deleted');
+  if(!options) return;
+  const reason = await mapitDialog({
     title: 'Delete listing?',
-    message: `"${title}" will be deleted. This cannot be undone.`,
+    message: `"${title}" will be deleted. This cannot be undone.\nWhy are you deleting it?`,
+    select: { options, placeholder: 'Choose a reason…', required: true },
     okText: 'Delete',
     danger: true,
-  }))) return;
+  });
+  if(!reason) return;
   try {
-    await apiDelete(`/api/listings/${id}`);
+    await apiDelete(`/api/listings/${id}?reason=${encodeURIComponent(reason)}`);
     toast('🗑️ Listing deleted.');
     ST.myListings = ST.myListings.filter(l=>l.id!==id);
     if(ST.selId===id) ST.selId=null;

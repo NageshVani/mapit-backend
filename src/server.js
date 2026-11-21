@@ -53,6 +53,7 @@ const adminRoutes        = require('./routes/admin');
 const reviewRoutes       = require('./routes/review');
 const { errorHandler } = require('./middleware/errorHandler');
 const { LISTING_EXPIRY_ENABLED } = require('./config/listingRules');
+const { closeReasonsForPage } = require('./config/closeReasons');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -184,6 +185,9 @@ app.get('/api/config', (req, res) => {
     cartoApiKey:      process.env.CARTO_API_KEY || '',
     mapboxToken:      process.env.MAPBOX_ACCESS_TOKEN || '',
     listingExpiry:    LISTING_EXPIRY_ENABLED,
+    // Release 10C: pickable close reasons { sold, deleted, admin } — one list
+    // (src/config/closeReasons.js) for the dropdowns and the server check.
+    closeReasons:     closeReasonsForPage(),
     // 'production' | 'preview' (uat + branch previews) | 'local' — drives the
     // UAT / LOCAL TEST watermark (public/env-badge.js). Not a secret.
     environment:      process.env.VERCEL_ENV || 'local',

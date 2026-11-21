@@ -354,8 +354,12 @@ function jsArg(s){ return escHtml(JSON.stringify(String(s ?? ''))); }
 // must await it:
 //   confirm mode (no `input`) → true / false
 //   input mode               → the typed text, or null on Cancel
-let _dlgResolve = null, _dlgHasInput = false;
-function mapitDialog({ title, message = '', input = null, okText = 'OK', cancelText = 'Cancel', danger = false }){
+//   select mode (`select`)   → the chosen option's value, or null on Cancel.
+//     select: { options: [{ value, label }], placeholder, required }
+//     required (Release 10C close reasons): OK / Enter do nothing until an
+//     option is chosen, and a hint shows under the dropdown.
+let _dlgResolve = null, _dlgHasInput = false, _dlgSelect = null;
+function mapitDialog({ title, message = '', input = null, select = null, okText = 'OK', cancelText = 'Cancel', danger = false }){
   if(_dlgResolve) _dlgClose(false); // never leave an earlier caller hanging
   document.getElementById('mapitDlgTitle').textContent = title;
   document.getElementById('mapitDlgMsg').textContent = message;
@@ -367,19 +371,41 @@ function mapitDialog({ title, message = '', input = null, okText = 'OK', cancelT
     inp.placeholder = input.placeholder || '';
     inp.maxLength = input.maxlength || 100;
   }
+  const sel = document.getElementById('mapitDlgSelect');
+  _dlgSelect = select;
+  sel.classList.toggle('hide', !select);
+  document.getElementById('mapitDlgHint').classList.add('hide');
+  if(select){
+    sel.replaceChildren();
+    const ph = document.createElement('option');
+    ph.value = ''; ph.textContent = select.placeholder || 'Choose…';
+    ph.disabled = !!select.required; ph.selected = true;
+    sel.appendChild(ph);
+    for(const o of select.options || []){
+      const opt = document.createElement('option');
+      opt.value = o.value; opt.textContent = o.label; // textContent: no HTML injection
+      sel.appendChild(opt);
+    }
+  }
   const ok = document.getElementById('mapitDlgOk');
   ok.textContent = okText;
   ok.className = 'dlg-btn ' + (danger ? 'danger' : 'primary');
   document.getElementById('mapitDlgCancel').textContent = cancelText;
   document.getElementById('mapitDlg').classList.remove('hide');
-  setTimeout(() => (input ? inp : ok).focus(), 30);
+  setTimeout(() => (input ? inp : select ? sel : ok).focus(), 30);
   return new Promise(res => { _dlgResolve = res; });
 }
 function _dlgClose(confirmed){
+  if(confirmed && _dlgSelect && _dlgSelect.required && !document.getElementById('mapitDlgSelect').value){
+    document.getElementById('mapitDlgHint').classList.remove('hide');
+    document.getElementById('mapitDlgSelect').focus();
+    return; // stay open — a choice is required
+  }
   const res = _dlgResolve; _dlgResolve = null;
   document.getElementById('mapitDlg').classList.add('hide');
   if(!res) return;
   if(_dlgHasInput) res(confirmed ? document.getElementById('mapitDlgInput').value : null);
+  else if(_dlgSelect) res(confirmed ? (document.getElementById('mapitDlgSelect').value || null) : null);
   else res(!!confirmed);
 }
 document.addEventListener('keydown', e => {
