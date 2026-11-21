@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-21 12:50 (UAE), checkpoint (**Release 10C close reasons BUILT on `feat/release-10c-close-reasons` (`4dd4baa`, `eaf7ae1`, `250eff6`); migration 022 rev 2 on UAT only; schema compare = only the new table; waiting for Nagesh's localhost click-test. Local server running on :3001.**)
+- **Last updated:** 2026-11-21 13:30 (UAE), checkpoint (**Release 10C localhost click-test PASSED (Nagesh) after fix `9af0949` (Sold/Delete button disabled until a reason is chosen); 4 admin reasons APPROVED; 8 screenshots in `docs/screenshots/10C/`. Next: push → merge into uat → Nagesh phone check.**)
+- **Last updated (previous):** 2026-11-21 12:50 (UAE), checkpoint (**Release 10C close reasons BUILT on `feat/release-10c-close-reasons` (`4dd4baa`, `eaf7ae1`, `250eff6`); migration 022 rev 2 on UAT only; schema compare = only the new table; waiting for Nagesh's localhost click-test. Local server running on :3001.**)
 - **Last updated (previous):** 2026-11-16 21:16 (UAE), END OF DAY checkpoint (**Release 10A.1 LIVE (PR #39); Arun uat access settled (keep Shareable Link) + WhatsApp write-up for Arun; production user feedback → placeholder Release 10D price filter (all categories) in backlog. Tomorrow (/resume): Release 10B view counts (migration 021, UAT first).**)
 - **Last updated (previous):** 2026-11-16 (UAE), checkpoint (**Release 10A.1 LIVE: PR #39 merged by Nagesh (`7962967`); www serves map.js?v=10a1 identical to main; smoke:prod 16/16, S-16 12/12. Next: Release 10B (view counts, migration 021, UAT first).**)
 - **Last updated (previous):** 2026-11-16 17:39 (UAE), checkpoint (**Arun could not open uat (Vercel login page) — cause: Vercel Authentication + his 7-day share-link pass expired / new device, NOT the 10A builds. DECIDED (Nagesh + Arun): keep the uat Shareable Link permanently; Arun reopens it when needed. Next: Nagesh phone check on www → Release 10A.1.**)
@@ -158,6 +159,8 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-21 13:30) — Release 10C: localhost click-test PASSED, admin reasons approved, screenshots taken; next push → uat.** Nagesh's click-test feedback: "disable Mark as Sold / Delete until the reason is selected" → `9af0949` (OK starts `disabled` when `select.required`; `_dlgSelectChanged()` enables it; reset on every dialog open; `_dlgClose` guard kept for the Enter key + server 400 as backstops; app.css/controls.js `?v=10c2`); retest PASS. 4 manual admin reasons approved as written. Screenshots (`docs/screenshots/10C/`, headless Chrome, signed out, every dialog closed with Cancel → no DB writes; "before" from a temporary `main` worktree on :3002, removed after): `before-sold-dialog-390.png`, `before-delete-dialog-390.png`, `after-sold-no-reason-disabled-390.png`, `after-sold-enter-without-reason-hint-390.png`, `after-sold-reason-chosen-enabled-390.png`, `after-delete-no-reason-disabled-390.png`, `after-delete-reason-chosen-enabled-390.png`, `after-delete-no-reason-disabled-1280.png`. Script also confirmed a plain confirm opened afterwards has an enabled OK.
 
 **NOW (2026-11-21 12:50) — Release 10C (close reasons): built + committed, awaiting Nagesh's localhost click-test.** Reason REQUIRED for Sold and Delete (Nagesh); admin removals recorded too (`admin_removed`, auto reasons for Report-remove + Cleanup). Migration 022 rev 2 (`listing_close_reasons`, 9 cols incl. `closed_by`) run on **UAT only** (rev 1 → 022-rollback → rev 2); prod untouched. Schema compare prod vs UAT 2026-11-21: only the new table (18 EXTRA, no grants/policies). Next: click-test → screenshots → uat → prod DB 022 first → PR. Side task: Nagesh makes a new uat Shareable Link for Arun (old one not found in Vercel).
 
@@ -2962,9 +2965,9 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ## 🔜 Next Steps (Queued)
 
 **⬅ NOW (2026-11-21 12:50) — Release 10C:**
-1. ⏳ Nagesh: localhost click-test (server on :3001): Sold without reason blocked + hint; Sold with reason; Delete needs one of 5 reasons; Cancel changes nothing; phone width; optional read-only check of listing_close_reasons on UAT.
-2. ⏳ Nagesh: approve the 4 manual admin reasons (or reword).
-3. James: before/after screenshots → `docs/screenshots/10C/`; CONTEXT; push branch → merge into uat → Nagesh phone check on uat.
+1. ✅ (13:30) Nagesh: localhost click-test PASSED — after fix `9af0949` (button disabled until a reason is chosen), retest PASS.
+2. ✅ (13:30) Nagesh: 4 manual admin reasons APPROVED as written.
+3. ✅ screenshots → `docs/screenshots/10C/` (8 files) + CONTEXT. ⏳ push branch → merge into uat → Nagesh phone check on uat.
 4. ⏳ PROD DB FIRST: Nagesh runs 022 (rev 2) on `jneoxwumccmjwaojfazh` after explicit go → inventories on both → must be identical.
 5. ⏳ PR uat → main (Nagesh/Arun merge) → `npm run smoke:prod` → check www.
 6. ⏳ Nagesh: new uat Shareable Link for Arun (latest uat deployment → Share → host uat.mapit.co.in → test in incognito) + send the refreshed write-up; check view counts on www.
