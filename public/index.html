@@ -31,7 +31,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="/css/app.css?v=10b4">
+<link rel="stylesheet" href="/css/app.css?v=10c2">
 </head>
 <body>
 
@@ -440,6 +440,8 @@
     <div class="dlg-title" id="mapitDlgTitle"></div>
     <div class="dlg-msg" id="mapitDlgMsg"></div>
     <input type="text" class="dlg-input hide" id="mapitDlgInput" autocomplete="off"/>
+    <select class="dlg-input dlg-select hide" id="mapitDlgSelect" aria-describedby="mapitDlgHint" onchange="_dlgSelectChanged()"></select>
+    <div class="dlg-hint hide" id="mapitDlgHint" role="alert">Please choose a reason first.</div>
     <div class="dlg-btns">
       <button class="dlg-btn" id="mapitDlgCancel" onclick="_dlgClose(false)">Cancel</button>
       <button class="dlg-btn primary" id="mapitDlgOk" onclick="_dlgClose(true)">OK</button>
@@ -740,9 +742,9 @@
 <script src="/js/listings.js?v=10b4"></script>
 <script src="/js/chat.js?v=split1"></script>
 <script src="/js/post.js?v=10a3"></script>
-<script src="/js/controls.js?v=split1"></script>
+<script src="/js/controls.js?v=10c2"></script>
 <script src="/js/gallery.js?v=10a3"></script>
-<script src="/js/account.js?v=split1"></script>
+<script src="/js/account.js?v=10c"></script>
 <script src="/js/main.js?v=split1"></script>
 <script src="/env-badge.js" defer></script>
 </body>

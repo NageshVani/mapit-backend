@@ -561,10 +561,14 @@ html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background
 .dlg-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border2);border-radius:8px;font-size:16px;font-family:'Outfit',sans-serif;margin-bottom:14px;outline:none;}
 .dlg-input:focus{border-color:var(--orange);}
 .dlg-input.hide{display:none;}
+.dlg-select{background:var(--panel);color:var(--text);cursor:pointer;}
+.dlg-hint{font-size:12px;color:var(--red);margin:-8px 0 12px;}
+.dlg-hint.hide{display:none;}
 .dlg-btns{display:flex;gap:10px;justify-content:flex-end;}
 .dlg-btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
 .dlg-btn.primary{background:var(--orange);border-color:var(--orange);color:#fff;}
 .dlg-btn.danger{background:var(--red);border-color:var(--red);color:#fff;}
+.dlg-btn:disabled{opacity:.45;cursor:not-allowed;}
 .add-pin-form{padding:16px 22px;border-top:1px solid var(--border);background:var(--card);}
 .add-pin-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;}
 .add-pin-divider{text-align:center;font-size:10px;color:var(--muted);margin:10px 0 6px;letter-spacing:.5px;text-transform:uppercase;}
