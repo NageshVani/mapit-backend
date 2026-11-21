@@ -10,7 +10,8 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-21 13:30 (UAE), checkpoint (**Release 10C localhost click-test PASSED (Nagesh) after fix `9af0949` (Sold/Delete button disabled until a reason is chosen); 4 admin reasons APPROVED; 8 screenshots in `docs/screenshots/10C/`. Next: push → merge into uat → Nagesh phone check.**)
+- **Last updated:** 2026-11-21 14:05 (UAE), checkpoint (**Release 10C on uat (`f497ea6`), Nagesh phone check PASSED; migration 022 rev 2 RUN ON PRODUCTION by Nagesh; inventories prod vs UAT ✅ identical (17.6 vs 17.11 note only). Next: PR uat → main → smoke:prod → check www.**)
+- **Last updated (previous):** 2026-11-21 13:30 (UAE), checkpoint (**Release 10C localhost click-test PASSED (Nagesh) after fix `9af0949` (Sold/Delete button disabled until a reason is chosen); 4 admin reasons APPROVED; 8 screenshots in `docs/screenshots/10C/`. Next: push → merge into uat → Nagesh phone check.**)
 - **Last updated (previous):** 2026-11-21 12:50 (UAE), checkpoint (**Release 10C close reasons BUILT on `feat/release-10c-close-reasons` (`4dd4baa`, `eaf7ae1`, `250eff6`); migration 022 rev 2 on UAT only; schema compare = only the new table; waiting for Nagesh's localhost click-test. Local server running on :3001.**)
 - **Last updated (previous):** 2026-11-16 21:16 (UAE), END OF DAY checkpoint (**Release 10A.1 LIVE (PR #39); Arun uat access settled (keep Shareable Link) + WhatsApp write-up for Arun; production user feedback → placeholder Release 10D price filter (all categories) in backlog. Tomorrow (/resume): Release 10B view counts (migration 021, UAT first).**)
 - **Last updated (previous):** 2026-11-16 (UAE), checkpoint (**Release 10A.1 LIVE: PR #39 merged by Nagesh (`7962967`); www serves map.js?v=10a1 identical to main; smoke:prod 16/16, S-16 12/12. Next: Release 10B (view counts, migration 021, UAT first).**)
@@ -2968,7 +2969,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 1. ✅ (13:30) Nagesh: localhost click-test PASSED — after fix `9af0949` (button disabled until a reason is chosen), retest PASS.
 2. ✅ (13:30) Nagesh: 4 manual admin reasons APPROVED as written.
 3. ✅ screenshots → `docs/screenshots/10C/` (8 files) + CONTEXT. ⏳ push branch → merge into uat → Nagesh phone check on uat.
-4. ⏳ PROD DB FIRST: Nagesh runs 022 (rev 2) on `jneoxwumccmjwaojfazh` after explicit go → inventories on both → must be identical.
+3b. ✅ (2026-11-21) pushed + merged into uat (`f497ea6`, Vercel success); Nagesh phone check on uat.mapit.co.in PASSED.
+4. ✅ (2026-11-21 ~13:55) PROD DB FIRST: Nagesh ran 022 (rev 2) on `jneoxwumccmjwaojfazh` after explicit go. Inventories `C:\dev\mapit\json files\schema-prod-1359-2026-11-21.json` + `schema-uat-1401-2026-11-21.json` (already unwrapped, 15 sections) → compare-schema-inventory.js: ✅ match (only server_version 17.11 vs 17.6); listing_close_reasons on both, 9 cols, RLS on. From now on 022-rollback.sql is only safe until 10C code is live on main.
 5. ⏳ PR uat → main (Nagesh/Arun merge) → `npm run smoke:prod` → check www.
 6. ⏳ Nagesh: new uat Shareable Link for Arun (latest uat deployment → Share → host uat.mapit.co.in → test in incognito) + send the refreshed write-up; check view counts on www.
 7. Later: 10D price filter design · posting wizard · backlog small fixes.
