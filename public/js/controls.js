@@ -390,10 +390,19 @@ function mapitDialog({ title, message = '', input = null, select = null, okText 
   const ok = document.getElementById('mapitDlgOk');
   ok.textContent = okText;
   ok.className = 'dlg-btn ' + (danger ? 'danger' : 'primary');
+  // Required choice → OK starts disabled; _dlgSelectChanged() enables it.
+  // Reset on EVERY open so a later plain dialog never inherits a disabled OK.
+  ok.disabled = !!(select && select.required);
   document.getElementById('mapitDlgCancel').textContent = cancelText;
   document.getElementById('mapitDlg').classList.remove('hide');
   setTimeout(() => (input ? inp : select ? sel : ok).focus(), 30);
   return new Promise(res => { _dlgResolve = res; });
+}
+// Dropdown onchange (index.html): a choice was made → enable OK, hide the hint.
+function _dlgSelectChanged(){
+  const chosen = !!document.getElementById('mapitDlgSelect').value;
+  document.getElementById('mapitDlgOk').disabled = !chosen;
+  if(chosen) document.getElementById('mapitDlgHint').classList.add('hide');
 }
 function _dlgClose(confirmed){
   if(confirmed && _dlgSelect && _dlgSelect.required && !document.getElementById('mapitDlgSelect').value){
