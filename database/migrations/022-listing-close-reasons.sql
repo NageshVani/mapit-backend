@@ -1,5 +1,6 @@
 -- Migration 022: Reason when a seller closes a listing (Mark as sold / Delete)
--- Release: 10C — close reasons (DRAFT 2026-11-21, NOT RUN)
+-- Release: 10C — close reasons (DRAFT 2026-11-21; rev 2 adds closed_by +
+--   'admin_removed'. UAT: rev 1 run, then 022-rollback + rev 2. Prod: NOT RUN)
 -- Run in: Supabase SQL Editor — UAT FIRST (mapit-uat / xesekrkxbtybbxpsvxuz),
 --   test there, then production (jneoxwumccmjwaojfazh) after an explicit go
 --   and BEFORE the 10C code is merged to main (prod DB first, Rule 10).
@@ -10,8 +11,11 @@
 --
 -- Why (Nagesh 2026-11-15 / 2026-11-21): "sold on MapIt vs elsewhere" is the
 --   most useful business number, and delete reasons show why sellers leave.
---   A reason is REQUIRED for both Mark as sold and Delete (seller's own
---   listing). Admin deletions are not recorded here (not a seller's reason).
+--   A reason is REQUIRED for both Mark as sold and Delete.
+--   Admin deletions are recorded too (Nagesh 2026-11-21) as
+--   action 'admin_removed': report "Remove listing" → 'admin_report_removed',
+--   Cleanup bulk delete → 'admin_cleanup' (filled in automatically), admin
+--   using the normal Delete route → required dropdown like sellers.
 --
 -- Why a separate table (not a column on listings): Delete removes the
 --   listings row, so a column would vanish with it. Soft delete would need a
@@ -22,6 +26,9 @@
 --     listing's deletion (an FK would cascade-delete it or block the delete).
 --   - seller_id → auth.users ON DELETE SET NULL: if the account is deleted,
 --     the anonymous business number stays.
+--   - closed_by → auth.users ON DELETE SET NULL: WHO closed it (the seller,
+--     or the admin). seller_id is WHOSE listing it was — not the same thing
+--     once an admin acts on someone else's listing (audit trail).
 --   - reason is a short code (e.g. 'sold_on_mapit'). The allowed list lives in
 --     ONE place in code (src/config/listingRules.js) so new reasons need no
 --     migration; the DB only checks the code's shape. No free text — free
@@ -43,15 +50,17 @@ BEGIN;
 CREATE TABLE public.listing_close_reasons (
   id          UUID        NOT NULL DEFAULT gen_random_uuid(),
   listing_id  UUID        NOT NULL,   -- no FK on purpose (see notes above)
-  seller_id   UUID,
+  seller_id   UUID,                   -- whose listing it was
+  closed_by   UUID,                   -- who closed it (seller or admin)
   category    TEXT        NOT NULL,
   subcategory TEXT,
-  action      TEXT        NOT NULL,   -- 'sold' | 'deleted'
+  action      TEXT        NOT NULL,   -- 'sold' | 'deleted' | 'admin_removed'
   reason      TEXT        NOT NULL,   -- code from listingRules.js
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT listing_close_reasons_pkey PRIMARY KEY (id),
   CONSTRAINT listing_close_reasons_seller_id_fkey FOREIGN KEY (seller_id) REFERENCES auth.users(id) ON DELETE SET NULL,
-  CONSTRAINT listing_close_reasons_action_check CHECK (action IN ('sold', 'deleted')),
+  CONSTRAINT listing_close_reasons_closed_by_fkey FOREIGN KEY (closed_by) REFERENCES auth.users(id) ON DELETE SET NULL,
+  CONSTRAINT listing_close_reasons_action_check CHECK (action IN ('sold', 'deleted', 'admin_removed')),
   CONSTRAINT listing_close_reasons_reason_check CHECK (reason ~ '^[a-z][a-z_]{1,39}$'),
   CONSTRAINT listing_close_reasons_category_check CHECK (char_length(category) BETWEEN 1 AND 20),
   CONSTRAINT listing_close_reasons_subcategory_check CHECK (subcategory IS NULL OR char_length(subcategory) <= 60)
@@ -64,7 +73,7 @@ REVOKE ALL ON TABLE public.listing_close_reasons FROM PUBLIC, anon, authenticate
 DO $$
 BEGIN
   IF (SELECT count(*) FROM information_schema.columns
-       WHERE table_schema = 'public' AND table_name = 'listing_close_reasons') <> 8 THEN
+       WHERE table_schema = 'public' AND table_name = 'listing_close_reasons') <> 9 THEN
     RAISE EXCEPTION '022 verify: listing_close_reasons columns missing';
   END IF;
   IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.listing_close_reasons'::regclass) THEN
