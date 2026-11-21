@@ -10,7 +10,10 @@
 - **Stack:** Node.js + Express (Vercel serverless) · Supabase (DB + Auth + Storage) · Resend (SMTP) · Leaflet.js (maps) · Single-file vanilla JS frontend
 - **Root directory:** `C:\dev\mapit\mapit-backend` *(Windows 11, new Lenovo, moved 2026-10-06; previously MacBook Air `/Users/nageshnagarajarao/Documents/Mapit project/mapit-backend`)*
 
-- **Last updated:** 2026-11-16 21:16 (UAE), END OF DAY checkpoint (**Release 10A.1 LIVE (PR #39); Arun uat access settled (keep Shareable Link) + WhatsApp write-up for Arun; production user feedback → placeholder Release 10D price filter (all categories) in backlog. Tomorrow (/resume): Release 10B view counts (migration 021, UAT first).**)
+- **Last updated:** 2026-11-21 14:05 (UAE), checkpoint (**Release 10C on uat (`f497ea6`), Nagesh phone check PASSED; migration 022 rev 2 RUN ON PRODUCTION by Nagesh; inventories prod vs UAT ✅ identical (17.6 vs 17.11 note only). Next: PR uat → main → smoke:prod → check www.**)
+- **Last updated (previous):** 2026-11-21 13:30 (UAE), checkpoint (**Release 10C localhost click-test PASSED (Nagesh) after fix `9af0949` (Sold/Delete button disabled until a reason is chosen); 4 admin reasons APPROVED; 8 screenshots in `docs/screenshots/10C/`. Next: push → merge into uat → Nagesh phone check.**)
+- **Last updated (previous):** 2026-11-21 12:50 (UAE), checkpoint (**Release 10C close reasons BUILT on `feat/release-10c-close-reasons` (`4dd4baa`, `eaf7ae1`, `250eff6`); migration 022 rev 2 on UAT only; schema compare = only the new table; waiting for Nagesh's localhost click-test. Local server running on :3001.**)
+- **Last updated (previous):** 2026-11-16 21:16 (UAE), END OF DAY checkpoint (**Release 10A.1 LIVE (PR #39); Arun uat access settled (keep Shareable Link) + WhatsApp write-up for Arun; production user feedback → placeholder Release 10D price filter (all categories) in backlog. Tomorrow (/resume): Release 10B view counts (migration 021, UAT first).**)
 - **Last updated (previous):** 2026-11-16 (UAE), checkpoint (**Release 10A.1 LIVE: PR #39 merged by Nagesh (`7962967`); www serves map.js?v=10a1 identical to main; smoke:prod 16/16, S-16 12/12. Next: Release 10B (view counts, migration 021, UAT first).**)
 - **Last updated (previous):** 2026-11-16 17:39 (UAE), checkpoint (**Arun could not open uat (Vercel login page) — cause: Vercel Authentication + his 7-day share-link pass expired / new device, NOT the 10A builds. DECIDED (Nagesh + Arun): keep the uat Shareable Link permanently; Arun reopens it when needed. Next: Nagesh phone check on www → Release 10A.1.**)
 - **Last updated (previous):** 2026-11-15 21:26 (UAE), CHECKPOINT end of day (**Release 10A LIVE on production: PR #38 merged by Nagesh (`a392d9e`), smoke:prod 16/16, S-16 12/12; Nagesh checked vehicle year + admin left nav on www. Tomorrow: Nagesh phone check on www → Release 10A.1 (map card clamp) → 10B.**)
@@ -157,6 +160,10 @@
 ---
 
 ## 🎯 Current Goal
+
+**NOW (2026-11-21 13:30) — Release 10C: localhost click-test PASSED, admin reasons approved, screenshots taken; next push → uat.** Nagesh's click-test feedback: "disable Mark as Sold / Delete until the reason is selected" → `9af0949` (OK starts `disabled` when `select.required`; `_dlgSelectChanged()` enables it; reset on every dialog open; `_dlgClose` guard kept for the Enter key + server 400 as backstops; app.css/controls.js `?v=10c2`); retest PASS. 4 manual admin reasons approved as written. Screenshots (`docs/screenshots/10C/`, headless Chrome, signed out, every dialog closed with Cancel → no DB writes; "before" from a temporary `main` worktree on :3002, removed after): `before-sold-dialog-390.png`, `before-delete-dialog-390.png`, `after-sold-no-reason-disabled-390.png`, `after-sold-enter-without-reason-hint-390.png`, `after-sold-reason-chosen-enabled-390.png`, `after-delete-no-reason-disabled-390.png`, `after-delete-reason-chosen-enabled-390.png`, `after-delete-no-reason-disabled-1280.png`. Script also confirmed a plain confirm opened afterwards has an enabled OK.
+
+**NOW (2026-11-21 12:50) — Release 10C (close reasons): built + committed, awaiting Nagesh's localhost click-test.** Reason REQUIRED for Sold and Delete (Nagesh); admin removals recorded too (`admin_removed`, auto reasons for Report-remove + Cleanup). Migration 022 rev 2 (`listing_close_reasons`, 9 cols incl. `closed_by`) run on **UAT only** (rev 1 → 022-rollback → rev 2); prod untouched. Schema compare prod vs UAT 2026-11-21: only the new table (18 EXTRA, no grants/policies). Next: click-test → screenshots → uat → prod DB 022 first → PR. Side task: Nagesh makes a new uat Shareable Link for Arun (old one not found in Vercel).
 
 **NOW (2026-11-20 ~22:15) — Release 10B: prod DB 021 DONE, schemas identical; PR uat → main next.** Nagesh asked for repeat opens by one person not to count → option 1 chosen: browser remembers counted listing IDs per user (`countViewOnce`, localStorage, cap 500) + server counts signed-in viewers only (`00167a6`); localhost click-test PASS; merged into uat (`a31fa08`). 021 run on PRODUCTION by Nagesh (function present, anon/authenticated cannot execute). Fresh inventories 2026-11-20 prod vs UAT: ✅ identical after unwrapping (17.6 vs 17.11 note only). Exact unique count (migration 022 `listing_views` table) NOT built — later, if counts look gamed (~1–1.5 h; privacy note for Arun).
 
@@ -706,6 +713,11 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## ✅ Completed This Session
+- ✅ **(2026-11-21) Release 10C order decided** (Nagesh): 10C next; required reasons for Sold AND Delete; record admin deletions too.
+- ✅ **(2026-11-21) Migration 022 drafted + committed** (`4dd4baa`): `listing_close_reasons` (no FK on listing_id on purpose, RLS on, no client grants, verify block) + `database/scripts/022-rollback.sql` (destructive: drops recorded reasons).
+- ✅ **(2026-11-21) DB, SQL Editor, UAT `xesekrkxbtybbxpsvxuz` only:** 022 rev 1 run (Nagesh) → 022-rollback → 022 rev 2 (`eaf7ae1`: `closed_by` column + action `admin_removed`); read-only column check = 9 columns. Production NOT yet.
+- ✅ **(2026-11-21) Schema inventory** `schema-prod-2026-11-21.json` vs `schema-uat-2026-11-21.json` (C:\dev\mapit\json files, already unwrapped): 18 EXTRA all `listing_close_reasons` (table, 9 cols, 7 constraints, pkey index) + 17.6/17.11 note — as expected.
+- ✅ **(2026-11-21) 10C code built + committed** (`250eff6`): `src/config/closeReasons.js` (one list, /api/config `closeReasons`), required reason on PUT /:id/sold and DELETE /:id?reason=, auto reasons on report remove + cleanup bulk delete, reason row written BEFORE the close and undone if the close fails; `mapitDialog` required select mode; ?v=10c (app.css, controls.js, account.js). Local checks: config lists OK, 401 without auth, syntax OK. Signed-in click-test NOT yet.
 - ✅ **(2026-11-20) DB, SQL Editor, PRODUCTION `jneoxwumccmjwaojfazh`:** migration 021 run by Nagesh. Inventory `schema-prod-2026-11-20.json` vs `schema-uat-2026-11-20.json` (C:devmapitjson files) identical (unwrapped; first UAT save was 0 bytes, redone).
 - ✅ **(2026-11-20) 10B once-per-device views** (`00167a6`): `countViewOnce()` in listings.js (per-user localStorage key `mapit_viewed_<userId>`), `/view` ignores logged-out calls; listings.js?v=10b4; localhost PASS; uat `a31fa08`.
 - ✅ **(2026-11-20) 10B uat merges:** `10b3f9b` (views + layout + 2-line titles, incl. 16 Nov checkpoint branch), `a31fa08` (once per device).
@@ -1531,7 +1543,7 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 | **Frontend split (option 1)** | ✅ live 2026-11-15 (PR #37) | `public/index.html`, `public/css/`, `public/js/`, `scripts/frontend/split.js`, `scripts/smoke/prod-readonly.js` | S-16 12/12 |
 | **Release 10B — view counts** | 🔨 built 2026-11-20, localhost 4/4 PASS; 021 on UAT only; ⏳ uat → prod DB → PR | `database/migrations/021-*`, `database/scripts/021-rollback.sql`, `src/routes/listings.js`, `public/js/{core,listings}.js`, `public/css/app.css`, `public/index.html`, `docs/screenshots/10B/` | Sellers exact from 1, buyers from 10+; owner views skipped |
 | **Release 10D — price filter (left panel, all categories)** | ⏳ placeholder (production user feedback 2026-11-16) | `docs/technical/backlog.md` | Not designed; order TBD by Nagesh + Arun |
-| **Release 10C — close reasons** | ⏳ placeholder | migration 022 (table) | Lists approved; required-or-optional still open |
+| **Release 10C — close reasons** | 🔨 built 2026-11-21 (`250eff6`); 022 rev 2 on UAT only; ⏳ Nagesh localhost click-test → screenshots → uat → prod DB 022 → PR | `database/migrations/022-*`, `database/scripts/022-rollback.sql`, `src/config/closeReasons.js`, `src/routes/listings.js`, `src/server.js`, `public/js/{controls,account}.js`, `public/index.html`, `public/css/app.css` | Required for Sold + Delete; admin removals recorded; 4 manual admin reasons await Nagesh approval |
 | **9L step 7 — production release** | ✅ code + DB live 2026-11-14 (PR #33 `5efbe07`, smoke:prod 14/14); 🔄 remaining: prod invites for both wives, revoke uat Shareable Link | `package-lock.json` (merge), `Context.md`; GitHub PR #33 | Next: Team → invite → incognito test → send → Activate |
 | **CLAUDE.md v5.0 + backlog doc** | ✅ Approved + committed 2026-11-15 on `docs/claude-md-v5` | `CLAUDE.md`, new backlog doc | Lean rules + backlog; admin-role placeholder; release names; diff for Nagesh review first |
 | **Photo EXIF strip (PR #34)** | ✅ live 2026-11-14 | `src/routes/uploads.js`, `MapIt_MVP_v1.html`, `public/index.html`, `package*.json`, `scripts/uat/photo-exif.suite.js` | smoke 14/14 |
@@ -1743,6 +1755,14 @@ Also still pending: Arun's sign-off + `ANTHROPIC_API_KEY` creation for Session 5
 ---
 
 ## 📂 Key Files Modified
+database/migrations/022-listing-close-reasons.sql — NEW 2026-11-21 (10C): listing_close_reasons table (rev 2 adds closed_by + admin_removed); UAT only.
+database/scripts/022-rollback.sql — NEW 2026-11-21: drops listing_close_reasons (destructive; export rows first).
+src/config/closeReasons.js — NEW 2026-11-21: CLOSE_REASONS (sold / deleted / admin, auto codes), isValidCloseReason, closeReasonsForPage, recordCloseReason, undoCloseReason.
+src/routes/listings.js — 2026-11-21: reason required on /:id/sold and DELETE /:id (?reason=); auto reasons on reports resolve remove_listing + cleanup/bulk-delete.
+src/server.js — 2026-11-21: /api/config sends closeReasons.
+public/js/controls.js — 2026-11-21: mapitDialog select mode (required → OK/Enter blocked + hint).
+public/js/account.js — 2026-11-21: closeReasonOptions(); Sold + Delete dialogs send the chosen reason.
+public/index.html, public/css/app.css — 2026-11-21: #mapitDlgSelect + #mapitDlgHint; ?v=10c for app.css, controls.js, account.js.
 public/js/map.js — 2026-11-16 (10A.1): new shared placeHoverCard() (measure → right/left/above/below → clamp inside #mapc); single/stack/cluster cards use it.
 public/index.html — 2026-11-16: map.js?v=10a1.
 docs/screenshots/10A.1/ — NEW 2026-11-16: before/after-phone-390.png, before/after-desktop-1366.png.
@@ -2194,6 +2214,8 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🐛 Open Issues / Blockers
+- **ℹ️ (2026-11-21) uat Shareable Link for Arun:** Nagesh cannot find the earlier link in Vercel → make a new one from the latest uat deployment (Share) and swap the host to uat.mapit.co.in. The 16 Nov WhatsApp write-up was chat-only (no file); a refreshed copy was given in chat 2026-11-21. Token never goes in git.
+- **ℹ️ (2026-11-21) 10C: any caller of Sold/Delete without a reason now gets 400** — grep found none (UAT suites clean up via service role). Admin DELETE of someone else's listing has no UI; it needs an admin reason code.
 - **✅ RESOLVED 2026-11-16 (Release 10A.1, PR #39) — was: 🐛 (2026-11-15) Map preview card half off-screen on phones** (prod, pre-existing): `showHoverCard` / `showStackHoverCard` / `showClusterHoverCard` in `public/js/map.js` place the card at `pt.x-255` with no left-edge check. Desktop never shows it. → Release 10A.1.
 - **ℹ️ (2026-11-15) UAT listing MP-BLR-UAT003** (seeded 4BHK *sell*) now shows 1 BHK + ₹1.25Cr/mo → probably edited to Rent in earlier testing. UAT data, unverified; optional read-only UAT query.
 - **ℹ️ (2026-11-16) uat Shareable Link stays ON permanently** (decision 2026-11-16, Arun's demos) — do NOT revoke. Arun reopens the saved link (uat.mapit.co.in host) on the demo device a day before each demo; new link only if revoked or it stops working after a new uat build (make it from the latest uat deployment → Share). Ask Arun not to forward it. (Was: ⏳ 2026-11-15 revoke when family testing ends.)
@@ -2456,6 +2478,13 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 💡 Decisions Made
+- **(2026-11-21, Nagesh) 10C before 10D / wizard; close reason REQUIRED for Sold and Delete; admin deletions recorded too.**
+- **(2026-11-21) Close reasons in a separate table, not a listings column** — Delete removes the row; soft delete would need a filter on every query. listing_id has no FK so the reason survives deletion.
+- **(2026-11-21) 022 amended (not a new 023)** because it ran only on UAT with an empty table: rollback + rev 2 on UAT. seller_id = whose listing, closed_by = who closed it (audit trail).
+- **(2026-11-21) Reason codes only, no free text** (no PII, Rule 8); list in `src/config/closeReasons.js`, page reads it from /api/config (one place); DB checks code shape only, so new reasons need no migration.
+- **(2026-11-21) Reason row written BEFORE the close, undone if the close fails** — every close has a reason; reverse order could leave closes without one.
+- **(2026-11-21) DELETE sends the reason as `?reason=` query** (some proxies drop DELETE bodies).
+- **(2026-11-21) Auto admin reasons:** Report "Remove listing" → `admin_report_removed`, Cleanup bulk → `admin_cleanup` (no extra dropdown). Proposed manual admin list (Spam or fake / Against MapIt rules / Seller asked us to remove it / Other) awaits Nagesh approval.
 - **(2026-11-20, Nagesh) Repeat opens: once per person per device** (browser list, no DB rows, no new personal data) + signed-in only. Rejected for now: `listing_views` table (exact, stores viewing history → privacy-policy note for Arun) and once-per-day table + nightly cron. Revisit if counts look gamed.
 - **(2026-11-20) View counter = one atomic UPDATE in a DB function (021)**, not read-then-write in Node (lost views under concurrency) and not a per-view table (deferred; backlog). SECURITY INVOKER like 019 (service_role only), not SECURITY DEFINER — nothing needs elevated rights.
 - **(2026-11-20) `/view` is best-effort:** always `{ok:true}`, logs errors without PII; a missing/bad token = anonymous view, never 401. Consequence: prod DB 021 MUST go in before the code (a missing function fails silently).
@@ -2935,6 +2964,16 @@ session-log.html           — Session 7: 6 historical session entries imported;
 ---
 
 ## 🔜 Next Steps (Queued)
+
+**⬅ NOW (2026-11-21 12:50) — Release 10C:**
+1. ✅ (13:30) Nagesh: localhost click-test PASSED — after fix `9af0949` (button disabled until a reason is chosen), retest PASS.
+2. ✅ (13:30) Nagesh: 4 manual admin reasons APPROVED as written.
+3. ✅ screenshots → `docs/screenshots/10C/` (8 files) + CONTEXT. ⏳ push branch → merge into uat → Nagesh phone check on uat.
+3b. ✅ (2026-11-21) pushed + merged into uat (`f497ea6`, Vercel success); Nagesh phone check on uat.mapit.co.in PASSED.
+4. ✅ (2026-11-21 ~13:55) PROD DB FIRST: Nagesh ran 022 (rev 2) on `jneoxwumccmjwaojfazh` after explicit go. Inventories `C:\dev\mapit\json files\schema-prod-1359-2026-11-21.json` + `schema-uat-1401-2026-11-21.json` (already unwrapped, 15 sections) → compare-schema-inventory.js: ✅ match (only server_version 17.11 vs 17.6); listing_close_reasons on both, 9 cols, RLS on. From now on 022-rollback.sql is only safe until 10C code is live on main.
+5. ⏳ PR uat → main (Nagesh/Arun merge) → `npm run smoke:prod` → check www.
+6. ⏳ Nagesh: new uat Shareable Link for Arun (latest uat deployment → Share → host uat.mapit.co.in → test in incognito) + send the refreshed write-up; check view counts on www.
+7. Later: 10D price filter design · posting wizard · backlog small fixes.
 
 **⬅ NOW (2026-11-20 ~22:15) — Release 10B:**
 1. ⏳ Nagesh: phone check on uat.mapit.co.in (browse views right, My Listings layout, repeat opens not counted).

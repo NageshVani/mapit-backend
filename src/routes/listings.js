@@ -27,6 +27,7 @@ const { notifySellerListingLive } = require('../utils/notifySeller');
 const { needsPhoneVerification } = require('../utils/phoneGate');
 const { waitUntil } = require('@vercel/functions');
 const { LISTING_EXPIRY_ENABLED, newExpiry, enforceRentOnly, missingRequiredDetail, invalidVehicleYear } = require('../config/listingRules');
+const { isValidCloseReason, recordCloseReason, undoCloseReason } = require('../config/closeReasons');
 
 const router = express.Router();
 
@@ -244,6 +245,17 @@ router.put('/reports/:reportId/resolve', requireAuth, requireAdmin, async (req, 
     if (!report) return next(createError('Report not found.', 404));
 
     if (action === 'remove_listing') {
+      // Release 10C: record the removal (reason filled in automatically).
+      // If the listing is already gone, there is nothing to record.
+      const { data: target } = await supabaseAdmin
+        .from('listings')
+        .select('id, seller_id, category, subcategory')
+        .eq('id', report.listing_id)
+        .maybeSingle();
+      const reasonRowId = target
+        ? await recordCloseReason(supabaseAdmin, target, { group: 'admin', reason: 'admin_report_removed', closedBy: req.user.id })
+        : null;
+
       const { data: photos } = await supabaseAdmin
         .from('listing_photos')
         .select('storage_path')
@@ -253,7 +265,10 @@ router.put('/reports/:reportId/resolve', requireAuth, requireAdmin, async (req, 
         .from('listings')
         .delete()
         .eq('id', report.listing_id);
-      if (delErr) return next(createError(delErr.message));
+      if (delErr) {
+        await undoCloseReason(supabaseAdmin, reasonRowId);
+        return next(createError(delErr.message));
+      }
 
       if (photos && photos.length) {
         const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
@@ -344,6 +359,15 @@ router.post('/cleanup/bulk-delete', requireAuth, requireAdmin, async (req, res, 
 
     for (const id of ids) {
       try {
+        // Release 10C: record the removal first (reason filled in automatically).
+        const { data: target } = await supabaseAdmin
+          .from('listings')
+          .select('id, seller_id, category, subcategory')
+          .eq('id', id)
+          .maybeSingle();
+        if (!target) { failed.push({ id, error: 'Listing not found.' }); continue; }
+        const reasonRowId = await recordCloseReason(supabaseAdmin, target, { group: 'admin', reason: 'admin_cleanup', closedBy: req.user.id });
+
         const { data: photos } = await supabaseAdmin
           .from('listing_photos')
           .select('storage_path')
@@ -353,7 +377,11 @@ router.post('/cleanup/bulk-delete', requireAuth, requireAdmin, async (req, res, 
           .from('listings')
           .delete()
           .eq('id', id);
-        if (delErr) { failed.push({ id, error: delErr.message }); continue; }
+        if (delErr) {
+          await undoCloseReason(supabaseAdmin, reasonRowId);
+          failed.push({ id, error: delErr.message });
+          continue;
+        }
 
         if (photos && photos.length) {
           try {
@@ -820,19 +848,30 @@ router.put('/:id', requireAuth, async (req, res, next) => {
 router.delete('/:id', requireAuth, async (req, res, next) => {
   try {
     const { id } = req.params;
+    // Release 10C: close reason required, sent as ?reason=<code> (query, not
+    // body — some proxies drop DELETE bodies). Codes: src/config/closeReasons.js.
+    const reason = typeof req.query.reason === 'string' ? req.query.reason : '';
 
     const { data: existing } = await supabaseAdmin
       .from('listings')
-      .select('seller_id')
+      .select('id, seller_id, category, subcategory')
       .eq('id', id)
       .single();
 
     if (!existing) return next(createError('Listing not found.', 404));
     // Owners can delete their own listings; admins can also delete any
     // listing (used by the admin Reject-pending-listing action).
-    if (existing.seller_id !== req.user.id && !isAdminEmail(req.user.email)) {
+    const isOwner = existing.seller_id === req.user.id;
+    if (!isOwner && !isAdminEmail(req.user.email)) {
       return next(createError('You can only delete your own listings.', 403));
     }
+    // Owner (admins too, for their own listing) → seller reasons;
+    // admin removing someone else's listing → admin reasons.
+    const group = isOwner ? 'deleted' : 'admin';
+    if (!isValidCloseReason(group, reason)) {
+      return next(createError('Please choose a reason for deleting.', 400));
+    }
+    const reasonRowId = await recordCloseReason(supabaseAdmin, existing, { group, reason, closedBy: req.user.id });
 
     // listing_photos rows cascade-delete with the listing (confirmed via
     // ON DELETE CASCADE), but that only removes the DB rows — the actual
@@ -851,7 +890,10 @@ router.delete('/:id', requireAuth, async (req, res, next) => {
       .delete()
       .eq('id', id);
 
-    if (error) return next(createError(error.message));
+    if (error) {
+      await undoCloseReason(supabaseAdmin, reasonRowId);
+      return next(createError(error.message));
+    }
 
     if (photos && photos.length) {
       const bucket = process.env.STORAGE_BUCKET || 'listing-photos';
@@ -871,11 +913,16 @@ router.delete('/:id', requireAuth, async (req, res, next) => {
 router.put('/:id/sold', requireAuth, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { agreed_price, buyer_id } = req.body;
+    const { agreed_price, buyer_id, reason } = req.body;
+
+    // Release 10C: a close reason is required (src/config/closeReasons.js).
+    if (!isValidCloseReason('sold', reason)) {
+      return next(createError('Please choose how it was sold.', 400));
+    }
 
     const { data: existing } = await supabaseAdmin
       .from('listings')
-      .select('seller_id, price')
+      .select('id, seller_id, price, category, subcategory')
       .eq('id', id)
       .single();
 
@@ -883,6 +930,9 @@ router.put('/:id/sold', requireAuth, async (req, res, next) => {
     if (existing.seller_id !== req.user.id) {
       return next(createError('Only the seller can mark this as sold.', 403));
     }
+
+    // Reason first, so every sold listing has one; undone if the update fails.
+    const reasonRowId = await recordCloseReason(supabaseAdmin, existing, { group: 'sold', reason, closedBy: req.user.id });
 
     // Update listing status
     const { data: listing, error } = await supabaseAdmin
@@ -892,7 +942,10 @@ router.put('/:id/sold', requireAuth, async (req, res, next) => {
       .select()
       .single();
 
-    if (error) return next(createError(error.message));
+    if (error) {
+      await undoCloseReason(supabaseAdmin, reasonRowId);
+      return next(createError(error.message));
+    }
 
     // Create transaction record
     if (buyer_id) {
